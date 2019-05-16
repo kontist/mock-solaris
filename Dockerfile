@@ -1,4 +1,4 @@
-FROM figureaps_backend-service
+FROM kontist_backend-service
 
 WORKDIR /opt/kontist/services/mockSolaris
 
