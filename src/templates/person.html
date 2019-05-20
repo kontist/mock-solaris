@@ -249,14 +249,6 @@
 <div class="panel panel-default">
   <div id="bookings" class="panel-heading">Bookings</div>
 
-  <div class="panel-body pull-right">
-    <form method="POST" action="/__BACKOFFICE__/triggerBackendTransactionsUpdateJob">
-      <button type="submit" class="btn btn-info btn-sm">
-        Update pending transactions
-      </button>
-    </form>
-  </div>
-
   {% if person.transactions.length > 0 %}
 
   <table class="table">

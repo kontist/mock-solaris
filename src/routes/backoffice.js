@@ -264,24 +264,6 @@ const generateBookingFromStandingOrder = (standingOrder) => {
   };
 };
 
-// This is currently used only to help Lexoffice to work with our mock services
-const triggerBackendTransactionsUpdateJob = async () => {
-  await fetch(
-    `${process.env.KONTIST_BACKEND_BASE_URL}/api/webhook/jobs/emit_transactions_update`,
-    {
-      method: 'POST',
-      headers: {
-        Authorization: 'Basic ' + Buffer.from(process.env.JOBS_USERNAME + ':' + process.env.JOBS_PASSWORD).toString('base64')
-      }
-    }
-  );
-};
-
-export const triggerBackendTransactionsUpdateJobHandler = async (req, res) => {
-  await triggerBackendTransactionsUpdateJob();
-  res.redirect('back');
-};
-
 /**
  * Processes either a normal booking or a Standing Order.
  * @param {string} personIdOrEmail

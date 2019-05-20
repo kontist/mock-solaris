@@ -160,7 +160,6 @@ app.post('/__BACKOFFICE__/queueBooking/:accountIdOrEmail', backofficeAPI.queueBo
 app.post('/__BACKOFFICE__/processQueuedBooking/:personIdOrEmail', backofficeAPI.processQueuedBookingHandler);
 app.post('/__BACKOFFICE__/processQueuedBooking/:personIdOrEmail/:id', backofficeAPI.processQueuedBookingHandler);
 app.post('/__BACKOFFICE__/updateAccountLockingStatus/:personId', backofficeAPI.updateAccountLockingStatusHandler);
-app.post('/__BACKOFFICE__/triggerBackendTransactionsUpdateJob', backofficeAPI.triggerBackendTransactionsUpdateJobHandler);
 
 // BACKOFFICE - STANDING ORDERS
 app.post('/__BACKOFFICE__/triggerStandingOrder/:personIdOrEmail/:id', standingOrdersAPI.triggerStandingOrderRequestHandler);
