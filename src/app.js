@@ -1,5 +1,4 @@
 import express, { Router } from 'express';
-import 'express-async-errors';
 import bodyParser from 'body-parser';
 import swig from 'swig';
 import path from 'path';
@@ -23,7 +22,7 @@ import * as returnNotificationsAPI from './routes/sepaDirectDebitReturns';
 import { migrate } from './db';
 
 import { oauthTokenAuthenticationMiddleware } from './helpers/oauth';
-
+import { safeRequestHandler } from './helpers/safeRequestHandler';
 const app = express();
 
 function logResponseBody (req, res, next) {
@@ -95,78 +94,78 @@ const checkRequestHostHeader = (req, res, next) => {
 router.use(oauthTokenAuthenticationMiddleware);
 
 // PERSONS
-router.post('/persons', personsAPI.createPerson);
-router.get('/persons/:person_id', personsAPI.showPerson);
-router.get('/persons', personsAPI.showPersons);
-router.patch('/persons/:person_id', personsAPI.updatePerson);
+router.post('/persons', safeRequestHandler(personsAPI.createPerson));
+router.get('/persons/:person_id', safeRequestHandler(personsAPI.showPerson));
+router.get('/persons', safeRequestHandler(personsAPI.showPersons));
+router.patch('/persons/:person_id', safeRequestHandler(personsAPI.updatePerson));
 
 // ACCOUNTS
-router.get('/accounts/:account_id/bookings', accountsAPI.showAccountBookings);
-router.get('/persons/:person_id/accounts/:id', accountsAPI.showPersonAccount);
-router.get('/persons/:person_id/accounts', accountsAPI.showPersonAccounts);
-router.post('/persons/:person_id/accounts', accountsAPI.createAccountRequestHandler);
+router.get('/accounts/:account_id/bookings', safeRequestHandler(accountsAPI.showAccountBookings));
+router.get('/persons/:person_id/accounts/:id', safeRequestHandler(accountsAPI.showPersonAccount));
+router.get('/persons/:person_id/accounts', safeRequestHandler(accountsAPI.showPersonAccounts));
+router.post('/persons/:person_id/accounts', safeRequestHandler(accountsAPI.createAccountRequestHandler));
 
 // SEPA_DIRECT_DEBIT_RETURNS
-router.get('/sepa_direct_debit_returns', returnNotificationsAPI.listReturnNotificationsHandler);
+router.get('/sepa_direct_debit_returns', safeRequestHandler(returnNotificationsAPI.listReturnNotificationsHandler));
 
 // IDENTIFICATIONS
-router.get('/persons/:person_id/identifications', identificationsAPI.showPersonIdentifications);
-router.post('/persons/:person_id/identifications', identificationsAPI.requireIdentification);
-router.patch('/persons/:person_id/identifications/:id/request', identificationsAPI.patchIdentification);
+router.get('/persons/:person_id/identifications', safeRequestHandler(identificationsAPI.showPersonIdentifications));
+router.post('/persons/:person_id/identifications', safeRequestHandler(identificationsAPI.requireIdentification));
+router.patch('/persons/:person_id/identifications/:id/request', safeRequestHandler(identificationsAPI.patchIdentification));
 
 // TAX INFORMATION
-router.get('/persons/:person_id/tax_identifications', taxIdentificationsAPI.listTaxIdentifications);
-router.post('/persons/:person_id/tax_identifications', taxIdentificationsAPI.submitTaxIdentification);
-router.get('/persons/:person_id/tax_identifications/:id', taxIdentificationsAPI.showTaxIdentification);
+router.get('/persons/:person_id/tax_identifications', safeRequestHandler(taxIdentificationsAPI.listTaxIdentifications));
+router.post('/persons/:person_id/tax_identifications', safeRequestHandler(taxIdentificationsAPI.submitTaxIdentification));
+router.get('/persons/:person_id/tax_identifications/:id', safeRequestHandler(taxIdentificationsAPI.showTaxIdentification));
 
 // TRANSACTIONS
-router.post('/persons/:person_id/accounts/:account_id/transactions/sepa_credit_transfer', transactionsAPI.createSepaCreditTransfer);
-router.post('/persons/:person_id/accounts/:account_id/transactions/sepa_credit_transfer/:transfer_id/authorize', transactionsAPI.authorizeTransaction);
-router.post('/persons/:person_id/accounts/:account_id/transactions/sepa_credit_transfer/:transfer_id/confirm', transactionsAPI.confirmTransaction);
+router.post('/persons/:person_id/accounts/:account_id/transactions/sepa_credit_transfer', safeRequestHandler(transactionsAPI.createSepaCreditTransfer));
+router.post('/persons/:person_id/accounts/:account_id/transactions/sepa_credit_transfer/:transfer_id/authorize', safeRequestHandler(transactionsAPI.authorizeTransaction));
+router.post('/persons/:person_id/accounts/:account_id/transactions/sepa_credit_transfer/:transfer_id/confirm', safeRequestHandler(transactionsAPI.confirmTransaction));
 
-router.post('/accounts/:account_id/transactions/sepa_direct_debit', transactionsAPI.createSepaDirectDebit);
+router.post('/accounts/:account_id/transactions/sepa_direct_debit', safeRequestHandler(transactionsAPI.createSepaDirectDebit));
 
 // STANDING ORDERS
-router.post('/persons/:person_id/accounts/:account_id/standing_orders', standingOrdersAPI.createStandingOrderRequestHandler);
-router.patch('/persons/:person_id/accounts/:account_id/standing_orders/:id/cancel', standingOrdersAPI.cancelStandingOrderRequestHandler);
+router.post('/persons/:person_id/accounts/:account_id/standing_orders', safeRequestHandler(standingOrdersAPI.createStandingOrderRequestHandler));
+router.patch('/persons/:person_id/accounts/:account_id/standing_orders/:id/cancel', safeRequestHandler(standingOrdersAPI.cancelStandingOrderRequestHandler));
 
 // ACCOUNT STATEMENTS
-router.post('/accounts/:account_id/statement_of_accounts', accountStatementsAPI.createAccountStatement);
-router.get('/accounts/:account_id/statement_of_accounts/:statement_of_account_id/bookings', accountStatementsAPI.showAccountStatementBookings);
+router.post('/accounts/:account_id/statement_of_accounts', safeRequestHandler(accountStatementsAPI.createAccountStatement));
+router.get('/accounts/:account_id/statement_of_accounts/:statement_of_account_id/bookings', safeRequestHandler(accountStatementsAPI.showAccountStatementBookings));
 
 // BANK STATEMENTS
-router.post('/accounts/:account_id/bank_statements', bankStatementsAPI.createBankStatement);
-router.get('/accounts/:account_id/bank_statements/:bank_statement_id/bookings', bankStatementsAPI.showBankStatementBookings);
+router.post('/accounts/:account_id/bank_statements', safeRequestHandler(bankStatementsAPI.createBankStatement));
+router.get('/accounts/:account_id/bank_statements/:bank_statement_id/bookings', safeRequestHandler(bankStatementsAPI.showBankStatementBookings));
 
 // MOBILE NUMBER
-router.get('/persons/:person_id/mobile_number', mobileNumberAPI.showMobileNumber);
-router.post('/persons/:person_id/mobile_number', mobileNumberAPI.createMobileNumber);
-router.post('/persons/:person_id/mobile_number/authorize', mobileNumberAPI.authorizeMobileNumber);
-router.post('/persons/:person_id/mobile_number/confirm', mobileNumberAPI.confirmMobileNumber);
-router.delete('/persons/:person_id/mobile_number', mobileNumberAPI.removeMobileNumber);
+router.get('/persons/:person_id/mobile_number', safeRequestHandler(mobileNumberAPI.showMobileNumber));
+router.post('/persons/:person_id/mobile_number', safeRequestHandler(mobileNumberAPI.createMobileNumber));
+router.post('/persons/:person_id/mobile_number/authorize', safeRequestHandler(mobileNumberAPI.authorizeMobileNumber));
+router.post('/persons/:person_id/mobile_number/confirm', safeRequestHandler(mobileNumberAPI.confirmMobileNumber));
+router.delete('/persons/:person_id/mobile_number', safeRequestHandler(mobileNumberAPI.removeMobileNumber));
 
 // CHANGE REQUEST
-router.post('/change_requests/:change_request_id/authorize', changeRequestAPI.authorizeChangeRequest);
-router.post('/change_requests/:change_request_id/confirm', changeRequestAPI.confirmChangeRequest);
+router.post('/change_requests/:change_request_id/authorize', safeRequestHandler(changeRequestAPI.authorizeChangeRequest));
+router.post('/change_requests/:change_request_id/confirm', safeRequestHandler(changeRequestAPI.confirmChangeRequest));
 
 // BACKOFFICE
-app.get('/__BACKOFFICE__', backofficeAPI.listPersons);
-app.post('/__BACKOFFICE__/setIdentificationState/:email', backofficeAPI.setIdentificationState);
+app.get('/__BACKOFFICE__', safeRequestHandler(backofficeAPI.listPersons));
+app.post('/__BACKOFFICE__/setIdentificationState/:email', safeRequestHandler(backofficeAPI.setIdentificationState));
 
-app.get('/__BACKOFFICE__/person/:email', backofficeAPI.getPersonHandler);
-app.post('/__BACKOFFICE__/person/:email', backofficeAPI.updatePersonHandler);
+app.get('/__BACKOFFICE__/person/:email', safeRequestHandler(backofficeAPI.getPersonHandler));
+app.post('/__BACKOFFICE__/person/:email', safeRequestHandler(backofficeAPI.updatePersonHandler));
 
-app.post('/__BACKOFFICE__/queueBooking/:accountIdOrEmail', backofficeAPI.queueBookingRequestHandler);
-app.post('/__BACKOFFICE__/processQueuedBooking/:personIdOrEmail', backofficeAPI.processQueuedBookingHandler);
-app.post('/__BACKOFFICE__/processQueuedBooking/:personIdOrEmail/:id', backofficeAPI.processQueuedBookingHandler);
-app.post('/__BACKOFFICE__/updateAccountLockingStatus/:personId', backofficeAPI.updateAccountLockingStatusHandler);
+app.post('/__BACKOFFICE__/queueBooking/:accountIdOrEmail', safeRequestHandler(backofficeAPI.queueBookingRequestHandler));
+app.post('/__BACKOFFICE__/processQueuedBooking/:personIdOrEmail', safeRequestHandler(backofficeAPI.processQueuedBookingHandler));
+app.post('/__BACKOFFICE__/processQueuedBooking/:personIdOrEmail/:id', safeRequestHandler(backofficeAPI.processQueuedBookingHandler));
+app.post('/__BACKOFFICE__/updateAccountLockingStatus/:personId', safeRequestHandler(backofficeAPI.updateAccountLockingStatusHandler));
 
 // BACKOFFICE - STANDING ORDERS
-app.post('/__BACKOFFICE__/triggerStandingOrder/:personIdOrEmail/:id', standingOrdersAPI.triggerStandingOrderRequestHandler);
+app.post('/__BACKOFFICE__/triggerStandingOrder/:personIdOrEmail/:id', safeRequestHandler(standingOrdersAPI.triggerStandingOrderRequestHandler));
 
 // WEBHOOKS
-router.get('/webhooks', checkRequestHostHeader, webhooksAPI.indexWebhooks);
-router.post('/webhooks', checkRequestHostHeader, webhooksAPI.createWebhook);
+router.get('/webhooks', checkRequestHostHeader, safeRequestHandler(webhooksAPI.indexWebhooks));
+router.post('/webhooks', checkRequestHostHeader, safeRequestHandler(webhooksAPI.createWebhook));
 
 // HEALTH CHECK
 app.get('/health', (req, res) => {
