@@ -137,16 +137,10 @@ const filterAndSortIdentifications = (identifications, method) => {
 export const findIdentificationByEmail = (email, method) => {
   return getAllIdentifications()
     .then((identifications) => {
-      const sorted = filterAndSortIdentifications(identifications, method);
-
-      log.info('Sorted identifications', sorted);
-
-      log.info('Selected identification email', email);
-
-      const choosenIdentification = sorted.find((identification) => identification.email === email);
-      log.info('choosenIdentification', choosenIdentification);
-
-      return choosenIdentification;
+      const userIdentifications = identifications.filter((identification) => identification.email === email);
+      const latestIdentification = filterAndSortIdentifications(userIdentifications, method)[0];
+      log.info('latestIdentification', latestIdentification);
+      return latestIdentification;
     });
 };
 
