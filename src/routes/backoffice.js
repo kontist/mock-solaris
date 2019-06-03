@@ -434,6 +434,8 @@ export const findPersonByIdOrEmail = async (personIdOrEmail) => {
   return findPerson();
 };
 
+const E2E_TESTS_ACCEPT_HEADER = 'application/vnd.kontist.e2e.json';
+
 export const queueBookingRequestHandler = async (req, res) => {
   const { accountIdOrEmail } = req.params;
 
@@ -480,7 +482,13 @@ export const queueBookingRequestHandler = async (req, res) => {
     log.error('queueBookingRequestHandler() Saving person failed', err);
   }
 
-  res.redirect('back');
+  const returnJSON = [E2E_TESTS_ACCEPT_HEADER].includes(req.headers.accept);
+
+  if (returnJSON) {
+    res.status(201).send(queuedBooking);
+  } else {
+    res.redirect('back');
+  }
 };
 
 export const updateAccountLockingStatus = async (personId, lockingStatus) => {
