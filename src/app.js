@@ -23,6 +23,7 @@ import { migrate } from './db';
 
 import { oauthTokenAuthenticationMiddleware } from './helpers/oauth';
 import { safeRequestHandler } from './helpers/safeRequestHandler';
+import { shouldReturnJSON } from './helpers';
 const app = express();
 
 function logResponseBody (req, res, next) {
@@ -75,8 +76,12 @@ app.post('/oauth/token', oauthAPI.generateToken);
 
 function errorHandler (err, req, res, next) {
   log.error(err);
-  res.status(500);
-  res.render('error', { error: err });
+
+  if (shouldReturnJSON(req)) {
+    res.status(500).send({ err: err.message });
+  } else {
+    res.status(500).render('error', { error: err });
+  }
 }
 
 const { REQUIRE_HOST_HEADER } = process.env;

@@ -22,10 +22,9 @@ import {
   createSepaDirectDebitReturn,
   sendSepaDirectDebitReturnPush
 } from '../helpers/sepaDirectDebitReturn';
+import { shouldReturnJSON } from '../helpers';
 
 import * as log from '../logger';
-
-const E2E_TESTS_ACCEPT_HEADER = 'application/vnd.kontist.e2e.json';
 
 const sendIdentificationWebhookPush = (payload) => {
   return getIdentificationWebhook()
@@ -155,9 +154,8 @@ export const getPersonHandler = async (req, res) => {
   const person = await findPersonByEmail(req.params.email);
   const mobileNumber = await getMobileNumber(person.id);
   const taxIdentifications = await getTaxIdentifications(person.id);
-  const returnJSON = [E2E_TESTS_ACCEPT_HEADER].includes(req.headers.accept);
 
-  if (returnJSON) {
+  if (shouldReturnJSON(req)) {
     res.send(person);
   } else {
     res.render(
@@ -487,9 +485,7 @@ export const queueBookingRequestHandler = async (req, res) => {
     log.error('queueBookingRequestHandler() Saving person failed', err);
   }
 
-  const returnJSON = [E2E_TESTS_ACCEPT_HEADER].includes(req.headers.accept);
-
-  if (returnJSON) {
+  if (shouldReturnJSON(req)) {
     res.status(201).send(queuedBooking);
   } else {
     res.redirect('back');
