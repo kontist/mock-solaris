@@ -25,6 +25,8 @@ import {
 
 import * as log from '../logger';
 
+const E2E_TESTS_ACCEPT_HEADER = 'application/vnd.kontist.e2e.json';
+
 const sendIdentificationWebhookPush = (payload) => {
   return getIdentificationWebhook()
     .then((webhook) => {
@@ -153,16 +155,21 @@ export const getPersonHandler = async (req, res) => {
   const person = await findPersonByEmail(req.params.email);
   const mobileNumber = await getMobileNumber(person.id);
   const taxIdentifications = await getTaxIdentifications(person.id);
+  const returnJSON = [E2E_TESTS_ACCEPT_HEADER].includes(req.headers.accept);
 
-  res.render(
-    'person',
-    {
-      person,
-      mobileNumber,
-      taxIdentifications,
-      identifications: person.identifications
-    }
-  );
+  if (returnJSON) {
+    res.send(person);
+  } else {
+    res.render(
+      'person',
+      {
+        person,
+        mobileNumber,
+        taxIdentifications,
+        identifications: person.identifications
+      }
+    );
+  }
 };
 
 export const updatePersonHandler = async (req, res) => {
@@ -433,8 +440,6 @@ export const findPersonByIdOrEmail = async (personIdOrEmail) => {
 
   return findPerson();
 };
-
-const E2E_TESTS_ACCEPT_HEADER = 'application/vnd.kontist.e2e.json';
 
 export const queueBookingRequestHandler = async (req, res) => {
   const { accountIdOrEmail } = req.params;
