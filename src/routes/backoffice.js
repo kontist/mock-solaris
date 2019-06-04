@@ -228,7 +228,7 @@ export const setIdentificationState = async (req, res) => {
     }
   }
 
-  sendIdentificationWebhookPush({
+  await sendIdentificationWebhookPush({
     person_id: identification.person_id,
     status
   });
