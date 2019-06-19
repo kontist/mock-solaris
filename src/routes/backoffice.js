@@ -404,11 +404,10 @@ export const generateBookingForPerson = (bookingData) => {
   const senderBIC = process.env.SOLARIS_BIC;
   const valutaDate = moment().format('YYYY-MM-DD');
   const bookingDate = moment().format('YYYY-MM-DD');
-  const amountValue = Math.max(0, Math.min(10000000, amount));
 
   return {
     id: uuid.v4(),
-    amount: { value: amountValue },
+    amount: { value: parseInt(amount, 10) },
     valuta_date: valutaDate,
     description: purpose,
     booking_date: bookingDate,
@@ -479,11 +478,7 @@ export const queueBookingRequestHandler = async (req, res) => {
 
   person.queuedBookings.push(queuedBooking);
 
-  try {
-    await savePerson(person);
-  } catch (err) {
-    log.error('queueBookingRequestHandler() Saving person failed', err);
-  }
+  await savePerson(person);
 
   if (shouldReturnJSON(req)) {
     res.status(201).send(queuedBooking);

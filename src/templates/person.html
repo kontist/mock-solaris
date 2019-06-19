@@ -110,12 +110,12 @@
         <form method="POST" action="/__BACKOFFICE__/queueBooking/{{ person.email }}">
           <div class="form-group">
             <label>Amount (in cents)</label>
-            <input class="form-control" type="number" name="amount" placeholder="amount (in cents)" min="0" max="10000000" />
+            <input class="form-control" type="number" name="amount" placeholder="amount (in cents)" required min="-10000000" max="10000000" />
           </div>
           <div class="form-group">
             <label>Sender</label>
             <input class="form-control" type="text" name="senderName" placeholder="sender name" />
-            <input class="form-control" type="text" name="iban" placeholder="iban" value="" />
+            <input class="form-control" type="text" name="iban" placeholder="IBAN" value="" />
           </div>
           <div class="form-group">
             <label>Purpose</label>
