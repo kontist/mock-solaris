@@ -122,6 +122,7 @@ router.patch('/persons/:person_id/identifications/:id/request', safeRequestHandl
 router.get('/persons/:person_id/tax_identifications', safeRequestHandler(taxIdentificationsAPI.listTaxIdentifications));
 router.post('/persons/:person_id/tax_identifications', safeRequestHandler(taxIdentificationsAPI.submitTaxIdentification));
 router.get('/persons/:person_id/tax_identifications/:id', safeRequestHandler(taxIdentificationsAPI.showTaxIdentification));
+router.patch('/persons/:person_id/tax_identifications/:id', safeRequestHandler(taxIdentificationsAPI.updateTaxIdentification));
 
 // TRANSACTIONS
 router.post('/persons/:person_id/accounts/:account_id/transactions/sepa_credit_transfer', safeRequestHandler(transactionsAPI.createSepaCreditTransfer));

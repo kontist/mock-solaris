@@ -9,6 +9,7 @@ import {
   STANDING_ORDER_CANCEL_METHOD
 } from './standingOrders';
 import { PERSON_UPDATE } from './persons';
+import { TIN_UPDATE, processChangeRequest } from './taxIdentifications';
 
 export const createChangeRequest = async (req, res, person, method, delta) => {
   const personId = person.id;
@@ -117,6 +118,9 @@ export const confirmChangeRequest = async (req, res) => {
     case PERSON_UPDATE:
       _.merge(person, person.changeRequest.delta);
       response.response_body = person;
+      break;
+    case TIN_UPDATE:
+      response.response_body = await processChangeRequest(person);
       break;
     default:
       status = 400;
