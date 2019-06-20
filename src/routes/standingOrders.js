@@ -1,38 +1,30 @@
-import crypto from 'crypto';
-import assert from 'assert';
-import {
-  savePerson
-} from '../db';
-import moment from 'moment';
-import uuid from 'uuid';
+import crypto from "crypto";
+import assert from "assert";
+import { savePerson } from "../db";
+import moment from "moment";
+import uuid from "uuid";
 
-import {
-  findPersonByIdOrEmail,
-  processQueuedBooking
-} from './backoffice';
+import { findPersonByIdOrEmail, processQueuedBooking } from "./backoffice";
 
-import * as log from '../logger';
+import * as log from "../logger";
 
 const STANDING_ORDER_PAYMENT_FREQUENCY = {
-  MONTHLY: 'MONTHLY',
-  QUARTERLY: 'QUARTERLY',
-  EVERYSIXMONTHS: 'EVERY_SIX_MONTHS',
-  YEARLY: 'ANNUALLY'
+  MONTHLY: "MONTHLY",
+  QUARTERLY: "QUARTERLY",
+  EVERYSIXMONTHS: "EVERY_SIX_MONTHS",
+  YEARLY: "ANNUALLY"
 };
 
-export const STANDING_ORDER_CREATE_METHOD = 'standing_order:create';
-export const STANDING_ORDER_CANCEL_METHOD = 'standing_order:cancel';
+export const STANDING_ORDER_CREATE_METHOD = "standing_order:create";
+export const STANDING_ORDER_CANCEL_METHOD = "standing_order:cancel";
 
 export const createStandingOrderRequestHandler = async (req, res) => {
   const { person_id: personId } = req.params;
 
-  log.info(
-    'createStandingOrderRequestHandler()',
-    {
-      reqBody: req.body,
-      reqParams: req.params
-    }
-  );
+  log.info("createStandingOrderRequestHandler()", {
+    reqBody: req.body,
+    reqParams: req.params
+  });
 
   const {
     recipient_name: recipient,
@@ -58,15 +50,18 @@ export const createStandingOrderRequestHandler = async (req, res) => {
 
     return res.status(202).send({
       id,
-      status: 'AUTHORIZATION_REQUIRED',
+      status: "AUTHORIZATION_REQUIRED",
       updated_at: createdAt,
-      url: ':env/v1/change_requests/:id/authorize'
+      url: ":env/v1/change_requests/:id/authorize"
     });
   } catch (err) {
-    log.error('createStandingOrderRequestHandler() Creating Standing Order failed', err);
+    log.error(
+      "createStandingOrderRequestHandler() Creating Standing Order failed",
+      err
+    );
     res.status(500).send({
       reason: err.message,
-      status: 'Creating Standing Order failed!'
+      status: "Creating Standing Order failed!"
     });
   }
 };
@@ -76,7 +71,7 @@ export const createStandingOrderRequestHandler = async (req, res) => {
  * Returns the standing order.
  * @param {Object} standingOrderData
  */
-export const createStandingOrder = async (standingOrderData) => {
+export const createStandingOrder = async standingOrderData => {
   const {
     personId,
     recipient,
@@ -89,8 +84,8 @@ export const createStandingOrder = async (standingOrderData) => {
   } = standingOrderData;
 
   if (!recipient || !iban || !amount || !firstExecutionDate || !reoccurrence) {
-    log.error('createStandingOrder - field/s missing');
-    throw new Error('createStandingOrder - field/s missing');
+    log.error("createStandingOrder - field/s missing");
+    throw new Error("createStandingOrder - field/s missing");
   }
 
   const standingOrder = generateStandingOrderForPerson({
@@ -108,18 +103,21 @@ export const createStandingOrder = async (standingOrderData) => {
 
   person.changeRequest = {
     method: STANDING_ORDER_CREATE_METHOD,
-    id: crypto.randomBytes(16).toString('hex'),
-    createdAt: (new Date()).toISOString()
+    id: crypto.randomBytes(16).toString("hex"),
+    createdAt: new Date().toISOString()
   };
 
-  person.unconfirmedStandingOrders = (person.unconfirmedStandingOrders || []);
-  person.unconfirmedStandingOrders.push({ standingOrder, changeRequestId: person.changeRequest.id });
+  person.unconfirmedStandingOrders = person.unconfirmedStandingOrders || [];
+  person.unconfirmedStandingOrders.push({
+    standingOrder,
+    changeRequestId: person.changeRequest.id
+  });
 
   await savePerson(person);
   return person.changeRequest;
 };
 
-export const generateStandingOrderForPerson = (standingOrderData) => {
+export const generateStandingOrderForPerson = standingOrderData => {
   const {
     personId,
     description,
@@ -140,12 +138,12 @@ export const generateStandingOrderForPerson = (standingOrderData) => {
     recipient_iban: iban,
     amount: {
       value: amountValue,
-      unit: 'cents',
-      currency: 'EUR'
+      unit: "cents",
+      currency: "EUR"
     },
     description,
     end_to_end_id: endToEndId,
-    first_execution_date: moment(firstExecutionDate).format('YYYY-MM-DD'),
+    first_execution_date: moment(firstExecutionDate).format("YYYY-MM-DD"),
     month_end_execution: false,
     reoccurrence
   };
@@ -159,7 +157,7 @@ export const triggerStandingOrderRequestHandler = async (req, res) => {
 
   await processQueuedBooking(personIdOrEmail, id, true);
 
-  res.redirect('back');
+  res.redirect("back");
 };
 
 const getNextOccurrenceDate = (firstExecutionDate, reoccurrence) => {
@@ -168,27 +166,33 @@ const getNextOccurrenceDate = (firstExecutionDate, reoccurrence) => {
   }
   switch (reoccurrence) {
     case STANDING_ORDER_PAYMENT_FREQUENCY.MONTHLY:
-      return moment(firstExecutionDate).add(1, 'months');
+      return moment(firstExecutionDate).add(1, "months");
     case STANDING_ORDER_PAYMENT_FREQUENCY.QUARTERLY:
-      return moment(firstExecutionDate).add(3, 'months');
+      return moment(firstExecutionDate).add(3, "months");
     case STANDING_ORDER_PAYMENT_FREQUENCY.EVERYSIXMONTHS:
-      return moment(firstExecutionDate).add(6, 'months');
+      return moment(firstExecutionDate).add(6, "months");
     case STANDING_ORDER_PAYMENT_FREQUENCY.YEARLY:
-      return moment(firstExecutionDate).add(1, 'years');
+      return moment(firstExecutionDate).add(1, "years");
     default:
       return firstExecutionDate;
   }
 };
 
 export const confirmStandingOrderCreation = async (person, changeRequestId) => {
-  person.standingOrders = (person.standingOrders || []);
+  person.standingOrders = person.standingOrders || [];
 
-  const { standingOrder, index } = findUnconfirmedStandingOrder(person, changeRequestId);
+  const { standingOrder, index } = findUnconfirmedStandingOrder(
+    person,
+    changeRequestId
+  );
 
   person.unconfirmedStandingOrders.splice(index, 1);
 
-  standingOrder.status = 'ACTIVE';
-  standingOrder.next_occurrence = getNextOccurrenceDate(standingOrder.first_execution_date, standingOrder.reoccurrence);
+  standingOrder.status = "ACTIVE";
+  standingOrder.next_occurrence = getNextOccurrenceDate(
+    standingOrder.first_execution_date,
+    standingOrder.reoccurrence
+  );
 
   person.standingOrders.push(standingOrder);
 
@@ -199,29 +203,31 @@ export const confirmStandingOrderCreation = async (person, changeRequestId) => {
 
 const findUnconfirmedStandingOrder = (person, chgRequestId) => {
   let result = null;
-  person.unconfirmedStandingOrders.forEach(({ standingOrder, changeRequestId }, index) => {
-    if (chgRequestId === changeRequestId) {
-      result = { standingOrder, index };
-      return;
+  person.unconfirmedStandingOrders.forEach(
+    ({ standingOrder, changeRequestId }, index) => {
+      if (chgRequestId === changeRequestId) {
+        result = { standingOrder, index };
+        return;
+      }
     }
-  });
-  assert(result !== null, `Could not find a standing order for the given change request id: '${chgRequestId}'`);
+  );
+  assert(
+    result !== null,
+    `Could not find a standing order for the given change request id: '${chgRequestId}'`
+  );
   return result;
 };
 
 export const cancelStandingOrderRequestHandler = async (req, res) => {
   const { person_id: personId, id: standingOrderId } = req.params;
 
-  log.info(
-    'cancelStandingOrderRequestHandler()',
-    { reqParams: req.params }
-  );
+  log.info("cancelStandingOrderRequestHandler()", { reqParams: req.params });
 
   const changeRequestId = await cancelStandingOrder(personId, standingOrderId);
 
   return res.status(202).send({
     id: changeRequestId,
-    status: 'AUTHORIZATION_REQUIRED',
+    status: "AUTHORIZATION_REQUIRED",
     updated_at: new Date().toISOString(),
     url: `:env/v1/change_requests/${changeRequestId}/authorize`
   });
@@ -240,10 +246,12 @@ export const cancelStandingOrder = async (personId, standingOrderId) => {
   return changeRequestId;
 };
 
-export const confirmStandingOrderCancelation = async (person) => {
+export const confirmStandingOrderCancelation = async person => {
   const standingOrderId = person.changeRequest.standingOrderId;
-  const [standingOrder] = person.standingOrders.filter(item => item.id === standingOrderId);
-  standingOrder.status = 'CANCELED';
+  const [standingOrder] = person.standingOrders.filter(
+    item => item.id === standingOrderId
+  );
+  standingOrder.status = "CANCELED";
   await savePerson(person);
   return standingOrder;
 };

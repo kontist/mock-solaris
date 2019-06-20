@@ -1,15 +1,18 @@
-import _ from 'lodash';
+import _ from "lodash";
 
-import { getPerson, savePerson, getMobileNumber } from '../db';
-import { removeMobileNumberConfirmChangeRequest, MOBILE_NUMBER_CHANGE_METHOD } from './mobileNumber';
+import { getPerson, savePerson, getMobileNumber } from "../db";
+import {
+  removeMobileNumberConfirmChangeRequest,
+  MOBILE_NUMBER_CHANGE_METHOD
+} from "./mobileNumber";
 import {
   confirmStandingOrderCreation,
   confirmStandingOrderCancelation,
   STANDING_ORDER_CREATE_METHOD,
   STANDING_ORDER_CANCEL_METHOD
-} from './standingOrders';
-import { PERSON_UPDATE } from './persons';
-import { TIN_UPDATE, processChangeRequest } from './taxIdentifications';
+} from "./standingOrders";
+import { PERSON_UPDATE } from "./persons";
+import { TIN_UPDATE, processChangeRequest } from "./taxIdentifications";
 
 export const createChangeRequest = async (req, res, person, method, delta) => {
   const personId = person.id;
@@ -19,9 +22,12 @@ export const createChangeRequest = async (req, res, person, method, delta) => {
     return res.status(403).send({
       id: Date.now().toString(),
       status: 403,
-      code: 'Unauthorized Change Request',
-      title: 'Unauthorized Change Request',
-      detail: 'Unauthorized change request for Solaris::Person ' + personId + '. While authorization required, no entity with a possibility to authorize data change is present.'
+      code: "Unauthorized Change Request",
+      title: "Unauthorized Change Request",
+      detail:
+        "Unauthorized change request for Solaris::Person " +
+        personId +
+        ". While authorization required, no entity with a possibility to authorize data change is present."
     });
   }
 
@@ -35,7 +41,7 @@ export const createChangeRequest = async (req, res, person, method, delta) => {
 
   return res.status(202).send({
     id: changeRequestId,
-    status: 'AUTHORIZATION_REQUIRED',
+    status: "AUTHORIZATION_REQUIRED",
     updated_at: new Date().toISOString(),
     url: `:env/v1/change_requests/${changeRequestId}/authorize`
   });
@@ -47,38 +53,45 @@ export const authorizeChangeRequest = async (req, res) => {
   const person = await getPerson(personId);
   const changeRequestMethod = person.changeRequest.method;
 
-  if (personId && (deliveryMethod === 'mobile_number' || deliveryMethod === 'static')) {
+  if (
+    personId &&
+    (deliveryMethod === "mobile_number" || deliveryMethod === "static")
+  ) {
     if (changeRequestMethod === MOBILE_NUMBER_CHANGE_METHOD) {
       const existingMobileNumber = await getMobileNumber(personId);
       if (!existingMobileNumber) {
         return res.status(404).send({
-          errors: [{
-            id: Date.now().toString(),
-            status: 404,
-            code: 'model_not_found',
-            title: 'Model Not Found',
-            detail: `Couldn't find 'Solaris::MobileNumber' for id '${personId}'.`
-          }]
+          errors: [
+            {
+              id: Date.now().toString(),
+              status: 404,
+              code: "model_not_found",
+              title: "Model Not Found",
+              detail: `Couldn't find 'Solaris::MobileNumber' for id '${personId}'.`
+            }
+          ]
         });
       }
     }
 
-    await assignAuthorizationToken(person, deliveryMethod === 'static');
+    await assignAuthorizationToken(person, deliveryMethod === "static");
     return res.status(201).send({
       id: changeRequestId,
-      status: 'CONFIRMATION_REQUIRED',
+      status: "CONFIRMATION_REQUIRED",
       updated_at: new Date().toISOString()
     });
   }
 
   return res.status(404).send({
-    errors: [{
-      id: Date.now().toString(),
-      status: 401,
-      code: 'invalid_token',
-      title: 'Invalid Token',
-      detail: 'Token is invalid'
-    }]
+    errors: [
+      {
+        id: Date.now().toString(),
+        status: 401,
+        code: "invalid_token",
+        title: "Invalid Token",
+        detail: "Token is invalid"
+      }
+    ]
   });
 };
 
@@ -92,25 +105,32 @@ export const confirmChangeRequest = async (req, res) => {
   if (tan !== person.changeRequest.token) {
     // TODO: An invalid TAN also invalidates the action it is meant to authorize
     return res.status(403).send({
-      errors: [{
-        id: Date.now().toString(),
-        status: 403,
-        code: 'invalid_tan',
-        title: 'Invalid TAN',
-        detail: `Invalid or expired TAN for Solaris`
-      }]
+      errors: [
+        {
+          id: Date.now().toString(),
+          status: 403,
+          code: "invalid_tan",
+          title: "Invalid TAN",
+          detail: `Invalid or expired TAN for Solaris`
+        }
+      ]
     });
   }
 
   let status = 201;
-  let response = { status: 'COMPLETED', response_code: status };
+  let response = { status: "COMPLETED", response_code: status };
 
   switch (person.changeRequest.method) {
     case MOBILE_NUMBER_CHANGE_METHOD:
-      response.response_body = await removeMobileNumberConfirmChangeRequest(person);
+      response.response_body = await removeMobileNumberConfirmChangeRequest(
+        person
+      );
       break;
     case STANDING_ORDER_CREATE_METHOD:
-      response.response_body = await confirmStandingOrderCreation(person, changeRequestId);
+      response.response_body = await confirmStandingOrderCreation(
+        person,
+        changeRequestId
+      );
       break;
     case STANDING_ORDER_CANCEL_METHOD:
       response.response_body = await confirmStandingOrderCancelation(person);
@@ -124,7 +144,7 @@ export const confirmChangeRequest = async (req, res) => {
       break;
     default:
       status = 400;
-      response = { message: 'Unknown method!' };
+      response = { message: "Unknown method!" };
       break;
   }
 
@@ -135,6 +155,10 @@ export const confirmChangeRequest = async (req, res) => {
 };
 
 const assignAuthorizationToken = async (person, isStatic = false) => {
-  person.changeRequest.token = isStatic ? '212212' : Date.now().toString().substr(-6);
+  person.changeRequest.token = isStatic
+    ? "212212"
+    : Date.now()
+        .toString()
+        .substr(-6);
   await savePerson(person);
 };

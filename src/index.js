@@ -1,8 +1,8 @@
-var app = require('./app');
-var db = require('./db');
-var account = require('./routes/accounts');
-var backOffice = require('./routes/backoffice');
-var standingOrders = require('./routes/standingOrders');
+var app = require("./app");
+var db = require("./db");
+var account = require("./routes/accounts");
+var backOffice = require("./routes/backoffice");
+var standingOrders = require("./routes/standingOrders");
 
 module.exports = {
   serve: app.serve,
@@ -24,5 +24,6 @@ module.exports = {
   createStandingOrder: standingOrders.createStandingOrder,
   confirmStandingOrderCreation: standingOrders.confirmStandingOrderCreation,
   cancelStandingOrder: standingOrders.cancelStandingOrder,
-  confirmStandingOrderCancelation: standingOrders.confirmStandingOrderCancelation
+  confirmStandingOrderCancelation:
+    standingOrders.confirmStandingOrderCancelation
 };

@@ -1,15 +1,12 @@
-import uuid from 'uuid';
+import uuid from "uuid";
 
-import {
-  getWebhooks,
-  saveWebhook
-} from '../db';
+import { getWebhooks, saveWebhook } from "../db";
 
-import * as log from '../logger';
+import * as log from "../logger";
 
 export const indexWebhooks = async (req, res) => {
   const webhooks = await getWebhooks();
-  log.info('indexWebhooks', JSON.stringify(webhooks));
+  log.info("indexWebhooks", JSON.stringify(webhooks));
   res.send(webhooks);
 };
 
@@ -19,11 +16,11 @@ export const createWebhook = async (req, res) => {
     ...req.body
   };
 
-  log.info('createWebhook', JSON.stringify(newWebhook));
+  log.info("createWebhook", JSON.stringify(newWebhook));
 
   const webhooks = await getWebhooks();
 
-  const hasWebhookAlready = webhooks.find((webhook) => {
+  const hasWebhookAlready = webhooks.find(webhook => {
     return (
       webhook.url === newWebhook.url &&
       webhook.event_type === newWebhook.event_type
@@ -31,7 +28,7 @@ export const createWebhook = async (req, res) => {
   });
 
   if (hasWebhookAlready) {
-    return res.status(400).send('Webhook already exists');
+    return res.status(400).send("Webhook already exists");
   }
 
   saveWebhook(newWebhook);

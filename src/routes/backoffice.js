@@ -1,7 +1,7 @@
-import _ from 'lodash';
-import fetch from 'node-fetch';
-import moment from 'moment';
-import uuid from 'uuid';
+import _ from "lodash";
+import fetch from "node-fetch";
+import moment from "moment";
+import uuid from "uuid";
 import {
   getPerson,
   savePerson,
@@ -17,58 +17,51 @@ import {
   deleteMobileNumber,
   saveSepaDirectDebitReturn,
   getWebhookByType
-} from '../db';
+} from "../db";
 import {
   createSepaDirectDebitReturn,
   sendSepaDirectDebitReturnPush
-} from '../helpers/sepaDirectDebitReturn';
-import { shouldReturnJSON } from '../helpers';
+} from "../helpers/sepaDirectDebitReturn";
+import { shouldReturnJSON } from "../helpers";
 
-import * as log from '../logger';
+import * as log from "../logger";
 
-const sendIdentificationWebhookPush = (payload) => {
+const sendIdentificationWebhookPush = payload => {
   return getIdentificationWebhook()
-    .then((webhook) => {
+    .then(webhook => {
       if (!webhook) {
-        log.error('(sendIdentificationWebhookPush) Webhook doesnt exist');
+        log.error("(sendIdentificationWebhookPush) Webhook doesnt exist");
         return Promise.resolve();
       }
 
-      return fetch(
-        webhook.url,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        }
-      )
+      return fetch(webhook.url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      })
         .then(() => {
-          log.info('Webhook identification push sent', payload);
+          log.info("Webhook identification push sent", payload);
         })
-        .catch((err) => {
-          log.error('Webhook identification push NOT sent', payload, err);
+        .catch(err => {
+          log.error("Webhook identification push NOT sent", payload, err);
           throw err;
         });
     })
-    .catch((err) => {
-      log.error('Webhook identification push failed', err);
+    .catch(err => {
+      log.error("Webhook identification push failed", err);
       throw err;
     });
 };
 
-const sendLockingStatusChangeWebhook = async (person) => {
-  const webhook = await getWebhookByType('ACCOUNT_BLOCK');
+const sendLockingStatusChangeWebhook = async person => {
+  const webhook = await getWebhookByType("ACCOUNT_BLOCK");
 
   if (!webhook) {
-    log.error('(sendLockingStatusChangeWebhook) Webhook does not exist');
+    log.error("(sendLockingStatusChangeWebhook) Webhook does not exist");
     return;
   }
 
-  const {
-    iban,
-    id: accountId,
-    locking_status: lockingStatus
-  } = person.account;
+  const { iban, id: accountId, locking_status: lockingStatus } = person.account;
 
   const payload = {
     account_id: accountId,
@@ -79,75 +72,75 @@ const sendLockingStatusChangeWebhook = async (person) => {
     iban
   };
 
-  await fetch(
-    webhook.url,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    }
-  );
+  await fetch(webhook.url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
 };
 
-const sendBookingsWebhookPush = (solarisAccountId) => {
+const sendBookingsWebhookPush = solarisAccountId => {
   return getBookingWebhook()
-    .then((webhook) => {
+    .then(webhook => {
       if (!webhook) {
-        log.error('(sendBookingsWebhookPush) Webhook doesnt exist');
+        log.error("(sendBookingsWebhookPush) Webhook doesnt exist");
         return Promise.resolve();
       }
 
       const payload = { account_id: solarisAccountId };
 
-      return fetch(
-        webhook.url,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        }
-      )
+      return fetch(webhook.url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      })
         .then(() => {
-          log.info('Webhook bookings push sent', payload);
+          log.info("Webhook bookings push sent", payload);
         })
-        .catch((err) => {
-          log.error('Webhook bookings push failed', payload, err);
+        .catch(err => {
+          log.error("Webhook bookings push failed", payload, err);
           throw err;
         });
     })
-    .catch((err) => {
-      log.error('Webhook bookings push failed', err);
+    .catch(err => {
+      log.error("Webhook bookings push failed", err);
       throw err;
     });
 };
 
 const filterAndSortIdentifications = (identifications, method) => {
   const idents = identifications
-    .filter((identification) => identification.identificationLinkCreatedAt)
-    .sort((id1, id2) => (
-      (new Date(id2.identificationLinkCreatedAt)).getTime() - (new Date(id1.identificationLinkCreatedAt)).getTime()
-    ));
+    .filter(identification => identification.identificationLinkCreatedAt)
+    .sort(
+      (id1, id2) =>
+        new Date(id2.identificationLinkCreatedAt).getTime() -
+        new Date(id1.identificationLinkCreatedAt).getTime()
+    );
 
   if (method) {
-    return idents.filter((identification) => identification.method === method);
+    return idents.filter(identification => identification.method === method);
   }
 
   return idents;
 };
 
 export const findIdentificationByEmail = (email, method) => {
-  return getAllIdentifications()
-    .then((identifications) => {
-      const userIdentifications = identifications.filter((identification) => identification.email === email);
-      const latestIdentification = filterAndSortIdentifications(userIdentifications, method)[0];
-      log.info('latestIdentification', latestIdentification);
-      return latestIdentification;
-    });
+  return getAllIdentifications().then(identifications => {
+    const userIdentifications = identifications.filter(
+      identification => identification.email === email
+    );
+    const latestIdentification = filterAndSortIdentifications(
+      userIdentifications,
+      method
+    )[0];
+    log.info("latestIdentification", latestIdentification);
+    return latestIdentification;
+  });
 };
 
 export const listPersons = async (req, res) => {
   const persons = await getAllPersons();
-  res.render('persons', { persons });
+  res.render("persons", { persons });
 };
 
 export const getPersonHandler = async (req, res) => {
@@ -158,22 +151,19 @@ export const getPersonHandler = async (req, res) => {
   if (shouldReturnJSON(req)) {
     res.send(person);
   } else {
-    res.render(
-      'person',
-      {
-        person,
-        mobileNumber,
-        taxIdentifications,
-        identifications: person.identifications
-      }
-    );
+    res.render("person", {
+      person,
+      mobileNumber,
+      taxIdentifications,
+      identifications: person.identifications
+    });
   }
 };
 
 export const updatePersonHandler = async (req, res) => {
   const person = await findPersonByEmail(req.params.email);
 
-  Object.keys(req.body).forEach((key) => {
+  Object.keys(req.body).forEach(key => {
     person[key] = req.body[key];
   });
 
@@ -184,11 +174,11 @@ export const updatePersonHandler = async (req, res) => {
   person.address.city = req.body.city;
   person.address.country = req.body.country;
 
-  if (person.fatca_relevant === 'null') {
+  if (person.fatca_relevant === "null") {
     person.fatca_relevant = null;
-  } else if (person.fatca_relevant === 'true') {
+  } else if (person.fatca_relevant === "true") {
     person.fatca_relevant = true;
-  } else if (person.fatca_relevant === 'false') {
+  } else if (person.fatca_relevant === "false") {
     person.fatca_relevant = false;
   }
 
@@ -204,15 +194,18 @@ export const updatePersonHandler = async (req, res) => {
 export const setIdentificationState = async (req, res) => {
   const { status } = req.body;
 
-  log.info('setIdentificationState body', req.body);
-  log.info('setIdentificationState params', req.params);
+  log.info("setIdentificationState body", req.body);
+  log.info("setIdentificationState params", req.params);
 
-  const { method = 'idnow' } = req.query;
+  const { method = "idnow" } = req.query;
 
-  const identification = await findIdentificationByEmail(req.params.email, method);
+  const identification = await findIdentificationByEmail(
+    req.params.email,
+    method
+  );
 
   if (!identification) {
-    return res.status(404).send('Couldnt find identification');
+    return res.status(404).send("Couldnt find identification");
   }
 
   const person = await getPerson(identification.person_id);
@@ -220,7 +213,7 @@ export const setIdentificationState = async (req, res) => {
 
   await savePerson(person);
 
-  if (status === 'successful' && identification.method === 'idnow') {
+  if (status === "successful" && identification.method === "idnow") {
     const mobileNumber = await getMobileNumber(identification.person_id);
     if (mobileNumber) {
       mobileNumber.verified = true;
@@ -237,26 +230,25 @@ export const setIdentificationState = async (req, res) => {
 };
 
 export const displayBackofficeOverview = (req, res) => {
-  getAllPersons()
-    .then((persons) => {
-      res.render('overview', { persons });
-    });
+  getAllPersons().then(persons => {
+    res.render("overview", { persons });
+  });
 };
 
 export const processQueuedBookingHandler = async (req, res) => {
   const { personIdOrEmail, id } = req.params;
 
   await processQueuedBooking(personIdOrEmail, id);
-  res.redirect('back');
+  res.redirect("back");
 };
 
-const generateBookingFromStandingOrder = (standingOrder) => {
+const generateBookingFromStandingOrder = standingOrder => {
   return {
     ...standingOrder,
     id: uuid.v4(),
-    valuta_date: moment().format('YYYY-MM-DD'),
-    booking_date: moment().format('YYYY-MM-DD'),
-    booking_type: 'SEPA_CREDIT_TRANSFER',
+    valuta_date: moment().format("YYYY-MM-DD"),
+    booking_date: moment().format("YYYY-MM-DD"),
+    booking_type: "SEPA_CREDIT_TRANSFER",
     amount: {
       value: -Math.abs(standingOrder.amount.value)
     }
@@ -269,10 +261,14 @@ const generateBookingFromStandingOrder = (standingOrder) => {
  * @param {number} id Booking ID
  * @param {Boolean} isStandingOrder (Optional) True if is of type standing order.
  */
-export const processQueuedBooking = async (personIdOrEmail, id, isStandingOrder = false) => {
+export const processQueuedBooking = async (
+  personIdOrEmail,
+  id,
+  isStandingOrder = false
+) => {
   let findPerson = () => getPerson(personIdOrEmail);
 
-  if (personIdOrEmail.includes('@')) {
+  if (personIdOrEmail.includes("@")) {
     findPerson = () => findPersonByEmail(personIdOrEmail);
   }
 
@@ -288,7 +284,7 @@ export const processQueuedBooking = async (personIdOrEmail, id, isStandingOrder 
 
   let booking;
   if (id) {
-    const findQueuedBooking = (queuedBooking) => queuedBooking.id === id;
+    const findQueuedBooking = queuedBooking => queuedBooking.id === id;
     booking = bookings.find(findQueuedBooking);
     // Standing orders are not removed until cancelled or expired.
     if (!isStandingOrder) {
@@ -304,13 +300,12 @@ export const processQueuedBooking = async (personIdOrEmail, id, isStandingOrder 
 
   const allPersons = await getAllPersons();
   const receiver = allPersons
-    .filter((dbPerson) => dbPerson.account)
-    .find((dbPerson) => dbPerson.account.iban === booking.recipient_iban);
+    .filter(dbPerson => dbPerson.account)
+    .find(dbPerson => dbPerson.account.iban === booking.recipient_iban);
 
-  const isDirectDebit = [
-    'DIRECT_DEBIT',
-    'SEPA_DIRECT_DEBIT'
-  ].includes(booking.booking_type);
+  const isDirectDebit = ["DIRECT_DEBIT", "SEPA_DIRECT_DEBIT"].includes(
+    booking.booking_type
+  );
 
   const wouldOverdraw = person.account.balance.value < booking.amount.value;
 
@@ -327,12 +322,15 @@ export const processQueuedBooking = async (personIdOrEmail, id, isStandingOrder 
         recipient_name: booking.sender_name,
         sender_bic: booking.recipient_bic,
         recipient_bic: booking.sender_bic,
-        id: booking.id.split('-').reverse().join('-'),
-        booking_type: 'SEPA_DIRECT_DEBIT_RETURN',
+        id: booking.id
+          .split("-")
+          .reverse()
+          .join("-"),
+        booking_type: "SEPA_DIRECT_DEBIT_RETURN",
         amount: {
           value: booking.amount.value,
-          unit: 'cents',
-          currency: 'EUR'
+          unit: "cents",
+          currency: "EUR"
         }
       };
     }
@@ -344,23 +342,27 @@ export const processQueuedBooking = async (personIdOrEmail, id, isStandingOrder 
   person.transactions.push(booking);
   if (directDebitReturn) {
     person.transactions.push(directDebitReturn);
-    sepaDirectDebitReturn = createSepaDirectDebitReturn(person, directDebitReturn);
+    sepaDirectDebitReturn = createSepaDirectDebitReturn(
+      person,
+      directDebitReturn
+    );
     await saveSepaDirectDebitReturn(sepaDirectDebitReturn);
 
     if (directDebitReturn.recipient_iban === process.env.WIRECARD_IBAN) {
-      const issueDDRurl = (
-        `${process.env.MOCKWIRECARD_BASE_URL}/__BACKOFFICE__/customer/${person.email}/issue_ddr`
+      const issueDDRurl = `${process.env.MOCKWIRECARD_BASE_URL}/__BACKOFFICE__/customer/${person.email}/issue_ddr`;
+
+      log.info(
+        "processQueuedBooking() Creating Direct Debit Return on Wirecard",
+        {
+          issueDDRurl,
+          amount: directDebitReturn.amount.value
+        }
       );
 
-      log.info('processQueuedBooking() Creating Direct Debit Return on Wirecard', {
-        issueDDRurl,
-        amount: directDebitReturn.amount.value
-      });
-
       await fetch(issueDDRurl, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
+          "Content-Type": "application/x-www-form-urlencoded"
         },
         body: `amount=${directDebitReturn.amount.value}`
       });
@@ -384,7 +386,7 @@ export const processQueuedBooking = async (personIdOrEmail, id, isStandingOrder 
   }
 };
 
-export const generateBookingForPerson = (bookingData) => {
+export const generateBookingForPerson = bookingData => {
   const {
     person,
     purpose,
@@ -402,8 +404,8 @@ export const generateBookingForPerson = (bookingData) => {
 
   const senderIBAN = iban;
   const senderBIC = process.env.SOLARIS_BIC;
-  const valutaDate = moment().format('YYYY-MM-DD');
-  const bookingDate = moment().format('YYYY-MM-DD');
+  const valutaDate = moment().format("YYYY-MM-DD");
+  const bookingDate = moment().format("YYYY-MM-DD");
 
   return {
     id: uuid.v4(),
@@ -417,7 +419,7 @@ export const generateBookingForPerson = (bookingData) => {
     recipient_name: recipientName,
     sender_bic: senderBIC,
     sender_iban: senderIBAN,
-    sender_name: senderName || 'mocksolaris',
+    sender_name: senderName || "mocksolaris",
     end_to_end_id: endToEndId,
     booking_type: bookingType,
     transaction_id: transactionId
@@ -428,10 +430,10 @@ export const generateBookingForPerson = (bookingData) => {
  * Returns a Person object by either person ID or email.
  * @param {String} personIdOrEmail
  */
-export const findPersonByIdOrEmail = async (personIdOrEmail) => {
+export const findPersonByIdOrEmail = async personIdOrEmail => {
   let findPerson = () => getPerson(personIdOrEmail);
 
-  if (personIdOrEmail.includes('@')) {
+  if (personIdOrEmail.includes("@")) {
     findPerson = () => findPersonByEmail(personIdOrEmail);
   }
 
@@ -443,26 +445,34 @@ export const queueBookingRequestHandler = async (req, res) => {
 
   let findPerson = () => findPersonByAccountId(accountIdOrEmail);
 
-  if (accountIdOrEmail.includes('@')) {
+  if (accountIdOrEmail.includes("@")) {
     findPerson = () => findPersonByEmail(accountIdOrEmail);
   }
 
   log.info(
-    'queueBookingRequestHandler()',
-    'req.body', JSON.stringify(req.body),
-    'req.params', JSON.stringify(req.params)
+    "queueBookingRequestHandler()",
+    "req.body",
+    JSON.stringify(req.body),
+    "req.params",
+    JSON.stringify(req.params)
   );
 
   let { amount, purpose, senderName } = req.body;
-  const { endToEndId, hasFutureValutaDate, bookingType, iban, transactionId } = req.body;
+  const {
+    endToEndId,
+    hasFutureValutaDate,
+    bookingType,
+    iban,
+    transactionId
+  } = req.body;
 
-  senderName = senderName || 'mocksolaris';
-  purpose = purpose || '';
+  senderName = senderName || "mocksolaris";
+  purpose = purpose || "";
   amount = amount ? parseInt(amount, 10) : parseInt(Math.random() * 10000, 10);
 
   const person = await findPerson();
 
-  person.queuedBookings = (person.queuedBookings || []);
+  person.queuedBookings = person.queuedBookings || [];
 
   const queuedBooking = generateBookingForPerson({
     person,
@@ -483,7 +493,7 @@ export const queueBookingRequestHandler = async (req, res) => {
   if (shouldReturnJSON(req)) {
     res.status(201).send(queuedBooking);
   } else {
-    res.redirect('back');
+    res.redirect("back");
   }
 };
 
@@ -508,5 +518,5 @@ export const updateAccountLockingStatus = async (personId, lockingStatus) => {
 
 export const updateAccountLockingStatusHandler = async (req, res) => {
   await updateAccountLockingStatus(req.params.personId, req.body.lockingStatus);
-  res.redirect('back');
+  res.redirect("back");
 };
