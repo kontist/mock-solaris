@@ -395,7 +395,9 @@ export const generateBookingForPerson = bookingData => {
     endToEndId,
     bookingType,
     iban,
-    transactionId
+    transactionId,
+    bookingDate,
+    valutaDate
   } = bookingData;
 
   const recipientName = `${person.salutation} ${person.first_name} ${person.last_name}`;
@@ -404,15 +406,16 @@ export const generateBookingForPerson = bookingData => {
 
   const senderIBAN = iban;
   const senderBIC = process.env.SOLARIS_BIC;
-  const valutaDate = moment().format("YYYY-MM-DD");
-  const bookingDate = moment().format("YYYY-MM-DD");
+  const today = moment().format("YYYY-MM-DD");
 
   return {
     id: uuid.v4(),
     amount: { value: parseInt(amount, 10) },
-    valuta_date: valutaDate,
+    valuta_date: valutaDate ? moment(valutaDate).format("YYYY-MM-DD") : today,
     description: purpose,
-    booking_date: bookingDate,
+    booking_date: bookingDate
+      ? moment(bookingDate).format("YYYY-MM-DD")
+      : today,
     name: `mocksolaris-transaction-${purpose}`,
     recipient_bic: recipientBIC,
     recipient_iban: recipientIBAN,
@@ -463,7 +466,9 @@ export const queueBookingRequestHandler = async (req, res) => {
     hasFutureValutaDate,
     bookingType,
     iban,
-    transactionId
+    transactionId,
+    bookingDate,
+    valutaDate
   } = req.body;
 
   senderName = senderName || "mocksolaris";
@@ -483,7 +488,9 @@ export const queueBookingRequestHandler = async (req, res) => {
     hasFutureValutaDate,
     bookingType,
     iban,
-    transactionId
+    transactionId,
+    bookingDate,
+    valutaDate
   });
 
   person.queuedBookings.push(queuedBooking);
