@@ -147,6 +147,8 @@ export const getPerson = personId => {
 
 export const getTechnicalUserPerson = () => getPerson("mockpersonkontistgmbh");
 
+const addAmountValues = (a, b) => a + b.amount.value;
+
 export const savePerson = async person => {
   person.address = person.address || { country: null };
 
@@ -154,17 +156,22 @@ export const savePerson = async person => {
 
   if (account) {
     const transactions = person.transactions || [];
+    const queuedBookings = person.queuedBookings || [];
     const now = new Date().getTime();
-    const balance = transactions
+    const transactionsBalance = transactions
       .filter(transaction => new Date(transaction.valuta_date).getTime() < now)
-      .reduce((a, b) => a + b.amount.value, 0);
+      .reduce(addAmountValues, 0);
+    const confirmedTransfersBalance = queuedBookings
+      .filter(booking => booking.status === "accepted")
+      .reduce(addAmountValues, 0);
 
     account.balance = {
-      value: balance
+      value: transactionsBalance
     };
 
     account.available_balance = {
-      value: balance
+      // Confirmed transfers amounts are negative
+      value: transactionsBalance + confirmedTransfersBalance
     };
 
     person.account = account;
