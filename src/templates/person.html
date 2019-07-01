@@ -139,6 +139,68 @@
     {% else %}
       <i>This person does not have an account.</i>
     {% endif %}
+
+    <!-- Seizures -->
+    <div class="panel panel-default">
+      <div class="panel-heading"><h4>Seizures</h4></div>
+      <div class="panel-body">
+        {% if person.seizure %}
+          {% if person.seizure.status == SEIZURE_STATUSES.ACTIVE %}
+            <div class="alert alert-danger">
+              Person has active seizure!
+            </div>
+
+            <form method="POST" action="/__BACKOFFICE__/fulfillSeizure/{{ person.id }}">
+              <button type="submit" class="btn btn-success btn-block">
+                Fulfill Seizure
+              </button>
+            </form>
+
+            <br>
+          {% elseif person.seizure.status == SEIZURE_STATUSES.FULFILLED %}
+            <div class="alert alert-success">
+              Person has fulfilled seizure
+            </div>
+          {% endif %}
+
+          <form method="POST" action="/__BACKOFFICE__/deleteSeizure/{{ person.id }}">
+            <button type="submit" class="btn btn-danger btn-block">
+              Delete Seizure
+            </button>
+          </form>
+
+          <br>
+
+          <div class="panel-group">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h4 class="panel-title">
+                  <a data-toggle="collapse" href="#seizureRawData">
+                    Raw seizure data
+                  </a>
+                  <span class="caret"></span>
+                </h4>
+              </div>
+              <div id="seizureRawData" class="panel-collapse collapse">
+                <div class="panel-body">
+                  <pre>{{ JSON.stringify(person.seizure, undefined, 2) }}</pre>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% else %}
+          <div class="alert alert-info">
+            Person has no seizures!
+          </div>
+
+          <form method="POST" action="/__BACKOFFICE__/createSeizure/{{ person.id }}">
+            <button type="submit" class="btn btn-primary btn-block">
+              Create Seizure
+            </button>
+          </form>
+        {% endif %}
+      </div>
+    </div>
   </div>
 </div>
 <h3 id="account"> Account for {{ person.email }} </h3>
@@ -159,16 +221,18 @@
       <td>Block status</td>
       <td>
         <form method="POST" action="/__BACKOFFICE__/updateAccountLockingStatus/{{ person.id }}">
-          <select name="lockingStatus">
-            <option value="" {% if person.account.locking_status == '' %} selected {% endif %}>(not set)</option>
-            <option value="NO_BLOCK" {% if person.account.locking_status == 'NO_BLOCK' %} selected {% endif %}>NO_BLOCK</option>
-            <option value="CREDIT_BLOCK" {% if person.account.locking_status == 'CREDIT_BLOCK' %} selected {% endif %}>CREDIT_BLOCK</option>
-            <option value="DEBIT_BLOCK" {% if person.account.locking_status == 'DEBIT_BLOCK' %} selected {% endif %}>DEBIT_BLOCK</option>
-            <option value="BLOCK" {% if person.account.locking_status == 'BLOCK' %} selected {% endif %}>BLOCK</option>
-          </select>
-          <button type="submit" class="btn btn-warning btn-sm">
-            Update account locking status
-          </button>
+          <fieldset {% if person.seizure && person.seizure.status == SEIZURE_STATUSES.ACTIVE %}disabled{%endif %}>
+            <select name="lockingStatus">
+              <option value="" {% if person.account.locking_status == '' %} selected {% endif %}>(not set)</option>
+              <option value="NO_BLOCK" {% if person.account.locking_status == 'NO_BLOCK' %} selected {% endif %}>NO_BLOCK</option>
+              <option value="CREDIT_BLOCK" {% if person.account.locking_status == 'CREDIT_BLOCK' %} selected {% endif %}>CREDIT_BLOCK</option>
+              <option value="DEBIT_BLOCK" {% if person.account.locking_status == 'DEBIT_BLOCK' %} selected {% endif %}>DEBIT_BLOCK</option>
+              <option value="BLOCK" {% if person.account.locking_status == 'BLOCK' %} selected {% endif %}>BLOCK</option>
+            </select>
+            <button type="submit" class="btn btn-warning btn-sm">
+              Update account locking status
+            </button>
+          </fieldset>
         </form>
       </td>
     </tr>

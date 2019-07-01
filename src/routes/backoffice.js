@@ -23,6 +23,7 @@ import {
   sendSepaDirectDebitReturnPush
 } from "../helpers/sepaDirectDebitReturn";
 import { shouldReturnJSON } from "../helpers";
+import { SEIZURE_STATUSES } from "./seizures";
 
 import * as log from "../logger";
 
@@ -155,7 +156,8 @@ export const getPersonHandler = async (req, res) => {
       person,
       mobileNumber,
       taxIdentifications,
-      identifications: person.identifications
+      identifications: person.identifications,
+      SEIZURE_STATUSES
     });
   }
 };
