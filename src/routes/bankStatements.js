@@ -12,6 +12,26 @@ export const createBankStatement = async (req, res) => {
 
   const { start_date: startDate, end_date: endDate } = req.body;
 
+  // Solaris does not allow bank statement creation for dates before account creation date
+  if (
+    moment(person.createdAt)
+      .startOf("day")
+      .isAfter(moment(startDate))
+  ) {
+    res.status(400).send({
+      errors: [
+        {
+          id: person.id,
+          status: 400,
+          code: "invalid_model",
+          title: "Invalid Model",
+          detail: `start_date invalid date ${startDate} is earlier than account opening date ${person.terms_conditions_signed_at}`
+        }
+      ]
+    });
+    return;
+  }
+
   const line1 = `${
     person.salutation.toLowerCase() === "mr" ? "Mr." : "Ms."
   } ${person.first_name.toUpperCase()} ${person.last_name.toUpperCase()}`;
