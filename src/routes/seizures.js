@@ -11,6 +11,10 @@ export const SEIZURE_STATUSES = {
   FULFILLED: "FULFILLED"
 };
 
+const SEIZURE_CUSTOMER_TYPES = {
+  PERSON: "Person"
+};
+
 const SEIZURE_EXAMPLE = {
   id: "1e5aa01b337234b9cf9e687947aa9db1seiz",
   delivery_date: "2019-01-31",
@@ -77,7 +81,7 @@ export const createSeizureRequestHandler = async (req, res) => {
   };
 
   await savePerson(person);
-  await sendPersonSeizureCreatedWebhook(person.seizure);
+  await sendPersonSeizureCreatedWebhook(person.id, person.seizure);
   await updateAccountLockingStatus(person.id, "BLOCK");
 
   res.redirect("back");
@@ -109,7 +113,7 @@ export const deleteSeizureRequestHandler = async (req, res) => {
   person.seizure = null;
 
   await savePerson(person);
-  await sendPersonSeizureDeletedWebhook(deletedSeizure);
+  await sendPersonSeizureDeletedWebhook(person.id, deletedSeizure);
   await updateAccountLockingStatus(person.id, "NO_BLOCK");
 
   res.redirect("back");
@@ -132,32 +136,38 @@ export const fulfillSeizureRequestHandler = async (req, res) => {
   res.redirect("back");
 };
 
-const sendPersonSeizureCreatedWebhook = async seizure => {
+const sendPersonSeizureCreatedWebhook = async (personId, seizure) => {
   const webhook = await getWebhookByType("PERSON_SEIZURE_CREATED");
 
   if (!webhook) {
     log.error("(sendPersonSeizureCreatedWebhook) Webhook does not exist");
     return;
   }
-
+  const payload = getSeizureWebhookPayload(personId, seizure);
   await fetch(webhook.url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(seizure)
+    body: JSON.stringify(payload)
   });
 };
 
-const sendPersonSeizureDeletedWebhook = async seizure => {
+const sendPersonSeizureDeletedWebhook = async (personId, seizure) => {
   const webhook = await getWebhookByType("PERSON_SEIZURE_DELETED");
 
   if (!webhook) {
     log.error("(sendPersonSeizureDeletedWebhook) Webhook does not exist");
     return;
   }
-
+  const payload = getSeizureWebhookPayload(personId, seizure);
   await fetch(webhook.url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(seizure)
+    body: JSON.stringify(payload)
   });
 };
+
+const getSeizureWebhookPayload = (personId, seizure) => ({
+  ...seizure,
+  customer_id: personId,
+  customer_type: SEIZURE_CUSTOMER_TYPES.PERSON
+});
