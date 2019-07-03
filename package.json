@@ -6,8 +6,8 @@
   "scripts": {
     "start": "node dist/run.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "eslint --max-warnings 0 . && flow status",
-    "lint-fix": "eslint . --fix",
+    "lint": "eslint --max-warnings 0 ./src && flow status",
+    "lint-fix": "eslint ./src --fix",
     "transpile": "babel src --extensions \".js\" --out-dir dist --copy-files --source-maps --quiet && echo \"--ALL FILES TRANSPILED!\"",
     "transpile-watch": "babel src --extensions \".js\" --out-dir dist --copy-files --source-maps --watch"
   },
