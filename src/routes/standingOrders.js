@@ -1,12 +1,12 @@
 import crypto from "crypto";
 import assert from "assert";
-import { savePerson } from "../db";
 import moment from "moment";
 import uuid from "uuid";
+import fetch from "node-fetch";
 
-import { findPersonByIdOrEmail, processQueuedBooking } from "./backoffice";
-
+import { getPerson, savePerson, getWebhookByType } from "../db";
 import * as log from "../logger";
+import { findPersonByIdOrEmail, processQueuedBooking } from "./backoffice";
 
 const STANDING_ORDER_PAYMENT_FREQUENCY = {
   MONTHLY: "MONTHLY",
@@ -15,8 +15,24 @@ const STANDING_ORDER_PAYMENT_FREQUENCY = {
   YEARLY: "ANNUALLY"
 };
 
+const STANDING_ORDER_PAYMENT_STATUSES = {
+  EXECUTED: "EXECUTED",
+  DECLINED: "DECLINED"
+};
+
 export const STANDING_ORDER_CREATE_METHOD = "standing_order:create";
 export const STANDING_ORDER_CANCEL_METHOD = "standing_order:cancel";
+
+export const showStandingOrderRequestHandler = async (req, res) => {
+  const { person_id: personId, id: standingOrderId } = req.params;
+
+  const { standingOrder } = await getPersonWithStandingOrder(
+    personId,
+    standingOrderId
+  );
+
+  res.status(200).send(standingOrder);
+};
 
 export const createStandingOrderRequestHandler = async (req, res) => {
   const { person_id: personId } = req.params;
@@ -153,28 +169,51 @@ export const generateStandingOrderForPerson = standingOrderData => {
  * Triggers the standing order to process as a normal booking.
  */
 export const triggerStandingOrderRequestHandler = async (req, res) => {
-  const { personIdOrEmail, id } = req.params;
+  const { personId, standingOrderId } = req.params;
 
-  await processQueuedBooking(personIdOrEmail, id, true);
+  let booking;
+  if (await hasFundsToExecuteStandingOrder(personId, standingOrderId)) {
+    booking = await processQueuedBooking(personId, standingOrderId, true);
+  }
+
+  // We need to update next occurence and call webhook in all cases, even when a standing order is declined
+  await updateStandingOrderNextOccurrenceDate(personId, standingOrderId);
+  await sendSepaScheduledTransactionWebhook(personId, standingOrderId, booking);
 
   res.redirect("back");
 };
 
-const getNextOccurrenceDate = (firstExecutionDate, reoccurrence) => {
-  if (new Date(firstExecutionDate) > new Date()) {
-    return firstExecutionDate;
-  }
+const updateStandingOrderNextOccurrenceDate = async (
+  personId,
+  standingOrderId
+) => {
+  const { person, standingOrder } = await getPersonWithStandingOrder(
+    personId,
+    standingOrderId
+  );
+
+  standingOrder.next_occurrence = getNextOccurrenceDate(
+    moment(standingOrder.next_occurrence),
+    standingOrder.reoccurrence
+  ).format("YYYY-MM-DD");
+
+  await savePerson(person);
+};
+
+const getNextOccurrenceDate = (lastDate, reoccurrence) => {
   switch (reoccurrence) {
     case STANDING_ORDER_PAYMENT_FREQUENCY.MONTHLY:
-      return moment(firstExecutionDate).add(1, "months");
+      return lastDate.add(1, "months");
     case STANDING_ORDER_PAYMENT_FREQUENCY.QUARTERLY:
-      return moment(firstExecutionDate).add(3, "months");
+      return lastDate.add(3, "months");
     case STANDING_ORDER_PAYMENT_FREQUENCY.EVERYSIXMONTHS:
-      return moment(firstExecutionDate).add(6, "months");
+      return lastDate.add(6, "months");
     case STANDING_ORDER_PAYMENT_FREQUENCY.YEARLY:
-      return moment(firstExecutionDate).add(1, "years");
+      return lastDate.add(1, "years");
     default:
-      return firstExecutionDate;
+      throw new Error(
+        `Unexpected standing order reoccurrence: ${reoccurrence}`
+      );
   }
 };
 
@@ -189,10 +228,7 @@ export const confirmStandingOrderCreation = async (person, changeRequestId) => {
   person.unconfirmedStandingOrders.splice(index, 1);
 
   standingOrder.status = "ACTIVE";
-  standingOrder.next_occurrence = getNextOccurrenceDate(
-    standingOrder.first_execution_date,
-    standingOrder.reoccurrence
-  );
+  standingOrder.next_occurrence = standingOrder.first_execution_date;
 
   person.standingOrders.push(standingOrder);
 
@@ -254,4 +290,68 @@ export const confirmStandingOrderCancelation = async person => {
   standingOrder.status = "CANCELED";
   await savePerson(person);
   return standingOrder;
+};
+
+const hasFundsToExecuteStandingOrder = async (personId, standingOrderId) => {
+  const { person, standingOrder } = await getPersonWithStandingOrder(
+    personId,
+    standingOrderId
+  );
+
+  return person.account.balance.value >= standingOrder.amount.value;
+};
+
+const sendSepaScheduledTransactionWebhook = async (
+  personId,
+  standingOrderId,
+  booking
+) => {
+  const webhook = await getWebhookByType("SEPA_SCHEDULED_TRANSACTION");
+
+  if (!webhook) {
+    log.error("(sendSepaScheduledTransactionWebhook) Webhook does not exist");
+    return;
+  }
+  const { person, standingOrder } = await getPersonWithStandingOrder(
+    personId,
+    standingOrderId
+  );
+
+  const payload = {
+    id: standingOrder.id,
+    account_id: person.account.id,
+    processed_at: moment().toISOString(),
+    reference: standingOrder.reference,
+    source: "standing_order",
+    source_id: standingOrder.id,
+    status: booking
+      ? STANDING_ORDER_PAYMENT_STATUSES.EXECUTED
+      : STANDING_ORDER_PAYMENT_STATUSES.DECLINED,
+    decline_reason: booking
+      ? null
+      : "There were insufficient funds to complete this action.",
+    transaction_id: booking ? booking.transaction_id : null
+  };
+
+  await fetch(webhook.url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+};
+
+const getPersonWithStandingOrder = async (personId, standingOrderId) => {
+  const person = await getPerson(personId);
+
+  const standingOrder = person.standingOrders.find(
+    standingOrder => standingOrder.id === standingOrderId
+  );
+
+  if (!standingOrder) {
+    throw new Error(
+      `Person doesn't have standing order with id: ${standingOrderId}`
+    );
+  }
+
+  return { person, standingOrder };
 };

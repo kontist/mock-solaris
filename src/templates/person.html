@@ -383,6 +383,7 @@
         <th>First Execution Date</th>
         <th>Reoccurrence</th>
         <th>Last Execution Date</th>
+        <th>Next Occurrence</th>
         <th>Trigger</th>
       </tr>
     </thead>
@@ -397,9 +398,10 @@
         <td>{{ standingOrder.first_execution_date }}</td>
         <td>{{ standingOrder.reoccurrence }}</td>
         <td>{{ standingOrder.last_execution_date }}</td>
+        <td>{{ standingOrder.next_occurrence }}</td>
         {% if standingOrder.status === "ACTIVE" %}
           <td>
-            <form method="POST" action="/__BACKOFFICE__/triggerStandingOrder/{{ person.email }}/{{ standingOrder.id }}">
+            <form method="POST" action="/__BACKOFFICE__/triggerStandingOrder/{{ person.id }}/{{ standingOrder.id }}">
                 <button type="submit" class="btn btn-default">
                   ➡️ Trigger now
                 </button>

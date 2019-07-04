@@ -386,6 +386,8 @@ export const processQueuedBooking = async (
   if (sepaDirectDebitReturn) {
     await sendSepaDirectDebitReturnPush(sepaDirectDebitReturn);
   }
+
+  return booking;
 };
 
 export const generateBookingForPerson = bookingData => {

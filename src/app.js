@@ -188,6 +188,10 @@ router.post(
 );
 
 // STANDING ORDERS
+router.get(
+  "/persons/:person_id/accounts/:account_id/standing_orders/:id",
+  safeRequestHandler(standingOrdersAPI.showStandingOrderRequestHandler)
+);
 router.post(
   "/persons/:person_id/accounts/:account_id/standing_orders",
   safeRequestHandler(standingOrdersAPI.createStandingOrderRequestHandler)
@@ -290,7 +294,7 @@ app.post(
 
 // BACKOFFICE - STANDING ORDERS
 app.post(
-  "/__BACKOFFICE__/triggerStandingOrder/:personIdOrEmail/:id",
+  "/__BACKOFFICE__/triggerStandingOrder/:personId/:standingOrderId",
   safeRequestHandler(standingOrdersAPI.triggerStandingOrderRequestHandler)
 );
 
