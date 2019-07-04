@@ -18,6 +18,7 @@ import * as bankStatementsAPI from "./routes/bankStatements";
 import * as mobileNumberAPI from "./routes/mobileNumber";
 import * as changeRequestAPI from "./routes/changeRequest";
 import * as returnNotificationsAPI from "./routes/sepaDirectDebitReturns";
+import * as seizuresAPI from "./routes/seizures";
 
 import { migrate } from "./db";
 
@@ -187,6 +188,10 @@ router.post(
 );
 
 // STANDING ORDERS
+router.get(
+  "/persons/:person_id/accounts/:account_id/standing_orders/:id",
+  safeRequestHandler(standingOrdersAPI.showStandingOrderRequestHandler)
+);
 router.post(
   "/persons/:person_id/accounts/:account_id/standing_orders",
   safeRequestHandler(standingOrdersAPI.createStandingOrderRequestHandler)
@@ -248,6 +253,12 @@ router.post(
   safeRequestHandler(changeRequestAPI.confirmChangeRequest)
 );
 
+// SEIZURES
+router.get(
+  "/persons/:person_id/seizures",
+  safeRequestHandler(seizuresAPI.getSeizuresRequestHandler)
+);
+
 // BACKOFFICE
 app.get("/__BACKOFFICE__", safeRequestHandler(backofficeAPI.listPersons));
 app.post(
@@ -283,8 +294,22 @@ app.post(
 
 // BACKOFFICE - STANDING ORDERS
 app.post(
-  "/__BACKOFFICE__/triggerStandingOrder/:personIdOrEmail/:id",
+  "/__BACKOFFICE__/triggerStandingOrder/:personId/:standingOrderId",
   safeRequestHandler(standingOrdersAPI.triggerStandingOrderRequestHandler)
+);
+
+// BACKOFFICE - SEIZURES
+app.post(
+  "/__BACKOFFICE__/createSeizure/:person_id",
+  safeRequestHandler(seizuresAPI.createSeizureRequestHandler)
+);
+app.post(
+  "/__BACKOFFICE__/deleteSeizure/:person_id",
+  safeRequestHandler(seizuresAPI.deleteSeizureRequestHandler)
+);
+app.post(
+  "/__BACKOFFICE__/fulfillSeizure/:person_id",
+  safeRequestHandler(seizuresAPI.fulfillSeizureRequestHandler)
 );
 
 // WEBHOOKS
