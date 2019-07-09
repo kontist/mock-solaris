@@ -8,8 +8,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint --max-warnings 0 ./src && flow status",
     "lint-fix": "eslint ./src --fix",
-    "transpile": "babel src --extensions \".js\" --out-dir dist --copy-files --source-maps --quiet && echo \"--ALL FILES TRANSPILED!\"",
-    "transpile-watch": "babel src --extensions \".js\" --out-dir dist --copy-files --source-maps --watch"
+    "transpile": "babel --root-mode upward src --extensions \".js\" --out-dir dist --copy-files --source-maps --quiet && echo \"--ALL FILES TRANSPILED!\"",
+    "transpile-watch": "babel --root-mode upward src --extensions \".js\" --out-dir dist --copy-files --source-maps --watch"
   },
   "author": "",
   "license": "SEE LICENSE IN PROPERIETARY_LICENSE",
@@ -34,26 +34,5 @@
   },
   "resolutions": {
     "swig/uglify-js": "2.8.29"
-  },
-  "babel": {
-    "presets": [
-	    "@babel/preset-flow",
-	    [
-	      "@babel/preset-env",
-	      {
-	        "targets": {
-	          "node": "current"
-	        }
-	      }
-	    ]
-	  ],
-    "plugins": [
-      "@babel/plugin-proposal-object-rest-spread",
-      "@babel/plugin-proposal-class-properties",
-      "@babel/plugin-proposal-export-default-from",
-      "@babel/plugin-proposal-export-namespace-from",
-      "@babel/plugin-transform-async-to-generator",
-      "@babel/plugin-syntax-async-generators"
-    ]
   }
 }
