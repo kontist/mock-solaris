@@ -336,9 +336,10 @@ app.get("*", (req, res) => {
 
 export default app;
 
-export const serve = port => {
-  return new Promise(async (resolve, reject) => {
-    await migrate();
+export const serve = async port => {
+  await migrate();
+
+  return new Promise((resolve, reject) => {
     app.listen(port, () => {
       console.log(`mocksolaris listening on http://localhost:${port}/!`);
       resolve();
