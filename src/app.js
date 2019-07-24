@@ -19,6 +19,7 @@ import * as mobileNumberAPI from "./routes/mobileNumber";
 import * as changeRequestAPI from "./routes/changeRequest";
 import * as returnNotificationsAPI from "./routes/sepaDirectDebitReturns";
 import * as seizuresAPI from "./routes/seizures";
+import * as e2eAPI from "./routes/e2e";
 
 import { migrate } from "./db";
 
@@ -258,6 +259,14 @@ router.get(
   "/persons/:person_id/seizures",
   safeRequestHandler(seizuresAPI.getSeizuresRequestHandler)
 );
+
+// E2E
+if (process.env.NODE_ENV === "e2e") {
+  router.patch(
+    "/e2e/persons/:person_id",
+    safeRequestHandler(e2eAPI.updatePerson)
+  );
+}
 
 // BACKOFFICE
 app.get("/__BACKOFFICE__", safeRequestHandler(backofficeAPI.listPersons));

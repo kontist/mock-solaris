@@ -12,12 +12,12 @@ export const createBankStatement = async (req, res) => {
 
   const { start_date: startDate, end_date: endDate } = req.body;
 
+  const isStartDateInvalid = moment(person.createdAt)
+    .startOf("day")
+    .isAfter(moment(startDate));
+
   // Solaris does not allow bank statement creation for dates before account creation date
-  if (
-    moment(person.createdAt)
-      .startOf("day")
-      .isAfter(moment(startDate))
-  ) {
+  if (isStartDateInvalid) {
     res.status(400).send({
       errors: [
         {
