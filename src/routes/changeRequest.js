@@ -7,8 +7,10 @@ import {
 } from "./mobileNumber";
 import {
   confirmStandingOrderCreation,
+  confirmStandingOrderUpdate,
   confirmStandingOrderCancelation,
   STANDING_ORDER_CREATE_METHOD,
+  STANDING_ORDER_UPDATE_METHOD,
   STANDING_ORDER_CANCEL_METHOD
 } from "./standingOrders";
 import { PERSON_UPDATE } from "./persons";
@@ -131,6 +133,9 @@ export const confirmChangeRequest = async (req, res) => {
         person,
         changeRequestId
       );
+      break;
+    case STANDING_ORDER_UPDATE_METHOD:
+      response.response_body = await confirmStandingOrderUpdate(person);
       break;
     case STANDING_ORDER_CANCEL_METHOD:
       response.response_body = await confirmStandingOrderCancelation(person);

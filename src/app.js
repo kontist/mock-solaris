@@ -198,6 +198,10 @@ router.post(
   safeRequestHandler(standingOrdersAPI.createStandingOrderRequestHandler)
 );
 router.patch(
+  "/persons/:person_id/accounts/:account_id/standing_orders/:id",
+  safeRequestHandler(standingOrdersAPI.updateStandingOrderRequestHandler)
+);
+router.patch(
   "/persons/:person_id/accounts/:account_id/standing_orders/:id/cancel",
   safeRequestHandler(standingOrdersAPI.cancelStandingOrderRequestHandler)
 );

@@ -3,6 +3,7 @@ import assert from "assert";
 import moment from "moment";
 import uuid from "uuid";
 import fetch from "node-fetch";
+import _ from "lodash";
 
 import { getPerson, savePerson, getWebhookByType } from "../db";
 import * as log from "../logger";
@@ -21,7 +22,16 @@ const STANDING_ORDER_PAYMENT_STATUSES = {
 };
 
 export const STANDING_ORDER_CREATE_METHOD = "standing_order:create";
+export const STANDING_ORDER_UPDATE_METHOD = "standing_order:update";
 export const STANDING_ORDER_CANCEL_METHOD = "standing_order:cancel";
+
+const STANDING_ORDER_EDITABLE_ATTRIBUTES = [
+  "amount",
+  "description",
+  "end_to_end_id",
+  "last_execution_date",
+  "reoccurrence"
+];
 
 export const showStandingOrderRequestHandler = async (req, res) => {
   const { person_id: personId, id: standingOrderId } = req.params;
@@ -252,6 +262,61 @@ const findUnconfirmedStandingOrder = (person, chgRequestId) => {
     `Could not find a standing order for the given change request id: '${chgRequestId}'`
   );
   return result;
+};
+
+export const updateStandingOrderRequestHandler = async (req, res) => {
+  const { person_id: personId, id: standingOrderId } = req.params;
+  const attributesToUpdate = _.pick(
+    req.body,
+    STANDING_ORDER_EDITABLE_ATTRIBUTES
+  );
+
+  log.info("updateStandingOrderRequestHandler()", {
+    reqParams: req.params,
+    reqBody: req.body,
+    attributesToUpdate
+  });
+
+  const changeRequestId = await updateStandingOrder(
+    personId,
+    standingOrderId,
+    attributesToUpdate
+  );
+
+  return res.status(202).send({
+    id: changeRequestId,
+    status: "AUTHORIZATION_REQUIRED",
+    updated_at: new Date().toISOString(),
+    url: `:env/v1/change_requests/${changeRequestId}/authorize`
+  });
+};
+
+export const updateStandingOrder = async (
+  personId,
+  standingOrderId,
+  attributesToUpdate
+) => {
+  const person = await findPersonByIdOrEmail(personId);
+
+  const changeRequestId = Date.now().toString();
+  person.changeRequest = {
+    id: changeRequestId,
+    method: STANDING_ORDER_UPDATE_METHOD,
+    standingOrderId,
+    attributesToUpdate
+  };
+  await savePerson(person);
+  return changeRequestId;
+};
+
+export const confirmStandingOrderUpdate = async person => {
+  const { standingOrderId, attributesToUpdate } = person.changeRequest;
+  const [standingOrder] = person.standingOrders.filter(
+    item => item.id === standingOrderId
+  );
+  _.merge(standingOrder, attributesToUpdate);
+  await savePerson(person);
+  return standingOrder;
 };
 
 export const cancelStandingOrderRequestHandler = async (req, res) => {
