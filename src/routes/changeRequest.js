@@ -14,7 +14,11 @@ import {
   STANDING_ORDER_CANCEL_METHOD
 } from "./standingOrders";
 import { PERSON_UPDATE } from "./persons";
-import { TIN_UPDATE, processChangeRequest } from "./taxIdentifications";
+import {
+  TIN_UPDATE,
+  processChangeRequest as tinProcessChangeRequest
+} from "./taxIdentifications";
+import { TIMED_ORDER_CREATE, confirmTimedOrder } from "./timedOrders";
 
 export const createChangeRequest = async (req, res, person, method, delta) => {
   const personId = person.id;
@@ -55,10 +59,7 @@ export const authorizeChangeRequest = async (req, res) => {
   const person = await getPerson(personId);
   const changeRequestMethod = person.changeRequest.method;
 
-  if (
-    personId &&
-    (deliveryMethod === "mobile_number" || deliveryMethod === "static")
-  ) {
+  if (personId && deliveryMethod === "mobile_number") {
     if (changeRequestMethod === MOBILE_NUMBER_CHANGE_METHOD) {
       const existingMobileNumber = await getMobileNumber(personId);
       if (!existingMobileNumber) {
@@ -76,7 +77,7 @@ export const authorizeChangeRequest = async (req, res) => {
       }
     }
 
-    await assignAuthorizationToken(person, deliveryMethod === "static");
+    await assignAuthorizationToken(person);
     return res.status(201).send({
       id: changeRequestId,
       status: "CONFIRMATION_REQUIRED",
@@ -145,7 +146,10 @@ export const confirmChangeRequest = async (req, res) => {
       response.response_body = person;
       break;
     case TIN_UPDATE:
-      response.response_body = await processChangeRequest(person);
+      response.response_body = await tinProcessChangeRequest(person);
+      break;
+    case TIMED_ORDER_CREATE:
+      response.response_body = await confirmTimedOrder(person);
       break;
     default:
       status = 400;
@@ -159,11 +163,9 @@ export const confirmChangeRequest = async (req, res) => {
   return res.status(status).send(response);
 };
 
-const assignAuthorizationToken = async (person, isStatic = false) => {
-  person.changeRequest.token = isStatic
-    ? "212212"
-    : Date.now()
-        .toString()
-        .substr(-6);
+const assignAuthorizationToken = async person => {
+  person.changeRequest.token = Date.now()
+    .toString()
+    .substr(-6);
   await savePerson(person);
 };

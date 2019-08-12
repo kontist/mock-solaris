@@ -19,6 +19,7 @@ import * as mobileNumberAPI from "./routes/mobileNumber";
 import * as changeRequestAPI from "./routes/changeRequest";
 import * as returnNotificationsAPI from "./routes/sepaDirectDebitReturns";
 import * as seizuresAPI from "./routes/seizures";
+import * as timedOrdersAPI from "./routes/timedOrders";
 import * as e2eAPI from "./routes/e2e";
 
 import { migrate } from "./db";
@@ -204,6 +205,20 @@ router.patch(
 router.patch(
   "/persons/:person_id/accounts/:account_id/standing_orders/:id/cancel",
   safeRequestHandler(standingOrdersAPI.cancelStandingOrderRequestHandler)
+);
+
+// TIMED ORDERS
+router.get(
+  "/persons/:person_id/accounts/:account_id/timed_orders",
+  safeRequestHandler(timedOrdersAPI.fetchTimedOrders)
+);
+router.post(
+  "/persons/:person_id/accounts/:account_id/timed_orders",
+  safeRequestHandler(timedOrdersAPI.createTimedOrder)
+);
+router.patch(
+  "/persons/:person_id/accounts/:account_id/timed_orders/:id/cancel",
+  safeRequestHandler(timedOrdersAPI.cancelTimedOrder)
 );
 
 // ACCOUNT STATEMENTS

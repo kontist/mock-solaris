@@ -198,6 +198,19 @@ export const saveTaxIdentifications = async (personId, data) =>
     JSON.stringify(data, undefined, 2)
   );
 
+export const getTimedOrders = async (personId, accountId) =>
+  JSON.parse(
+    (await redisClient.getAsync(
+      `${process.env.MOCKSOLARIS_REDIS_PREFIX}:timedOrders:${personId}:${accountId}`
+    )) || "[]"
+  );
+
+export const saveTimedOrders = async (personId, accountId, data) =>
+  redisClient.setAsync(
+    `${process.env.MOCKSOLARIS_REDIS_PREFIX}:timedOrders:${personId}:${accountId}`,
+    JSON.stringify(data, undefined, 2)
+  );
+
 export const getMobileNumber = async personId =>
   JSON.parse(
     await redisClient.getAsync(
@@ -345,4 +358,9 @@ const fillMissingCurrencyForLegacyBooking = booking => ({
 
 export const getPersonBookings = person => {
   return (person.transactions || []).map(fillMissingCurrencyForLegacyBooking);
+};
+
+export const getSmsToken = async (personId: string) => {
+  const person = await getPerson(personId);
+  return _.get(person, "changeRequest.token", null);
 };

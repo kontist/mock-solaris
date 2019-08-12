@@ -25,5 +25,6 @@ module.exports = {
   confirmStandingOrderCreation: standingOrders.confirmStandingOrderCreation,
   cancelStandingOrder: standingOrders.cancelStandingOrder,
   confirmStandingOrderCancelation:
-    standingOrders.confirmStandingOrderCancelation
+    standingOrders.confirmStandingOrderCancelation,
+  getSmsToken: db.getSmsToken
 };
