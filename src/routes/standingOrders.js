@@ -59,6 +59,7 @@ export const createStandingOrderRequestHandler = async (req, res) => {
     description,
     end_to_end_id: endToEndId,
     first_execution_date: firstExecutionDate,
+    last_execution_date: lastExecutionDate,
     reoccurrence
   } = req.body;
 
@@ -71,6 +72,7 @@ export const createStandingOrderRequestHandler = async (req, res) => {
       description,
       endToEndId,
       firstExecutionDate,
+      lastExecutionDate,
       reoccurrence
     });
 
@@ -106,6 +108,7 @@ export const createStandingOrder = async standingOrderData => {
     description,
     endToEndId,
     firstExecutionDate,
+    lastExecutionDate,
     reoccurrence
   } = standingOrderData;
 
@@ -122,6 +125,7 @@ export const createStandingOrder = async standingOrderData => {
     description,
     endToEndId,
     firstExecutionDate,
+    lastExecutionDate,
     reoccurrence
   });
 
@@ -152,7 +156,8 @@ export const generateStandingOrderForPerson = standingOrderData => {
     iban,
     endToEndId,
     reoccurrence,
-    firstExecutionDate
+    firstExecutionDate,
+    lastExecutionDate
   } = standingOrderData;
 
   const amountValue = Math.max(0, Math.min(10000000, amount.value));
@@ -170,6 +175,9 @@ export const generateStandingOrderForPerson = standingOrderData => {
     description,
     end_to_end_id: endToEndId,
     first_execution_date: moment(firstExecutionDate).format("YYYY-MM-DD"),
+    last_execution_date: lastExecutionDate
+      ? moment(lastExecutionDate).format("YYYY-MM-DD")
+      : null,
     month_end_execution: false,
     reoccurrence
   };
@@ -187,13 +195,16 @@ export const triggerStandingOrderRequestHandler = async (req, res) => {
   }
 
   // We need to update next occurence and call webhook in all cases, even when a standing order is declined
-  await updateStandingOrderNextOccurrenceDate(personId, standingOrderId);
+  await updateStandingOrderNextOccurrenceDateAndStatus(
+    personId,
+    standingOrderId
+  );
   await sendSepaScheduledTransactionWebhook(personId, standingOrderId, booking);
 
   res.redirect("back");
 };
 
-const updateStandingOrderNextOccurrenceDate = async (
+const updateStandingOrderNextOccurrenceDateAndStatus = async (
   personId,
   standingOrderId
 ) => {
@@ -202,10 +213,18 @@ const updateStandingOrderNextOccurrenceDate = async (
     standingOrderId
   );
 
-  standingOrder.next_occurrence = getNextOccurrenceDate(
+  const nextOccurence = getNextOccurrenceDate(
     moment(standingOrder.next_occurrence),
     standingOrder.reoccurrence
-  ).format("YYYY-MM-DD");
+  );
+  standingOrder.next_occurrence = nextOccurence.format("YYYY-MM-DD");
+
+  if (
+    standingOrder.lastExecutionDate &&
+    nextOccurence.isAfter(standingOrder.lastExecutionDate)
+  ) {
+    standingOrder.status = "INACTIVE";
+  }
 
   await savePerson(person);
 };
