@@ -3,6 +3,7 @@ import * as db from "./db";
 import * as account from "./routes/accounts";
 import * as backOffice from "./routes/backoffice";
 import * as standingOrders from "./routes/standingOrders";
+import { processTimedOrders } from "./routes/timedOrders";
 
 module.exports = {
   serve,
@@ -25,5 +26,6 @@ module.exports = {
   cancelStandingOrder: standingOrders.cancelStandingOrder,
   confirmStandingOrderCancelation:
     standingOrders.confirmStandingOrderCancelation,
-  getSmsToken: db.getSmsToken
+  getSmsToken: db.getSmsToken,
+  processTimedOrders
 };
