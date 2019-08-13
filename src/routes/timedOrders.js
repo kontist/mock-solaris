@@ -4,6 +4,15 @@ import HttpStatusCodes from "http-status";
 import { createChangeRequest } from "./changeRequest";
 import { getPerson, savePerson } from "../db";
 
+const SOLARIS_TIMED_ORDER_STATUSES = {
+  CREATED: "CREATED",
+  AUTHORIZATION_REQUIRED: "AUTHORIZATION_REQUIRED",
+  CONFIRMATION_REQUIRED: "CONFIRMATION_REQUIRED",
+  EXECUTED: "EXECUTED",
+  FAILED: "FAILED",
+  SCHEDULED: "SCHEDULED",
+  CANCELED: "CANCELED"
+};
 export const TIMED_ORDER_CREATE = "timed_orders:create";
 
 export const confirmTimedOrder = async person => {
