@@ -1,11 +1,11 @@
-var app = require("./app");
-var db = require("./db");
-var account = require("./routes/accounts");
-var backOffice = require("./routes/backoffice");
-var standingOrders = require("./routes/standingOrders");
+import { serve } from "./app";
+import * as db from "./db";
+import * as account from "./routes/accounts";
+import * as backOffice from "./routes/backoffice";
+import * as standingOrders from "./routes/standingOrders";
 
 module.exports = {
-  serve: app.serve,
+  serve,
   flushDb: db.flushDb,
   getPerson: db.getPerson,
   getAllPersons: db.getAllPersons,
@@ -13,7 +13,6 @@ module.exports = {
   migrate: db.migrate,
   findPersonByAccountId: db.findPersonByAccountId,
   saveBooking: db.saveBooking,
-  getReservationsForAccount: db.getReservationsForAccount,
   createAccount: account.createAccount,
   updateAccountLockingStatus: backOffice.updateAccountLockingStatus,
   saveMobileNumber: db.saveMobileNumber,
