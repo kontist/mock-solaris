@@ -3,6 +3,7 @@ import HttpStatusCodes from "http-status";
 
 import { createChangeRequest } from "./changeRequest";
 import { getPerson, savePerson } from "../db";
+import { sendBookingsWebhookPush } from "./backoffice";
 
 const SOLARIS_TIMED_ORDER_STATUSES = {
   CREATED: "CREATED",
@@ -23,6 +24,49 @@ export const confirmTimedOrder = async person => {
   await savePerson(person);
 
   return timedOrder;
+};
+
+const shouldProcessTimedOrder = timedOrder =>
+  timedOrder.status === SOLARIS_TIMED_ORDER_STATUSES.SCHEDULED &&
+  !timedOrder.executed_at &&
+  new Date(timedOrder.execute_at) < new Date();
+
+const processTimedOrder = async (person, timedOrder) => {
+  const timedOrderValue = Math.abs(
+    timedOrder.scheduled_transaction.amount.value
+  );
+
+  timedOrder.executed_at = timedOrder.execute_at;
+  // if user has less money on account than timed order value, timed order fails
+  if (person.account.balance.value - timedOrderValue < 0) {
+    timedOrder.status = SOLARIS_TIMED_ORDER_STATUSES.FAILED;
+  } else {
+    person.account.balance.value -= timedOrderValue;
+    person.account.available_balance.value = person.account.balance.value;
+    person.transactions.push(timedOrder.scheduled_transaction);
+    timedOrder.status = SOLARIS_TIMED_ORDER_STATUSES.EXECUTED;
+  }
+
+  const itemIndex = person.timedOrders.findIndex(to => to.id === timedOrder.id);
+  person.timedOrders[itemIndex] = timedOrder;
+  const updatedPerson = await savePerson(person);
+
+  if (timedOrder.status === SOLARIS_TIMED_ORDER_STATUSES.EXECUTED) {
+    await sendBookingsWebhookPush(person.account.id);
+  }
+
+  return updatedPerson;
+};
+
+export const processTimedOrders = async personId => {
+  const person = await getPerson(personId);
+  for (const timedOrder of person.timedOrders) {
+    if (!shouldProcessTimedOrder(timedOrder)) {
+      continue;
+    }
+
+    await processTimedOrder(person, timedOrder);
+  }
 };
 
 export const createTimedOrder = async (req, res) => {
