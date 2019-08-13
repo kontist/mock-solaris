@@ -474,6 +474,52 @@
 </div>
 
 <div class="panel panel-default">
+  <div id="timedOrders" class="panel-heading">Timed Orders</div>
+
+  {% if person.timedOrders.length > 0 %}
+    <table class="table">
+    <thead>
+      <tr>
+          <th>ID</th>
+          <th>execute_at</th>
+          <th>executed_at</th>
+          <th>status</th>
+          <th>amount</th>
+          <th>description</th>
+          <th>recipient_iban</th>
+          <th>recipient_name</th>
+          <th>end_to_end_id</th>
+      </tr>
+    </thead>
+    {% for timedOrder in person.timedOrders %}
+      <tr>
+          <td>{{ timedOrder.id }}</td>
+          <td>{{ timedOrder.execute_at }}</td>
+          <td>{{ timedOrder.executed_at }}</td>
+          <td>{{ timedOrder.status }}</td>
+          <td>-{{ (timedOrder.scheduled_transaction.amount.value / 100).toFixed(2) }}€</td>
+          <td>{{ timedOrder.scheduled_transaction.description }}</td>
+          <td>{{ timedOrder.scheduled_transaction.recipient_iban }}</td>
+          <td>{{ timedOrder.scheduled_transaction.recipient_name }}</td>
+          <td>{{ timedOrder.scheduled_transaction.end_to_end_id }}</td>
+      </tr>
+    {% endfor %}
+    </table>
+    <div class="panel-body"></div>
+      <form method="POST" action="/__BACKOFFICE__/processTimedOrders/{{ person.id }}">
+        <button type="submit" class="btn btn-danger btn-block">
+          Process timed orders
+        </button>
+      </form>
+    </div>
+  {% else %}
+    <div class="panel-body">
+      <i>No timed orders :(</i>
+    </div>
+  {% endif %}
+</div>
+
+<div class="panel panel-default">
   <div id="taxIdentifications" class="panel-heading">Tax identifications for {{ person.email }} </div>
 
   {% if taxIdentifications.length > 0 %}

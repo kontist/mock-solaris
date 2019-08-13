@@ -340,6 +340,15 @@ app.post(
   safeRequestHandler(seizuresAPI.fulfillSeizureRequestHandler)
 );
 
+// BACKOFFICE - TIMED ORDERS
+app.post(
+  "/__BACKOFFICE__/processTimedOrders/:person_id",
+  safeRequestHandler(async (req, res) => {
+    await timedOrdersAPI.processTimedOrders(req.params.person_id);
+    res.redirect("back");
+  })
+);
+
 // WEBHOOKS
 router.get(
   "/webhooks",
