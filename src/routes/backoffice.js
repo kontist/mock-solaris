@@ -80,7 +80,7 @@ const sendLockingStatusChangeWebhook = async person => {
   });
 };
 
-const sendBookingsWebhookPush = solarisAccountId => {
+export const sendBookingsWebhookPush = solarisAccountId => {
   return getBookingWebhook()
     .then(webhook => {
       if (!webhook) {
