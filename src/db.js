@@ -202,12 +202,6 @@ export const saveTaxIdentifications = async (personId, data) =>
     JSON.stringify(data, undefined, 2)
   );
 
-export const getTimedOrders = async personId => {
-  const person = await getPerson(personId);
-  const timedOrders = person.timedOrders || [];
-  return timedOrders;
-};
-
 export const getMobileNumber = async personId =>
   JSON.parse(
     await redisClient.getAsync(
