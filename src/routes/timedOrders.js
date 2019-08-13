@@ -13,12 +13,13 @@ const SOLARIS_TIMED_ORDER_STATUSES = {
   SCHEDULED: "SCHEDULED",
   CANCELED: "CANCELED"
 };
+
 export const TIMED_ORDER_CREATE = "timed_orders:create";
 
 export const confirmTimedOrder = async person => {
   const id = person.changeRequest.delta.id;
   const timedOrder = person.timedOrders.find(order => order.id === id);
-  timedOrder.status = "SCHEDULED";
+  timedOrder.status = SOLARIS_TIMED_ORDER_STATUSES.SCHEDULED;
   await savePerson(person);
 
   return timedOrder;
@@ -92,7 +93,7 @@ export const cancelTimedOrder = async (req, res) => {
   const timedOrder = person.timedOrders.find(
     order => order.id === req.params.id
   );
-  timedOrder.status = "CANCELED";
+  timedOrder.status = SOLARIS_TIMED_ORDER_STATUSES.CANCELED;
   timedOrder.scheduled_transaction.status = "canceled";
 
   await savePerson(person);
@@ -118,7 +119,7 @@ export const generateTimedOrder = data => {
     id: uuid.v4(),
     execute_at: executeAt,
     executed_at: null,
-    status: "CREATED",
+    status: SOLARIS_TIMED_ORDER_STATUSES.CREATED,
     scheduled_transaction: {
       id: uuid.v4(),
       status: "created",
