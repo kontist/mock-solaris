@@ -45,7 +45,7 @@ const mapTimedOrderToTransaction = timedOrder => {
   return {
     id,
     description,
-    e2eId: e2eId,
+    e2eId,
     reference,
     name: recipientName,
     amount: {
@@ -75,7 +75,7 @@ const processTimedOrder = async (person, timedOrder) => {
 
   timedOrder.executed_at = timedOrder.execute_at;
   // if user has less money on account than timed order value, timed order fails
-  if (person.account.balance.value - timedOrderValue < 0) {
+  if (person.account.balance.value < timedOrderValue) {
     timedOrder.status = SOLARIS_TIMED_ORDER_STATUSES.FAILED;
   } else {
     person.account.balance.value -= timedOrderValue;
