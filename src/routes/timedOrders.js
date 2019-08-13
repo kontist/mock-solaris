@@ -26,6 +26,43 @@ export const confirmTimedOrder = async person => {
   return timedOrder;
 };
 
+const mapTimedOrderToTransaction = timedOrder => {
+  const {
+    id: timedOrderId,
+    executed_at: executedAt,
+    scheduled_transaction: {
+      id,
+      reference,
+      description,
+      end_to_end_id: e2eId,
+      recipient_iban: recipientIBAN,
+      recipient_name: recipientName,
+      recipient_bic: recipientBIC,
+      amount
+    }
+  } = timedOrder;
+
+  return {
+    id,
+    description,
+    e2eId: e2eId,
+    reference,
+    name: recipientName,
+    amount: {
+      ...amount,
+      value: -amount.value
+    },
+    valuta_date: executedAt,
+    booking_date: executedAt,
+    recipient_iban: recipientIBAN,
+    recipient_name: recipientName,
+    recipient_bic: recipientBIC,
+    transaction_id: timedOrderId,
+    status: "accepted",
+    booking_type: "SEPA_CREDIT_TRANSFER"
+  };
+};
+
 const shouldProcessTimedOrder = timedOrder =>
   timedOrder.status === SOLARIS_TIMED_ORDER_STATUSES.SCHEDULED &&
   !timedOrder.executed_at &&
@@ -43,7 +80,7 @@ const processTimedOrder = async (person, timedOrder) => {
   } else {
     person.account.balance.value -= timedOrderValue;
     person.account.available_balance.value = person.account.balance.value;
-    person.transactions.push(timedOrder.scheduled_transaction);
+    person.transactions.push(mapTimedOrderToTransaction(timedOrder));
     timedOrder.status = SOLARIS_TIMED_ORDER_STATUSES.EXECUTED;
   }
 
