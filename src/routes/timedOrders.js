@@ -2,18 +2,15 @@ import uuid from "node-uuid";
 import HttpStatusCodes from "http-status";
 
 import { createChangeRequest } from "./changeRequest";
-import { getPerson, getTimedOrders, saveTimedOrders } from "../db";
+import { getPerson, savePerson } from "../db";
 
 export const TIMED_ORDER_CREATE = "timed_orders:create";
 
 export const confirmTimedOrder = async person => {
   const id = person.changeRequest.delta.id;
-  const accountId = person.changeRequest.delta.accountId;
-  const timedOrders = await getTimedOrders(person.id, accountId);
-  const timedOrder = timedOrders.find(order => order.id === id);
+  const timedOrder = person.timedOrders.find(order => order.id === id);
   timedOrder.status = "SCHEDULED";
-
-  await saveTimedOrders(person.id, accountId, timedOrders);
+  await savePerson(person);
 
   return timedOrder;
 };
@@ -58,9 +55,8 @@ export const createTimedOrder = async (req, res) => {
   }
 
   const timedOrder = generateTimedOrder(body);
-  const timedOrders = await getTimedOrders(personId, accountId);
-  timedOrders.push(timedOrder);
-  await saveTimedOrders(personId, accountId, timedOrders);
+  person.timedOrders.push(timedOrder);
+  await savePerson(person);
 
   return createChangeRequest(req, res, person, TIMED_ORDER_CREATE, {
     accountId,
@@ -69,28 +65,28 @@ export const createTimedOrder = async (req, res) => {
 };
 
 export const fetchTimedOrders = async (req, res) => {
-  const { person_id: personId, account_id: accountId } = req.params;
-  const timedOrders = await getTimedOrders(personId, accountId);
-
-  res.send(timedOrders);
+  const person = await getPerson(req.params.person_id);
+  res.send(person.timedOrders);
 };
 
 export const fetchTimedOrder = async (req, res) => {
-  const { person_id: personId, account_id: accountId, id } = req.params;
-  const timedOrders = await getTimedOrders(personId, accountId);
-  const timedOrder = timedOrders.find(order => order.id === id);
+  const person = await getPerson(req.params.person_id);
+  const timedOrder = person.timedOrders.find(
+    order => order.id === req.params.id
+  );
 
   res.send(timedOrder);
 };
 
 export const cancelTimedOrder = async (req, res) => {
-  const { person_id: personId, account_id: accountId, id } = req.params;
-  const timedOrders = await getTimedOrders(personId, accountId);
-  const timedOrder = timedOrders.find(order => order.id === id);
+  const person = await getPerson(req.params.person_id);
+  const timedOrder = person.timedOrders.find(
+    order => order.id === req.params.id
+  );
   timedOrder.status = "CANCELED";
   timedOrder.scheduled_transaction.status = "canceled";
 
-  await saveTimedOrders(personId, accountId, timedOrders);
+  await savePerson(person);
 
   res.send(timedOrder);
 };

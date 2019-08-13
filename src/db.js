@@ -139,10 +139,13 @@ const jsonToPerson = value => {
   return person;
 };
 
-export const getPerson = personId => {
-  return redisClient
+export const getPerson = async personId => {
+  const person = await redisClient
     .getAsync(`${process.env.MOCKSOLARIS_REDIS_PREFIX}:person:${personId}`)
     .then(jsonToPerson);
+
+  person.timedOrders = person.timedOrders || [];
+  return person;
 };
 
 export const getTechnicalUserPerson = () => getPerson("mockpersonkontistgmbh");
@@ -175,6 +178,7 @@ export const savePerson = async person => {
     };
 
     person.account = account;
+    person.timedOrders = person.timedOrders || [];
   }
 
   const response = await redisClient.setAsync(
@@ -198,18 +202,11 @@ export const saveTaxIdentifications = async (personId, data) =>
     JSON.stringify(data, undefined, 2)
   );
 
-export const getTimedOrders = async (personId, accountId) =>
-  JSON.parse(
-    (await redisClient.getAsync(
-      `${process.env.MOCKSOLARIS_REDIS_PREFIX}:timedOrders:${personId}:${accountId}`
-    )) || "[]"
-  );
-
-export const saveTimedOrders = async (personId, accountId, data) =>
-  redisClient.setAsync(
-    `${process.env.MOCKSOLARIS_REDIS_PREFIX}:timedOrders:${personId}:${accountId}`,
-    JSON.stringify(data, undefined, 2)
-  );
+export const getTimedOrders = async personId => {
+  const person = await getPerson(personId);
+  const timedOrders = person.timedOrders || [];
+  return timedOrders;
+};
 
 export const getMobileNumber = async personId =>
   JSON.parse(
@@ -255,6 +252,12 @@ export const getAllPersons = () => {
         if (!p1.createdAt && !p2.createdAt) return 0;
         return p1.createdAt > p2.createdAt ? -1 : 1;
       })
+    )
+    .then(results =>
+      results.map(person => ({
+        ...person,
+        timedOrders: person.timedOrders || []
+      }))
     );
 };
 
