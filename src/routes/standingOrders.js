@@ -217,13 +217,15 @@ const updateStandingOrderNextOccurrenceDateAndStatus = async (
     moment(standingOrder.next_occurrence),
     standingOrder.reoccurrence
   );
-  standingOrder.next_occurrence = nextOccurence.format("YYYY-MM-DD");
 
   if (
-    standingOrder.lastExecutionDate &&
-    nextOccurence.isAfter(standingOrder.lastExecutionDate)
+    standingOrder.last_execution_date &&
+    nextOccurence.isAfter(standingOrder.last_execution_date)
   ) {
+    standingOrder.next_occurrence = null;
     standingOrder.status = "INACTIVE";
+  } else {
+    standingOrder.next_occurrence = nextOccurence.format("YYYY-MM-DD");
   }
 
   await savePerson(person);
