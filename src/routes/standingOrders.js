@@ -189,8 +189,13 @@ export const generateStandingOrderForPerson = standingOrderData => {
 export const triggerStandingOrderRequestHandler = async (req, res) => {
   const { personId, standingOrderId } = req.params;
 
+  const declineReason = await checkStandingOrderPreconditions(
+    personId,
+    standingOrderId
+  );
+
   let booking;
-  if (await hasFundsToExecuteStandingOrder(personId, standingOrderId)) {
+  if (!declineReason) {
     booking = await processQueuedBooking(personId, standingOrderId, true);
   }
 
@@ -199,9 +204,30 @@ export const triggerStandingOrderRequestHandler = async (req, res) => {
     personId,
     standingOrderId
   );
-  await sendSepaScheduledTransactionWebhook(personId, standingOrderId, booking);
+
+  await sendSepaScheduledTransactionWebhook({
+    personId,
+    standingOrderId,
+    booking,
+    declineReason
+  });
 
   res.redirect("back");
+};
+
+const checkStandingOrderPreconditions = async (personId, standingOrderId) => {
+  const person = await getPerson(personId);
+  const { locking_status: accountLockingStatus } = person.account;
+  if (!["NO_BLOCK", "CREDIT_BLOCK"].includes(accountLockingStatus)) {
+    return `Expected the status for 'Solaris::Account' to be 'NO_BLOCK, CREDIT_BLOCK' but was '${accountLockingStatus}'`;
+  }
+
+  if (!(await hasFundsToExecuteStandingOrder(personId, standingOrderId))) {
+    return "There were insufficient funds to complete this action.";
+  }
+
+  // All checks have been passed. Standing order is good to go!
+  return null;
 };
 
 const updateStandingOrderNextOccurrenceDateAndStatus = async (
@@ -387,11 +413,12 @@ const hasFundsToExecuteStandingOrder = async (personId, standingOrderId) => {
   return person.account.balance.value >= standingOrder.amount.value;
 };
 
-const sendSepaScheduledTransactionWebhook = async (
+const sendSepaScheduledTransactionWebhook = async ({
   personId,
   standingOrderId,
-  booking
-) => {
+  booking,
+  declineReason
+}) => {
   const webhook = await getWebhookByType("SEPA_SCHEDULED_TRANSACTION");
 
   if (!webhook) {
@@ -410,12 +437,10 @@ const sendSepaScheduledTransactionWebhook = async (
     reference: standingOrder.reference,
     source: "standing_order",
     source_id: standingOrder.id,
-    status: booking
-      ? STANDING_ORDER_PAYMENT_STATUSES.EXECUTED
-      : STANDING_ORDER_PAYMENT_STATUSES.DECLINED,
-    decline_reason: booking
-      ? null
-      : "There were insufficient funds to complete this action.",
+    status: declineReason
+      ? STANDING_ORDER_PAYMENT_STATUSES.DECLINED
+      : STANDING_ORDER_PAYMENT_STATUSES.EXECUTED,
+    decline_reason: declineReason,
     transaction_id: booking ? booking.transaction_id : null
   };
 
