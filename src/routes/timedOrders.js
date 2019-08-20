@@ -150,7 +150,7 @@ export const authorizeTimedOrder = async (req, res) => {
     return res.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send({
       errors: [
         {
-          id: "61e84443-c322-11e9-bd6d-02420a869307",
+          id: uuid.v4(),
           status: 500,
           code: "generic_error",
           title: "Generic Error",
@@ -190,12 +190,11 @@ export const confirmTimedOrder = async (req, res) => {
     return res.status(HttpStatusCodes.NOT_FOUND).send({
       errors: [
         {
-          id: "8f50f9e6-c325-11e9-95d9-02420a86850a",
+          id: uuid.v4(),
           status: 404,
           code: "model_not_found",
           title: "Model Not Found",
-          detail:
-            "Couldn't find 'Solaris::TimedOrder' for id '6f3091cdf5b39aea51d552e1a414a4e0cto1'."
+          detail: `Couldn't find 'Solaris::TimedOrder' for id '${id}'.`
         }
       ]
     });
@@ -205,12 +204,11 @@ export const confirmTimedOrder = async (req, res) => {
     return res.status(HttpStatusCodes.FORBIDDEN).send({
       errors: [
         {
-          id: "5a69f03a-c325-11e9-95d9-02420a86850a",
+          id: uuid.v4(),
           status: 403,
           code: "invalid_tan",
           title: "Invalid TAN",
-          detail:
-            "Invalid or expired TAN for Solaris::TimedOrder with uid: '6f3091cdf5b39aea51d552e1a414a4e0ctor'"
+          detail: `Invalid or expired TAN for Solaris::TimedOrder with uid: '${id}'`
         }
       ]
     });
