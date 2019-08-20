@@ -1,7 +1,6 @@
 import uuid from "node-uuid";
 import HttpStatusCodes from "http-status";
 
-import { createChangeRequest } from "./changeRequest";
 import { getPerson, savePerson } from "../db";
 import { sendBookingsWebhookPush } from "./backoffice";
 
@@ -16,15 +15,6 @@ const SOLARIS_TIMED_ORDER_STATUSES = {
 };
 
 export const TIMED_ORDER_CREATE = "timed_orders:create";
-
-export const confirmTimedOrder = async person => {
-  const id = person.changeRequest.delta.id;
-  const timedOrder = person.timedOrders.find(order => order.id === id);
-  timedOrder.status = SOLARIS_TIMED_ORDER_STATUSES.SCHEDULED;
-  await savePerson(person);
-
-  return timedOrder;
-};
 
 const mapTimedOrderToTransaction = timedOrder => {
   const {
@@ -108,7 +98,7 @@ export const processTimedOrders = async personId => {
 
 export const createTimedOrder = async (req, res) => {
   const { body } = req;
-  const { person_id: personId, account_id: accountId } = req.params;
+  const { person_id: personId } = req.params;
   const person = await getPerson(personId);
 
   const {
@@ -149,10 +139,92 @@ export const createTimedOrder = async (req, res) => {
   person.timedOrders.push(timedOrder);
   await savePerson(person);
 
-  return createChangeRequest(req, res, person, TIMED_ORDER_CREATE, {
-    accountId,
-    id: timedOrder.id
-  });
+  res.status(HttpStatusCodes.CREATED).send(timedOrder);
+};
+
+export const authorizeTimedOrder = async (req, res) => {
+  const { person_id: personId, id } = req.params;
+  const { delivery_method: deliveryMethod } = req.body;
+
+  if (deliveryMethod !== "mobile_number") {
+    return res.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send({
+      errors: [
+        {
+          id: "61e84443-c322-11e9-bd6d-02420a869307",
+          status: 500,
+          code: "generic_error",
+          title: "Generic Error",
+          detail: "There was an error."
+        }
+      ]
+    });
+  }
+
+  const person = await getPerson(personId);
+  const timedOrder = person.timedOrders.find(
+    order => order.id === req.params.id
+  );
+  timedOrder.status = SOLARIS_TIMED_ORDER_STATUSES.CONFIRMATION_REQUIRED;
+
+  person.changeRequest = {
+    id,
+    method: deliveryMethod,
+    token: new Date()
+      .getTime()
+      .toString()
+      .slice(-6)
+  };
+
+  await savePerson(person);
+
+  res.status(HttpStatusCodes.CREATED).send(timedOrder);
+};
+
+export const confirmTimedOrder = async (req, res) => {
+  const { person_id: personId, id } = req.params;
+  const { authorization_token: token } = req.body;
+  const person = await getPerson(personId);
+  const changeRequest = person.changeRequest || {};
+
+  if (id !== changeRequest.id) {
+    return res.status(HttpStatusCodes.NOT_FOUND).send({
+      errors: [
+        {
+          id: "8f50f9e6-c325-11e9-95d9-02420a86850a",
+          status: 404,
+          code: "model_not_found",
+          title: "Model Not Found",
+          detail:
+            "Couldn't find 'Solaris::TimedOrder' for id '6f3091cdf5b39aea51d552e1a414a4e0cto1'."
+        }
+      ]
+    });
+  }
+
+  if (token !== changeRequest.token) {
+    return res.status(HttpStatusCodes.FORBIDDEN).send({
+      errors: [
+        {
+          id: "5a69f03a-c325-11e9-95d9-02420a86850a",
+          status: 403,
+          code: "invalid_tan",
+          title: "Invalid TAN",
+          detail:
+            "Invalid or expired TAN for Solaris::TimedOrder with uid: '6f3091cdf5b39aea51d552e1a414a4e0ctor'"
+        }
+      ]
+    });
+  }
+
+  const timedOrder = person.timedOrders.find(
+    order => order.id === req.params.id
+  );
+  timedOrder.status = SOLARIS_TIMED_ORDER_STATUSES.SCHEDULED;
+  person.changeRequest = null;
+
+  await savePerson(person);
+
+  res.status(HttpStatusCodes.CREATED).send(timedOrder);
 };
 
 export const fetchTimedOrders = async (req, res) => {
@@ -200,10 +272,10 @@ export const generateTimedOrder = data => {
     id: uuid.v4(),
     execute_at: executeAt,
     executed_at: null,
-    status: SOLARIS_TIMED_ORDER_STATUSES.CREATED,
+    status: SOLARIS_TIMED_ORDER_STATUSES.AUTHORIZATION_REQUIRED,
     scheduled_transaction: {
       id: uuid.v4(),
-      status: "created",
+      status: "scheduled",
       reference,
       description,
       recipient_iban: recipientIban,
