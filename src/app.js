@@ -216,6 +216,14 @@ router.post(
   "/persons/:person_id/accounts/:account_id/timed_orders",
   safeRequestHandler(timedOrdersAPI.createTimedOrder)
 );
+router.post(
+  "/persons/:person_id/accounts/:account_id/timed_orders/:id/authorize",
+  safeRequestHandler(timedOrdersAPI.authorizeTimedOrder)
+);
+router.post(
+  "/persons/:person_id/accounts/:account_id/timed_orders/:id/confirm",
+  safeRequestHandler(timedOrdersAPI.confirmTimedOrder)
+);
 router.patch(
   "/persons/:person_id/accounts/:account_id/timed_orders/:id/cancel",
   safeRequestHandler(timedOrdersAPI.cancelTimedOrder)
