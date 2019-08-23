@@ -1,6 +1,5 @@
 import { getPerson, savePerson } from "../db";
 import * as log from "../logger";
-import uuid from "uuid";
 import fetch from "node-fetch";
 
 export const requireIdentification = async (req, res) => {
@@ -8,7 +7,7 @@ export const requireIdentification = async (req, res) => {
 
   const { method } = req.body;
 
-  const identificationId = uuid.v4();
+  const identificationId = `identify-${personId}-${new Date().getTime()}`;
 
   let person;
   let identification;
