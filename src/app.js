@@ -6,6 +6,7 @@ import path from "path";
 import * as log from "./logger";
 import * as oauthAPI from "./routes/oauth";
 import * as personsAPI from "./routes/persons";
+import * as deviceBindingAPI from "./routes/deviceBinding";
 import * as standingOrdersAPI from "./routes/standingOrders";
 import * as accountsAPI from "./routes/accounts";
 import * as identificationsAPI from "./routes/identifications";
@@ -112,6 +113,21 @@ router.get("/persons", safeRequestHandler(personsAPI.showPersons));
 router.patch(
   "/persons/:person_id",
   safeRequestHandler(personsAPI.updatePerson)
+);
+
+// DEVICE BINDING
+router.post("/mfa/devices", safeRequestHandler(deviceBindingAPI.createDevice));
+router.put(
+  "/mfa/challenges/signatures/:id",
+  safeRequestHandler(deviceBindingAPI.verifyDevice)
+);
+router.post(
+  "/mfa/challenges/devices",
+  safeRequestHandler(deviceBindingAPI.createDeviceChallenge)
+);
+router.put(
+  "/mfa/challenges/devices/:id",
+  safeRequestHandler(deviceBindingAPI.verifyDeviceChallenge)
 );
 
 // ACCOUNTS

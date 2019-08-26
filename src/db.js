@@ -220,6 +220,53 @@ export const deleteMobileNumber = async personId =>
     `${process.env.MOCKSOLARIS_REDIS_PREFIX}:mobileNumber:${personId}`
   );
 
+export const getDevice = async deviceId =>
+  JSON.parse(
+    await redisClient.getAsync(
+      `${process.env.MOCKSOLARIS_REDIS_PREFIX}:device:${deviceId}`
+    )
+  );
+
+export const getAllDevices = () =>
+  redisClient
+    .keysAsync(`${process.env.MOCKSOLARIS_REDIS_PREFIX}:device:*`)
+    .then(keys => {
+      if (keys.length < 1) {
+        return [];
+      }
+      return redisClient.mgetAsync(keys);
+    })
+    .then(values => values.map(value => JSON.parse(value)));
+
+export const getDevicesByPersonId = personId =>
+  getAllDevices().then(devices =>
+    devices.filter(device => device.person_id === personId)
+  );
+
+export const saveDevice = async device =>
+  redisClient.setAsync(
+    `${process.env.MOCKSOLARIS_REDIS_PREFIX}:device:${device.id}`,
+    JSON.stringify(device, undefined, 2)
+  );
+
+export const getDeviceChallenge = async challengeId =>
+  JSON.parse(
+    await redisClient.getAsync(
+      `${process.env.MOCKSOLARIS_REDIS_PREFIX}:deviceChallenge:${challengeId}`
+    )
+  );
+
+export const deleteDeviceChallenge = async challengeId =>
+  redisClient.delAsync(
+    `${process.env.MOCKSOLARIS_REDIS_PREFIX}:deviceChallenge:${challengeId}`
+  );
+
+export const saveDeviceChallenge = async challenge =>
+  redisClient.setAsync(
+    `${process.env.MOCKSOLARIS_REDIS_PREFIX}:deviceChallenge:${challenge.id}`,
+    JSON.stringify(challenge, undefined, 2)
+  );
+
 export const saveBooking = (accountId, booking) => {
   return findPersonByAccountId(accountId)
     .then(person => {

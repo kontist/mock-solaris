@@ -552,6 +552,43 @@
   {% endif %}
 </div>
 
+<div class="panel panel-default">
+  <div id="devices" class="panel-heading">Devices</div>
+
+  {% if devices.length > 0 %}
+    <table class="table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Key Type</th>
+        <th>Verified ?</th>
+        <th>Challenge created at</th>
+        <th>Challenge expires at</th>
+        <th>Public Key</th>
+      </tr>
+    </thead>
+    {% for device in devices %}
+      <tr>
+        <td>{{ device.id }}</td>
+        <td>{{ device.name }}</td>
+        <td>{{ device.key_type }}</td>
+        <td>
+          {% if device.verified %} ✅ {% else %} ❌ {% endif %}
+        </td>
+        <td>{{ device.signatureChallenge.created_at }}</td>
+        <td>{{ device.signatureChallenge.expires_at }}</td>
+        <td>{{ device.key }}</td>
+      </tr>
+    {% endfor %}
+    </table>
+  {% else %}
+    <div class="panel-body">
+      <i>No devices created for this person</i>
+    </div>
+  {% endif %}
+</div>
+
 <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
   <div class="panel panel-default">
     <div class="panel-heading" role="tab" id="headingOne">

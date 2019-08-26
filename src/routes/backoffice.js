@@ -16,7 +16,8 @@ import {
   saveMobileNumber,
   deleteMobileNumber,
   saveSepaDirectDebitReturn,
-  getWebhookByType
+  getWebhookByType,
+  getDevicesByPersonId
 } from "../db";
 import {
   createSepaDirectDebitReturn,
@@ -148,6 +149,7 @@ export const getPersonHandler = async (req, res) => {
   const person = await findPersonByEmail(req.params.email);
   const mobileNumber = await getMobileNumber(person.id);
   const taxIdentifications = await getTaxIdentifications(person.id);
+  const devices = await getDevicesByPersonId(person.id);
 
   if (shouldReturnJSON(req)) {
     res.send(person);
@@ -156,6 +158,7 @@ export const getPersonHandler = async (req, res) => {
       person,
       mobileNumber,
       taxIdentifications,
+      devices,
       identifications: person.identifications,
       SEIZURE_STATUSES
     });
