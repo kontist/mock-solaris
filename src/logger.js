@@ -12,8 +12,10 @@ export const getLogglyTransportOptions = () => ({
   json: true
 });
 
+const consoleLogger = new winston.transports.Console();
+
 export const getExpressLogger = () => {
-  const transports = [new winston.transports.Console()];
+  const transports = [consoleLogger];
 
   if (LOGGLY_KEY) {
     transports.push(new winston.transports.Loggly(getLogglyTransportOptions()));
@@ -65,3 +67,9 @@ export function error(...args) {
 if (LOGGLY_KEY) {
   winston.add(winston.transports.Loggly, getLogglyTransportOptions());
 }
+
+export const setLogLevel = (logLevel: number | string) => {
+  winston.level = logLevel;
+  winston.transports.Console.level = logLevel;
+  consoleLogger.silent = !logLevel;
+};

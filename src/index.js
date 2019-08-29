@@ -4,9 +4,11 @@ import * as account from "./routes/accounts";
 import * as backOffice from "./routes/backoffice";
 import * as standingOrders from "./routes/standingOrders";
 import { processTimedOrders } from "./routes/timedOrders";
+import * as logger from "./logger";
 
 module.exports = {
   serve,
+  logger,
   flushDb: db.flushDb,
   getPerson: db.getPerson,
   getAllPersons: db.getAllPersons,

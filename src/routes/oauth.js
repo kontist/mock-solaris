@@ -11,7 +11,7 @@ export const generateToken = async (req, res) => {
     const [user, password] = Buffer.from(authHeader.split(" ")[1], "base64")
       .toString()
       .split(":", 2);
-    console.log(user, password, req.query);
+
     isValidRequestUsingBasicAuth =
       req.query.grant_type === "client_credentials" &&
       [

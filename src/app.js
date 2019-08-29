@@ -53,7 +53,7 @@ function logResponseBody(req, res, next) {
       body = `${body.slice(0, 14)}...`;
     }
 
-    console.log("---> ", req.path, ">>", body, "<<");
+    log.debug("---> ", req.path, ">>", body, "<<");
 
     oldEnd.apply(res, arguments);
   };
@@ -402,7 +402,7 @@ export const serve = async port => {
 
   return new Promise((resolve, reject) => {
     app.listen(port, () => {
-      console.log(`mocksolaris listening on http://localhost:${port}/!`);
+      log.debug(`mocksolaris listening on http://localhost:${port}/!`);
       resolve();
     });
   });
