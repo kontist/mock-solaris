@@ -222,7 +222,7 @@ export const authorizeTransaction = async (req, res) => {
     queuedBooking => queuedBooking.id === transferId
   );
 
-  transfer["status"] = "confirmation_required";
+  transfer.status = "confirmation_required";
 
   log.info(
     `authorizeTransaction - transaction\n${JSON.stringify(transfer, null, 2)}`
