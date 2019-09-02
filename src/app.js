@@ -117,6 +117,10 @@ router.patch(
 
 // DEVICE BINDING
 router.post("/mfa/devices", safeRequestHandler(deviceBindingAPI.createDevice));
+router.get(
+  "/mfa/devices/:id",
+  safeRequestHandler(deviceBindingAPI.getDeviceInfo)
+);
 router.put(
   "/mfa/challenges/signatures/:id",
   safeRequestHandler(deviceBindingAPI.verifyDevice)

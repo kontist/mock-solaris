@@ -111,6 +111,34 @@ export const verifyDevice = async (req, res) => {
   res.sendStatus(204);
 };
 
+export const getDeviceInfo = async (req, res) => {
+  const { id: deviceId } = req.params;
+
+  const device = await getDevice(deviceId);
+
+  if (!device || !device.verified) {
+    res.status(404).send({
+      errors: [
+        {
+          id: uuid.v4(),
+          status: 404,
+          code: "not_found",
+          title: "Not Found",
+          detail: `device "${deviceId}" not found`
+        }
+      ]
+    });
+    return;
+  }
+
+  res.send({
+    id: device.id,
+    person_id: device.person_id,
+    name: device.name,
+    created_at: device.signatureChallenge.created_at
+  });
+};
+
 export const createDeviceChallenge = async (req, res) => {
   const { device_id: deviceId } = req.body;
 
