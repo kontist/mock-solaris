@@ -62,14 +62,7 @@ const SEIZURE_EXAMPLE = {
   }
 };
 
-export const createSeizureRequestHandler = async (req, res) => {
-  const { person_id: personId } = req.params;
-
-  log.info("createSeizureRequestHandler()", {
-    reqBody: req.body,
-    reqParams: req.params
-  });
-
+export const createSeizure = async personId => {
   const person = await getPerson(personId);
 
   const today = moment().format("YYYY-MM-DD");
@@ -81,6 +74,19 @@ export const createSeizureRequestHandler = async (req, res) => {
   };
 
   await savePerson(person);
+  return person;
+};
+
+export const createSeizureRequestHandler = async (req, res) => {
+  const { person_id: personId } = req.params;
+
+  log.info("createSeizureRequestHandler()", {
+    reqBody: req.body,
+    reqParams: req.params
+  });
+
+  const person = await createSeizure(personId);
+
   await sendPersonSeizureCreatedWebhook(person.id, person.seizure);
   await updateAccountLockingStatus(person.id, "BLOCK");
 

@@ -5,6 +5,7 @@ import * as backOffice from "./routes/backoffice";
 import * as standingOrders from "./routes/standingOrders";
 import { processTimedOrders } from "./routes/timedOrders";
 import * as logger from "./logger";
+import { createSeizure } from "./routes/seizures";
 
 module.exports = {
   serve,
@@ -29,5 +30,6 @@ module.exports = {
   confirmStandingOrderCancelation:
     standingOrders.confirmStandingOrderCancelation,
   getSmsToken: db.getSmsToken,
-  processTimedOrders
+  processTimedOrders,
+  createSeizure
 };
