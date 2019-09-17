@@ -164,9 +164,7 @@ export const savePerson = async person => {
     const transactionsBalance = transactions
       .filter(transaction => new Date(transaction.valuta_date).getTime() < now)
       .reduce(addAmountValues, 0);
-    const confirmedTransfersBalance = queuedBookings
-      .filter(booking => booking.status === "accepted")
-      .reduce(addAmountValues, 0);
+    const confirmedTransfersBalance = queuedBookings.reduce(addAmountValues, 0);
 
     account.balance = {
       value: transactionsBalance
