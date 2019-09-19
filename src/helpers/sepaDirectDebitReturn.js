@@ -1,9 +1,6 @@
 import uuid from "uuid";
-import fetch from "node-fetch";
 
-import * as log from "../logger";
-
-import { getSepaDirectDebitReturnWebhook } from "../db";
+import { triggerWebhook } from "../helpers/webhooks";
 
 export const createSepaDirectDebitReturn = (person, directDebitReturn) => {
   return {
@@ -23,17 +20,5 @@ export const createSepaDirectDebitReturn = (person, directDebitReturn) => {
   };
 };
 
-export const sendSepaDirectDebitReturnPush = async sepaDirectDebitReturn => {
-  const webhook = await getSepaDirectDebitReturnWebhook();
-
-  if (!webhook) {
-    log.error("(sendSepaDirectDebitReturnPush) Webhook doesnt exist");
-    return;
-  }
-
-  return fetch(webhook.url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(sepaDirectDebitReturn)
-  });
-};
+export const triggerSepaDirectDebitReturnWebhook = sepaDirectDebitReturn =>
+  triggerWebhook("SEPA_DIRECT_DEBIT_RETURN", sepaDirectDebitReturn);

@@ -10,59 +10,26 @@ import {
   getTaxIdentifications,
   findPersonByAccountId,
   findPersonByEmail,
-  getIdentificationWebhook,
-  getBookingWebhook,
   getMobileNumber,
   saveMobileNumber,
   deleteMobileNumber,
   saveSepaDirectDebitReturn,
-  getWebhookByType,
   getDevicesByPersonId
 } from "../db";
 import {
   createSepaDirectDebitReturn,
-  sendSepaDirectDebitReturnPush
+  triggerSepaDirectDebitReturnWebhook
 } from "../helpers/sepaDirectDebitReturn";
 import { shouldReturnJSON } from "../helpers";
+import { triggerWebhook } from "../helpers/webhooks";
 import { SEIZURE_STATUSES } from "./seizures";
 
 import * as log from "../logger";
 
-const sendIdentificationWebhookPush = payload => {
-  return getIdentificationWebhook()
-    .then(webhook => {
-      if (!webhook) {
-        log.error("(sendIdentificationWebhookPush) Webhook doesnt exist");
-        return Promise.resolve();
-      }
+const triggerIdentificationWebhook = payload =>
+  triggerWebhook("IDENTIFICATION", payload);
 
-      return fetch(webhook.url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      })
-        .then(() => {
-          log.info("Webhook identification push sent", payload);
-        })
-        .catch(err => {
-          log.error("Webhook identification push NOT sent", payload, err);
-          throw err;
-        });
-    })
-    .catch(err => {
-      log.error("Webhook identification push failed", err);
-      throw err;
-    });
-};
-
-const sendLockingStatusChangeWebhook = async person => {
-  const webhook = await getWebhookByType("ACCOUNT_BLOCK");
-
-  if (!webhook) {
-    log.error("(sendLockingStatusChangeWebhook) Webhook does not exist");
-    return;
-  }
-
+const triggerAccountBlockWebhook = async person => {
   const { iban, id: accountId, locking_status: lockingStatus } = person.account;
 
   const payload = {
@@ -74,40 +41,12 @@ const sendLockingStatusChangeWebhook = async person => {
     iban
   };
 
-  await fetch(webhook.url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
-  });
+  await triggerWebhook("ACCOUNT_BLOCK", payload);
 };
 
-export const sendBookingsWebhookPush = solarisAccountId => {
-  return getBookingWebhook()
-    .then(webhook => {
-      if (!webhook) {
-        log.error("(sendBookingsWebhookPush) Webhook doesnt exist");
-        return Promise.resolve();
-      }
-
-      const payload = { account_id: solarisAccountId };
-
-      return fetch(webhook.url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      })
-        .then(() => {
-          log.info("Webhook bookings push sent", payload);
-        })
-        .catch(err => {
-          log.error("Webhook bookings push failed", payload, err);
-          throw err;
-        });
-    })
-    .catch(err => {
-      log.error("Webhook bookings push failed", err);
-      throw err;
-    });
+export const triggerBookingsWebhook = async solarisAccountId => {
+  const payload = { account_id: solarisAccountId };
+  await triggerWebhook("BOOKING", payload);
 };
 
 const filterAndSortIdentifications = (identifications, method) => {
@@ -226,7 +165,7 @@ export const setIdentificationState = async (req, res) => {
     }
   }
 
-  await sendIdentificationWebhookPush({
+  await triggerIdentificationWebhook({
     id: identification.id,
     url: identification.url,
     person_id: identification.person_id,
@@ -389,10 +328,10 @@ export const processQueuedBooking = async (
   }
 
   await savePerson(person);
-  await sendBookingsWebhookPush(person.account.id);
+  await triggerBookingsWebhook(person.account.id);
 
   if (sepaDirectDebitReturn) {
-    await sendSepaDirectDebitReturnPush(sepaDirectDebitReturn);
+    await triggerSepaDirectDebitReturnWebhook(sepaDirectDebitReturn);
   }
 
   return booking;
@@ -531,7 +470,7 @@ export const updateAccountLockingStatus = async (personId, lockingStatus) => {
   await savePerson(person);
 
   if (lockingStatus !== previousLockingStatus) {
-    await sendLockingStatusChangeWebhook(person);
+    await triggerAccountBlockWebhook(person);
   }
 };
 

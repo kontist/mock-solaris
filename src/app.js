@@ -232,6 +232,10 @@ router.get(
   "/persons/:person_id/accounts/:account_id/timed_orders",
   safeRequestHandler(timedOrdersAPI.fetchTimedOrders)
 );
+router.get(
+  "/persons/:person_id/accounts/:account_id/timed_orders/:id",
+  safeRequestHandler(timedOrdersAPI.fetchTimedOrder)
+);
 router.post(
   "/persons/:person_id/accounts/:account_id/timed_orders",
   safeRequestHandler(timedOrdersAPI.createTimedOrder)
@@ -369,6 +373,14 @@ app.post(
 );
 
 // BACKOFFICE - TIMED ORDERS
+app.post(
+  "/__BACKOFFICE__/triggerTimedOrder/:person_id/:timed_order_id",
+  safeRequestHandler(async (req, res) => {
+    const { person_id: personId, timed_order_id: timedOrderId } = req.params;
+    await timedOrdersAPI.triggerTimedOrder(personId, timedOrderId);
+    res.redirect("back");
+  })
+);
 app.post(
   "/__BACKOFFICE__/processTimedOrders/:person_id",
   safeRequestHandler(async (req, res) => {

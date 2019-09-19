@@ -348,12 +348,6 @@ export const getWebhooks = () => {
 export const getWebhookByType = async type =>
   (await getWebhooks()).find(webhook => webhook.event_type === type);
 
-export const getIdentificationWebhook = () =>
-  getWebhookByType("IDENTIFICATION");
-export const getBookingWebhook = () => getWebhookByType("BOOKING");
-export const getSepaDirectDebitReturnWebhook = () =>
-  getWebhookByType("SEPA_DIRECT_DEBIT_RETURN");
-
 export const getSepaDirectDebitReturns = async () => {
   const sepaDirectDebitReturns = JSON.parse(
     (await redisClient.getAsync(

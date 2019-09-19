@@ -1,8 +1,10 @@
 import uuid from "node-uuid";
 import HttpStatusCodes from "http-status";
+import moment from "moment";
 
 import { getPerson, savePerson } from "../db";
-import { sendBookingsWebhookPush } from "./backoffice";
+import { triggerBookingsWebhook } from "./backoffice";
+import { triggerWebhook } from "../helpers/webhooks";
 
 const SOLARIS_TIMED_ORDER_STATUSES = {
   CREATED: "CREATED",
@@ -56,14 +58,14 @@ const mapTimedOrderToTransaction = timedOrder => {
 const shouldProcessTimedOrder = timedOrder =>
   timedOrder.status === SOLARIS_TIMED_ORDER_STATUSES.SCHEDULED &&
   !timedOrder.executed_at &&
-  new Date(timedOrder.execute_at) < new Date();
+  moment(timedOrder.execute_at).isSameOrBefore(moment(), "day");
 
 const processTimedOrder = async (person, timedOrder) => {
   const timedOrderValue = Math.abs(
     timedOrder.scheduled_transaction.amount.value
   );
 
-  timedOrder.executed_at = timedOrder.execute_at;
+  timedOrder.executed_at = new Date().toISOString();
   // if user has less money on account than timed order value, timed order fails
   if (person.account.balance.value < timedOrderValue) {
     timedOrder.status = SOLARIS_TIMED_ORDER_STATUSES.FAILED;
@@ -78,11 +80,18 @@ const processTimedOrder = async (person, timedOrder) => {
   person.timedOrders[itemIndex] = timedOrder;
   const updatedPerson = await savePerson(person);
 
+  await triggerTimedOrderWebhook(person, timedOrder);
   if (timedOrder.status === SOLARIS_TIMED_ORDER_STATUSES.EXECUTED) {
-    await sendBookingsWebhookPush(person.account.id);
+    await triggerBookingsWebhook(person.account.id);
   }
 
   return updatedPerson;
+};
+
+export const triggerTimedOrder = async (personId, timedOrderId) => {
+  const person = await getPerson(personId);
+  const timedOrder = person.timedOrders.find(({ id }) => id === timedOrderId);
+  await processTimedOrder(person, timedOrder);
 };
 
 export const processTimedOrders = async personId => {
@@ -291,4 +300,22 @@ export const generateTimedOrder = data => {
   };
 
   return template;
+};
+
+const triggerTimedOrderWebhook = async (person, timedOrder) => {
+  const {
+    id,
+    status,
+    scheduled_transaction: { reference }
+  } = timedOrder;
+
+  const payload = {
+    id,
+    reference,
+    status,
+    account_id: person.account.id,
+    processed_at: new Date().toISOString()
+  };
+
+  await triggerWebhook("SEPA_TIMED_ORDER", payload);
 };

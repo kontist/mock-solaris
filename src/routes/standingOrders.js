@@ -2,10 +2,10 @@ import crypto from "crypto";
 import assert from "assert";
 import moment from "moment";
 import uuid from "uuid";
-import fetch from "node-fetch";
 import _ from "lodash";
 
-import { getPerson, savePerson, getWebhookByType } from "../db";
+import { getPerson, savePerson } from "../db";
+import { triggerWebhook } from "../helpers/webhooks";
 import * as log from "../logger";
 import { findPersonByIdOrEmail, processQueuedBooking } from "./backoffice";
 
@@ -205,7 +205,7 @@ export const triggerStandingOrderRequestHandler = async (req, res) => {
     standingOrderId
   );
 
-  await sendSepaScheduledTransactionWebhook({
+  await triggerSepaScheduledTransactionWebhook({
     personId,
     standingOrderId,
     booking,
@@ -413,18 +413,12 @@ const hasFundsToExecuteStandingOrder = async (personId, standingOrderId) => {
   return person.account.balance.value >= standingOrder.amount.value;
 };
 
-const sendSepaScheduledTransactionWebhook = async ({
+const triggerSepaScheduledTransactionWebhook = async ({
   personId,
   standingOrderId,
   booking,
   declineReason
 }) => {
-  const webhook = await getWebhookByType("SEPA_SCHEDULED_TRANSACTION");
-
-  if (!webhook) {
-    log.error("(sendSepaScheduledTransactionWebhook) Webhook does not exist");
-    return;
-  }
   const { person, standingOrder } = await getPersonWithStandingOrder(
     personId,
     standingOrderId
@@ -444,11 +438,7 @@ const sendSepaScheduledTransactionWebhook = async ({
     transaction_id: booking ? booking.transaction_id : null
   };
 
-  await fetch(webhook.url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
-  });
+  await triggerWebhook("SEPA_SCHEDULED_TRANSACTION", payload);
 };
 
 const getPersonWithStandingOrder = async (personId, standingOrderId) => {

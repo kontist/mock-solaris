@@ -1,9 +1,9 @@
-import fetch from "node-fetch";
 import uuid from "uuid";
 import moment from "moment";
 
 import * as log from "../logger";
-import { getPerson, savePerson, getWebhookByType } from "../db";
+import { getPerson, savePerson } from "../db";
+import { triggerWebhook } from "../helpers/webhooks";
 import { updateAccountLockingStatus } from "./backoffice";
 
 export const SEIZURE_STATUSES = {
@@ -87,7 +87,7 @@ export const createSeizureRequestHandler = async (req, res) => {
 
   const person = await createSeizure(personId);
 
-  await sendPersonSeizureCreatedWebhook(person.id, person.seizure);
+  await triggerPersonSeizureCreatedWebhook(person.id, person.seizure);
   await updateAccountLockingStatus(person.id, "BLOCK");
 
   res.redirect("back");
@@ -119,7 +119,7 @@ export const deleteSeizureRequestHandler = async (req, res) => {
   person.seizure = null;
 
   await savePerson(person);
-  await sendPersonSeizureDeletedWebhook(person.id, deletedSeizure);
+  await triggerPersonSeizureDeletedWebhook(person.id, deletedSeizure);
   await updateAccountLockingStatus(person.id, "NO_BLOCK");
 
   res.redirect("back");
@@ -142,34 +142,14 @@ export const fulfillSeizureRequestHandler = async (req, res) => {
   res.redirect("back");
 };
 
-const sendPersonSeizureCreatedWebhook = async (personId, seizure) => {
-  const webhook = await getWebhookByType("PERSON_SEIZURE_CREATED");
-
-  if (!webhook) {
-    log.error("(sendPersonSeizureCreatedWebhook) Webhook does not exist");
-    return;
-  }
+const triggerPersonSeizureCreatedWebhook = async (personId, seizure) => {
   const payload = getSeizureWebhookPayload(personId, seizure);
-  await fetch(webhook.url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
-  });
+  await triggerWebhook("PERSON_SEIZURE_CREATED", payload);
 };
 
-const sendPersonSeizureDeletedWebhook = async (personId, seizure) => {
-  const webhook = await getWebhookByType("PERSON_SEIZURE_DELETED");
-
-  if (!webhook) {
-    log.error("(sendPersonSeizureDeletedWebhook) Webhook does not exist");
-    return;
-  }
+const triggerPersonSeizureDeletedWebhook = async (personId, seizure) => {
   const payload = getSeizureWebhookPayload(personId, seizure);
-  await fetch(webhook.url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
-  });
+  await triggerWebhook("PERSON_SEIZURE_DELETED", payload);
 };
 
 const getSeizureWebhookPayload = (personId, seizure) => ({

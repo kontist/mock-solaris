@@ -489,6 +489,7 @@
           <th>recipient_iban</th>
           <th>recipient_name</th>
           <th>end_to_end_id</th>
+          <th>Trigger</th>
       </tr>
     </thead>
     {% for timedOrder in person.timedOrders %}
@@ -502,6 +503,15 @@
           <td>{{ timedOrder.scheduled_transaction.recipient_iban }}</td>
           <td>{{ timedOrder.scheduled_transaction.recipient_name }}</td>
           <td>{{ timedOrder.scheduled_transaction.end_to_end_id }}</td>
+          <td>
+            {% if timedOrder.status === "SCHEDULED" %}
+            <form method="POST" action="/__BACKOFFICE__/triggerTimedOrder/{{ person.id }}/{{ timedOrder.id }}">
+                <button type="submit" class="btn btn-default">
+                  ➡️ Trigger now
+                </button>
+            </form>
+            {% endif %}
+          </td>
       </tr>
     {% endfor %}
     </table>
