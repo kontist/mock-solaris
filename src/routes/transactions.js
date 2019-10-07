@@ -9,9 +9,6 @@ import {
 } from "../db";
 
 export const createSepaDirectDebit = async (req, res) => {
-  log.debug("params", req.params);
-  log.debug("body", req.body);
-
   const {
     amount,
     description,
@@ -21,9 +18,10 @@ export const createSepaDirectDebit = async (req, res) => {
     end_to_end_id: e2eId
   } = req.body;
 
-  log.info(
-    `createSepaDirectDebit - req.body\n${JSON.stringify(req.body, null, 2)}`
-  );
+  log.debug("createSepaDirectDebit", {
+    body: req.body,
+    params: req.params
+  });
 
   const { debtor_iban: iban } = mandate;
 
@@ -60,11 +58,10 @@ export const createSepaDirectDebit = async (req, res) => {
   person.account.available_balance = person.account.available_balance || {};
   person.account.available_balance.value = person.account.balance.value;
 
-  log.info(
-    `Person amount after update: ${
-      person.account.balance.value
-    }, booking amount: ${Math.abs(amount.value)}`
-  );
+  log.debug("Person account balance after update", {
+    balance: person.account.balance.value,
+    bookingAmount: amount.value
+  });
 
   if (person.account.balance.value < 0) {
     const directDebitReturn = {
@@ -74,14 +71,6 @@ export const createSepaDirectDebit = async (req, res) => {
     person.queuedBookings.push(directDebitReturn);
     technicalPerson.transactions.push(directDebitReturn);
   }
-
-  log.info(
-    `createSepaDirectDebit - transaction\n${JSON.stringify(
-      queuedBooking,
-      null,
-      2
-    )}`
-  );
 
   await savePerson(person);
   await savePerson(technicalPerson);
@@ -96,10 +85,7 @@ export const createSepaDirectDebit = async (req, res) => {
 };
 
 export const createSepaCreditTransfer = async (req, res) => {
-  log.debug("params", req.params);
-  log.debug("body", req.body);
-
-  const { person_id: personId, account_id: accountId } = req.params;
+  const { person_id: personId } = req.params;
 
   const {
     amount,
@@ -112,62 +98,12 @@ export const createSepaCreditTransfer = async (req, res) => {
     end_to_end_id: e2eId
   } = req.body;
 
-  if (description === "timeout") {
-    log.debug("timeout here");
-    return;
-  }
+  log.debug("createSepaCreditTransfer", {
+    body: req.body,
+    params: req.params
+  });
 
-  if (description === "fail") {
-    const value = parseInt(String(amount).slice(0, 3), 10);
-    log.debug("error", value, "here");
-    res.setHeader("Content-Type", "application/json");
-    res.status(value).send({
-      errors: [
-        {
-          id: "a71a242a3550f0b38de423b68c451914ex",
-          status: value,
-          code: "invalid_model",
-          title: "Invalid Model",
-          detail:
-            'Invalid or expired Model for Solaris::SepaCreditTransaction with uid: "mockmockmock"'
-        }
-      ]
-    });
-    return;
-  }
-
-  if (description === "insufficientfunds") {
-    log.debug("There were insufficient funds to complete this action.");
-    res.setHeader("Content-Type", "application/json");
-    res.status(400).send({
-      errors: [
-        {
-          id: "fake-transfer-id",
-          status: 400,
-          code: "insufficient_funds",
-          title: "Insufficient Funds",
-          detail: "There were insufficient funds to complete this action."
-        }
-      ]
-    });
-    return;
-  }
-
-  log.info(
-    `createSepaCreditTransfer - req.body\n${JSON.stringify(req.body, null, 2)}`
-  );
-
-  const person = (await getPerson(personId)) || {
-    transactions: [],
-    transfers: [],
-    identifications: {},
-    account: {
-      id: accountId
-    }
-  };
-
-  person.queuedBookings = person.queuedBookings || [];
-
+  const person = await getPerson(personId);
   const queuedBooking = {
     booking_type: "SEPA_CREDIT_TRANSFER",
     amount: {
@@ -187,15 +123,9 @@ export const createSepaCreditTransfer = async (req, res) => {
 
   person.queuedBookings.push(queuedBooking);
 
-  log.info(
-    `createSepaCreditTransfer - transaction\n${JSON.stringify(
-      queuedBooking,
-      null,
-      2
-    )}`
-  );
-
   await savePerson(person);
+
+  log.debug("booking pushed to list of pending transfers", { queuedBooking });
 
   res.status(200).send({
     ...queuedBooking,
@@ -208,72 +138,79 @@ export const createSepaCreditTransfer = async (req, res) => {
 };
 
 export const authorizeTransaction = async (req, res) => {
-  log.info("authorizeTransaction - req.params", req.params);
-  log.info("authorizeTransaction - req.body", req.body);
-
   const { person_id: personId, transfer_id: transferId } = req.params;
 
-  log.info(
-    `authorizeTransaction - req.body\n${JSON.stringify(req.body, null, 2)}`
-  );
+  log.debug("authorizeTransaction", {
+    body: req.body,
+    params: req.params
+  });
 
   const person = await getPerson(personId);
-  const transfer = (person.queuedBookings || []).find(
+  const transfer = person.queuedBookings.find(
     queuedBooking => queuedBooking.id === transferId
   );
 
   transfer.status = "confirmation_required";
-
-  log.info(
-    `authorizeTransaction - transaction\n${JSON.stringify(transfer, null, 2)}`
-  );
+  const token = new Date()
+    .getTime()
+    .toString()
+    .slice(-6);
+  person.changeRequest = {
+    token,
+    id: transferId,
+    method: "wiretransfer"
+  };
 
   await savePerson(person);
+
+  log.info("authorized transfer", { transfer, token });
 
   res.status(200).send(transfer);
 };
 
 export const confirmTransaction = async (req, res) => {
-  log.info("params", req.params);
-  log.info("body", req.body);
-
   const { person_id: personId, transfer_id: transferId } = req.params;
+  const { authorization_token: token } = req.body;
 
-  // eslint-disable-next-line camelcase
-  const { authorization_token } = req.body;
+  const person = await getPerson(personId);
+  const changeRequest = person.changeRequest || {};
+  const transfer = person.queuedBookings.find(
+    queuedBooking => queuedBooking.id === transferId
+  );
 
-  if (authorization_token.startsWith("0000")) {
-    log.debug("timeout here");
-    return;
-  }
+  log.info("confirmTransaction", {
+    body: req.body,
+    params: req.params,
+    changeRequest
+  });
 
-  if (authorization_token[0] === "0") {
-    const value = parseInt(authorization_token.slice(1, 4), 10);
-    log.debug("error", value, "here");
-    res.setHeader("Content-Type", "application/json");
-    res.status(value).send({
+  if (transferId !== changeRequest.id || !transfer) {
+    return res.status(404).send({
       errors: [
         {
-          id: "a71a242a3550f0b38de423b68c451914ex",
-          status: value,
-          code: "invalid_tan",
-          title: "Invalid TAN",
-          detail:
-            'Invalid or expired TAN for Solaris::SepaCreditTransaction with uid: "mockmockmock"'
+          id: uuid.v4(),
+          status: 404,
+          code: "model_not_found",
+          title: "Model Not Found",
+          detail: `Couldn't find 'Solaris::WireTransfer' for id '${transferId}'.`
         }
       ]
     });
-    return;
   }
 
-  log.info(
-    `confirmTransaction - req.body\n${JSON.stringify(req.body, null, 2)}`
-  );
-
-  const person = await getPerson(personId);
-  const transfer = (person.queuedBookings || []).find(
-    queuedBooking => queuedBooking.id === transferId
-  );
+  if (token !== changeRequest.token) {
+    return res.status(403).send({
+      errors: [
+        {
+          id: uuid.v4(),
+          status: 403,
+          code: "invalid_tan",
+          title: "Invalid TAN",
+          detail: `Invalid or expired TAN for Solaris::WireTransfer with id: '${transferId}'`
+        }
+      ]
+    });
+  }
 
   const today = moment().format("YYYY-MM-DD");
 
@@ -285,11 +222,11 @@ export const confirmTransaction = async (req, res) => {
     status: "accepted"
   });
 
-  log.info(
-    `confirmTransaction - transaction\n${JSON.stringify(transfer, null, 2)}`
-  );
+  person.changeRequest = null;
 
   await savePerson(person);
+
+  log.debug("transfer confirmed", { transfer });
 
   res.status(200).send(transfer);
 };

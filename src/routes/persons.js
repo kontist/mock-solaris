@@ -19,6 +19,7 @@ export const createPerson = (req, res) => {
     identifications: {},
     transactions: [],
     statements: [],
+    queuedBookings: [],
     createdAt: new Date().toISOString()
   };
 

@@ -228,7 +228,7 @@ export const processQueuedBooking = async (
   if (isStandingOrder) {
     bookings = person.standingOrders || [];
   } else {
-    bookings = person.queuedBookings || [];
+    bookings = person.queuedBookings;
   }
 
   let booking;
@@ -348,7 +348,8 @@ export const generateBookingForPerson = bookingData => {
     iban,
     transactionId,
     bookingDate,
-    valutaDate
+    valutaDate,
+    status
   } = bookingData;
 
   const recipientName = `${person.salutation} ${person.first_name} ${person.last_name}`;
@@ -376,7 +377,8 @@ export const generateBookingForPerson = bookingData => {
     sender_name: senderName || "mocksolaris",
     end_to_end_id: endToEndId,
     booking_type: bookingType,
-    transaction_id: transactionId
+    transaction_id: transactionId,
+    status
   };
 };
 
@@ -419,7 +421,8 @@ export const queueBookingRequestHandler = async (req, res) => {
     iban,
     transactionId,
     bookingDate,
-    valutaDate
+    valutaDate,
+    status
   } = req.body;
 
   senderName = senderName || "mocksolaris";
@@ -427,9 +430,6 @@ export const queueBookingRequestHandler = async (req, res) => {
   amount = amount ? parseInt(amount, 10) : parseInt(Math.random() * 10000, 10);
 
   const person = await findPerson();
-
-  person.queuedBookings = person.queuedBookings || [];
-
   const queuedBooking = generateBookingForPerson({
     person,
     purpose,
@@ -441,7 +441,8 @@ export const queueBookingRequestHandler = async (req, res) => {
     iban,
     transactionId,
     bookingDate,
-    valutaDate
+    valutaDate,
+    status
   });
 
   person.queuedBookings.push(queuedBooking);

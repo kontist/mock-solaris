@@ -241,7 +241,7 @@
 
 <div class="panel panel-default">
   <div id="queuedBookings" class="panel-heading">Queued bookings</div>
-  {% if (person.queuedBookings || []).length > 0 %}
+  {% if person.queuedBookings.length > 0 %}
   <table class="table">
     <thead>
       <tr>
