@@ -19,6 +19,10 @@ import {
   processChangeRequest as tinProcessChangeRequest
 } from "./taxIdentifications";
 import { TIMED_ORDER_CREATE, confirmTimedOrder } from "./timedOrders";
+import {
+  BATCH_TRANSFER_CREATE_METHOD,
+  confirmBatchTransfer
+} from "./batchTransfers";
 
 export const createChangeRequest = async (req, res, person, method, delta) => {
   const personId = person.id;
@@ -150,6 +154,12 @@ export const confirmChangeRequest = async (req, res) => {
       break;
     case TIMED_ORDER_CREATE:
       response.response_body = await confirmTimedOrder(person);
+      break;
+    case BATCH_TRANSFER_CREATE_METHOD:
+      response.response_body = await confirmBatchTransfer(
+        person,
+        changeRequestId
+      );
       break;
     default:
       status = 400;

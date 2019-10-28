@@ -21,6 +21,7 @@ import * as changeRequestAPI from "./routes/changeRequest";
 import * as returnNotificationsAPI from "./routes/sepaDirectDebitReturns";
 import * as seizuresAPI from "./routes/seizures";
 import * as timedOrdersAPI from "./routes/timedOrders";
+import * as batchTransfersAPI from "./routes/batchTransfers";
 import * as e2eAPI from "./routes/e2e";
 
 import { migrate } from "./db";
@@ -251,6 +252,12 @@ router.post(
 router.patch(
   "/persons/:person_id/accounts/:account_id/timed_orders/:id/cancel",
   safeRequestHandler(timedOrdersAPI.cancelTimedOrder)
+);
+
+// BATCHED TRANSFERS
+router.post(
+  "/persons/:person_id/accounts/:account_id/transactions/sepa_credit_transfer/batches",
+  safeRequestHandler(batchTransfersAPI.createBatchTransfer)
 );
 
 // ACCOUNT STATEMENTS

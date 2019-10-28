@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import uuid from "uuid";
 import moment from "moment";
 import * as log from "../logger";
@@ -86,17 +87,7 @@ export const createSepaDirectDebit = async (req, res) => {
 
 export const createSepaCreditTransfer = async (req, res) => {
   const { person_id: personId } = req.params;
-
-  const {
-    amount,
-    description,
-    // eslint-disable-next-line camelcase
-    recipient_iban,
-    // eslint-disable-next-line camelcase
-    recipient_name,
-    reference,
-    end_to_end_id: e2eId
-  } = req.body;
+  const transfer = req.body;
 
   log.debug("createSepaCreditTransfer", {
     body: req.body,
@@ -104,23 +95,8 @@ export const createSepaCreditTransfer = async (req, res) => {
   });
 
   const person = await getPerson(personId);
-  const queuedBooking = {
-    booking_type: "SEPA_CREDIT_TRANSFER",
-    amount: {
-      ...amount,
-      value: -amount.value,
-      currency: amount.currency || "EUR"
-    },
-    description: description,
-    end_to_end_id: e2eId || null,
-    id: uuid.v4(),
-    recipient_bic: null,
-    recipient_iban: recipient_iban,
-    recipient_name: recipient_name,
-    reference: reference,
-    status: "authorization_required"
-  };
 
+  const queuedBooking = creteBookingFromSepaCreditTransfer(transfer);
   person.queuedBookings.push(queuedBooking);
 
   await savePerson(person);
@@ -230,3 +206,31 @@ export const confirmTransaction = async (req, res) => {
 
   res.status(200).send(transfer);
 };
+
+export const creteBookingFromSepaCreditTransfer = ({
+  id,
+  amount,
+  description = "",
+  end_to_end_id = null,
+  recipient_iban,
+  recipient_name,
+  reference
+}) => ({
+  id: uuid.v4(),
+  booking_type: "SEPA_CREDIT_TRANSFER",
+  amount: {
+    ...amount,
+    value: -amount.value,
+    currency: amount.currency || "EUR"
+  },
+  description: description,
+  end_to_end_id,
+  recipient_bic: null,
+  recipient_iban,
+  recipient_name,
+  reference,
+  status: "authorization_required",
+  transaction_id: id,
+  booking_date: moment().format("YYYY-MM-DD"),
+  valuta_date: moment().format("YYYY-MM-DD")
+});
