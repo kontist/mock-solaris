@@ -10,9 +10,14 @@ import { savePerson } from "../db";
 export const BATCH_TRANSFER_CREATE_METHOD = "batch_transfer:create";
 
 const validateTransfers = transfers => {
+  const references = [];
   for (const transfer of transfers) {
-    const { recipient_name, recipient_iban, amount } = transfer;
-
+    const { recipient_name, recipient_iban, amount, reference } = transfer;
+    if (references.includes(reference)) {
+      log.error("validateTransfers - reference not unique");
+      throw new Error("validateTransfers - reference not unique");
+    }
+    references.push(reference);
     if (!recipient_name || !recipient_iban || !amount || !amount.value) {
       log.error("validateTransfers - field/s missing");
       throw new Error("validateTransfers - field/s missing");
