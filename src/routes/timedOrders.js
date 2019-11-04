@@ -177,7 +177,7 @@ export const authorizeTimedOrder = async (req, res) => {
 
   person.changeRequest = {
     id,
-    method: deliveryMethod,
+    method: TIMED_ORDER_CREATE,
     token: new Date()
       .getTime()
       .toString()
