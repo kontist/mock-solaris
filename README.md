@@ -33,5 +33,5 @@ for integration tests.
 
 In file
 ```
-https://github.com/figureaps/figure-backend/blob/develop/test/mocha/integration/setup.test.js
+https://github.com/kontist/figure-backend/blob/develop/test/mocha/integration/setup.test.js
 ```
