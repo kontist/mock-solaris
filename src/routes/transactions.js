@@ -232,5 +232,6 @@ export const creteBookingFromSepaCreditTransfer = ({
   status: "authorization_required",
   transaction_id: id,
   booking_date: moment().format("YYYY-MM-DD"),
-  valuta_date: moment().format("YYYY-MM-DD")
+  valuta_date: moment().format("YYYY-MM-DD"),
+  meta_info: null
 });
