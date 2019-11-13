@@ -241,9 +241,24 @@ export const fetchTimedOrders = async (req, res) => {
 
 export const fetchTimedOrder = async (req, res) => {
   const person = await getPerson(req.params.person_id);
+  const timedOrderId = req.params.id;
   const timedOrder = person.timedOrders.find(
-    order => order.id === req.params.id
+    order => order.id === timedOrderId
   );
+
+  if (!timedOrder) {
+    res.status(404).send({
+      errors: [
+        {
+          id: uuid.v4(),
+          status: 404,
+          code: "model_not_found",
+          title: "Model Not Found",
+          detail: `Couldn't find 'Solaris::TimedOrder' for id '${timedOrderId}'.`
+        }
+      ]
+    });
+  }
 
   res.send(timedOrder);
 };
