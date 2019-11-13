@@ -22,6 +22,7 @@ import * as returnNotificationsAPI from "./routes/sepaDirectDebitReturns";
 import * as seizuresAPI from "./routes/seizures";
 import * as timedOrdersAPI from "./routes/timedOrders";
 import * as batchTransfersAPI from "./routes/batchTransfers";
+import * as cardsAPI from "./routes/cards";
 import * as e2eAPI from "./routes/e2e";
 
 import { migrate } from "./db";
@@ -151,6 +152,17 @@ router.get(
 router.post(
   "/persons/:person_id/accounts",
   safeRequestHandler(accountsAPI.createAccountRequestHandler)
+);
+
+// CARDS
+router.post(
+  "/persons/:person_id/accounts/:account_id/cards",
+  safeRequestHandler(cardsAPI.createCardHandler)
+);
+
+router.get(
+  "/accounts/:account_id/cards",
+  safeRequestHandler(cardsAPI.getAccountCardsHandler)
 );
 
 // SEPA_DIRECT_DEBIT_RETURNS
@@ -357,6 +369,17 @@ app.post(
 app.post(
   "/__BACKOFFICE__/updateAccountLockingStatus/:personId",
   safeRequestHandler(backofficeAPI.updateAccountLockingStatusHandler)
+);
+
+// BACKOFFICE - CARDS
+app.get(
+  "/__BACKOFFICE__/person/:email/cards",
+  safeRequestHandler(backofficeAPI.listPersonsCards)
+);
+
+app.post(
+  "/__BACKOFFICE__/changeCardStatus",
+  safeRequestHandler(backofficeAPI.changeCardStatusHandler)
 );
 
 // BACKOFFICE - STANDING ORDERS

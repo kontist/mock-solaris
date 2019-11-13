@@ -1,0 +1,75 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+
+<ul class="nav nav-tabs">
+  <li role="presentation"><a href="/__BACKOFFICE__/">⬅ Persons</a></li>
+  <li role="presentation"><a href="/__BACKOFFICE__/person/{{ person.email }}">user</a></li>
+  <li role="presentation" class="active"><a href="#">cards</a></li>
+</ul>
+
+<div class="page-header">
+  <h2>{{ person.email }}</h2>
+</div>
+
+<div class="panel panel-default">
+  <div class="panel-heading">Existing cards</div>
+  {% for cardData in person.account.cards %}
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Number</th>
+        <th>Type</th>
+        <th>Details<th>
+      </tr>
+    </thead>
+    <tbody>
+      <td>{{ cardData.cardDetails.cardNumber }}</td>
+      <td>{{ cardData.card.type }}</td>
+      <td style="display: flex; flex-direction: row;">
+        <table class="table">
+          <tr>
+            <td>Status <b>{{ cardData.card.status }}</b></td>
+            <td>
+              <form class="form-inline autosubmitonchange" method="POST" action="/__BACKOFFICE__/changeCardStatus">
+                <select name="status">
+                  <option {% if cardData.card.status==="BLOCKED_BY_SOLARIS" %}selected {% endif %}value="BLOCKED_BY_SOLARIS">BLOCKED_BY_SOLARIS</option>
+                  <option {% if cardData.card.status==="ACTIVATION_BLOCKED_BY_SOLARIS" %}selected {% endif %}value="ACTIVATION_BLOCKED_BY_SOLARIS">ACTIVATION_BLOCKED_BY_SOLARIS</option>
+                  <option {% if cardData.card.status==="CLOSED_BY_SOLARIS" %}selected {% endif %}value="CLOSED_BY_SOLARIS">CLOSED_BY_SOLARIS</option>
+                </select>
+                <input type="hidden" name="personId" value={{ person.id }}>
+                <input type="hidden" name="accountId" value={{ person.account.id }}>
+                <input type="hidden" name="cardId" value={{ cardData.card.id }}>
+              </form>
+            </td>
+          </tr>
+          <tr>
+            <td>card id</td>
+            <td>{{ cardData.card.id }}</td>
+          </tr>
+          <tr>
+            <td>token</td>
+            <td>{{ cardData.cardDetails.token }}</td>
+          </tr>
+          <tr>
+            <td>expiration date</td>
+            <td>{{ cardData.card.expiration_date }}</td>
+          </tr>
+          <tr>
+            <td>holder</td>
+            <td>{{ cardData.card.representation.line_1 }}</td>
+          </tr>
+        </table>
+      </td>
+    </tbody>
+  </table>
+  {% endfor %}
+</div>
+
+<script>
+    $(".autosubmitonchange").change(function() {
+      this.submit();
+    });
+    </script>
+
+{% endblock %}

@@ -403,3 +403,30 @@ export const getSmsToken = async (personId: string) => {
   const person = await getPerson(personId);
   return _.get(person, "changeRequest.token", null);
 };
+
+export const getCardReferences = async () =>
+  JSON.parse(
+    (await redisClient.getAsync(
+      `${process.env.MOCKSOLARIS_REDIS_PREFIX}:cardReferences`
+    )) || "[]"
+  );
+
+export const hasCardReference = async cardRef => {
+  const cardReferences = await getCardReferences();
+  return cardReferences.includes(cardRef);
+};
+
+export const saveCardReference = async cardRef => {
+  if (await hasCardReference(cardRef)) {
+    return false;
+  }
+
+  const cardReferences = await getCardReferences();
+  cardReferences.push(cardRef);
+  await redisClient.setAsync(
+    `${process.env.MOCKSOLARIS_REDIS_PREFIX}:cardReferences`,
+    JSON.stringify(cardReferences)
+  );
+
+  return true;
+};

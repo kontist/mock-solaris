@@ -25,6 +25,7 @@ import { triggerWebhook } from "../helpers/webhooks";
 import { SEIZURE_STATUSES } from "./seizures";
 
 import * as log from "../logger";
+import { changeCardStatus } from "../helpers/cards";
 
 const triggerIdentificationWebhook = payload =>
   triggerWebhook("IDENTIFICATION", payload);
@@ -82,6 +83,11 @@ export const findIdentificationByEmail = (email, method) => {
 export const listPersons = async (req, res) => {
   const persons = await getAllPersons();
   res.render("persons", { persons });
+};
+
+export const listPersonsCards = async (req, res) => {
+  const person = await findPersonByEmail(req.params.email);
+  res.render("cards", { person });
 };
 
 export const getPersonHandler = async (req, res) => {
@@ -477,5 +483,21 @@ export const updateAccountLockingStatus = async (personId, lockingStatus) => {
 
 export const updateAccountLockingStatusHandler = async (req, res) => {
   await updateAccountLockingStatus(req.params.personId, req.body.lockingStatus);
+  res.redirect("back");
+};
+
+export const changeCardStatusHandler = async (req, res) => {
+  const { personId, accountId, cardId, status } = req.body;
+
+  const updatedCard = await changeCardStatus(
+    { personId, accountId },
+    cardId,
+    status
+  );
+
+  if (updatedCard.status !== status) {
+    await triggerWebhook("CARD_LIFECYCLE_EVENT", updatedCard);
+  }
+
   res.redirect("back");
 };
