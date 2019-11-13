@@ -165,6 +165,8 @@ router.get(
   safeRequestHandler(cardsAPI.getAccountCardsHandler)
 );
 
+router.get("/cards/:card_id", safeRequestHandler(cardsAPI.getCardHandler));
+
 // SEPA_DIRECT_DEBIT_RETURNS
 router.get(
   "/sepa_direct_debit_returns",
@@ -423,12 +425,12 @@ app.post(
 router.get(
   "/webhooks",
   checkRequestHostHeader,
-  safeRequestHandler(webhooksAPI.indexWebhooks)
+  safeRequestHandler(webhooksAPI.indexWebhooksHandler)
 );
 router.post(
   "/webhooks",
   checkRequestHostHeader,
-  safeRequestHandler(webhooksAPI.createWebhook)
+  safeRequestHandler(webhooksAPI.createWebhookHandler)
 );
 
 // HEALTH CHECK

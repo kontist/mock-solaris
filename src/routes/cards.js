@@ -140,3 +140,24 @@ export const getAccountCardsHandler = async (req, res) => {
 
   res.status(HttpStatusCodes.OK).send(getCards(person));
 };
+
+export const getCardHandler = async (req, res) => {
+  const { card_id: cardId } = req.params;
+  const card = await db.getCard(cardId);
+
+  if (!cardId) {
+    return res.status(HttpStatusCodes.NOT_FOUND).send({
+      errors: [
+        {
+          id: uuid.v4(),
+          status: 404,
+          code: "model_not_found",
+          title: "Model Not Found",
+          detail: `Couldn't find 'Solaris::Card' for id '${cardId}'.`
+        }
+      ]
+    });
+  }
+
+  res.send(card);
+};

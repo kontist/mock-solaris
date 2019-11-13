@@ -3,6 +3,7 @@ import * as db from "./db";
 import * as account from "./routes/accounts";
 import * as backOffice from "./routes/backoffice";
 import * as standingOrders from "./routes/standingOrders";
+import { changeCardStatus } from "./helpers/cards";
 import { processTimedOrders } from "./routes/timedOrders";
 import * as logger from "./logger";
 import { createSeizure } from "./routes/seizures";
@@ -31,5 +32,7 @@ module.exports = {
     standingOrders.confirmStandingOrderCancelation,
   getSmsToken: db.getSmsToken,
   processTimedOrders,
-  createSeizure
+  createSeizure,
+  changeCardStatus,
+  getCard: db.getCard
 };

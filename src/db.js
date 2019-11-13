@@ -430,3 +430,16 @@ export const saveCardReference = async cardRef => {
 
   return true;
 };
+
+export const getCard = async cardId => {
+  const persons = await getAllPersons();
+  const card = _(persons)
+    .map(person =>
+      _.get(person, "account.cards", []).map(cardData => cardData.card)
+    )
+    .flatten()
+    .value()
+    .find(card => card.id === cardId);
+
+  return card;
+};

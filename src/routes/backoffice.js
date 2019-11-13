@@ -489,15 +489,7 @@ export const updateAccountLockingStatusHandler = async (req, res) => {
 export const changeCardStatusHandler = async (req, res) => {
   const { personId, accountId, cardId, status } = req.body;
 
-  const updatedCard = await changeCardStatus(
-    { personId, accountId },
-    cardId,
-    status
-  );
-
-  if (updatedCard.status !== status) {
-    await triggerWebhook("CARD_LIFECYCLE_EVENT", updatedCard);
-  }
+  await changeCardStatus({ personId, accountId }, cardId, status);
 
   res.redirect("back");
 };

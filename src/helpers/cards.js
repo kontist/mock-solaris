@@ -1,6 +1,7 @@
 import _ from "lodash";
 import uuid from "uuid";
 import * as db from "../db";
+import { triggerWebhook } from "./webhooks";
 
 export const CARD_STATUS = {
   PROCESSING: "PROCESSING",
@@ -161,19 +162,20 @@ export const changeCardStatus = async (
     throw new Error("You have to provide personId or accountId");
   }
 
-  const card = person.account.cards.find(({ card }) => card.id === cardId);
+  const cardData = person.account.cards.find(({ card }) => card.id === cardId);
 
-  if (!card) {
+  if (!cardData) {
     throw new Error("Card not found");
   }
 
-  if (card.status === newCardStatus) {
-    return card;
+  if (cardData.card.status === newCardStatus) {
+    return cardData.card;
   }
 
-  card.status = newCardStatus;
+  cardData.card.status = newCardStatus;
 
   await db.savePerson(person);
+  await triggerWebhook("CARD_LIFECYCLE_EVENT", cardData.card);
 
-  return card;
+  return cardData.card;
 };
