@@ -8,7 +8,7 @@ import { processTimedOrders } from "./routes/timedOrders";
 import * as logger from "./logger";
 import { createSeizure } from "./routes/seizures";
 
-module.exports = {
+export default {
   serve,
   logger,
   flushDb: db.flushDb,
