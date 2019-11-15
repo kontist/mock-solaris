@@ -159,7 +159,7 @@ export const changeCardStatus = async (
   }
 
   if (!cardId) {
-    throw new Error("You have to provide personId or accountId");
+    throw new Error("You have to provide cardId");
   }
 
   const cardData = person.account.cards.find(({ card }) => card.id === cardId);

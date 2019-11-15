@@ -384,6 +384,16 @@ app.post(
   safeRequestHandler(backofficeAPI.changeCardStatusHandler)
 );
 
+app.post(
+  "/__BACKOFFICE__/person/:person_id/reservations",
+  safeRequestHandler(backofficeAPI.createReservationHandler)
+);
+
+app.post(
+  "/__BACKOFFICE__/person/:person_id/reservations/:id",
+  safeRequestHandler(backofficeAPI.updateReservationHandler)
+);
+
 // BACKOFFICE - STANDING ORDERS
 app.post(
   "/__BACKOFFICE__/triggerStandingOrder/:personId/:standingOrderId",

@@ -26,6 +26,8 @@ import { SEIZURE_STATUSES } from "./seizures";
 
 import * as log from "../logger";
 import { changeCardStatus } from "../helpers/cards";
+import { createReservation, updateReservation } from "../helpers/reservations";
+import { BOOKING_TYPES } from "./transactions";
 
 const triggerIdentificationWebhook = payload =>
   triggerWebhook("IDENTIFICATION", payload);
@@ -203,7 +205,7 @@ const generateBookingFromStandingOrder = standingOrder => {
     id: uuid.v4(),
     valuta_date: moment().format("YYYY-MM-DD"),
     booking_date: moment().format("YYYY-MM-DD"),
-    booking_type: "SEPA_CREDIT_TRANSFER",
+    booking_type: BOOKING_TYPES.SEPA_CREDIT_TRANSFER,
     amount: {
       value: -Math.abs(standingOrder.amount.value)
     }
@@ -258,9 +260,10 @@ export const processQueuedBooking = async (
     .filter(dbPerson => dbPerson.account)
     .find(dbPerson => dbPerson.account.iban === booking.recipient_iban);
 
-  const isDirectDebit = ["DIRECT_DEBIT", "SEPA_DIRECT_DEBIT"].includes(
-    booking.booking_type
-  );
+  const isDirectDebit = [
+    BOOKING_TYPES.DIRECT_DEBIT,
+    BOOKING_TYPES.SEPA_DIRECT_DEBIT
+  ].includes(booking.booking_type);
 
   const wouldOverdraw = person.account.balance.value < booking.amount.value;
 
@@ -281,7 +284,7 @@ export const processQueuedBooking = async (
           .split("-")
           .reverse()
           .join("-"),
-        booking_type: "SEPA_DIRECT_DEBIT_RETURN",
+        booking_type: BOOKING_TYPES.SEPA_DIRECT_DEBIT_RETURN,
         amount: {
           value: booking.amount.value,
           unit: "cents",
@@ -490,6 +493,51 @@ export const changeCardStatusHandler = async (req, res) => {
   const { personId, accountId, cardId, status } = req.body;
 
   await changeCardStatus({ personId, accountId }, cardId, status);
+
+  res.redirect("back");
+};
+
+export const createReservationHandler = async (req, res) => {
+  const { person_id: personId } = req.params;
+  const { cardId, amount, currency, type, recipient } = req.body;
+
+  if (!personId) {
+    throw new Error("You have to provide personId");
+  }
+
+  if (!cardId) {
+    throw new Error("You have to provide cardId");
+  }
+
+  await createReservation({
+    personId,
+    cardId,
+    amount,
+    currency,
+    type,
+    recipient
+  });
+
+  res.redirect("back");
+};
+
+export const updateReservationHandler = async (req, res) => {
+  const { person_id: personId, id: reservationId } = req.params;
+  const { status } = req.body;
+
+  if (!personId) {
+    throw new Error("You have to provide personId");
+  }
+
+  if (!reservationId) {
+    throw new Error("You have to provide reservationId");
+  }
+
+  await updateReservation({
+    personId,
+    reservationId,
+    status
+  });
 
   res.redirect("back");
 };

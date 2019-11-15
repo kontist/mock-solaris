@@ -145,6 +145,12 @@ export const getPerson = async personId => {
     .then(jsonToPerson);
 
   person.timedOrders = person.timedOrders || [];
+  person.transactions = person.transactions || [];
+
+  if (person.account) {
+    person.account.reservations = person.account.reservations || [];
+  }
+
   return person;
 };
 
@@ -160,6 +166,7 @@ export const savePerson = async person => {
   if (account) {
     const transactions = person.transactions || [];
     const queuedBookings = person.queuedBookings || [];
+    const reservations = person.account.reservations || [];
     const now = new Date().getTime();
     const transactionsBalance = transactions
       .filter(transaction => new Date(transaction.valuta_date).getTime() < now)
@@ -167,6 +174,7 @@ export const savePerson = async person => {
     const confirmedTransfersBalance = queuedBookings
       .filter(booking => booking.status === "accepted")
       .reduce(addAmountValues, 0);
+    const reservationsBalance = reservations.reduce(addAmountValues, 0);
 
     account.balance = {
       value: transactionsBalance
@@ -174,7 +182,8 @@ export const savePerson = async person => {
 
     account.available_balance = {
       // Confirmed transfers amounts are negative
-      value: transactionsBalance + confirmedTransfersBalance
+      value:
+        transactionsBalance + confirmedTransfersBalance - reservationsBalance
     };
 
     person.account = account;
