@@ -264,6 +264,21 @@ export const creteBookingFromSepaCreditTransfer = ({
   meta_info: null
 });
 
+const updateReservationMetaInfo = metaInfo => {
+  const parsedMetaInfo = JSON.parse(metaInfo);
+
+  return {
+    cards: {
+      ...parsedMetaInfo.cards,
+      original_amount: {
+        ...parsedMetaInfo.cards.original_amount,
+        // value for booking should be negative
+        value: -parsedMetaInfo.cards.original_amount.value
+      }
+    }
+  };
+};
+
 export const creteBookingFromReservation = (person, reservation) => ({
   id: uuid.v4(),
   booking_type: BOOKING_TYPES.CARD_TRANSACTION,
@@ -280,5 +295,5 @@ export const creteBookingFromReservation = (person, reservation) => ({
   sender_iban: SOLARIS_CARDS_ACCOUNT.IBAN,
   booking_date: moment().format("YYYY-MM-DD"),
   valuta_date: moment().format("YYYY-MM-DD"),
-  meta_info: reservation.meta_info
+  meta_info: JSON.stringify(updateReservationMetaInfo(reservation.meta_info))
 });

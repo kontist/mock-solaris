@@ -7,17 +7,21 @@ import _ from "lodash";
 
 import { creteBookingFromReservation } from "../routes/transactions";
 import { triggerWebhook } from "./webhooks";
+import { triggerBookingsWebhook } from "../routes/backoffice";
 
 import {
   ReservationType,
   ReservationStatus,
   TransactionType,
-  CardStatus
+  CardStatus,
+  ActionType,
+  FxRate
 } from "./types";
 
 const generateMetaInfo = ({
   amount,
-  currency,
+  originalAmount,
+  originalCurrency,
   recipient,
   cardId,
   date,
@@ -33,9 +37,9 @@ const generateMetaInfo = ({
         town: "Berlin"
       },
       original_amount: {
-        currency: "EUR",
-        value: amount,
-        fx_rate: 1.0
+        currency: originalCurrency,
+        value: originalAmount,
+        fx_rate: FxRate[originalCurrency]
       },
       pos_entry_mode: "CONTACTLESS",
       trace_id: uuid.v4(),
@@ -48,13 +52,15 @@ const generateMetaInfo = ({
 
 const mapDataToReservation = ({
   amount,
-  currency,
+  originalAmount,
+  originalCurrency,
   type,
   recipient,
   cardId
 }: {
   amount: number;
-  currency: string;
+  originalAmount: number;
+  originalCurrency: string;
   type: TransactionType;
   recipient: string;
   cardId: string;
@@ -74,7 +80,8 @@ const mapDataToReservation = ({
     meta_info: JSON.stringify(
       generateMetaInfo({
         amount,
-        currency,
+        originalAmount,
+        originalCurrency,
         recipient,
         cardId,
         date,
@@ -118,9 +125,12 @@ export const createReservation = async ({
     throw new Error("There were insufficient funds to complete this action.");
   }
 
+  const convertedAmount = Math.abs(parseInt(amount, 10));
+
   const reservation = mapDataToReservation({
-    amount: Math.abs(parseInt(amount, 10)),
-    currency,
+    amount: Math.round(convertedAmount * FxRate[currency]),
+    originalAmount: convertedAmount,
+    originalCurrency: currency,
     type,
     recipient,
     cardId
@@ -133,7 +143,7 @@ export const createReservation = async ({
   await triggerWebhook("CARD_AUTHORIZATION", reservation);
 };
 
-const resolveReservation = async (person, reservation) => {
+const bookReservation = async (person, reservation) => {
   const booking = creteBookingFromReservation(person, reservation);
 
   person.transactions.push(booking);
@@ -151,16 +161,17 @@ const resolveReservation = async (person, reservation) => {
   };
 
   await triggerWebhook("CARD_AUTHORIZATION_RESOLUTION", resolvedReservation);
+  await triggerBookingsWebhook(person.account.id);
 };
 
 export const updateReservation = async ({
   personId,
   reservationId,
-  status
+  action
 }: {
   personId: string;
   reservationId: string;
-  status: ReservationStatus;
+  action: ActionType;
 }) => {
   const person = await db.getPerson(personId);
 
@@ -172,7 +183,7 @@ export const updateReservation = async ({
     throw new Error("Reservation ton found");
   }
 
-  if (status === ReservationStatus.RESOLVED) {
-    await resolveReservation(person, reservation);
+  if (action === ActionType.BOOK) {
+    await bookReservation(person, reservation);
   }
 };

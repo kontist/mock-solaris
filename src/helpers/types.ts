@@ -4,7 +4,6 @@ export enum ReservationType {
 
 export enum ReservationStatus {
   OPEN = "OPEN",
-  REJECTED = "REJECTED",
   RESOLVED = "RESOLVED"
 }
 
@@ -24,4 +23,15 @@ export enum CardStatus {
   ACTIVATION_BLOCKED_BY_SOLARIS = "ACTIVATION_BLOCKED_BY_SOLARIS",
   CLOSED = "CLOSED",
   CLOSED_BY_SOLARIS = "CLOSED_BY_SOLARIS"
+}
+
+export enum ActionType {
+  BOOK = "BOOK",
+  CANCEL = "CANCEL",
+  EXPIRE = "EXPIRE"
+}
+
+export enum FxRate {
+  EUR = 1.0,
+  USD = 0.904697
 }

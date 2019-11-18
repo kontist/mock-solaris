@@ -80,7 +80,7 @@
             {% for cardData in person.account.cards %}
             <div class="radio">
               <label>
-                <input type="radio" name="cardId" value="{{ cardData.card.id }}">
+                <input checked type="radio" name="cardId" value="{{ cardData.card.id }}">
                 <b>
                   {{ cardData.card['type'] }}
                 </b>
@@ -149,7 +149,7 @@
         <thead>
           <tr>
             <th>type</th>
-            <th>status</th>
+            <th>action</th>
             <th>Date</th>
             <th>Amount</th>
             <th>Recipient</th>
@@ -162,10 +162,10 @@
             <form id="updateReservation" action="/__BACKOFFICE__/person/{{ person.id }}/reservations/{{ reservation.id }}"
               method="POST">
               <div class="form-group">
-                <select name="status">
-                  <option selected="selected" value="OPEN">OPEN</option>
-                  <option value="REJECTED">REJECTED</option>
-                  <option value="RESOLVED">RESOLVED</option>
+                <select name="action">
+                  <option selected="selected" value="BOOK">BOOK</option>
+                  <option value="CANCEL">CANCEL</option>
+                  <option value="EXPIRE">EXPIRE</option>
                 </select>
               </div>
               <button type="submit" class="btn btn-primary">Update now</button>

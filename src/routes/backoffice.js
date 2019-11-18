@@ -523,7 +523,7 @@ export const createReservationHandler = async (req, res) => {
 
 export const updateReservationHandler = async (req, res) => {
   const { person_id: personId, id: reservationId } = req.params;
-  const { status } = req.body;
+  const { action } = req.body;
 
   if (!personId) {
     throw new Error("You have to provide personId");
@@ -536,7 +536,7 @@ export const updateReservationHandler = async (req, res) => {
   await updateReservation({
     personId,
     reservationId,
-    status
+    action
   });
 
   res.redirect("back");
