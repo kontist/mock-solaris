@@ -1,11 +1,20 @@
+/* eslint-disable @typescript-eslint/camelcase */
 import uuid from "uuid";
 import moment from "moment";
+import * as express from "express";
 import HttpStatusCodes from "http-status";
 import * as db from "../db";
 import * as log from "../logger";
 
 import {
-  CARD_STATUS,
+  Card,
+  CardDetails,
+  CardStatus,
+  CreateCardData,
+  MockPerson
+} from "../helpers/types";
+
+import {
   createCardToken,
   getCards,
   getMaskedCardNumber,
@@ -13,7 +22,10 @@ import {
   validatePersonData
 } from "../helpers/cards";
 
-export const createCard = (cardData, person) => {
+export const createCard = (
+  cardData: CreateCardData,
+  person: MockPerson
+): { card: Card; cardDetails: CardDetails } => {
   const {
     pin,
     type,
@@ -33,7 +45,7 @@ export const createCard = (cardData, person) => {
   const card = {
     id,
     type,
-    status: CARD_STATUS.INACTIVE,
+    status: CardStatus.INACTIVE,
     expiration_date: expirationDate.format("YYYY-MM-DD"),
     person_id: person.id,
     account_id: person.account.id,
@@ -58,7 +70,10 @@ export const createCard = (cardData, person) => {
   };
 };
 
-export const createCardHandler = async (req, res) => {
+export const createCardHandler = async (
+  req: express.Request,
+  res: express.Response
+) => {
   const { person_id: personId, account_id: accountId } = req.params;
 
   try {
@@ -66,7 +81,7 @@ export const createCardHandler = async (req, res) => {
 
     // no user or account
     if (!person || person.id !== personId) {
-      return res.status(HttpStatusCodes.NOT_FOUND).send({
+      res.status(HttpStatusCodes.NOT_FOUND).send({
         errors: [
           {
             id: uuid.v4(),
@@ -77,6 +92,7 @@ export const createCardHandler = async (req, res) => {
           }
         ]
       });
+      return;
     }
 
     const { card, cardDetails } = createCard(req.body, person);
@@ -85,9 +101,10 @@ export const createCardHandler = async (req, res) => {
     const errors = personValidationErrors.concat(cardValidationErrors);
 
     if (errors.length > 0) {
-      return res.status(errors[0].status).send({
+      res.status(errors[0].status).send({
         errors
       });
+      return;
     }
 
     card.representation.line_1 = card.representation.line_1.replace(/\//g, " ");
@@ -101,7 +118,7 @@ export const createCardHandler = async (req, res) => {
 
     res.status(HttpStatusCodes.CREATED).send({
       id: card.id,
-      status: CARD_STATUS.PROCESSING
+      status: CardStatus.PROCESSING
     });
   } catch (err) {
     log.error("(createCardHandler) Error occurred", err);
@@ -120,12 +137,15 @@ export const createCardHandler = async (req, res) => {
   }
 };
 
-export const getAccountCardsHandler = async (req, res) => {
+export const getAccountCardsHandler = async (
+  req: express.Request,
+  res: express.Response
+) => {
   const { account_id: accountId } = req.params;
   const person = await db.findPersonByAccountId(accountId);
 
   if (!person) {
-    return res.status(HttpStatusCodes.NOT_FOUND).send({
+    res.status(HttpStatusCodes.NOT_FOUND).send({
       errors: [
         {
           id: uuid.v4(),
@@ -136,17 +156,21 @@ export const getAccountCardsHandler = async (req, res) => {
         }
       ]
     });
+    return;
   }
 
   res.status(HttpStatusCodes.OK).send(getCards(person));
 };
 
-export const getCardHandler = async (req, res) => {
+export const getCardHandler = async (
+  req: express.Request,
+  res: express.Response
+) => {
   const { card_id: cardId } = req.params;
   const card = await db.getCard(cardId);
 
   if (!cardId) {
-    return res.status(HttpStatusCodes.NOT_FOUND).send({
+    res.status(HttpStatusCodes.NOT_FOUND).send({
       errors: [
         {
           id: uuid.v4(),
@@ -157,7 +181,9 @@ export const getCardHandler = async (req, res) => {
         }
       ]
     });
+    return;
   }
 
   res.send(card);
 };
+/* eslint-enable @typescript-eslint/camelcase */

@@ -2,32 +2,25 @@ import _ from "lodash";
 import uuid from "uuid";
 import * as db from "../db";
 import { triggerWebhook } from "./webhooks";
-
-export const CARD_STATUS = {
-  PROCESSING: "PROCESSING",
-  INACTIVE: "INACTIVE",
-  ACTIVE: "ACTIVE",
-  BLOCKED: "BLOCKED",
-  BLOCKED_BY_SOLARIS: "BLOCKED_BY_SOLARIS",
-  ACTIVATION_BLOCKED_BY_SOLARIS: "ACTIVATION_BLOCKED_BY_SOLARIS",
-  CLOSED: "CLOSED",
-  CLOSED_BY_SOLARIS: "CLOSED_BY_SOLARIS"
-};
-
-export const CARD_TYPE = {
-  VIRTUAL_VISA_BUSINESS_DEBIT: "VIRTUAL_VISA_BUSINESS_DEBIT",
-  VISA_BUSINESS_DEBIT: "VISA_BUSINESS_DEBIT",
-  MASTERCARD_BUSINESS_DEBIT: "MASTERCARD_BUSINESS_DEBIT",
-  VIRTUAL_MASTERCARD_BUSINESS_DEBIT: "VIRTUAL_MASTERCARD_BUSINESS_DEBIT"
-};
+import {
+  Card,
+  CardDetails,
+  CardStatus,
+  CardType,
+  MockPerson,
+  SolarisAPIErrorData
+} from "./types";
 
 const CARD_HOLDER_MAX_LENGTH = 21;
 const CARD_HOLDER_ALLOWED_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 -/.";
 
-export const validateCardData = async (cardData, cardDetails) => {
+export const validateCardData = async (
+  cardData: Card,
+  cardDetails: CardDetails
+): Promise<SolarisAPIErrorData[]> => {
   const errors = [];
 
-  if (!CARD_TYPE[cardData.type]) {
+  if (!CardType[cardData.type]) {
     errors.push({
       id: uuid.v4(),
       status: 400,
@@ -107,7 +100,9 @@ export const validateCardData = async (cardData, cardDetails) => {
   return errors;
 };
 
-export const validatePersonData = async person => {
+export const validatePersonData = async (
+  person: MockPerson
+): Promise<SolarisAPIErrorData[]> => {
   const errors = [];
 
   const mobileNumber = await db.getMobileNumber(person.id);
@@ -129,25 +124,25 @@ export const validatePersonData = async person => {
   return errors;
 };
 
-export const getMaskedCardNumber = number =>
-  `${number.slice(0, 4)}********${number.slice(-4)}`;
+export const getMaskedCardNumber = (cardNumber: string): string =>
+  `${cardNumber.slice(0, 4)}********${cardNumber.slice(-4)}`;
 
-export const createCardToken = () =>
+export const createCardToken = (): string =>
   _.times(12, () => _.random(35).toString(36))
     .join("")
     .toUpperCase();
 
-export const getCards = person => {
+export const getCards = (person: MockPerson): Card[] => {
   return ((person.account && person.account.cards) || []).map(
     ({ card }) => card
   );
 };
 
 export const changeCardStatus = async (
-  { personId, accountId },
-  cardId,
-  newCardStatus
-) => {
+  { personId, accountId }: { personId: string; accountId: string },
+  cardId: string,
+  newCardStatus: CardStatus
+): Promise<Card> => {
   let person;
 
   if (personId) {
@@ -176,8 +171,8 @@ export const changeCardStatus = async (
 
   await db.savePerson(person);
   const eventName = [
-    CARD_STATUS.BLOCKED_BY_SOLARIS,
-    CARD_STATUS.ACTIVATION_BLOCKED_BY_SOLARIS
+    CardStatus.BLOCKED_BY_SOLARIS,
+    CardStatus.ACTIVATION_BLOCKED_BY_SOLARIS
   ].includes(newCardStatus)
     ? "CARD_BLOCK" // Card has been blocked by solarisBank
     : "CARD_LIFECYCLE_EVENT";
