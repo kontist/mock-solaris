@@ -8,6 +8,7 @@ import { processTimedOrders } from "./routes/timedOrders";
 import * as logger from "./logger";
 import { createSeizure } from "./routes/seizures";
 import * as reservations from "./helpers/reservations";
+import { createCreditPresentment } from "./helpers/creditPresentment";
 
 export default {
   serve,
@@ -37,5 +38,6 @@ export default {
   changeCardStatus,
   getCard: db.getCard,
   createReservation: reservations.createReservation,
-  updateReservation: reservations.updateReservation
+  updateReservation: reservations.updateReservation,
+  createCreditPresentment
 };

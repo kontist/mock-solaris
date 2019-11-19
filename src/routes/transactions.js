@@ -264,10 +264,10 @@ export const creteBookingFromSepaCreditTransfer = ({
   meta_info: null
 });
 
-const updateReservationMetaInfo = metaInfo => {
+const changeAmountSign = metaInfo => {
   const parsedMetaInfo = JSON.parse(metaInfo);
 
-  return {
+  return JSON.stringify({
     cards: {
       ...parsedMetaInfo.cards,
       original_amount: {
@@ -276,24 +276,35 @@ const updateReservationMetaInfo = metaInfo => {
         value: -parsedMetaInfo.cards.original_amount.value
       }
     }
-  };
+  });
 };
 
-export const creteBookingFromReservation = (person, reservation) => ({
-  id: uuid.v4(),
-  booking_type: BOOKING_TYPES.CARD_TRANSACTION,
-  amount: {
-    ...reservation.amount,
-    value: -reservation.amount.value
-  },
-  description: reservation.description,
-  recipient_bic: person.account.bic,
-  recipient_iban: person.account.iban,
-  recipient_name: `${person.first_name} ${person.last_name}`,
-  sender_bic: "SOBKDEBBXXX",
-  sender_name: SOLARIS_CARDS_ACCOUNT.NAME,
-  sender_iban: SOLARIS_CARDS_ACCOUNT.IBAN,
-  booking_date: moment().format("YYYY-MM-DD"),
-  valuta_date: moment().format("YYYY-MM-DD"),
-  meta_info: JSON.stringify(updateReservationMetaInfo(reservation.meta_info))
-});
+export const creteBookingFromReservation = (person, reservation, incoming) => {
+  const amount = incoming
+    ? reservation.amount.value
+    : -reservation.amount.value;
+
+  const metaInfo = incoming
+    ? reservation.meta_info
+    : changeAmountSign(reservation.meta_info);
+
+  return {
+    id: uuid.v4(),
+    booking_type: BOOKING_TYPES.CARD_TRANSACTION,
+    amount: {
+      unit: "cents",
+      currency: "EUR",
+      value: amount
+    },
+    description: reservation.description,
+    recipient_bic: person.account.bic,
+    recipient_iban: person.account.iban,
+    recipient_name: `${person.first_name} ${person.last_name}`,
+    sender_bic: "SOBKDEBBXXX",
+    sender_name: SOLARIS_CARDS_ACCOUNT.NAME,
+    sender_iban: SOLARIS_CARDS_ACCOUNT.IBAN,
+    booking_date: moment().format("YYYY-MM-DD"),
+    valuta_date: moment().format("YYYY-MM-DD"),
+    meta_info: metaInfo
+  };
+};

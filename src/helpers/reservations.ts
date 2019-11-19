@@ -18,16 +18,24 @@ import {
   FxRate
 } from "./types";
 
-const generateMetaInfo = ({
-  amount,
+export const generateMetaInfo = ({
   originalAmount,
   originalCurrency,
   recipient,
   cardId,
   date,
-  type
+  type,
+  incoming
+}: {
+  originalAmount: number;
+  originalCurrency: string;
+  recipient: string;
+  cardId: string;
+  date: Date;
+  type: TransactionType;
+  incoming?: boolean;
 }) => {
-  return {
+  return JSON.stringify({
     cards: {
       card_id: cardId,
       merchant: {
@@ -42,12 +50,12 @@ const generateMetaInfo = ({
         fx_rate: FxRate[originalCurrency]
       },
       pos_entry_mode: "CONTACTLESS",
-      trace_id: uuid.v4(),
-      transaction_date: date.format("YYYY-MM-DD"),
-      transaction_time: date.toDate(),
+      trace_id: incoming ? null : uuid.v4(),
+      transaction_date: moment(date).format("YYYY-MM-DD"),
+      transaction_time: incoming ? null : moment(date).toDate(),
       transaction_type: type
     }
-  };
+  });
 };
 
 const mapDataToReservation = ({
@@ -65,7 +73,7 @@ const mapDataToReservation = ({
   recipient: string;
   cardId: string;
 }) => {
-  const date = moment();
+  const date = moment().toDate();
 
   return {
     id: uuid.v4(),
@@ -77,18 +85,17 @@ const mapDataToReservation = ({
     reservation_type: ReservationType.CARD_AUTHORIZATION,
     reference: uuid.v4(),
     status: ReservationStatus.OPEN,
-    meta_info: JSON.stringify(
-      generateMetaInfo({
-        amount,
-        originalAmount,
-        originalCurrency,
-        recipient,
-        cardId,
-        date,
-        type
-      })
-    ),
-    expires_at: date.add(1, "month").format("YYYY-MM-DD"),
+    meta_info: generateMetaInfo({
+      originalAmount,
+      originalCurrency,
+      recipient,
+      cardId,
+      date,
+      type
+    }),
+    expires_at: moment(date)
+      .add(1, "month")
+      .format("YYYY-MM-DD"),
     expired_at: null,
     resolved_at: null,
     description: recipient
@@ -150,7 +157,6 @@ const bookReservation = async (person, reservation) => {
   person.account.reservations = person.account.reservations.filter(
     item => item.id !== reservation.id
   );
-  person.account.balance.value -= reservation.amount.value;
 
   await db.savePerson(person);
 

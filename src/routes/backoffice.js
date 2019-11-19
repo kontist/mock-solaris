@@ -28,6 +28,8 @@ import * as log from "../logger";
 import { changeCardStatus } from "../helpers/cards";
 import { createReservation, updateReservation } from "../helpers/reservations";
 import { BOOKING_TYPES } from "./transactions";
+import { createCreditPresentment } from "../helpers/creditPresentment";
+import { TransactionType } from "../helpers/types";
 
 const triggerIdentificationWebhook = payload =>
   triggerWebhook("IDENTIFICATION", payload);
@@ -509,14 +511,18 @@ export const createReservationHandler = async (req, res) => {
     throw new Error("You have to provide cardId");
   }
 
-  await createReservation({
+  const payload = {
     personId,
     cardId,
     amount,
     currency,
     type,
     recipient
-  });
+  };
+
+  await (type === TransactionType.CREDIT_PRESENTMENT
+    ? createCreditPresentment(payload)
+    : createReservation(payload));
 
   res.redirect("back");
 };
