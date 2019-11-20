@@ -167,6 +167,11 @@ router.get(
 
 router.get("/cards/:card_id", safeRequestHandler(cardsAPI.getCardHandler));
 
+router.post(
+  "/cards/:card_id/activate",
+  safeRequestHandler(cardsAPI.activateCardHandler)
+);
+
 // SEPA_DIRECT_DEBIT_RETURNS
 router.get(
   "/sepa_direct_debit_returns",

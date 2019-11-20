@@ -1,7 +1,7 @@
 import _ from "lodash";
 import uuid from "uuid";
 import * as db from "../db";
-import { triggerWebhook } from "./webhooks";
+import { triggerWebhook, WEBHOOK_TYPES } from "./webhooks";
 import {
   Card,
   CardDetails,
@@ -13,6 +13,12 @@ import {
 
 const CARD_HOLDER_MAX_LENGTH = 21;
 const CARD_HOLDER_ALLOWED_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 -/.";
+
+export enum CardErrorCodes {
+  CARD_ACTIVATION_INVALID_STATUS = "card_activation_invalid_status",
+  INVALID_VERIFICATION_TOKEN = "invalid_verification_token",
+  VERIFICATION_TOKEN_TOO_LONG = "verification_token_too_long"
+}
 
 export const validateCardData = async (
   cardData: Card,
@@ -174,10 +180,42 @@ export const changeCardStatus = async (
     CardStatus.BLOCKED_BY_SOLARIS,
     CardStatus.ACTIVATION_BLOCKED_BY_SOLARIS
   ].includes(newCardStatus)
-    ? "CARD_BLOCK" // Card has been blocked by solarisBank
-    : "CARD_LIFECYCLE_EVENT";
+    ? WEBHOOK_TYPES.CARD_BLOCK // Card has been blocked by solarisBank
+    : WEBHOOK_TYPES.CARD_LIFECYCLE_EVENT;
 
   await triggerWebhook(eventName, cardData.card);
 
   return cardData.card;
+};
+
+export const activateCard = async (
+  cardForActivation: Card,
+  verificationToken: string
+): Promise<Card> => {
+  if (cardForActivation.status !== CardStatus.INACTIVE) {
+    throw new Error(CardErrorCodes.CARD_ACTIVATION_INVALID_STATUS);
+  }
+
+  const person = await db.getPerson(cardForActivation.person_id);
+  const cardIndex = person.account.cards.findIndex(
+    ({ card }) => card.id === cardForActivation.id
+  );
+
+  if (verificationToken.length > 6) {
+    throw new Error(CardErrorCodes.VERIFICATION_TOKEN_TOO_LONG);
+  }
+
+  const isValidToken =
+    person.account.cards[cardIndex].cardDetails.token.substr(0, 6) ===
+    verificationToken;
+
+  if (!isValidToken) {
+    throw new Error(CardErrorCodes.INVALID_VERIFICATION_TOKEN);
+  }
+
+  cardForActivation.status = CardStatus.ACTIVE;
+  person.account.cards[cardIndex].card = cardForActivation;
+  await db.savePerson(person);
+  await triggerWebhook(WEBHOOK_TYPES.CARD_LIFECYCLE_EVENT, cardForActivation);
+  return cardForActivation;
 };

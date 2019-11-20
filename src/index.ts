@@ -37,6 +37,7 @@ export default {
   createSeizure,
   changeCardStatus,
   getCard: db.getCard,
+  getCardData: db.getCardData,
   createReservation: reservations.createReservation,
   updateReservation: reservations.updateReservation,
   createCreditPresentment

@@ -15,11 +15,13 @@ import {
 } from "../helpers/types";
 
 import {
+  activateCard,
   createCardToken,
   getCards,
   getMaskedCardNumber,
   validateCardData,
-  validatePersonData
+  validatePersonData,
+  CardErrorCodes
 } from "../helpers/cards";
 
 export const createCard = (
@@ -45,7 +47,7 @@ export const createCard = (
   const card = {
     id,
     type,
-    status: CardStatus.INACTIVE,
+    status: CardStatus.PROCESSING,
     expiration_date: expirationDate.format("YYYY-MM-DD"),
     person_id: person.id,
     account_id: person.account.id,
@@ -118,7 +120,7 @@ export const createCardHandler = async (
 
     res.status(HttpStatusCodes.CREATED).send({
       id: card.id,
-      status: CardStatus.PROCESSING
+      status: card.status
     });
   } catch (err) {
     log.error("(createCardHandler) Error occurred", err);
@@ -169,7 +171,7 @@ export const getCardHandler = async (
   const { card_id: cardId } = req.params;
   const card = await db.getCard(cardId);
 
-  if (!cardId) {
+  if (!card) {
     res.status(HttpStatusCodes.NOT_FOUND).send({
       errors: [
         {
@@ -185,5 +187,96 @@ export const getCardHandler = async (
   }
 
   res.send(card);
+};
+
+const handleCardActivationError = (
+  err: Error,
+  card: Card,
+  res: express.Response
+) => {
+  if (err.message === CardErrorCodes.CARD_ACTIVATION_INVALID_STATUS) {
+    res.status(HttpStatusCodes.BAD_REQUEST).send({
+      errors: [
+        {
+          id: uuid.v4(),
+          status: 400,
+          code: "invalid_model",
+          title: "Validation Error",
+          detail: `card is in ${card.status} status`,
+          source: {
+            field: "card",
+            message: `is in ${card.status} status`
+          }
+        }
+      ]
+    });
+    return;
+  }
+
+  if (err.message === CardErrorCodes.VERIFICATION_TOKEN_TOO_LONG) {
+    res.status(HttpStatusCodes.BAD_REQUEST).send({
+      errors: [
+        {
+          id: uuid.v4(),
+          status: 400,
+          code: "invalid_model",
+          title: "Validation Error",
+          detail: "verification_token must be at the most 6 characters long",
+          source: {
+            field: "verification_token",
+            message: "must be at the most 6 characters long"
+          }
+        }
+      ]
+    });
+    return;
+  }
+
+  if (err.message === CardErrorCodes.INVALID_VERIFICATION_TOKEN) {
+    res.status(HttpStatusCodes.BAD_REQUEST).send({
+      errors: [
+        {
+          id: uuid.v4(),
+          status: 400,
+          code: CardErrorCodes.INVALID_VERIFICATION_TOKEN,
+          title: "Invalid Verification Token",
+          detail: "Invalid Verification Token"
+        }
+      ]
+    });
+    return;
+  }
+
+  throw err;
+};
+
+export const activateCardHandler = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  const { card_id: cardId } = req.params;
+  const card = await db.getCard(cardId);
+
+  if (!card) {
+    res.status(HttpStatusCodes.NOT_FOUND).send({
+      errors: [
+        {
+          id: uuid.v4(),
+          status: 404,
+          code: "model_not_found",
+          title: "Model Not Found",
+          detail: `Couldn't find 'Solaris::Card' for id '${cardId}'.`
+        }
+      ]
+    });
+    return;
+  }
+
+  try {
+    const updatedCard = await activateCard(card, req.body.verification_token);
+    res.status(HttpStatusCodes.CREATED).send(updatedCard);
+  } catch (err) {
+    handleCardActivationError(err, card, res);
+  }
 };
 /* eslint-enable @typescript-eslint/camelcase */

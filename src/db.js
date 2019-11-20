@@ -345,8 +345,8 @@ export const findPersonByEmail = email => {
   });
 };
 
-export const getWebhooks = () => {
-  return redisClient
+export const getWebhooks = async () => {
+  const webhooks = await redisClient
     .keysAsync(`${process.env.MOCKSOLARIS_REDIS_PREFIX}:webhook:*`)
     .then(keys => {
       if (keys.length < 1) {
@@ -355,6 +355,8 @@ export const getWebhooks = () => {
       return redisClient.mgetAsync(keys);
     })
     .then(values => values.map(JSON.parse));
+
+  return webhooks;
 };
 
 export const getWebhookByType = async type =>
@@ -387,7 +389,7 @@ export const saveSepaDirectDebitReturn = async sepaDirectDebitReturn => {
 
 export const saveWebhook = webhook => {
   return redisClient.setAsync(
-    `${process.env.MOCKSOLARIS_REDIS_PREFIX}:webhook:${webhook.url}`,
+    `${process.env.MOCKSOLARIS_REDIS_PREFIX}:webhook:${webhook.event_type}`,
     JSON.stringify(webhook, undefined, 2)
   );
 };
@@ -440,15 +442,16 @@ export const saveCardReference = async cardRef => {
   return true;
 };
 
-export const getCard = async cardId => {
+export const getCardData = async cardId => {
   const persons = await getAllPersons();
-  const card = _(persons)
-    .map(person =>
-      _.get(person, "account.cards", []).map(cardData => cardData.card)
-    )
+
+  const cardData = _(persons)
+    .map(person => _.get(person, "account.cards", []))
     .flatten()
     .value()
-    .find(card => card.id === cardId);
+    .find(cardData => cardData.card.id === cardId);
 
-  return card;
+  return cardData;
 };
+
+export const getCard = async cardId => (await getCardData(cardId)).card;
