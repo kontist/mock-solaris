@@ -237,7 +237,10 @@ export const confirmTimedOrder = async (req, res) => {
 
 export const fetchTimedOrders = async (req, res) => {
   const { timedOrders } = await getPerson(req.params.person_id);
-  const { size: pageSize = 10 } = req.query.page || {};
+  let { size: pageSize = 10 } = req.query.page || {};
+  if (pageSize > 1000) {
+    pageSize = 1000;
+  }
   const response = timedOrders.slice(0, pageSize);
 
   res.send(response);
