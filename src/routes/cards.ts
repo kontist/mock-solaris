@@ -17,6 +17,8 @@ import {
   CardErrorCodes
 } from "../helpers/cards";
 
+type RequestExtendedWithCard = express.Request & { card: Card };
+
 export const createCardHandler = async (
   req: express.Request,
   res: express.Response
@@ -110,28 +112,10 @@ export const getAccountCardsHandler = async (
 };
 
 export const getCardHandler = async (
-  req: express.Request,
+  req: RequestExtendedWithCard,
   res: express.Response
 ) => {
-  const { card_id: cardId } = req.params;
-  const card = await db.getCard(cardId);
-
-  if (!card) {
-    res.status(HttpStatusCodes.NOT_FOUND).send({
-      errors: [
-        {
-          id: uuid.v4(),
-          status: 404,
-          code: "model_not_found",
-          title: "Model Not Found",
-          detail: `Couldn't find 'Solaris::Card' for id '${cardId}'.`
-        }
-      ]
-    });
-    return;
-  }
-
-  res.send(card);
+  res.send(req.card);
 };
 
 const handleCardActivationError = (
@@ -196,14 +180,26 @@ const handleCardActivationError = (
 };
 
 export const activateCardHandler = async (
-  req: express.Request,
+  req: RequestExtendedWithCard,
   res: express.Response
 ) => {
-  const { card_id: cardId } = req.params;
-  const card = await db.getCard(cardId);
+  try {
+    const updatedCard = await activateCard(
+      req.card,
+      req.body.verification_token
+    );
+    res.status(HttpStatusCodes.CREATED).send(updatedCard);
+  } catch (err) {
+    handleCardActivationError(err, req.card, res);
+  }
+};
 
-  if (!card) {
-    res.status(HttpStatusCodes.NOT_FOUND).send({
+export const cardMiddleware = async (req, res, next) => {
+  const { card_id: cardId } = req.params;
+  const cardData = await db.getCardData(cardId);
+
+  if (!cardData) {
+    return res.status(HttpStatusCodes.NOT_FOUND).send({
       errors: [
         {
           id: uuid.v4(),
@@ -214,14 +210,11 @@ export const activateCardHandler = async (
         }
       ]
     });
-    return;
   }
 
-  try {
-    const updatedCard = await activateCard(card, req.body.verification_token);
-    res.status(HttpStatusCodes.CREATED).send(updatedCard);
-  } catch (err) {
-    handleCardActivationError(err, card, res);
-  }
+  req.card = cardData.card;
+  req.cardDetails = cardData.cardDetails;
+
+  next();
 };
 /* eslint-enable @typescript-eslint/camelcase */

@@ -165,10 +165,15 @@ router.get(
   safeRequestHandler(cardsAPI.getAccountCardsHandler)
 );
 
-router.get("/cards/:card_id", safeRequestHandler(cardsAPI.getCardHandler));
+router.get(
+  "/cards/:card_id",
+  cardsAPI.cardMiddleware,
+  safeRequestHandler(cardsAPI.getCardHandler)
+);
 
 router.post(
   "/cards/:card_id/activate",
+  cardsAPI.cardMiddleware,
   safeRequestHandler(cardsAPI.activateCardHandler)
 );
 
