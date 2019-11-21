@@ -1,76 +1,21 @@
 /* eslint-disable @typescript-eslint/camelcase */
 import uuid from "uuid";
-import moment from "moment";
 import * as express from "express";
 import HttpStatusCodes from "http-status";
+
 import * as db from "../db";
 import * as log from "../logger";
 
-import {
-  Card,
-  CardDetails,
-  CardStatus,
-  CreateCardData,
-  MockPerson
-} from "../helpers/types";
+import { Card } from "../helpers/types";
 
 import {
+  createCard,
   activateCard,
-  createCardToken,
   getCards,
-  getMaskedCardNumber,
   validateCardData,
   validatePersonData,
   CardErrorCodes
 } from "../helpers/cards";
-
-export const createCard = (
-  cardData: CreateCardData,
-  person: MockPerson
-): { card: Card; cardDetails: CardDetails } => {
-  const {
-    pin,
-    type,
-    business_id: businessId = null,
-    reference,
-    line_1: cardHolder
-  } = cardData;
-
-  const id = uuid.v4().replace(/-/g, "");
-  const expirationDate = moment().add(3, "years");
-  const cardNumber = Math.random()
-    .toString()
-    .substr(2)
-    .padEnd(16, "0")
-    .substr(0, 16);
-
-  const card = {
-    id,
-    type,
-    status: CardStatus.PROCESSING,
-    expiration_date: expirationDate.format("YYYY-MM-DD"),
-    person_id: person.id,
-    account_id: person.account.id,
-    business_id: businessId,
-    representation: {
-      line_1: cardHolder,
-      formatted_expiration_date: expirationDate.format("MM/YY"),
-      masked_pan: getMaskedCardNumber(cardNumber)
-    }
-  };
-
-  const cardDetails = {
-    pin,
-    reference,
-    cardNumber,
-    token: createCardToken()
-  };
-
-  return {
-    card,
-    cardDetails
-  };
-};
 
 export const createCardHandler = async (
   req: express.Request,

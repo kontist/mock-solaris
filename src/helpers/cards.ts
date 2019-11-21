@@ -1,5 +1,7 @@
+/* eslint-disable @typescript-eslint/camelcase */
 import _ from "lodash";
 import uuid from "uuid";
+import moment from "moment";
 import * as db from "../db";
 import { triggerWebhook, WEBHOOK_TYPES } from "./webhooks";
 import {
@@ -8,6 +10,7 @@ import {
   CardStatus,
   CardType,
   MockPerson,
+  CreateCardData,
   SolarisAPIErrorData
 } from "./types";
 
@@ -138,6 +141,54 @@ export const createCardToken = (): string =>
     .join("")
     .toUpperCase();
 
+export const createCard = (
+  cardData: CreateCardData,
+  person: MockPerson
+): { card: Card; cardDetails: CardDetails } => {
+  const {
+    pin,
+    type,
+    business_id: businessId = null,
+    reference,
+    line_1: cardHolder
+  } = cardData;
+
+  const id = uuid.v4().replace(/-/g, "");
+  const expirationDate = moment().add(3, "years");
+  const cardNumber = Math.random()
+    .toString()
+    .substr(2)
+    .padEnd(16, "0")
+    .substr(0, 16);
+
+  const card = {
+    id,
+    type,
+    status: CardStatus.PROCESSING,
+    expiration_date: expirationDate.format("YYYY-MM-DD"),
+    person_id: person.id,
+    account_id: person.account.id,
+    business_id: businessId,
+    representation: {
+      line_1: cardHolder,
+      formatted_expiration_date: expirationDate.format("MM/YY"),
+      masked_pan: getMaskedCardNumber(cardNumber)
+    }
+  };
+
+  const cardDetails = {
+    pin,
+    reference,
+    cardNumber,
+    token: createCardToken()
+  };
+
+  return {
+    card,
+    cardDetails
+  };
+};
+
 export const getCards = (person: MockPerson): Card[] => {
   return ((person.account && person.account.cards) || []).map(
     ({ card }) => card
@@ -219,3 +270,4 @@ export const activateCard = async (
   await triggerWebhook(WEBHOOK_TYPES.CARD_LIFECYCLE_EVENT, cardForActivation);
   return cardForActivation;
 };
+/* eslint-enable @typescript-eslint/camelcase */
