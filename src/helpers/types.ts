@@ -1,8 +1,4 @@
-import {
-  Person,
-  Card,
-  CardLimits
-} from "@kontist/backend-service/src/core/providers/solaris/tsTypes";
+import { Person } from "@kontist/backend-service/src/core/providers/solaris/tsTypes";
 
 export enum ReservationType {
   CARD_AUTHORIZATION = "CARD_AUTHORIZATION"
@@ -98,3 +94,18 @@ export type CreateCardData = {
   reference: string;
   line_1: string;
 };
+
+type CardLimit = {
+  max_amount_cents: number;
+  max_transactions: number;
+};
+
+export type CardLimits = {
+  daily: CardLimit;
+  monthly: CardLimit;
+};
+
+export enum CardLimitType {
+  PRESENT = "PRESENT",
+  NOT_PRESENT = "NOT_PRESENT"
+}

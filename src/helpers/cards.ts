@@ -13,6 +13,10 @@ import {
   CreateCardData,
   SolarisAPIErrorData
 } from "./types";
+import {
+  CardLimits,
+  CardLimitType
+} from "@kontist/backend-service/src/core/providers/solaris/tsTypes";
 
 const CARD_HOLDER_MAX_LENGTH = 21;
 const CARD_HOLDER_ALLOWED_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 -/.";
@@ -293,5 +297,23 @@ export const activateCard = async (
   await db.savePerson(person);
   await triggerWebhook(WEBHOOK_TYPES.CARD_LIFECYCLE_EVENT, cardForActivation);
   return cardForActivation;
+};
+
+export const updateCardLimits = async (
+  card: Card,
+  cardLimitType: CardLimitType,
+  newLimits: CardLimits
+) => {
+  const person = await db.getPerson(card.person_id);
+  const cardIndex = person.account.cards.findIndex(
+    cardData => cardData.card.id === card.id
+  );
+  person.account.cards[cardIndex].cardDetails[
+    cardLimitType === CardLimitType.PRESENT
+      ? "cardPresentLimits"
+      : "cardNotPresentLimits"
+  ] = newLimits;
+  await db.savePerson(person);
+  return newLimits;
 };
 /* eslint-enable @typescript-eslint/camelcase */

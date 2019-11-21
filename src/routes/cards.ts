@@ -6,7 +6,7 @@ import HttpStatusCodes from "http-status";
 import * as db from "../db";
 import * as log from "../logger";
 
-import { Card, CardDetails } from "../helpers/types";
+import { Card, CardDetails, CardLimitType } from "../helpers/types";
 
 import {
   createCard,
@@ -14,7 +14,8 @@ import {
   getCards,
   validateCardData,
   validatePersonData,
-  CardErrorCodes
+  CardErrorCodes,
+  updateCardLimits
 } from "../helpers/cards";
 
 type RequestExtendedWithCard = express.Request & {
@@ -239,16 +240,25 @@ export const setCardPresentLimitsHandler = async (
   req: RequestExtendedWithCard,
   res: express.Response
 ) => {
-  res.status(HttpStatusCodes.CREATED).send(req.cardDetails.cardPresentLimits);
+  const updatedLimits = await updateCardLimits(
+    req.card,
+    CardLimitType.PRESENT,
+    req.body
+  );
+  res.status(HttpStatusCodes.CREATED).send(updatedLimits);
 };
 
 export const setCardNotPresentLimitsHandler = async (
   req: RequestExtendedWithCard,
   res: express.Response
 ) => {
-  res
-    .status(HttpStatusCodes.CREATED)
-    .send(req.cardDetails.cardNotPresentLimits);
+  const updatedLimits = await updateCardLimits(
+    req.card,
+    CardLimitType.NOT_PRESENT,
+    req.body
+  );
+
+  res.status(HttpStatusCodes.CREATED).send(updatedLimits);
 };
 
 /* eslint-enable @typescript-eslint/camelcase */
