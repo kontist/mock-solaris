@@ -6,7 +6,7 @@ import HttpStatusCodes from "http-status";
 import * as db from "../db";
 import * as log from "../logger";
 
-import { Card } from "../helpers/types";
+import { Card, CardDetails } from "../helpers/types";
 
 import {
   createCard,
@@ -17,7 +17,10 @@ import {
   CardErrorCodes
 } from "../helpers/cards";
 
-type RequestExtendedWithCard = express.Request & { card: Card };
+type RequestExtendedWithCard = express.Request & {
+  card: Card;
+  cardDetails: CardDetails;
+};
 
 export const createCardHandler = async (
   req: express.Request,
@@ -217,4 +220,35 @@ export const cardMiddleware = async (req, res, next) => {
 
   next();
 };
+
+export const getCardPresentLimitsHandler = async (
+  req: RequestExtendedWithCard,
+  res: express.Response
+) => {
+  res.status(HttpStatusCodes.OK).send(req.cardDetails.cardPresentLimits);
+};
+
+export const getCardNotPresentLimitsHandler = async (
+  req: RequestExtendedWithCard,
+  res: express.Response
+) => {
+  res.status(HttpStatusCodes.OK).send(req.cardDetails.cardNotPresentLimits);
+};
+
+export const setCardPresentLimitsHandler = async (
+  req: RequestExtendedWithCard,
+  res: express.Response
+) => {
+  res.status(HttpStatusCodes.CREATED).send(req.cardDetails.cardPresentLimits);
+};
+
+export const setCardNotPresentLimitsHandler = async (
+  req: RequestExtendedWithCard,
+  res: express.Response
+) => {
+  res
+    .status(HttpStatusCodes.CREATED)
+    .send(req.cardDetails.cardNotPresentLimits);
+};
+
 /* eslint-enable @typescript-eslint/camelcase */

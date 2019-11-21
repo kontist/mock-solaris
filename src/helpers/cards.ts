@@ -141,6 +141,28 @@ export const createCardToken = (): string =>
     .join("")
     .toUpperCase();
 
+const getDefaultCardNotPresentLimits = () => ({
+  daily: {
+    max_amount_cents: 150000,
+    max_transactions: 25
+  },
+  monthly: {
+    max_amount_cents: 1000000,
+    max_transactions: 775
+  }
+});
+
+const getDefaultCardPresentLimits = () => ({
+  daily: {
+    max_amount_cents: 450000,
+    max_transactions: 15
+  },
+  monthly: {
+    max_amount_cents: 2500000,
+    max_transactions: 465
+  }
+});
+
 export const createCard = (
   cardData: CreateCardData,
   person: MockPerson
@@ -180,7 +202,9 @@ export const createCard = (
     pin,
     reference,
     cardNumber,
-    token: createCardToken()
+    token: createCardToken(),
+    cardPresentLimits: getDefaultCardPresentLimits(),
+    cardNotPresentLimits: getDefaultCardNotPresentLimits()
   };
 
   return {

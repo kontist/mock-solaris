@@ -1,6 +1,7 @@
 import {
   Person,
-  Card
+  Card,
+  CardLimits
 } from "@kontist/backend-service/src/core/providers/solaris/tsTypes";
 
 export enum ReservationType {
@@ -68,6 +69,8 @@ export type CardDetails = {
   reference: string;
   cardNumber: string;
   token: string;
+  cardPresentLimits: CardLimits;
+  cardNotPresentLimits: CardLimits;
 };
 
 export type MockAccount = Account & {

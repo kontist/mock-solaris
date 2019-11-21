@@ -177,6 +177,30 @@ router.post(
   safeRequestHandler(cardsAPI.activateCardHandler)
 );
 
+router.get(
+  "/cards/:card_id/limits/card_present",
+  cardsAPI.cardMiddleware,
+  safeRequestHandler(cardsAPI.getCardPresentLimitsHandler)
+);
+
+router.get(
+  "/cards/:card_id/limits/card_not_present",
+  cardsAPI.cardMiddleware,
+  safeRequestHandler(cardsAPI.getCardNotPresentLimitsHandler)
+);
+
+router.put(
+  "/cards/:card_id/limits/card_present",
+  cardsAPI.cardMiddleware,
+  safeRequestHandler(cardsAPI.setCardPresentLimitsHandler)
+);
+
+router.put(
+  "/cards/:card_id/limits/card_not_present",
+  cardsAPI.cardMiddleware,
+  safeRequestHandler(cardsAPI.setCardNotPresentLimitsHandler)
+);
+
 // SEPA_DIRECT_DEBIT_RETURNS
 router.get(
   "/sepa_direct_debit_returns",
