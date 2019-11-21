@@ -1,5 +1,3 @@
-import { Person } from "@kontist/backend-service/src/core/providers/solaris/tsTypes";
-
 export enum ReservationType {
   CARD_AUTHORIZATION = "CARD_AUTHORIZATION"
 }
@@ -73,7 +71,7 @@ export type MockAccount = Account & {
   cards: Array<{ card: Card; cardDetails: CardDetails }>;
 };
 
-export type MockPerson = Person & { account?: MockAccount };
+export type MockPerson = { id: string; account?: MockAccount };
 
 export type SolarisAPIErrorData = {
   id: string;

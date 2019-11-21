@@ -11,12 +11,10 @@ import {
   CardType,
   MockPerson,
   CreateCardData,
+  CardLimits,
+  CardLimitType,
   SolarisAPIErrorData
 } from "./types";
-import {
-  CardLimits,
-  CardLimitType
-} from "@kontist/backend-service/src/core/providers/solaris/tsTypes";
 
 const CARD_HOLDER_MAX_LENGTH = 21;
 const CARD_HOLDER_ALLOWED_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 -/.";
