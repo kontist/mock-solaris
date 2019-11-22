@@ -19,6 +19,11 @@ import {
 const CARD_HOLDER_MAX_LENGTH = 21;
 const CARD_HOLDER_ALLOWED_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 -/.";
 
+const MAX_TRANSACTION_DAILY = 300;
+const MAX_TRANSACTION_MONTHLY = MAX_TRANSACTION_DAILY * 31;
+const MAX_DAILY_AMOUNT_IN_CENTS = 800000;
+const MAX_MONTHLY_AMOUNT_IN_CENTS = 6000000;
+
 export enum CardErrorCodes {
   CARD_ACTIVATION_INVALID_STATUS = "card_activation_invalid_status",
   INVALID_VERIFICATION_TOKEN = "invalid_verification_token",
@@ -297,6 +302,48 @@ export const activateCard = async (
   return cardForActivation;
 };
 
+export const validateCardLimits = (cardLimits: CardLimits): string | null => {
+  const errors = [];
+
+  if (
+    cardLimits.daily.max_transactions > MAX_TRANSACTION_DAILY ||
+    cardLimits.daily.max_amount_cents > MAX_DAILY_AMOUNT_IN_CENTS
+  ) {
+    errors.push(
+      `limit too high. Max DAILY transactions amount: ${MAX_TRANSACTION_DAILY} and Max DAILY amount in cents: ${MAX_DAILY_AMOUNT_IN_CENTS}`
+    );
+  }
+
+  if (
+    cardLimits.monthly.max_transactions > MAX_TRANSACTION_MONTHLY ||
+    cardLimits.monthly.max_amount_cents > MAX_MONTHLY_AMOUNT_IN_CENTS
+  ) {
+    errors.push(
+      `limit too high. Max MONTHLY transactions amount: ${MAX_TRANSACTION_MONTHLY} and Max MONTHLY amount in cents: ${MAX_MONTHLY_AMOUNT_IN_CENTS}`
+    );
+  }
+
+  if (
+    cardLimits.daily.max_transactions < 0 ||
+    cardLimits.daily.max_amount_cents < 0
+  ) {
+    errors.push(`limit negative. DAILY values cannot be negative, negative.`);
+  }
+
+  if (
+    cardLimits.monthly.max_transactions < 0 ||
+    cardLimits.monthly.max_amount_cents < 0
+  ) {
+    errors.push(`limit negative. MONTHLY values cannot be negative, negative.`);
+  }
+
+  if (errors.length) {
+    return errors.join(". ");
+  }
+
+  return null;
+};
+
 export const updateCardLimits = async (
   card: Card,
   cardLimitType: CardLimitType,
@@ -306,6 +353,7 @@ export const updateCardLimits = async (
   const cardIndex = person.account.cards.findIndex(
     cardData => cardData.card.id === card.id
   );
+
   person.account.cards[cardIndex].cardDetails[
     cardLimitType === CardLimitType.PRESENT
       ? "cardPresentLimits"

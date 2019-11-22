@@ -15,7 +15,8 @@ import {
   validateCardData,
   validatePersonData,
   CardErrorCodes,
-  updateCardLimits
+  updateCardLimits,
+  validateCardLimits
 } from "../helpers/cards";
 
 type RequestExtendedWithCard = express.Request & {
@@ -258,10 +259,35 @@ export const getCardNotPresentLimitsHandler = async (
   res.status(HttpStatusCodes.OK).send(req.cardDetails.cardNotPresentLimits);
 };
 
+const handleSetCardLimitValidationError = (validationError, res) => {
+  res.status(HttpStatusCodes.BAD_REQUEST).send({
+    errors: [
+      {
+        id: uuid.v4(),
+        status: HttpStatusCodes.BAD_REQUEST,
+        code: "invalid_model",
+        title: "Validation Error",
+        detail: validationError,
+        source: {
+          field: "limit",
+          message: validationError.replace(/^limit/, "")
+        }
+      }
+    ]
+  });
+};
+
 export const setCardPresentLimitsHandler = async (
   req: RequestExtendedWithCard,
   res: express.Response
 ) => {
+  const validationError = validateCardLimits(req.body);
+
+  if (validationError) {
+    handleSetCardLimitValidationError(validationError, res);
+    return;
+  }
+
   const updatedLimits = await updateCardLimits(
     req.card,
     CardLimitType.PRESENT,
@@ -274,6 +300,13 @@ export const setCardNotPresentLimitsHandler = async (
   req: RequestExtendedWithCard,
   res: express.Response
 ) => {
+  const validationError = validateCardLimits(req.body);
+
+  if (validationError) {
+    handleSetCardLimitValidationError(validationError, res);
+    return;
+  }
+
   const updatedLimits = await updateCardLimits(
     req.card,
     CardLimitType.NOT_PRESENT,
