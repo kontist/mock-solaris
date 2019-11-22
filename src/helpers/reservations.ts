@@ -147,6 +147,14 @@ export const createReservation = async ({
     throw new Error("Your card is blocked");
   }
 
+  if (cardData.card.status === CardStatus.INACTIVE) {
+    await triggerWebhook(CardWebhookEvent.CARD_AUTHORIZATION_DECLINE, {
+      reason: CardAuthorizationDeclineReason.CARD_INACTIVE,
+      card_transaction: reservation
+    });
+    throw new Error("Your card is in inactive status");
+  }
+
   if (cardData.card.status !== CardStatus.ACTIVE) {
     throw new Error("Your card is not in active status");
   }
