@@ -25,6 +25,6 @@
     "swig": "^1.4.2"
   },
   "devDependencies": {
-    "nodemon": "^1.18.11"
+    "nodemon": "^2.0.1"
   }
 }
