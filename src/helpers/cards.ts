@@ -212,7 +212,10 @@ export const createCard = (
     cardNumber,
     token: createCardToken(),
     cardPresentLimits: getDefaultCardPresentLimits(),
-    cardNotPresentLimits: getDefaultCardNotPresentLimits()
+    cardNotPresentLimits: getDefaultCardNotPresentLimits(),
+    cvv: Math.random()
+      .toString()
+      .substr(-3)
   };
 
   return {

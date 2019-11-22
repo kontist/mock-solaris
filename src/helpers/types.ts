@@ -65,6 +65,7 @@ export type CardDetails = {
   token: string;
   cardPresentLimits: CardLimits;
   cardNotPresentLimits: CardLimits;
+  cvv: string;
 };
 
 export type MockAccount = Account & {
