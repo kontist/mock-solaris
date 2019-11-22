@@ -61,6 +61,14 @@
               <td>holder</td>
               <td>{{ cardData.card.representation.line_1 }}</td>
             </tr>
+            <tr>
+              <td>card present limits</td>
+              <td><pre>{{ JSON.stringify(cardData.cardDetails.cardPresentLimits, null, 2) }}</pre></td>
+            </tr>
+            <tr>
+              <td>card not present limits</td>
+              <td><pre>{{ JSON.stringify(cardData.cardDetails.cardNotPresentLimits, null, 2) }}</pre></td>
+            </tr>
           </table>
         </td>
       </tbody>
