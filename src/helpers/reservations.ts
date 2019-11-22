@@ -16,7 +16,8 @@ import {
   CardStatus,
   ActionType,
   FxRate,
-  CardWebhookEvent
+  CardWebhookEvent,
+  CardAuthorizationDeclineReason
 } from "./types";
 
 export const generateMetaInfo = ({
@@ -120,9 +121,30 @@ export const createReservation = async ({
 }) => {
   const person = await db.getPerson(personId);
   const cardData = person.account.cards.find(({ card }) => card.id === cardId);
+  const convertedAmount = Math.abs(parseInt(amount, 10));
+  const reservation = mapDataToReservation({
+    amount: Math.round(convertedAmount * FxRate[currency]),
+    originalAmount: convertedAmount,
+    originalCurrency: currency,
+    type,
+    recipient,
+    cardId
+  });
 
   if (!cardData) {
     throw new Error("Card not found");
+  }
+
+  if (
+    [CardStatus.BLOCKED, CardStatus.BLOCKED_BY_SOLARIS].includes(
+      cardData.card.status
+    )
+  ) {
+    await triggerWebhook(CardWebhookEvent.CARD_AUTHORIZATION_DECLINE, {
+      reason: CardAuthorizationDeclineReason.CARD_BLOCKED,
+      card_transaction: reservation
+    });
+    throw new Error("Your card is blocked");
   }
 
   if (cardData.card.status !== CardStatus.ACTIVE) {
@@ -132,17 +154,6 @@ export const createReservation = async ({
   if (person.account.available_balance.value < amount) {
     throw new Error("There were insufficient funds to complete this action.");
   }
-
-  const convertedAmount = Math.abs(parseInt(amount, 10));
-
-  const reservation = mapDataToReservation({
-    amount: Math.round(convertedAmount * FxRate[currency]),
-    originalAmount: convertedAmount,
-    originalCurrency: currency,
-    type,
-    recipient,
-    cardId
-  });
 
   person.account.reservations.push(reservation);
 
