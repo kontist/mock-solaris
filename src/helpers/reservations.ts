@@ -15,7 +15,8 @@ import {
   TransactionType,
   CardStatus,
   ActionType,
-  FxRate
+  FxRate,
+  CardWebhookEvent
 } from "./types";
 
 export const generateMetaInfo = ({
@@ -147,7 +148,7 @@ export const createReservation = async ({
 
   await db.savePerson(person);
 
-  await triggerWebhook("CARD_AUTHORIZATION", reservation);
+  await triggerWebhook(CardWebhookEvent.CARD_AUTHORIZATION, reservation);
 };
 
 const bookReservation = async (person, reservation) => {
@@ -166,7 +167,10 @@ const bookReservation = async (person, reservation) => {
     resolved_at: moment().toDate()
   };
 
-  await triggerWebhook("CARD_AUTHORIZATION_RESOLUTION", resolvedReservation);
+  await triggerWebhook(
+    CardWebhookEvent.CARD_AUTHORIZATION_RESOLUTION,
+    resolvedReservation
+  );
   await triggerBookingsWebhook(person.account.id);
 };
 

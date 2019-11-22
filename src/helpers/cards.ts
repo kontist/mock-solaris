@@ -3,7 +3,7 @@ import _ from "lodash";
 import uuid from "uuid";
 import moment from "moment";
 import * as db from "../db";
-import { triggerWebhook, WEBHOOK_TYPES } from "./webhooks";
+import { triggerWebhook } from "./webhooks";
 import {
   Card,
   CardDetails,
@@ -13,7 +13,8 @@ import {
   CreateCardData,
   CardLimits,
   CardLimitType,
-  SolarisAPIErrorData
+  SolarisAPIErrorData,
+  CardWebhookEvent
 } from "./types";
 
 const CARD_HOLDER_MAX_LENGTH = 21;
@@ -262,8 +263,8 @@ export const changeCardStatus = async (
     CardStatus.BLOCKED_BY_SOLARIS,
     CardStatus.ACTIVATION_BLOCKED_BY_SOLARIS
   ].includes(newCardStatus)
-    ? WEBHOOK_TYPES.CARD_BLOCK // Card has been blocked by solarisBank
-    : WEBHOOK_TYPES.CARD_LIFECYCLE_EVENT;
+    ? CardWebhookEvent.CARD_BLOCK // Card has been blocked by solarisBank
+    : CardWebhookEvent.CARD_LIFECYCLE_EVENT;
 
   await triggerWebhook(eventName, cardData.card);
 
@@ -298,7 +299,10 @@ export const activateCard = async (
   cardForActivation.status = CardStatus.ACTIVE;
   person.account.cards[cardIndex].card = cardForActivation;
   await db.savePerson(person);
-  await triggerWebhook(WEBHOOK_TYPES.CARD_LIFECYCLE_EVENT, cardForActivation);
+  await triggerWebhook(
+    CardWebhookEvent.CARD_LIFECYCLE_EVENT,
+    cardForActivation
+  );
   return cardForActivation;
 };
 
