@@ -207,10 +207,10 @@ export const cardMiddleware = async (req, res, next) => {
       errors: [
         {
           id: uuid.v4(),
-          status: 404,
+          status: HttpStatusCodes.NOT_FOUND,
           code: "model_not_found",
           title: "Model Not Found",
-          detail: `Couldn't find 'Solaris::Card' for id '${cardId}'.`
+          detail: `Couldn't find 'Solaris::CardAccount' for id '${cardId}'.`
         }
       ]
     });
