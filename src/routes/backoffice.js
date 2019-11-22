@@ -501,7 +501,7 @@ export const changeCardStatusHandler = async (req, res) => {
 
 export const createReservationHandler = async (req, res) => {
   const { person_id: personId } = req.params;
-  const { cardId, amount, currency, type, recipient } = req.body;
+  const { cardId, amount, currency, type, recipient, declineReason } = req.body;
 
   if (!personId) {
     throw new Error("You have to provide personId");
@@ -517,7 +517,8 @@ export const createReservationHandler = async (req, res) => {
     amount,
     currency,
     type,
-    recipient
+    recipient,
+    declineReason
   };
 
   await (type === TransactionType.CREDIT_PRESENTMENT

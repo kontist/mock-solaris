@@ -110,7 +110,8 @@ export const createReservation = async ({
   amount,
   currency,
   type,
-  recipient
+  recipient,
+  declineReason
 }: {
   personId: string;
   cardId: string;
@@ -118,6 +119,7 @@ export const createReservation = async ({
   currency: string;
   type: TransactionType;
   recipient: string;
+  declineReason?: CardAuthorizationDeclineReason;
 }) => {
   const person = await db.getPerson(personId);
   const cardData = person.account.cards.find(({ card }) => card.id === cardId);
@@ -130,6 +132,14 @@ export const createReservation = async ({
     recipient,
     cardId
   });
+
+  if (declineReason) {
+    await triggerWebhook(CardWebhookEvent.CARD_AUTHORIZATION_DECLINE, {
+      reason: declineReason,
+      card_transaction: reservation
+    });
+    return;
+  }
 
   if (!cardData) {
     throw new Error("Card not found");

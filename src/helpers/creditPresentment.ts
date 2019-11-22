@@ -5,7 +5,11 @@ import moment from "moment";
 
 import { generateMetaInfo } from "./reservations";
 import { creteBookingFromReservation } from "../routes/transactions";
-import { TransactionType, FxRate } from "./types";
+import {
+  TransactionType,
+  FxRate,
+  CardAuthorizationDeclineReason
+} from "./types";
 
 export const createCreditPresentment = async ({
   personId,
@@ -21,6 +25,7 @@ export const createCreditPresentment = async ({
   currency: string;
   type: TransactionType;
   recipient: string;
+  declineReason?: CardAuthorizationDeclineReason;
 }) => {
   const person = await db.getPerson(personId);
   const cardData = person.account.cards.find(({ card }) => card.id === cardId);
