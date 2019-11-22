@@ -152,6 +152,10 @@ export const createReservation = async ({
   }
 
   if (person.account.available_balance.value < amount) {
+    await triggerWebhook(CardWebhookEvent.CARD_AUTHORIZATION_DECLINE, {
+      reason: CardAuthorizationDeclineReason.INSUFFICIENT_FUNDS,
+      card_transaction: reservation
+    });
     throw new Error("There were insufficient funds to complete this action.");
   }
 
