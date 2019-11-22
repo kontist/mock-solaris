@@ -30,6 +30,7 @@ import { migrate } from "./db";
 import { oauthTokenAuthenticationMiddleware } from "./helpers/oauth";
 import { safeRequestHandler } from "./helpers/safeRequestHandler";
 import { shouldReturnJSON } from "./helpers";
+import { CardStatus } from "./helpers/types";
 const app = express();
 
 function logResponseBody(req, res, next) {
@@ -177,27 +178,49 @@ router.post(
   safeRequestHandler(cardsAPI.activateCardHandler)
 );
 
+const GET_CARD_LIMITS_CARD_ALLOWED_STATES = [
+  CardStatus.INACTIVE,
+  CardStatus.ACTIVATION_BLOCKED_BY_SOLARIS,
+  CardStatus.ACTIVE,
+  CardStatus.BLOCKED,
+  CardStatus.BLOCKED_BY_SOLARIS,
+  CardStatus.CLOSED,
+  CardStatus.CLOSED_BY_SOLARIS
+];
+
 router.get(
   "/cards/:card_id/limits/card_present",
   cardsAPI.cardMiddleware,
+  cardsAPI.cardStatusMiddleware(GET_CARD_LIMITS_CARD_ALLOWED_STATES),
   safeRequestHandler(cardsAPI.getCardPresentLimitsHandler)
 );
 
 router.get(
   "/cards/:card_id/limits/card_not_present",
   cardsAPI.cardMiddleware,
+  cardsAPI.cardStatusMiddleware(GET_CARD_LIMITS_CARD_ALLOWED_STATES),
   safeRequestHandler(cardsAPI.getCardNotPresentLimitsHandler)
 );
+
+const SET_CARD_LIMITS_CARD_ALLOWED_STATES = [
+  CardStatus.INACTIVE,
+  CardStatus.ACTIVATION_BLOCKED_BY_SOLARIS,
+  CardStatus.ACTIVE,
+  CardStatus.BLOCKED,
+  CardStatus.BLOCKED_BY_SOLARIS
+];
 
 router.put(
   "/cards/:card_id/limits/card_present",
   cardsAPI.cardMiddleware,
+  cardsAPI.cardStatusMiddleware(SET_CARD_LIMITS_CARD_ALLOWED_STATES),
   safeRequestHandler(cardsAPI.setCardPresentLimitsHandler)
 );
 
 router.put(
   "/cards/:card_id/limits/card_not_present",
   cardsAPI.cardMiddleware,
+  cardsAPI.cardStatusMiddleware(SET_CARD_LIMITS_CARD_ALLOWED_STATES),
   safeRequestHandler(cardsAPI.setCardNotPresentLimitsHandler)
 );
 

@@ -6,7 +6,7 @@ import HttpStatusCodes from "http-status";
 import * as db from "../db";
 import * as log from "../logger";
 
-import { Card, CardDetails, CardLimitType } from "../helpers/types";
+import { Card, CardDetails, CardLimitType, CardStatus } from "../helpers/types";
 
 import {
   createCard,
@@ -218,6 +218,28 @@ export const cardMiddleware = async (req, res, next) => {
 
   req.card = cardData.card;
   req.cardDetails = cardData.cardDetails;
+
+  next();
+};
+
+export const cardStatusMiddleware = (states: CardStatus[]) => async (
+  req: RequestExtendedWithCard,
+  res: express.Response,
+  next: express.NextFunction
+) => {
+  if (!states.includes(req.card.status)) {
+    // this is custom error, couldn't test it with Solaris sandbox and production
+    res.status(HttpStatusCodes.BAD_REQUEST).send({
+      errors: [
+        {
+          id: uuid.v4(),
+          status: HttpStatusCodes.BAD_REQUEST,
+          detail: `card in invalid state.`
+        }
+      ]
+    });
+    return;
+  }
 
   next();
 };
