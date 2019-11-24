@@ -148,3 +148,20 @@ export enum CardAuthorizationDeclineReason {
   "RETRY_WITH_CHIP_AND_PIN" = "RETRY_WITH_CHIP_AND_PIN", //	We encountered a problem while trying to approve your transaction. Please try again inserting the card in the merchant terminal.
   "3DS_FAILED" = "3DS_FAILED" // We could not approve your transaction because the merchant did not provide correct authentication information. Please try again.
 }
+
+export type Reservation = {
+  id: string;
+  amount: {
+    value: number;
+    unit: string;
+    currency: string;
+  };
+  reservation_type: ReservationType;
+  reference: string;
+  status: ReservationStatus;
+  meta_info: string;
+  expires_at: string | null;
+  expired_at: string | null;
+  resolved_at: string | null;
+  description: string;
+};

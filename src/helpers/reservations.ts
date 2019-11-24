@@ -16,8 +16,10 @@ import {
   CardStatus,
   ActionType,
   FxRate,
+  Reservation,
   CardWebhookEvent,
-  CardAuthorizationDeclineReason
+  CardAuthorizationDeclineReason,
+  CardDetails
 } from "./types";
 
 export const generateMetaInfo = ({
@@ -74,7 +76,7 @@ const mapDataToReservation = ({
   type: TransactionType;
   recipient: string;
   cardId: string;
-}) => {
+}): Reservation => {
   const date = moment().toDate();
 
   return {
@@ -102,6 +104,34 @@ const mapDataToReservation = ({
     resolved_at: null,
     description: recipient
   };
+};
+
+const validateForCardLimits = (
+  reservations: Reservation[],
+  cardDetails: CardDetails
+) => {
+  const startOfToday = moment().startOf("day");
+  const endOfToday = moment().endOf("day");
+  const startOfMonth = moment().startOf("month");
+  const endOfMonth = moment().endOf("month");
+
+  const todayReservations = reservations.filter(({ meta_info: meta }) => {
+    return moment(JSON.parse(meta).transaction_date).isBetween(
+      startOfToday,
+      endOfToday
+    );
+  });
+
+  // validate for cardPresent/cardNotPresent limits
+
+  const thisMonthReservations = reservations.filter(({ meta_info: meta }) => {
+    return moment(JSON.parse(meta).transaction_date).isBetween(
+      startOfMonth,
+      endOfMonth
+    );
+  });
+
+  // validate for cardPresent/cardNotPresent limits
 };
 
 export const createReservation = async ({
@@ -178,6 +208,8 @@ export const createReservation = async ({
   }
 
   person.account.reservations.push(reservation);
+
+  validateForCardLimits(person.account.reservations, cardData.cardDetails);
 
   await db.savePerson(person);
 
