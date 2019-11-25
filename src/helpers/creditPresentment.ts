@@ -8,7 +8,8 @@ import { creteBookingFromReservation } from "../routes/transactions";
 import {
   TransactionType,
   FxRate,
-  CardAuthorizationDeclineReason
+  CardAuthorizationDeclineReason,
+  POSEntryMode
 } from "./types";
 
 export const createCreditPresentment = async ({
@@ -44,7 +45,8 @@ export const createCreditPresentment = async ({
     cardId,
     date,
     type,
-    incoming: true
+    incoming: true,
+    posEntryMode: POSEntryMode.CARD_NOT_PRESENT
   });
 
   const booking = creteBookingFromReservation(

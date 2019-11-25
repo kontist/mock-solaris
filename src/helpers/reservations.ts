@@ -21,7 +21,8 @@ import {
   CardAuthorizationDeclineReason,
   CardDetails,
   MockPerson,
-  BookingType
+  BookingType,
+  POSEntryMode
 } from "./types";
 
 export const generateMetaInfo = ({
@@ -31,7 +32,8 @@ export const generateMetaInfo = ({
   cardId,
   date,
   type,
-  incoming
+  incoming,
+  posEntryMode
 }: {
   originalAmount: number;
   originalCurrency: string;
@@ -40,6 +42,7 @@ export const generateMetaInfo = ({
   date: Date;
   type: TransactionType;
   incoming?: boolean;
+  posEntryMode: POSEntryMode;
 }) => {
   return JSON.stringify({
     cards: {
@@ -55,7 +58,7 @@ export const generateMetaInfo = ({
         value: originalAmount,
         fx_rate: FxRate[originalCurrency]
       },
-      pos_entry_mode: "CONTACTLESS",
+      pos_entry_mode: posEntryMode,
       trace_id: incoming ? null : uuid.v4(),
       transaction_date: moment(date).format("YYYY-MM-DD"),
       transaction_time: incoming ? null : moment(date).toDate(),
@@ -70,7 +73,8 @@ const mapDataToReservation = ({
   originalCurrency,
   type,
   recipient,
-  cardId
+  cardId,
+  posEntryMode
 }: {
   amount: number;
   originalAmount: number;
@@ -78,6 +82,7 @@ const mapDataToReservation = ({
   type: TransactionType;
   recipient: string;
   cardId: string;
+  posEntryMode: POSEntryMode;
 }): Reservation => {
   const date = moment().toDate();
 
@@ -97,7 +102,8 @@ const mapDataToReservation = ({
       recipient,
       cardId,
       date,
-      type
+      type,
+      posEntryMode
     }),
     expires_at: moment(date)
       .add(1, "month")
@@ -113,14 +119,18 @@ const computeCardUsage = (person: MockPerson, cardDetails: CardDetails) => {
   const endOfToday = moment().endOf("day");
   const startOfMonth = moment().startOf("month");
   const endOfMonth = moment().endOf("month");
-  const cardReservations = person.account.reservations.filter(
-    ({ reservation_type: reservationType }) =>
-      reservationType === ReservationType.CARD_AUTHORIZATION
-  );
-  const cardBookings = person.account.transactions.filter(
-    ({ booking_type: bookingType }) =>
-      bookingType === BookingType.CARD_TRANSACTION
-  );
+  const cardReservations = person.account.reservations
+    .filter(
+      ({ reservation_type: reservationType }) =>
+        reservationType === ReservationType.CARD_AUTHORIZATION
+    )
+    .filter(({ amount: { value } }) => value < 0);
+  const cardBookings = person.account.transactions
+    .filter(
+      ({ booking_type: bookingType }) =>
+        bookingType === BookingType.CARD_TRANSACTION
+    )
+    .filter(({ amount: { value } }) => value < 0);
 
   const todayReservations = cardReservations.filter(({ meta_info: meta }) => {
     return moment(JSON.parse(meta).transaction_date).isBetween(
@@ -156,7 +166,8 @@ export const createReservation = async ({
   currency,
   type,
   recipient,
-  declineReason
+  declineReason,
+  posEntryMode
 }: {
   personId: string;
   cardId: string;
@@ -165,6 +176,7 @@ export const createReservation = async ({
   type: TransactionType;
   recipient: string;
   declineReason?: CardAuthorizationDeclineReason;
+  posEntryMode: POSEntryMode;
 }) => {
   const person = await db.getPerson(personId);
   const cardData = person.account.cards.find(({ card }) => card.id === cardId);
@@ -175,7 +187,8 @@ export const createReservation = async ({
     originalCurrency: currency,
     type,
     recipient,
-    cardId
+    cardId,
+    posEntryMode
   });
 
   if (declineReason) {
