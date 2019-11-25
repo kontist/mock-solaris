@@ -2,7 +2,7 @@
 
 import uuid from "uuid";
 import * as db from "../db";
-import moment from "moment";
+import moment, { Moment } from "moment";
 import _ from "lodash";
 
 import { creteBookingFromReservation } from "../routes/transactions";
@@ -22,7 +22,8 @@ import {
   CardDetails,
   MockPerson,
   BookingType,
-  POSEntryMode
+  POSEntryMode,
+  Booking
 } from "./types";
 
 export const generateMetaInfo = ({
@@ -114,49 +115,207 @@ const mapDataToReservation = ({
   };
 };
 
-const computeCardUsage = (person: MockPerson, cardDetails: CardDetails) => {
+const computeCardUsage = (person: MockPerson) => {
   const startOfToday = moment().startOf("day");
   const endOfToday = moment().endOf("day");
   const startOfMonth = moment().startOf("month");
   const endOfMonth = moment().endOf("month");
-  const cardReservations = person.account.reservations
-    .filter(
-      ({ reservation_type: reservationType }) =>
-        reservationType === ReservationType.CARD_AUTHORIZATION
-    )
-    .filter(({ amount: { value } }) => value < 0);
-  const cardBookings = person.account.transactions
-    .filter(
-      ({ booking_type: bookingType }) =>
-        bookingType === BookingType.CARD_TRANSACTION
-    )
-    .filter(({ amount: { value } }) => value < 0);
 
-  const todayReservations = cardReservations.filter(({ meta_info: meta }) => {
-    return moment(JSON.parse(meta).transaction_date).isBetween(
-      startOfToday,
-      endOfToday
+  const cardReservations = person.account.reservations.filter(
+    ({ reservation_type: reservationType }) =>
+      reservationType === ReservationType.CARD_AUTHORIZATION
+  );
+
+  const cardBookings = (person.account.transactions || []).filter(
+    ({ booking_type: bookingType }) =>
+      bookingType === BookingType.CARD_TRANSACTION
+  );
+
+  const isBetween = (
+    entry: Booking | Reservation,
+    startDate: Moment,
+    endDate: Moment
+  ) => {
+    return moment(JSON.parse(entry.meta_info).cards.transaction_date).isBetween(
+      startDate,
+      endDate,
+      undefined,
+      "[]"
     );
-  });
+  };
 
-  const todayBookings = cardBookings.filter(({ booking_date: bookingDate }) => {
-    return moment(bookingDate).isBetween(startOfToday, endOfToday);
-  });
-
-  const thisMonthReservations = cardReservations.filter(
-    ({ meta_info: meta }) => {
-      return moment(JSON.parse(meta).transaction_date).isBetween(
-        startOfMonth,
-        endOfMonth
-      );
-    }
+  const todayReservations = cardReservations.filter(entry =>
+    isBetween(entry, startOfToday, endOfToday)
   );
 
-  const thisMonthBookings = cardBookings.filter(
-    ({ booking_date: bookingDate }) => {
-      return moment(bookingDate).isBetween(startOfToday, endOfToday);
-    }
+  const filterByCardNotPresent = reservation =>
+    JSON.parse(reservation.meta_info).cards.pos_entry_mode ===
+    POSEntryMode.CARD_NOT_PRESENT;
+
+  const filterByCardPresent = reservation =>
+    JSON.parse(reservation.meta_info).cards.pos_entry_mode !==
+    POSEntryMode.CARD_NOT_PRESENT;
+
+  const sumAmount = (total: number, entry: Booking | Reservation) => {
+    return total + entry.amount.value;
+  };
+
+  const todayBookings = cardBookings.filter(entry =>
+    isBetween(entry, startOfToday, endOfToday)
   );
+
+  const todayCardNotPresent = [...todayReservations, ...todayBookings].filter(
+    filterByCardNotPresent
+  );
+
+  const todayCardPresent = [...todayReservations, ...todayBookings].filter(
+    filterByCardPresent
+  );
+
+  const thisMonthReservations = cardReservations.filter(entry =>
+    isBetween(entry, startOfMonth, endOfMonth)
+  );
+
+  const thisMonthBookings = cardBookings.filter(entry =>
+    isBetween(entry, startOfMonth, endOfMonth)
+  );
+
+  const thisMonthCardNotPresent = [
+    ...thisMonthReservations,
+    ...thisMonthBookings
+  ].filter(filterByCardNotPresent);
+
+  const thisMonthCardPresent = [
+    ...thisMonthReservations,
+    ...thisMonthBookings
+  ].filter(filterByCardPresent);
+
+  return {
+    cardPresent: {
+      daily: {
+        transactions: todayCardPresent.length,
+        amount: todayCardPresent.reduce(sumAmount, 0)
+      },
+      monthly: {
+        transactions: thisMonthCardPresent.length,
+        amount: thisMonthCardPresent.reduce(sumAmount, 0)
+      }
+    },
+    cardNotPresent: {
+      daily: {
+        transactions: todayCardNotPresent.length,
+        amount: todayCardNotPresent.reduce(sumAmount, 0)
+      },
+      monthly: {
+        transactions: thisMonthCardNotPresent.length,
+        amount: thisMonthCardNotPresent.reduce(sumAmount, 0)
+      }
+    }
+  };
+};
+
+export const validateCardLimits = async (
+  currentCardUsage,
+  cardDetails: CardDetails,
+  reservation: Reservation
+) => {
+  if (
+    currentCardUsage.cardPresent.daily.amount >
+    cardDetails.cardPresentLimits.daily.max_amount_cents
+  ) {
+    await triggerWebhook(CardWebhookEvent.CARD_AUTHORIZATION_DECLINE, {
+      reason:
+        CardAuthorizationDeclineReason.CARD_PRESENT_AMOUNT_LIMIT_REACHED_DAILY,
+      card_transaction: reservation
+    });
+    throw new Error("Daily card_present amount limit exceeded");
+  }
+
+  if (
+    currentCardUsage.cardPresent.daily.transactions >
+    cardDetails.cardPresentLimits.daily.max_transactions
+  ) {
+    await triggerWebhook(CardWebhookEvent.CARD_AUTHORIZATION_DECLINE, {
+      reason:
+        CardAuthorizationDeclineReason.CARD_PRESENT_USE_LIMIT_REACHED_DAILY,
+      card_transaction: reservation
+    });
+    throw new Error("Daily card_present transaction number limit exceeded");
+  }
+
+  if (
+    currentCardUsage.cardNotPresent.daily.amount >
+    cardDetails.cardNotPresentLimits.daily.max_amount_cents
+  ) {
+    await triggerWebhook(CardWebhookEvent.CARD_AUTHORIZATION_DECLINE, {
+      reason:
+        CardAuthorizationDeclineReason.CARD_NOT_PRESENT_AMOUNT_LIMIT_REACHED_DAILY,
+      card_transaction: reservation
+    });
+    throw new Error("Daily card_not_present amount limit exceeded");
+  }
+
+  if (
+    currentCardUsage.cardNotPresent.daily.transactions >
+    cardDetails.cardNotPresentLimits.daily.max_transactions
+  ) {
+    await triggerWebhook(CardWebhookEvent.CARD_AUTHORIZATION_DECLINE, {
+      reason:
+        CardAuthorizationDeclineReason.CARD_NOT_PRESENT_USE_LIMIT_REACHED_DAILY,
+      card_transaction: reservation
+    });
+    throw new Error("Daily card_not_present transaction number limit exceeded");
+  }
+
+  if (
+    currentCardUsage.cardPresent.monthly.amount >
+    cardDetails.cardPresentLimits.monthly.max_amount_cents
+  ) {
+    await triggerWebhook(CardWebhookEvent.CARD_AUTHORIZATION_DECLINE, {
+      reason:
+        CardAuthorizationDeclineReason.CARD_PRESENT_AMOUNT_LIMIT_REACHED_MONTHLY,
+      card_transaction: reservation
+    });
+    throw new Error("Monthly card_present amount limit exceeded");
+  }
+
+  if (
+    currentCardUsage.cardPresent.monthly.transactions >
+    cardDetails.cardPresentLimits.monthly.max_transactions
+  ) {
+    await triggerWebhook(CardWebhookEvent.CARD_AUTHORIZATION_DECLINE, {
+      reason:
+        CardAuthorizationDeclineReason.CARD_PRESENT_USE_LIMIT_REACHED_MONTHLY,
+      card_transaction: reservation
+    });
+    throw new Error("Monthly card_present transaction number limit exceeded");
+  }
+
+  if (
+    currentCardUsage.cardNotPresent.monthly.amount >
+    cardDetails.cardNotPresentLimits.monthly.max_amount_cents
+  ) {
+    await triggerWebhook(CardWebhookEvent.CARD_AUTHORIZATION_DECLINE, {
+      reason:
+        CardAuthorizationDeclineReason.CARD_NOT_PRESENT_AMOUNT_LIMIT_REACHED_MONTHLY,
+      card_transaction: reservation
+    });
+    throw new Error("Monthly card_not_present amount limit exceeded");
+  }
+
+  if (
+    currentCardUsage.cardNotPresent.monthly.transactions >
+    cardDetails.cardNotPresentLimits.monthly.max_transactions
+  ) {
+    await triggerWebhook(CardWebhookEvent.CARD_AUTHORIZATION_DECLINE, {
+      reason:
+        CardAuthorizationDeclineReason.CARD_NOT_PRESENT_USE_LIMIT_REACHED_MONTHLY,
+      card_transaction: reservation
+    });
+    throw new Error(
+      "Monthly card_not_present transaction number limit exceeded"
+    );
+  }
 };
 
 export const createReservation = async ({
@@ -167,7 +326,7 @@ export const createReservation = async ({
   type,
   recipient,
   declineReason,
-  posEntryMode
+  posEntryMode = POSEntryMode.CONTACTLESS
 }: {
   personId: string;
   cardId: string;
@@ -236,6 +395,9 @@ export const createReservation = async ({
   }
 
   person.account.reservations.push(reservation);
+
+  const currentCardUsages = computeCardUsage(person);
+  validateCardLimits(currentCardUsages, cardData.cardDetails, reservation);
 
   await db.savePerson(person);
 
