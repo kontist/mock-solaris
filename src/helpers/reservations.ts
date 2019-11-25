@@ -26,6 +26,16 @@ import {
   Booking
 } from "./types";
 
+const triggerCardDeclinedWebhook = async (
+  reservation: Reservation,
+  reason: CardAuthorizationDeclineReason
+) => {
+  await triggerWebhook(CardWebhookEvent.CARD_AUTHORIZATION_DECLINE, {
+    reason,
+    card_transaction: reservation
+  });
+};
+
 export const generateMetaInfo = ({
   originalAmount,
   originalCurrency,
@@ -222,11 +232,10 @@ export const validateCardLimits = async (
     currentCardUsage.cardPresent.daily.amount >
     cardDetails.cardPresentLimits.daily.max_amount_cents
   ) {
-    await triggerWebhook(CardWebhookEvent.CARD_AUTHORIZATION_DECLINE, {
-      reason:
-        CardAuthorizationDeclineReason.CARD_PRESENT_AMOUNT_LIMIT_REACHED_DAILY,
-      card_transaction: reservation
-    });
+    await triggerCardDeclinedWebhook(
+      reservation,
+      CardAuthorizationDeclineReason.CARD_PRESENT_AMOUNT_LIMIT_REACHED_DAILY
+    );
     throw new Error("Daily card_present amount limit exceeded");
   }
 
@@ -234,11 +243,10 @@ export const validateCardLimits = async (
     currentCardUsage.cardPresent.daily.transactions >
     cardDetails.cardPresentLimits.daily.max_transactions
   ) {
-    await triggerWebhook(CardWebhookEvent.CARD_AUTHORIZATION_DECLINE, {
-      reason:
-        CardAuthorizationDeclineReason.CARD_PRESENT_USE_LIMIT_REACHED_DAILY,
-      card_transaction: reservation
-    });
+    await triggerCardDeclinedWebhook(
+      reservation,
+      CardAuthorizationDeclineReason.CARD_PRESENT_USE_LIMIT_REACHED_DAILY
+    );
     throw new Error("Daily card_present transaction number limit exceeded");
   }
 
@@ -246,11 +254,10 @@ export const validateCardLimits = async (
     currentCardUsage.cardNotPresent.daily.amount >
     cardDetails.cardNotPresentLimits.daily.max_amount_cents
   ) {
-    await triggerWebhook(CardWebhookEvent.CARD_AUTHORIZATION_DECLINE, {
-      reason:
-        CardAuthorizationDeclineReason.CARD_NOT_PRESENT_AMOUNT_LIMIT_REACHED_DAILY,
-      card_transaction: reservation
-    });
+    await triggerCardDeclinedWebhook(
+      reservation,
+      CardAuthorizationDeclineReason.CARD_NOT_PRESENT_AMOUNT_LIMIT_REACHED_DAILY
+    );
     throw new Error("Daily card_not_present amount limit exceeded");
   }
 
@@ -258,11 +265,10 @@ export const validateCardLimits = async (
     currentCardUsage.cardNotPresent.daily.transactions >
     cardDetails.cardNotPresentLimits.daily.max_transactions
   ) {
-    await triggerWebhook(CardWebhookEvent.CARD_AUTHORIZATION_DECLINE, {
-      reason:
-        CardAuthorizationDeclineReason.CARD_NOT_PRESENT_USE_LIMIT_REACHED_DAILY,
-      card_transaction: reservation
-    });
+    await triggerCardDeclinedWebhook(
+      reservation,
+      CardAuthorizationDeclineReason.CARD_NOT_PRESENT_USE_LIMIT_REACHED_DAILY
+    );
     throw new Error("Daily card_not_present transaction number limit exceeded");
   }
 
@@ -270,11 +276,10 @@ export const validateCardLimits = async (
     currentCardUsage.cardPresent.monthly.amount >
     cardDetails.cardPresentLimits.monthly.max_amount_cents
   ) {
-    await triggerWebhook(CardWebhookEvent.CARD_AUTHORIZATION_DECLINE, {
-      reason:
-        CardAuthorizationDeclineReason.CARD_PRESENT_AMOUNT_LIMIT_REACHED_MONTHLY,
-      card_transaction: reservation
-    });
+    await triggerCardDeclinedWebhook(
+      reservation,
+      CardAuthorizationDeclineReason.CARD_PRESENT_AMOUNT_LIMIT_REACHED_MONTHLY
+    );
     throw new Error("Monthly card_present amount limit exceeded");
   }
 
@@ -282,11 +287,10 @@ export const validateCardLimits = async (
     currentCardUsage.cardPresent.monthly.transactions >
     cardDetails.cardPresentLimits.monthly.max_transactions
   ) {
-    await triggerWebhook(CardWebhookEvent.CARD_AUTHORIZATION_DECLINE, {
-      reason:
-        CardAuthorizationDeclineReason.CARD_PRESENT_USE_LIMIT_REACHED_MONTHLY,
-      card_transaction: reservation
-    });
+    await triggerCardDeclinedWebhook(
+      reservation,
+      CardAuthorizationDeclineReason.CARD_PRESENT_USE_LIMIT_REACHED_MONTHLY
+    );
     throw new Error("Monthly card_present transaction number limit exceeded");
   }
 
@@ -294,11 +298,10 @@ export const validateCardLimits = async (
     currentCardUsage.cardNotPresent.monthly.amount >
     cardDetails.cardNotPresentLimits.monthly.max_amount_cents
   ) {
-    await triggerWebhook(CardWebhookEvent.CARD_AUTHORIZATION_DECLINE, {
-      reason:
-        CardAuthorizationDeclineReason.CARD_NOT_PRESENT_AMOUNT_LIMIT_REACHED_MONTHLY,
-      card_transaction: reservation
-    });
+    await triggerCardDeclinedWebhook(
+      reservation,
+      CardAuthorizationDeclineReason.CARD_NOT_PRESENT_AMOUNT_LIMIT_REACHED_MONTHLY
+    );
     throw new Error("Monthly card_not_present amount limit exceeded");
   }
 
@@ -306,11 +309,10 @@ export const validateCardLimits = async (
     currentCardUsage.cardNotPresent.monthly.transactions >
     cardDetails.cardNotPresentLimits.monthly.max_transactions
   ) {
-    await triggerWebhook(CardWebhookEvent.CARD_AUTHORIZATION_DECLINE, {
-      reason:
-        CardAuthorizationDeclineReason.CARD_NOT_PRESENT_USE_LIMIT_REACHED_MONTHLY,
-      card_transaction: reservation
-    });
+    await triggerCardDeclinedWebhook(
+      reservation,
+      CardAuthorizationDeclineReason.CARD_NOT_PRESENT_USE_LIMIT_REACHED_MONTHLY
+    );
     throw new Error(
       "Monthly card_not_present transaction number limit exceeded"
     );
@@ -350,10 +352,7 @@ export const createReservation = async ({
   });
 
   if (declineReason) {
-    await triggerWebhook(CardWebhookEvent.CARD_AUTHORIZATION_DECLINE, {
-      reason: declineReason,
-      card_transaction: reservation
-    });
+    await triggerCardDeclinedWebhook(reservation, declineReason);
     return;
   }
 
@@ -366,18 +365,18 @@ export const createReservation = async ({
       cardData.card.status
     )
   ) {
-    await triggerWebhook(CardWebhookEvent.CARD_AUTHORIZATION_DECLINE, {
-      reason: CardAuthorizationDeclineReason.CARD_BLOCKED,
-      card_transaction: reservation
-    });
+    await triggerCardDeclinedWebhook(
+      reservation,
+      CardAuthorizationDeclineReason.CARD_BLOCKED
+    );
     throw new Error("Your card is blocked");
   }
 
   if (cardData.card.status === CardStatus.INACTIVE) {
-    await triggerWebhook(CardWebhookEvent.CARD_AUTHORIZATION_DECLINE, {
-      reason: CardAuthorizationDeclineReason.CARD_INACTIVE,
-      card_transaction: reservation
-    });
+    await triggerCardDeclinedWebhook(
+      reservation,
+      CardAuthorizationDeclineReason.CARD_INACTIVE
+    );
     throw new Error("Your card is in inactive status");
   }
 
@@ -386,10 +385,10 @@ export const createReservation = async ({
   }
 
   if (person.account.available_balance.value < amount) {
-    await triggerWebhook(CardWebhookEvent.CARD_AUTHORIZATION_DECLINE, {
-      reason: CardAuthorizationDeclineReason.INSUFFICIENT_FUNDS,
-      card_transaction: reservation
-    });
+    await triggerCardDeclinedWebhook(
+      reservation,
+      CardAuthorizationDeclineReason.INSUFFICIENT_FUNDS
+    );
     throw new Error("There were insufficient funds to complete this action.");
   }
 
