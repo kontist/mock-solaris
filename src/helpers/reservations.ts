@@ -108,32 +108,45 @@ const mapDataToReservation = ({
   };
 };
 
-const validateForCardLimits = (
-  reservations: Reservation[],
-  cardDetails: CardDetails
-) => {
+const computeCardUsage = (person: MockPerson, cardDetails: CardDetails) => {
   const startOfToday = moment().startOf("day");
   const endOfToday = moment().endOf("day");
   const startOfMonth = moment().startOf("month");
   const endOfMonth = moment().endOf("month");
+  const cardReservations = person.account.reservations.filter(
+    ({ reservation_type: reservationType }) =>
+      reservationType === ReservationType.CARD_AUTHORIZATION
+  );
+  const cardBookings = person.account.transactions.filter(
+    ({ booking_type: bookingType }) =>
+      bookingType === BookingType.CARD_TRANSACTION
+  );
 
-  const todayReservations = reservations.filter(({ meta_info: meta }) => {
+  const todayReservations = cardReservations.filter(({ meta_info: meta }) => {
     return moment(JSON.parse(meta).transaction_date).isBetween(
       startOfToday,
       endOfToday
     );
   });
 
-  // validate for cardPresent/cardNotPresent limits
-
-  const thisMonthReservations = reservations.filter(({ meta_info: meta }) => {
-    return moment(JSON.parse(meta).transaction_date).isBetween(
-      startOfMonth,
-      endOfMonth
-    );
+  const todayBookings = cardBookings.filter(({ booking_date: bookingDate }) => {
+    return moment(bookingDate).isBetween(startOfToday, endOfToday);
   });
 
-  // validate for cardPresent/cardNotPresent limits
+  const thisMonthReservations = cardReservations.filter(
+    ({ meta_info: meta }) => {
+      return moment(JSON.parse(meta).transaction_date).isBetween(
+        startOfMonth,
+        endOfMonth
+      );
+    }
+  );
+
+  const thisMonthBookings = cardBookings.filter(
+    ({ booking_date: bookingDate }) => {
+      return moment(bookingDate).isBetween(startOfToday, endOfToday);
+    }
+  );
 };
 
 export const createReservation = async ({
@@ -210,8 +223,6 @@ export const createReservation = async ({
   }
 
   person.account.reservations.push(reservation);
-
-  validateForCardLimits(person.account.reservations, cardData.cardDetails);
 
   await db.savePerson(person);
 
