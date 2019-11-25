@@ -2,7 +2,7 @@
 
 import uuid from "uuid";
 import * as db from "../db";
-import moment, { Moment } from "moment";
+import moment from "moment";
 import _ from "lodash";
 
 import { creteBookingFromReservation } from "../routes/transactions";
@@ -126,10 +126,18 @@ const mapDataToReservation = ({
 };
 
 const computeCardUsage = (person: MockPerson) => {
-  const startOfToday = moment().startOf("day");
-  const endOfToday = moment().endOf("day");
-  const startOfMonth = moment().startOf("month");
-  const endOfMonth = moment().endOf("month");
+  const startOfToday = moment()
+    .startOf("day")
+    .toDate();
+  const endOfToday = moment()
+    .endOf("day")
+    .toDate();
+  const startOfMonth = moment()
+    .startOf("month")
+    .toDate();
+  const endOfMonth = moment()
+    .endOf("month")
+    .toDate();
 
   const cardReservations = person.account.reservations.filter(
     ({ reservation_type: reservationType }) =>
@@ -142,8 +150,8 @@ const computeCardUsage = (person: MockPerson) => {
 
   const isBetween = (
     entry: Booking | Reservation,
-    startDate: Moment,
-    endDate: Moment
+    startDate: Date,
+    endDate: Date
   ) => {
     return moment(JSON.parse(entry.meta_info).cards.transaction_date).isBetween(
       startDate,
