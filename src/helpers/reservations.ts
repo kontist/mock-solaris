@@ -125,8 +125,7 @@ const computeCardUsage = (person: MockPerson) => {
     ({ reservation_type: reservationType }) =>
       reservationType === ReservationType.CARD_AUTHORIZATION
   );
-
-  const cardBookings = (person.account.transactions || []).filter(
+  const cardBookings = person.transactions.filter(
     ({ booking_type: bookingType }) =>
       bookingType === BookingType.CARD_TRANSACTION
   );

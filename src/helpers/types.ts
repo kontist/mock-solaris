@@ -71,10 +71,13 @@ export type CardDetails = {
 export type MockAccount = Account & {
   cards: Array<{ card: Card; cardDetails: CardDetails }>;
   reservations: Reservation[];
-  transactions: Booking[];
 };
 
-export type MockPerson = { id: string; account?: MockAccount };
+export type MockPerson = {
+  id: string;
+  account?: MockAccount;
+  transactions: Booking[];
+};
 
 export type SolarisAPIErrorData = {
   id: string;
