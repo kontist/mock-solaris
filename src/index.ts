@@ -9,6 +9,7 @@ import * as logger from "./logger";
 import { createSeizure } from "./routes/seizures";
 import * as reservations from "./helpers/reservations";
 import { createCreditPresentment } from "./helpers/creditPresentment";
+import * as webhooks from "./helpers/webhooks";
 
 export default {
   serve,
@@ -40,5 +41,6 @@ export default {
   getCardData: db.getCardData,
   createReservation: reservations.createReservation,
   updateReservation: reservations.updateReservation,
-  createCreditPresentment
+  createCreditPresentment,
+  webhooks
 };

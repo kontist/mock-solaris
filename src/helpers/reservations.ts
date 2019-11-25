@@ -334,7 +334,7 @@ export const createReservation = async ({
   type: TransactionType;
   recipient: string;
   declineReason?: CardAuthorizationDeclineReason;
-  posEntryMode: POSEntryMode;
+  posEntryMode?: POSEntryMode;
 }) => {
   const person = await db.getPerson(personId);
   const cardData = person.account.cards.find(({ card }) => card.id === cardId);
@@ -396,7 +396,11 @@ export const createReservation = async ({
   person.account.reservations.push(reservation);
 
   const currentCardUsages = computeCardUsage(person);
-  validateCardLimits(currentCardUsages, cardData.cardDetails, reservation);
+  await validateCardLimits(
+    currentCardUsages,
+    cardData.cardDetails,
+    reservation
+  );
 
   await db.savePerson(person);
 
