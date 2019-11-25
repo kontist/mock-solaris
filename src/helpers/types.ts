@@ -70,6 +70,8 @@ export type CardDetails = {
 
 export type MockAccount = Account & {
   cards: Array<{ card: Card; cardDetails: CardDetails }>;
+  reservations: Reservation[];
+  transactions: Booking[];
 };
 
 export type MockPerson = { id: string; account?: MockAccount };
@@ -149,13 +151,15 @@ export enum CardAuthorizationDeclineReason {
   "3DS_FAILED" = "3DS_FAILED" // We could not approve your transaction because the merchant did not provide correct authentication information. Please try again.
 }
 
+type Amount = {
+  value: number;
+  unit: string;
+  currency: string;
+};
+
 export type Reservation = {
   id: string;
-  amount: {
-    value: number;
-    unit: string;
-    currency: string;
-  };
+  amount: Amount;
   reservation_type: ReservationType;
   reference: string;
   status: ReservationStatus;
@@ -164,4 +168,29 @@ export type Reservation = {
   expired_at: string | null;
   resolved_at: string | null;
   description: string;
+};
+
+export type Booking = {
+  id: string;
+  creation_date: string;
+  valuta_date: string;
+  booking_date: string;
+  booking_type: string;
+  amount: Amount;
+  description: string;
+  recipient_bic: string;
+  recipient_iban: string;
+  recipient_name: string;
+  sender_bic: string;
+  sender_iban: string;
+  sender_name: string;
+  end_to_end_id: string;
+  creditor_identifier?: string | null;
+  mandate_reference?: string | null;
+  transaction_id: string;
+  return_transaction_id?: string | null;
+  sepa_return_code?: string | null;
+  sepa_return_reason?: string | null;
+  sepa_return_reason_definition?: string | null;
+  meta_info: string | null;
 };
