@@ -27,9 +27,8 @@ import { SEIZURE_STATUSES } from "./seizures";
 import * as log from "../logger";
 import { changeCardStatus } from "../helpers/cards";
 import { createReservation, updateReservation } from "../helpers/reservations";
-import { BOOKING_TYPES } from "./transactions";
 import { createCreditPresentment } from "../helpers/creditPresentment";
-import { TransactionType } from "../helpers/types";
+import { TransactionType, BookingType } from "../helpers/types";
 
 const triggerIdentificationWebhook = payload =>
   triggerWebhook("IDENTIFICATION", payload);
@@ -207,7 +206,7 @@ const generateBookingFromStandingOrder = standingOrder => {
     id: uuid.v4(),
     valuta_date: moment().format("YYYY-MM-DD"),
     booking_date: moment().format("YYYY-MM-DD"),
-    booking_type: BOOKING_TYPES.SEPA_CREDIT_TRANSFER,
+    booking_type: BookingType.SEPA_CREDIT_TRANSFER,
     amount: {
       value: -Math.abs(standingOrder.amount.value)
     }
@@ -263,8 +262,8 @@ export const processQueuedBooking = async (
     .find(dbPerson => dbPerson.account.iban === booking.recipient_iban);
 
   const isDirectDebit = [
-    BOOKING_TYPES.DIRECT_DEBIT,
-    BOOKING_TYPES.SEPA_DIRECT_DEBIT
+    BookingType.DIRECT_DEBIT,
+    BookingType.SEPA_DIRECT_DEBIT
   ].includes(booking.booking_type);
 
   const wouldOverdraw = person.account.balance.value < booking.amount.value;
@@ -286,7 +285,7 @@ export const processQueuedBooking = async (
           .split("-")
           .reverse()
           .join("-"),
-        booking_type: BOOKING_TYPES.SEPA_DIRECT_DEBIT_RETURN,
+        booking_type: BookingType.SEPA_DIRECT_DEBIT_RETURN,
         amount: {
           value: booking.amount.value,
           unit: "cents",

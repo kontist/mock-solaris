@@ -19,7 +19,9 @@ import {
   Reservation,
   CardWebhookEvent,
   CardAuthorizationDeclineReason,
-  CardDetails
+  CardDetails,
+  MockPerson,
+  BookingType
 } from "./types";
 
 export const generateMetaInfo = ({

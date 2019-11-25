@@ -8,33 +8,11 @@ import {
   findPersonByAccountIBAN,
   getTechnicalUserPerson
 } from "../db";
+import { BookingType } from "../helpers/types";
 
 const SOLARIS_CARDS_ACCOUNT = {
   NAME: "Visa_Solarisbank",
   IBAN: "DE95110101000018501000"
-};
-
-export const BOOKING_TYPES = {
-  CANCELLATION_BOOKING: "CANCELLATION_BOOKING",
-  CANCELLATION_DOUBLE_BOOKING: "CANCELLATION_DOUBLE_BOOKING",
-  CREDIT_TRANSFER_CANCELLATION: "CREDIT_TRANSFER_CANCELLATION",
-  CURRENCY_TRANSACTION_CANCELLATION: "CURRENCY_TRANSACTION_CANCELLATION",
-  DIRECT_DEBIT: "DIRECT_DEBIT",
-  FOREIGN_PAYMENT: "FOREIGN_PAYMENT",
-  OTHER: "OTHER",
-  SEPA_CREDIT_TRANSFER_RETURN: "SEPA_CREDIT_TRANSFER_RETURN",
-  SEPA_CREDIT_TRANSFER: "SEPA_CREDIT_TRANSFER",
-  SEPA_DIRECT_DEBIT_RETURN: "SEPA_DIRECT_DEBIT_RETURN",
-  SEPA_DIRECT_DEBIT: "SEPA_DIRECT_DEBIT",
-  TRANSFER: "TRANSFER",
-  INTERNATIONAL_CREDIT_TRANSFER: "INTERNATIONAL_CREDIT_TRANSFER",
-  CANCELLATION_SEPA_DIRECT_DEBIT_RETURN:
-    "CANCELLATION_SEPA_DIRECT_DEBIT_RETURN",
-  REBOOKING: "REBOOKING",
-  CANCELLATION_DIRECT_DEBIT: "CANCELLATION_DIRECT_DEBIT",
-  CANCELLATION_SEPA_CREDIT_TRANSFER_RETURN:
-    "CANCELLATION_SEPA_CREDIT_TRANSFER_RETURN",
-  CARD_TRANSACTION: "CARD_TRANSACTION"
 };
 
 export const createSepaDirectDebit = async (req, res) => {
@@ -68,7 +46,7 @@ export const createSepaDirectDebit = async (req, res) => {
     end_to_end_id: e2eId || null,
     id: uuid.v4(),
     mandate,
-    booking_type: BOOKING_TYPES.DIRECT_DEBIT,
+    booking_type: BookingType.DIRECT_DEBIT,
     sender_iban: description.includes("Neuversuch")
       ? process.env.KONTIST_IBAN
       : process.env.KONTIST_DD_BILLING_IBAN,
@@ -95,7 +73,7 @@ export const createSepaDirectDebit = async (req, res) => {
   if (person.account.balance.value < 0) {
     const directDebitReturn = {
       ...queuedBooking,
-      booking_type: BOOKING_TYPES.SEPA_DIRECT_DEBIT_RETURN
+      booking_type: BookingType.SEPA_DIRECT_DEBIT_RETURN
     };
     person.queuedBookings.push(directDebitReturn);
     technicalPerson.transactions.push(directDebitReturn);
@@ -245,7 +223,7 @@ export const creteBookingFromSepaCreditTransfer = ({
   reference
 }) => ({
   id: uuid.v4(),
-  booking_type: BOOKING_TYPES.SEPA_CREDIT_TRANSFER,
+  booking_type: BookingType.SEPA_CREDIT_TRANSFER,
   amount: {
     ...amount,
     value: -amount.value,
@@ -290,7 +268,7 @@ export const creteBookingFromReservation = (person, reservation, incoming) => {
 
   return {
     id: uuid.v4(),
-    booking_type: BOOKING_TYPES.CARD_TRANSACTION,
+    booking_type: BookingType.CARD_TRANSACTION,
     amount: {
       unit: "cents",
       currency: "EUR",

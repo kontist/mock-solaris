@@ -5,7 +5,7 @@ import moment from "moment";
 import { getPerson, savePerson } from "../db";
 import { triggerBookingsWebhook } from "./backoffice";
 import { triggerWebhook } from "../helpers/webhooks";
-import { BOOKING_TYPES } from "./transactions";
+import { BookingType } from "../helpers/types";
 
 const SOLARIS_TIMED_ORDER_STATUSES = {
   CREATED: "CREATED",
@@ -52,7 +52,7 @@ const mapTimedOrderToTransaction = timedOrder => {
     recipient_bic: recipientBIC,
     transaction_id: timedOrderId,
     status: "accepted",
-    booking_type: BOOKING_TYPES.SEPA_CREDIT_TRANSFER
+    booking_type: BookingType.SEPA_CREDIT_TRANSFER
   };
 };
 
