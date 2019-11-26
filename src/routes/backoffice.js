@@ -28,7 +28,7 @@ import * as log from "../logger";
 import { changeCardStatus } from "../helpers/cards";
 import { createReservation, updateReservation } from "../helpers/reservations";
 import { createCreditPresentment } from "../helpers/creditPresentment";
-import { TransactionType, BookingType } from "../helpers/types";
+import { TransactionType, BookingType, CardStatus } from "../helpers/types";
 
 const triggerIdentificationWebhook = payload =>
   triggerWebhook("IDENTIFICATION", payload);
@@ -490,9 +490,36 @@ export const updateAccountLockingStatusHandler = async (req, res) => {
   res.redirect("back");
 };
 
+const changeCardStatusAllowed = async (personId, cardId, status) => {
+  const person = await getPerson(personId);
+  const cardData = person.account.cards.find(({ card }) => card.id === cardId);
+
+  if (
+    status === CardStatus.INACTIVE &&
+    cardData.card.status !== CardStatus.PROCESSING
+  ) {
+    throw new Error(`Allowed to change only from PROCESSING status`);
+  }
+
+  if (
+    status === CardStatus.ACTIVE &&
+    [
+      CardStatus.INACTIVE,
+      CardStatus.PROCESSING,
+      CardStatus.CLOSED,
+      CardStatus.CLOSED_BY_SOLARIS
+    ].includes(cardData.card.status)
+  ) {
+    throw new Error(
+      `Can't change card status to active from current status ${cardData.card.status}`
+    );
+  }
+};
+
 export const changeCardStatusHandler = async (req, res) => {
   const { personId, accountId, cardId, status } = req.body;
 
+  await changeCardStatusAllowed(personId, cardId, status);
   await changeCardStatus({ personId, accountId }, cardId, status);
 
   res.redirect("back");
