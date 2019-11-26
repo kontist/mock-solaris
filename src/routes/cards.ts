@@ -17,7 +17,9 @@ import {
   CardErrorCodes,
   updateCardLimits,
   validateCardLimits,
-  changeCardStatus
+  changeCardStatus,
+  validatePIN,
+  changePIN
 } from "../helpers/cards";
 
 type RequestExtendedWithCard = express.Request & {
@@ -377,6 +379,24 @@ export const unblockCardHandler = async (
   );
 
   res.send(updatedCard);
+};
+
+export const changePINCardHandler = async (
+  req: RequestExtendedWithCard,
+  res: express.Response
+) => {
+  const { pin } = req.body;
+
+  const pinValidationErrors = validatePIN(pin || "");
+  if (pinValidationErrors.length) {
+    res.status(HttpStatusCodes.BAD_REQUEST).send({
+      errors: pinValidationErrors
+    });
+    return;
+  }
+
+  const changeRequestResponse = await changePIN(req.card, pin);
+  res.status(HttpStatusCodes.ACCEPTED).send(changeRequestResponse);
 };
 
 /* eslint-enable @typescript-eslint/camelcase */

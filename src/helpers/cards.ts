@@ -369,4 +369,83 @@ export const updateCardLimits = async (
   await db.savePerson(person);
   return newLimits;
 };
+
+const hasAtLeast3UniqueDigits = (pin: string): boolean =>
+  _.uniq(pin.split("")).length >= 3;
+
+const isSequence = (pin: string): boolean => {
+  const numbers = pin.split("").map(c => parseInt(c, 10));
+  const increasingSequence = numbers
+    .slice(0, numbers.length - 1)
+    .every((number, index) => number + 1 === numbers[index + 1]);
+  if (increasingSequence) {
+    return true;
+  }
+  const decreasingSequence = numbers
+    .slice(1)
+    .every((number, index) => number + 1 === numbers[index]);
+  if (decreasingSequence) {
+    return true;
+  }
+  return false;
+};
+
+export const validatePIN = (pin: string) => {
+  const errors = [];
+
+  if (isSequence(pin)) {
+    errors.push([
+      {
+        id: uuid.v4(),
+        status: 400,
+        code: "validation_error",
+        title: "Validation Error",
+        detail: "pin must not contain sequential digits",
+        source: {
+          field: "pin",
+          message: "must not contain sequential digits"
+        }
+      }
+    ]);
+  }
+
+  if (!hasAtLeast3UniqueDigits(pin)) {
+    errors.push([
+      {
+        id: uuid.v4(),
+        status: 400,
+        code: "validation_error",
+        title: "Validation Error",
+        detail: "pin must not contain three or more repeating digits",
+        source: {
+          field: "pin",
+          message: "must not contain three or more repeating digits"
+        }
+      }
+    ]);
+  }
+
+  return errors;
+};
+
+export const changePIN = async (card: Card, pin: string) => {
+  const person = await db.getPerson(card.person_id);
+  const changeRequestId = uuid.v4();
+  person.changeRequest = person.changeRequest || {};
+  person.changeRequest = {
+    pin,
+    changeRequestId,
+    method: "card_pin"
+  };
+
+  await db.savePerson(person);
+
+  return {
+    id: changeRequestId,
+    status: "AUTHORIZATION_REQUIRED",
+    updated_at: new Date().toISOString(),
+    url: `:env/v1/change_requests/${changeRequestId}/authorize`
+  };
+};
+
 /* eslint-enable @typescript-eslint/camelcase */

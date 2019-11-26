@@ -236,6 +236,12 @@ router.post(
   safeRequestHandler(cardsAPI.unblockCardHandler)
 );
 
+router.post(
+  "/cards/:card_id/change_pin",
+  cardsAPI.cardMiddleware,
+  safeRequestHandler(cardsAPI.changePINCardHandler)
+);
+
 // SEPA_DIRECT_DEBIT_RETURNS
 router.get(
   "/sepa_direct_debit_returns",
