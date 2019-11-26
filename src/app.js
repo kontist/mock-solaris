@@ -224,6 +224,18 @@ router.put(
   safeRequestHandler(cardsAPI.setCardNotPresentLimitsHandler)
 );
 
+router.post(
+  "/cards/:card_id/block",
+  cardsAPI.cardMiddleware,
+  safeRequestHandler(cardsAPI.blockCardHandler)
+);
+
+router.post(
+  "/cards/:card_id/unblock",
+  cardsAPI.cardMiddleware,
+  safeRequestHandler(cardsAPI.unblockCardHandler)
+);
+
 // SEPA_DIRECT_DEBIT_RETURNS
 router.get(
   "/sepa_direct_debit_returns",

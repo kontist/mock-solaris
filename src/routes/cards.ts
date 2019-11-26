@@ -16,7 +16,8 @@ import {
   validatePersonData,
   CardErrorCodes,
   updateCardLimits,
-  validateCardLimits
+  validateCardLimits,
+  changeCardStatus
 } from "../helpers/cards";
 
 type RequestExtendedWithCard = express.Request & {
@@ -314,6 +315,68 @@ export const setCardNotPresentLimitsHandler = async (
   );
 
   res.status(HttpStatusCodes.CREATED).send(updatedLimits);
+};
+
+export const blockCardHandler = async (
+  req: RequestExtendedWithCard,
+  res: express.Response
+) => {
+  const {
+    person_id: personId,
+    account_id: accountId,
+    id: cardId,
+    status
+  } = req.card;
+
+  if (![CardStatus.ACTIVE, CardStatus.BLOCKED].includes(status)) {
+    res.status(HttpStatusCodes.BAD_REQUEST).send({
+      errors: [
+        {
+          id: uuid.v4(),
+          status: 400,
+          code: "invalid_status",
+          title: "Invalid Status",
+          detail: `Expected the status for 'Solaris::PlasticCard' to be 'BLOCKED' but was '${status}'.`
+        }
+      ]
+    });
+    return;
+  }
+
+  const updatedCard = await changeCardStatus(
+    { personId, accountId },
+    cardId,
+    CardStatus.BLOCKED
+  );
+
+  res.send(updatedCard);
+};
+
+export const unblockCardHandler = async (
+  req: RequestExtendedWithCard,
+  res: express.Response
+) => {
+  const {
+    person_id: personId,
+    account_id: accountId,
+    id: cardId,
+    status
+  } = req.card;
+
+  // Solaris sandbox and production does not throw an error in any case.
+  // When card is in different state than BLOCK, card details are simply returned.
+  if (status !== CardStatus.BLOCKED) {
+    res.send(req.card);
+    return;
+  }
+
+  const updatedCard = await changeCardStatus(
+    { personId, accountId },
+    cardId,
+    CardStatus.ACTIVE
+  );
+
+  res.send(updatedCard);
 };
 
 /* eslint-enable @typescript-eslint/camelcase */
