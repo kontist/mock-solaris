@@ -435,7 +435,6 @@ export const validatePIN = (pin: string) => {
 export const changePIN = async (card: Card, pin: string) => {
   const person = await db.getPerson(card.person_id);
   const changeRequestId = uuid.v4();
-  person.changeRequest = person.changeRequest || {};
   person.changeRequest = {
     pin,
     changeRequestId,
