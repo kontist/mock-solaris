@@ -2,6 +2,7 @@
 import _ from "lodash";
 import uuid from "uuid";
 import moment from "moment";
+import HttpStatusCodes from "http-status";
 import * as db from "../db";
 import { triggerWebhook } from "./webhooks";
 import {
@@ -14,7 +15,9 @@ import {
   CardLimits,
   CardLimitType,
   SolarisAPIErrorData,
-  CardWebhookEvent
+  CardWebhookEvent,
+  ChangeRequestStatus,
+  MockChangeRequest
 } from "./types";
 
 const CARD_HOLDER_MAX_LENGTH = 21;
@@ -24,6 +27,7 @@ const MAX_TRANSACTION_DAILY = 20;
 const MAX_TRANSACTION_MONTHLY = MAX_TRANSACTION_DAILY * 31;
 const MAX_DAILY_AMOUNT_IN_CENTS = 800000;
 const MAX_MONTHLY_AMOUNT_IN_CENTS = 6000000;
+export const CHANGE_REQUEST_CHANGE_CARD_PIN = "card_pin";
 
 export enum CardErrorCodes {
   CARD_ACTIVATION_INVALID_STATUS = "card_activation_invalid_status",
@@ -435,7 +439,8 @@ export const changePIN = async (card: Card, pin: string) => {
   person.changeRequest = {
     pin,
     changeRequestId,
-    method: "card_pin"
+    cardId: card.id,
+    method: CHANGE_REQUEST_CHANGE_CARD_PIN
   };
 
   await db.savePerson(person);
@@ -445,6 +450,27 @@ export const changePIN = async (card: Card, pin: string) => {
     status: "AUTHORIZATION_REQUIRED",
     updated_at: new Date().toISOString(),
     url: `:env/v1/change_requests/${changeRequestId}/authorize`
+  };
+};
+
+export const confirmChangeCardPIN = async (
+  person: MockPerson,
+  changeRequest: MockChangeRequest
+) => {
+  const cardIndex = person.account.cards.findIndex(
+    ({ card }) => card.id === changeRequest.cardId
+  );
+
+  person.account.cards[cardIndex].cardDetails.pin = changeRequest.pin;
+  person.changeRequest = null;
+  await db.savePerson(person);
+
+  return {
+    id: changeRequest.changeRequestId,
+    status: ChangeRequestStatus.COMPLETED,
+    updated_at: new Date().toISOString(),
+    response_body: "Accepted",
+    response_code: HttpStatusCodes.ACCEPTED
   };
 };
 

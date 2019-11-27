@@ -6,7 +6,13 @@ import HttpStatusCodes from "http-status";
 import * as db from "../db";
 import * as log from "../logger";
 
-import { Card, CardDetails, CardLimitType, CardStatus } from "../helpers/types";
+import {
+  Card,
+  CardDetails,
+  CardLimitType,
+  CardStatus,
+  MockChangeRequest
+} from "../helpers/types";
 
 import {
   createCard,
@@ -19,7 +25,8 @@ import {
   validateCardLimits,
   changeCardStatus,
   validatePIN,
-  changePIN
+  changePIN,
+  confirmChangeCardPIN
 } from "../helpers/cards";
 
 type RequestExtendedWithCard = express.Request & {
@@ -397,6 +404,50 @@ export const changePINCardHandler = async (
 
   const changeRequestResponse = await changePIN(req.card, pin);
   res.status(HttpStatusCodes.ACCEPTED).send(changeRequestResponse);
+};
+
+export const confirmChangePINCardHandler = async (
+  req: RequestExtendedWithCard,
+  res: express.Response
+) => {
+  const { person_id: personId, tan } = req.body;
+  const person = await db.getPerson(personId);
+
+  const { change_request_id: changeRequestId } = req.params;
+  const changeRequest: MockChangeRequest = person.changeRequest || {};
+
+  if (changeRequest.changeRequestId !== changeRequestId) {
+    res.status(HttpStatusCodes.NOT_FOUND).send({
+      errors: [
+        {
+          id: uuid.v4(),
+          status: HttpStatusCodes.NOT_FOUND,
+          code: "model_not_found",
+          title: "Model Not Found",
+          detail: `Couldn't find 'Solaris::Changeset' for id '${changeRequestId}'.`
+        }
+      ]
+    });
+    return;
+  }
+
+  if (changeRequest.token !== tan) {
+    res.status(HttpStatusCodes.UNPROCESSABLE_ENTITY).send({
+      errors: [
+        {
+          id: uuid.v4(),
+          status: HttpStatusCodes.UNPROCESSABLE_ENTITY,
+          code: "invalid_tan",
+          title: "Invalid Tan",
+          detail: `The TAN (${tan}) is invalid`
+        }
+      ]
+    });
+    return;
+  }
+
+  const confirmResponse = await confirmChangeCardPIN(person, changeRequest);
+  res.status(confirmResponse.response_code).send(confirmResponse);
 };
 
 /* eslint-enable @typescript-eslint/camelcase */
