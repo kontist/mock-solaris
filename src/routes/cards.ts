@@ -406,7 +406,7 @@ export const changePINCardHandler = async (
   res.status(HttpStatusCodes.ACCEPTED).send(changeRequestResponse);
 };
 
-export const confirmChangePINCardHandler = async (
+export const confirmChangeCardPINHandler = async (
   req: RequestExtendedWithCard,
   res: express.Response
 ) => {

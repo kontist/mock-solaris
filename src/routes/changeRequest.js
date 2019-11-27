@@ -24,7 +24,7 @@ import {
   confirmBatchTransfer
 } from "./batchTransfers";
 import { CHANGE_REQUEST_CHANGE_CARD_PIN } from "../helpers/cards";
-import { confirmChangePINCardHandler } from "./cards";
+import { confirmChangeCardPINHandler } from "./cards";
 
 export const createChangeRequest = async (req, res, person, method, delta) => {
   const personId = person.id;
@@ -164,7 +164,7 @@ export const confirmChangeRequest = async (req, res) => {
       );
       break;
     case CHANGE_REQUEST_CHANGE_CARD_PIN:
-      return confirmChangePINCardHandler(req, res);
+      return confirmChangeCardPINHandler(req, res);
     default:
       status = 400;
       response = { message: "Unknown method!" };
