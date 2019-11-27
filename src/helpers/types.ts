@@ -73,10 +73,18 @@ export type MockAccount = Account & {
   reservations: Reservation[];
 };
 
+export type MockChangeRequest = {
+  cardId?: string;
+  pin?: string;
+  changeRequestId?: string;
+  token?: string;
+};
+
 export type MockPerson = {
   id: string;
   account?: MockAccount;
   transactions: Booking[];
+  changeRequest?: MockChangeRequest;
 };
 
 export type SolarisAPIErrorData = {
@@ -226,4 +234,11 @@ export enum POSEntryMode {
   "CARD_NOT_PRESENT" = "CARD_NOT_PRESENT",
   "PHONE" = "PHONE",
   "UNKNOWN" = "UNKNOWN"
+}
+
+export enum ChangeRequestStatus {
+  AUTHORIZATION_REQUIRED = "AUTHORIZATION_REQUIRED",
+  CONFIRMATION_REQUIRED = "CONFIRMATION_REQUIRED",
+  COMPLETED = "COMPLETED",
+  FAILED = "FAILED"
 }
