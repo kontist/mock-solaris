@@ -67,6 +67,17 @@
               <td>{{ cardData.card.representation.line_1 }}</td>
             </tr>
             <tr>
+              <td>PIN</td>
+              <td>{{ cardData.cardDetails.pin || "NOT SET" }}</td>
+            </tr>
+            <tr>
+              <td>NFC</td>
+              <td>
+                  {% if cardData.cardDetails.contactless_enabled %}👍{% endif %}
+                  {% if !cardData.cardDetails.contactless_enabled %}👎{% endif %}
+              </td>
+            </tr>
+            <tr>
               <td>card present limits</td>
               <td><pre>{{ JSON.stringify(cardData.cardDetails.cardPresentLimits, null, 2) }}</pre></td>
             </tr>
