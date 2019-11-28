@@ -5,9 +5,11 @@ import { getWebhooks, saveWebhook } from "../db";
 import * as log from "../logger";
 
 export const indexWebhooksHandler = async (req, res) => {
+  const { page: { size = 10, number = 1 } = {} } = req.query;
   const webhooks = await getWebhooks();
-  log.info("indexWebhooks", JSON.stringify(webhooks));
-  res.send(webhooks);
+  const response = webhooks.slice((number - 1) * size, size * number);
+
+  res.send(response);
 };
 
 const createWebhook = async newWebhook => {
