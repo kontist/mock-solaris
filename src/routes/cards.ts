@@ -26,7 +26,8 @@ import {
   changeCardStatus,
   validatePIN,
   changePIN,
-  confirmChangeCardPIN
+  confirmChangeCardPIN,
+  updateCardSettings
 } from "../helpers/cards";
 
 type RequestExtendedWithCard = express.Request & {
@@ -448,6 +449,19 @@ export const confirmChangeCardPINHandler = async (
 
   const confirmResponse = await confirmChangeCardPIN(person, changeRequest);
   res.status(confirmResponse.response_code).send(confirmResponse);
+};
+
+export const changeCardSettingsHandler = async (
+  req: RequestExtendedWithCard,
+  res: express.Response
+) => {
+  const person = await db.getPerson(req.card.person_id);
+  const updatedSettings = await updateCardSettings(
+    req.card.id,
+    person,
+    req.body
+  );
+  res.send(updatedSettings);
 };
 
 /* eslint-enable @typescript-eslint/camelcase */

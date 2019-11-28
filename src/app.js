@@ -247,6 +247,12 @@ router.post(
   safeRequestHandler(cardsAPI.changePINCardHandler)
 );
 
+router.patch(
+  "/cards/:card_id/settings",
+  cardsAPI.cardMiddleware,
+  safeRequestHandler(cardsAPI.changeCardSettingsHandler)
+);
+
 // SEPA_DIRECT_DEBIT_RETURNS
 router.get(
   "/sepa_direct_debit_returns",

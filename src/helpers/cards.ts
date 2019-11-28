@@ -17,7 +17,8 @@ import {
   SolarisAPIErrorData,
   CardWebhookEvent,
   ChangeRequestStatus,
-  MockChangeRequest
+  MockChangeRequest,
+  CardSettings
 } from "./types";
 
 const CARD_HOLDER_MAX_LENGTH = 21;
@@ -219,7 +220,10 @@ export const createCard = (
     cardNotPresentLimits: getDefaultCardNotPresentLimits(),
     cvv: Math.random()
       .toString()
-      .substr(-3)
+      .substr(-3),
+    settings: {
+      contactless_enabled: true
+    }
   };
 
   return {
@@ -464,6 +468,25 @@ export const confirmChangeCardPIN = async (
     response_body: "Accepted",
     response_code: HttpStatusCodes.ACCEPTED
   };
+};
+
+export const updateCardSettings = async (
+  cardId: string,
+  person: MockPerson,
+  settings: CardSettings
+): Promise<CardSettings> => {
+  const cardIndex = person.account.cards.findIndex(
+    ({ card }) => card.id === cardId
+  );
+
+  if (typeof settings.contactless_enabled !== "boolean") {
+    return person.account.cards[cardIndex].cardDetails.settings;
+  }
+
+  person.account.cards[cardIndex].cardDetails.settings = settings;
+  await db.savePerson(person);
+
+  return settings;
 };
 
 /* eslint-enable @typescript-eslint/camelcase */

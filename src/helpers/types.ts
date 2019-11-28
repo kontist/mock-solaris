@@ -66,6 +66,7 @@ export type CardDetails = {
   cardPresentLimits: CardLimits;
   cardNotPresentLimits: CardLimits;
   cvv: string;
+  settings: CardSettings;
 };
 
 export type MockAccount = Account & {
@@ -241,3 +242,7 @@ export enum ChangeRequestStatus {
   COMPLETED = "COMPLETED",
   FAILED = "FAILED"
 }
+
+export type CardSettings = {
+  contactless_enabled: boolean;
+};
