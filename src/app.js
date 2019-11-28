@@ -224,6 +224,11 @@ router.put(
   safeRequestHandler(cardsAPI.setCardNotPresentLimitsHandler)
 );
 
+router.get(
+  "/accounts/:account_id/reservations",
+  safeRequestHandler(accountsAPI.showAccountReservations)
+);
+
 router.post(
   "/cards/:card_id/block",
   cardsAPI.cardMiddleware,
