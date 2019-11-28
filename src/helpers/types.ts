@@ -124,12 +124,11 @@ export enum CardLimitType {
 
 export enum CardWebhookEvent {
   "CARD_AUTHORIZATION" = "CARD_AUTHORIZATION", //	An authorization was created on the account using the card
-  "CARD_BLOCK" = "CARD_BLOCK", //	Card has been blocked by solarisBank
   "CARD_FRAUD_CASE_PENDING" = "CARD_FRAUD_CASE_PENDING", //	A fraud case was recorded, that needs customers immediate respond
   "CARD_FRAUD_CASE_TIMEOUT" = "CARD_FRAUD_CASE_TIMEOUT", //	The recorded fraud case didn't received response from the customer
-  "CARD_AUTHORIZATION_DECLINE" = "CARD_AUTHORIZATION_DECLINE", //	The transaction was declined. Find the complete list of reasons here
+  "CARD_AUTHORIZATION_DECLINE" = "CARD_AUTHORIZATION_DECLINE", //	The transaction was declined.
   "CARD_AUTHORIZATION_RESOLUTION" = "CARD_AUTHORIZATION_RESOLUTION", //	The reservation was cancelled, expired or booked. No push notification for the customer is required for this webhook.
-  "CARD_LIFECYCLE_EVENT" = "CARD_LIFECYCLE_EVENT" //
+  "CARD_LIFECYCLE_EVENT" = "CARD_LIFECYCLE_EVENT" // The status of the card is changed.
 }
 
 export enum CardAuthorizationDeclineReason {

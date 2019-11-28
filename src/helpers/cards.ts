@@ -266,14 +266,7 @@ export const changeCardStatus = async (
   cardData.card.status = newCardStatus;
 
   await db.savePerson(person);
-  const eventName = [
-    CardStatus.BLOCKED_BY_SOLARIS,
-    CardStatus.ACTIVATION_BLOCKED_BY_SOLARIS
-  ].includes(newCardStatus)
-    ? CardWebhookEvent.CARD_BLOCK // Card has been blocked by solarisBank
-    : CardWebhookEvent.CARD_LIFECYCLE_EVENT;
-
-  await triggerWebhook(eventName, cardData.card);
+  await triggerWebhook(CardWebhookEvent.CARD_LIFECYCLE_EVENT, cardData.card);
 
   return cardData.card;
 };
