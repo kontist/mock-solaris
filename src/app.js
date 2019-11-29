@@ -253,6 +253,17 @@ router.patch(
   safeRequestHandler(cardsAPI.changeCardSettingsHandler)
 );
 
+router.post(
+  "/cards/:card_id/close",
+  cardsAPI.cardMiddleware,
+  cardsAPI.cardStatusMiddleware([
+    CardStatus.INACTIVE,
+    CardStatus.ACTIVE,
+    CardStatus.BLOCKED
+  ]),
+  safeRequestHandler(cardsAPI.closeCardHandler)
+);
+
 // SEPA_DIRECT_DEBIT_RETURNS
 router.get(
   "/sepa_direct_debit_returns",

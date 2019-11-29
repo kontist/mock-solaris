@@ -464,4 +464,16 @@ export const changeCardSettingsHandler = async (
   res.send(updatedSettings);
 };
 
+export const closeCardHandler = async (
+  req: RequestExtendedWithCard,
+  res: express.Response
+) => {
+  const updatedCard = await changeCardStatus(
+    { personId: req.card.person_id, accountId: req.card.account_id },
+    req.card.id,
+    CardStatus.CLOSED
+  );
+  res.send(updatedCard);
+};
+
 /* eslint-enable @typescript-eslint/camelcase */
