@@ -43,11 +43,6 @@ export const migrate = async () => {
         city: "Berlin",
         country: "DE"
       },
-      tax_information: {
-        properties: {
-          marital_status: "SINGLE"
-        }
-      },
       fatca_relevant: true,
       email: "kontistgmbh@mocksolaris.example.com",
       mobile_number: "+49123123223",
