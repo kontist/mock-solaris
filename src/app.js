@@ -24,6 +24,7 @@ import * as timedOrdersAPI from "./routes/timedOrders";
 import * as batchTransfersAPI from "./routes/batchTransfers";
 import * as cardsAPI from "./routes/cards";
 import * as e2eAPI from "./routes/e2e";
+import * as middlewares from "./helpers/middlewares";
 
 import { migrate } from "./db";
 
@@ -256,6 +257,7 @@ router.get(
 // IDENTIFICATIONS
 router.get(
   "/persons/:person_id/identifications",
+  middlewares.withPerson,
   safeRequestHandler(identificationsAPI.showPersonIdentifications)
 );
 router.post(
