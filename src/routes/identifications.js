@@ -129,26 +129,14 @@ export const patchIdentification = async (req, res) => {
 };
 
 export const showPersonIdentifications = (req, res) => {
-  const { person_id: personId } = req.params;
-
-  let person;
-
-  return getPerson(personId).then(_person => {
-    person = _person || { identifications: {}, transactions: [] };
-
-    const personIdentifications = Object.values(person.identifications).filter(
-      identification => identification.status !== "created"
-    );
-
-    if (personIdentifications.length) {
-      const identifications = personIdentifications.map(identification => {
-        return {
-          ...identification,
-          status: identification.status || "pending"
-        };
-      });
-      return res.status(200).send(identifications);
-    }
-    return res.status(200).send([]);
-  });
+  const personIdentifications = Object.values(req.person.identifications)
+    .filter(identification => identification.status !== "created")
+    .map(identification => {
+      return {
+        ...identification,
+        id: identification.id.substr(0, 36),
+        status: identification.status || "pending"
+      };
+    });
+  res.status(200).send(personIdentifications);
 };
