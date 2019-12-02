@@ -152,6 +152,7 @@ export enum CardAuthorizationDeclineReason {
   "TERMINAL_ERROR" = "TERMINAL_ERROR", //	There was an issue with the merchant terminal. Please try again.
   "CVV_INCORRECT" = "CVV_INCORRECT", //	Incorrect card details provided. Please try again.
   "DUPLICATE_TRASACTION" = "DUPLICATE_TRASACTION", //	There was an issue with the merchant terminal. Please try again.
+  "DUPLICATE_TRANSACTION" = "DUPLICATE_TRANSACTION", //	There was an issue with the merchant terminal. Please try again.
   "PIN_INCORRECT" = "PIN_INCORRECT", //	Incorrect PIN entered. Please try again.
   "INSUFFICIENT_FUNDS" = "INSUFFICIENT_FUNDS", //	Balance is too low. Top up your account and try again.
   "CONTACT_BANK" = "CONTACT_BANK", //	Something went wrong. Contact us for further details.
@@ -227,6 +228,10 @@ export enum BookingType {
   CARD_TRANSACTION = "CARD_TRANSACTION"
 }
 
+export enum CardAuthorizationDeclinedStatus {
+  DECLINED = "DECLINED"
+}
+
 export enum POSEntryMode {
   "CHIP" = "CHIP",
   "CONTACTLESS" = "CONTACTLESS",
@@ -245,4 +250,19 @@ export enum ChangeRequestStatus {
 
 export type CardSettings = {
   contactless_enabled: boolean;
+};
+
+export type CardAuthorizationDeclined = {
+  card_id: string;
+  type: TransactionType;
+  status: CardAuthorizationDeclinedStatus;
+  attempted_at: Date;
+  pos_entry_mode: POSEntryMode;
+  merchant: {
+    country_code: string;
+    category_code: string;
+    name: string;
+  };
+  amount: Amount;
+  original_amount: Amount;
 };
