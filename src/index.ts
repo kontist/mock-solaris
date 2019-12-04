@@ -9,6 +9,7 @@ import * as logger from "./logger";
 import { createSeizure } from "./routes/seizures";
 import * as reservations from "./helpers/reservations";
 import { createCreditPresentment } from "./helpers/creditPresentment";
+import { generateSolarisWebhookSignature } from "./helpers/solarisWebhookSignature";
 import * as webhooks from "./helpers/webhooks";
 
 export default {
@@ -42,5 +43,6 @@ export default {
   createReservation: reservations.createReservation,
   updateReservation: reservations.updateReservation,
   createCreditPresentment,
+  generateSolarisWebhookSignature,
   webhooks
 };
