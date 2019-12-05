@@ -5,7 +5,7 @@ import moment from "moment";
 import { getPerson, savePerson } from "../db";
 import { triggerBookingsWebhook } from "./backoffice";
 import { triggerWebhook } from "../helpers/webhooks";
-import { BookingType } from "../helpers/types";
+import { BookingType, TransactionWebhookEvent } from "../helpers/types";
 
 const SOLARIS_TIMED_ORDER_STATUSES = {
   CREATED: "CREATED",
@@ -339,5 +339,5 @@ const triggerTimedOrderWebhook = async (person, timedOrder) => {
     processed_at: new Date().toISOString()
   };
 
-  await triggerWebhook("SEPA_TIMED_ORDER", payload);
+  await triggerWebhook(TransactionWebhookEvent.SEPA_TIMED_ORDER, payload);
 };

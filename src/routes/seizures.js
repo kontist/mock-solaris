@@ -5,6 +5,7 @@ import * as log from "../logger";
 import { getPerson, savePerson } from "../db";
 import { triggerWebhook } from "../helpers/webhooks";
 import { updateAccountLockingStatus } from "./backoffice";
+import { PersonWebhookEvent } from "../helpers/types";
 
 export const SEIZURE_STATUSES = {
   ACTIVE: "ACTIVE",
@@ -144,12 +145,12 @@ export const fulfillSeizureRequestHandler = async (req, res) => {
 
 const triggerPersonSeizureCreatedWebhook = async (personId, seizure) => {
   const payload = getSeizureWebhookPayload(personId, seizure);
-  await triggerWebhook("PERSON_SEIZURE_CREATED", payload);
+  await triggerWebhook(PersonWebhookEvent.PERSON_SEIZURE_CREATED, payload);
 };
 
 const triggerPersonSeizureDeletedWebhook = async (personId, seizure) => {
   const payload = getSeizureWebhookPayload(personId, seizure);
-  await triggerWebhook("PERSON_SEIZURE_DELETED", payload);
+  await triggerWebhook(PersonWebhookEvent.PERSON_SEIZURE_DELETED, payload);
 };
 
 const getSeizureWebhookPayload = (personId, seizure) => ({

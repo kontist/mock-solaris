@@ -5,6 +5,7 @@ import moment from "moment";
 
 import { generateMetaInfo } from "./reservations";
 import { creteBookingFromReservation } from "../routes/transactions";
+import { triggerBookingsWebhook } from "../routes/backoffice";
 import {
   TransactionType,
   FxRate,
@@ -62,4 +63,5 @@ export const createCreditPresentment = async ({
   person.transactions.push(booking);
 
   await db.savePerson(person);
+  await triggerBookingsWebhook(person.account.id);
 };

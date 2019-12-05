@@ -28,10 +28,17 @@ import * as log from "../logger";
 import { changeCardStatus } from "../helpers/cards";
 import { createReservation, updateReservation } from "../helpers/reservations";
 import { createCreditPresentment } from "../helpers/creditPresentment";
-import { TransactionType, BookingType, CardStatus } from "../helpers/types";
+import {
+  TransactionType,
+  BookingType,
+  CardStatus,
+  PersonWebhookEvent,
+  AccountWebhookEvent,
+  TransactionWebhookEvent
+} from "../helpers/types";
 
 const triggerIdentificationWebhook = payload =>
-  triggerWebhook("IDENTIFICATION", payload);
+  triggerWebhook(PersonWebhookEvent.IDENTIFICATION, payload);
 
 const triggerAccountBlockWebhook = async person => {
   const { iban, id: accountId, locking_status: lockingStatus } = person.account;
@@ -45,12 +52,12 @@ const triggerAccountBlockWebhook = async person => {
     iban
   };
 
-  await triggerWebhook("ACCOUNT_BLOCK", payload);
+  await triggerWebhook(AccountWebhookEvent.ACCOUNT_BLOCK, payload);
 };
 
 export const triggerBookingsWebhook = async solarisAccountId => {
   const payload = { account_id: solarisAccountId };
-  await triggerWebhook("BOOKING", payload);
+  await triggerWebhook(TransactionWebhookEvent.BOOKING, payload);
 };
 
 const filterAndSortIdentifications = (identifications, method) => {

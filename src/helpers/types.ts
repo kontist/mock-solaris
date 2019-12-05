@@ -123,6 +123,23 @@ export enum CardLimitType {
   NOT_PRESENT = "NOT_PRESENT"
 }
 
+export enum TransactionWebhookEvent {
+  "BOOKING" = "BOOKING",
+  "SEPA_SCHEDULED_TRANSACTION" = "SEPA_SCHEDULED_TRANSACTION",
+  "SEPA_TIMED_ORDER" = "SEPA_TIMED_ORDER",
+  "SEPA_DIRECT_DEBIT_RETURN" = "SEPA_DIRECT_DEBIT_RETURN"
+}
+
+export enum PersonWebhookEvent {
+  "IDENTIFICATION" = "IDENTIFICATION",
+  "PERSON_SEIZURE_CREATED" = "PERSON_SEIZURE_CREATED",
+  "PERSON_SEIZURE_DELETED" = "PERSON_SEIZURE_DELETED"
+}
+
+export enum AccountWebhookEvent {
+  "ACCOUNT_BLOCK" = "ACCOUNT_BLOCK"
+}
+
 export enum CardWebhookEvent {
   "CARD_AUTHORIZATION" = "CARD_AUTHORIZATION", //	An authorization was created on the account using the card
   "CARD_FRAUD_CASE_PENDING" = "CARD_FRAUD_CASE_PENDING", //	A fraud case was recorded, that needs customers immediate respond
