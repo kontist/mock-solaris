@@ -11,6 +11,7 @@ import {
   CardDetails,
   CardLimitType,
   CardStatus,
+  CaseResolution,
   MockChangeRequest
 } from "../helpers/types";
 
@@ -29,6 +30,7 @@ import {
   confirmChangeCardPIN,
   updateCardSettings
 } from "../helpers/cards";
+import fraudWatchdog from "../helpers/fraudWatchdog";
 
 type RequestExtendedWithCard = express.Request & {
   card: Card;
@@ -325,6 +327,36 @@ export const setCardNotPresentLimitsHandler = async (
   );
 
   res.status(HttpStatusCodes.CREATED).send(updatedLimits);
+};
+
+export const confirmFraudHandler = async (
+  req: RequestExtendedWithCard,
+  res: express.Response
+) => {
+  const { fraud_case_id: fraudCaseId } = req.params;
+  fraudWatchdog.confirmFraud(fraudCaseId);
+  const response = {
+    id: fraudCaseId,
+    resolution: CaseResolution.CONFIRMED
+  };
+  res.status(HttpStatusCodes.OK).send(response);
+};
+
+export const whitelistCardHandler = async (
+  req: RequestExtendedWithCard,
+  res: express.Response
+) => {
+  const { fraud_case_id: fraudCaseId } = req.params;
+  fraudWatchdog.whitelistCard(fraudCaseId);
+  const response = {
+    id: fraudCaseId,
+    resolution: CaseResolution.WHITELISTED,
+    // https://docs.solarisbank.com/sbdf35fw/api/v1/#5jDUgtyQ-post-whitelist-a-card
+    // Card whitelisting timespan, during which the card will not be declined,
+    // should the transaction be retried. Timespan is set to 10 mins.
+    whitelisted_until: new Date(new Date().getTime() + 10 * 60000).toISOString()
+  };
+  res.status(HttpStatusCodes.OK).send(response);
 };
 
 export const blockCardHandler = async (

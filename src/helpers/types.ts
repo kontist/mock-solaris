@@ -72,6 +72,7 @@ export type CardDetails = {
 export type MockAccount = Account & {
   cards: Array<{ card: Card; cardDetails: CardDetails }>;
   reservations: Reservation[];
+  fraudReservations: Reservation[];
 };
 
 export type MockChangeRequest = {
@@ -83,9 +84,17 @@ export type MockChangeRequest = {
 
 export type MockPerson = {
   id: string;
+  fraudCases?: FraudCase[];
   account?: MockAccount;
   transactions: Booking[];
   changeRequest?: MockChangeRequest;
+};
+
+export type FraudCase = {
+  id: string;
+  reservationId: string;
+  cardId: string;
+  reservationExpiresAt: number;
 };
 
 export type SolarisAPIErrorData = {
@@ -121,6 +130,14 @@ export type CardLimits = {
 export enum CardLimitType {
   PRESENT = "PRESENT",
   NOT_PRESENT = "NOT_PRESENT"
+}
+
+export enum CaseResolution {
+  PENDING = "PENDING",
+  CONFIRMED = "CONFIRMED",
+  WHITELISTED = "WHITELISTED",
+  TIMED_OUT = "TIMED_OUT",
+  TIMEOUT = "TIMEOUT"
 }
 
 export enum TransactionWebhookEvent {
@@ -246,7 +263,8 @@ export enum BookingType {
 }
 
 export enum CardAuthorizationDeclinedStatus {
-  DECLINED = "DECLINED"
+  DECLINED = "DECLINED",
+  ACCEPTED = "ACCEPTED"
 }
 
 export enum POSEntryMode {
@@ -269,7 +287,7 @@ export type CardSettings = {
   contactless_enabled: boolean;
 };
 
-export type CardAuthorizationDeclined = {
+export type CardTransaction = {
   card_id: string;
   type: TransactionType;
   status: CardAuthorizationDeclinedStatus;

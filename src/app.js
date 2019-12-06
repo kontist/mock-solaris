@@ -179,6 +179,18 @@ router.post(
   safeRequestHandler(cardsAPI.activateCardHandler)
 );
 
+router.post(
+  "/cards/:card_id/fraud_cases/:fraud_case_id/confirm",
+  cardsAPI.cardMiddleware,
+  safeRequestHandler(cardsAPI.confirmFraudHandler)
+);
+
+router.post(
+  "/cards/:card_id/fraud_cases/:fraud_case_id/whitelist",
+  cardsAPI.cardMiddleware,
+  safeRequestHandler(cardsAPI.whitelistCardHandler)
+);
+
 const GET_CARD_LIMITS_CARD_ALLOWED_STATES = [
   CardStatus.INACTIVE,
   CardStatus.ACTIVATION_BLOCKED_BY_SOLARIS,

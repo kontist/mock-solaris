@@ -138,15 +138,7 @@ export const getPerson = async personId => {
   const person = await redisClient
     .getAsync(`${process.env.MOCKSOLARIS_REDIS_PREFIX}:person:${personId}`)
     .then(jsonToPerson);
-
-  person.timedOrders = person.timedOrders || [];
-  person.transactions = person.transactions || [];
-
-  if (person.account) {
-    person.account.reservations = person.account.reservations || [];
-  }
-
-  return person;
+  return augmentPerson(person);
 };
 
 export const getTechnicalUserPerson = () => getPerson("mockpersonkontistgmbh");
@@ -298,13 +290,22 @@ export const getAllPersons = () => {
         return p1.createdAt > p2.createdAt ? -1 : 1;
       })
     )
-    .then(results =>
-      results.map(person => ({
-        ...person,
-        timedOrders: person.timedOrders || [],
-        queuedBookings: person.queuedBookings || []
-      }))
-    );
+    .then(results => results.map(person => augmentPerson(person)));
+};
+
+const augmentPerson = person => {
+  const augmented = _.cloneDeep(person);
+  augmented.fraudCases = augmented.fraudCases || [];
+  augmented.timedOrders = augmented.timedOrders || [];
+  augmented.queuedBookings = person.queuedBookings || [];
+  augmented.transactions = augmented.transactions || [];
+
+  if (augmented.account) {
+    augmented.account.reservations = augmented.account.reservations || [];
+    augmented.account.fraudReservations =
+      augmented.account.fraudReservations || [];
+  }
+  return augmented;
 };
 
 export const getAllIdentifications = () => {
@@ -447,6 +448,13 @@ export const getCardData = async cardId => {
     .find(cardData => cardData.card.id === cardId);
 
   return cardData;
+};
+
+export const getPersonByFraudCaseId = async fraudCaseId => {
+  const persons = await getAllPersons();
+  return persons.find(
+    p => p.fraudCases.find(c => c.id === fraudCaseId) !== undefined
+  );
 };
 
 export const getCard = async cardId => (await getCardData(cardId)).card;

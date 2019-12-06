@@ -1,3 +1,4 @@
+import uuid from "uuid";
 import fetch from "node-fetch";
 
 import * as log from "../logger";
@@ -43,7 +44,10 @@ export const triggerWebhook = async (type, payload) => {
 
   await fetch(webhook.url, {
     method: "POST",
-    headers,
-    body: JSON.stringify(payload)
+    body: JSON.stringify({
+      id: uuid.v4(),
+      ...payload
+    }),
+    headers
   });
 };

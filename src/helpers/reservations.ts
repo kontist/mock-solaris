@@ -23,18 +23,57 @@ import {
   BookingType,
   POSEntryMode,
   Booking,
-  CardAuthorizationDeclined,
-  CardAuthorizationDeclinedStatus
+  CardTransaction,
+  CardAuthorizationDeclinedStatus,
+  FraudCase
 } from "./types";
+import fraudWatchdog from "./fraudWatchdog";
+
+const fraudSuspected = (reason: CardAuthorizationDeclineReason) =>
+  reason === CardAuthorizationDeclineReason.FRAUD_SUSPECTED;
+
+const triggerCardFraudWebhook = async (
+  cardAuthorizationDeclined,
+  fraudCase
+) => {
+  await triggerWebhook(CardWebhookEvent.CARD_FRAUD_CASE_PENDING, {
+    resolution: "PENDING",
+    respond_until: moment(fraudCase.reservationExpiresAt).toISOString(),
+    whitelisted_until: "null",
+    card_transaction: cardAuthorizationDeclined
+  });
+};
 
 const triggerCardDeclinedWebhook = async (
-  cardAuthorizationDeclined: CardAuthorizationDeclined,
+  cardAuthorizationDeclined: CardTransaction,
   reason: CardAuthorizationDeclineReason
 ) => {
   await triggerWebhook(CardWebhookEvent.CARD_AUTHORIZATION_DECLINE, {
     reason,
     card_transaction: cardAuthorizationDeclined
   });
+};
+
+export const markReservationAsFraud = async (
+  reservation: Reservation,
+  cardId: string,
+  person: MockPerson
+): Promise<FraudCase> => {
+  const id = uuid.v4();
+  const fraudCase = {
+    id,
+    reservationId: reservation.id,
+    reservationExpiresAt: new Date().getTime() + 1800000,
+    cardId
+  };
+  person.account.fraudReservations.push(reservation);
+  person.fraudCases.push(fraudCase);
+  await db.savePerson(person);
+  // Wait for response from customer.
+  // If response does not arrive
+  // within 30 minutes, block the card.
+  fraudWatchdog.watch(fraudCase);
+  return fraudCase;
 };
 
 export const generateMetaInfo = ({
@@ -142,7 +181,7 @@ const mapDataToCardAuthorizationDeclined = ({
   recipient: string;
   cardId: string;
   posEntryMode: POSEntryMode;
-}): CardAuthorizationDeclined => {
+}): CardTransaction => {
   return {
     card_id: cardId,
     type,
@@ -276,7 +315,7 @@ const computeCardUsage = (person: MockPerson) => {
 export const validateCardLimits = async (
   currentCardUsage,
   cardDetails: CardDetails,
-  cardAuthorizationDeclined: CardAuthorizationDeclined
+  cardAuthorizationDeclined: CardTransaction
 ) => {
   if (
     currentCardUsage.cardPresent.daily.amount >
@@ -406,11 +445,6 @@ export const createReservation = async ({
     cardAuthorizationPayload
   );
 
-  if (declineReason) {
-    await triggerCardDeclinedWebhook(cardAuthorizationDeclined, declineReason);
-    return;
-  }
-
   if (!cardData) {
     throw new Error("Card not found");
   }
@@ -445,6 +479,23 @@ export const createReservation = async ({
       CardAuthorizationDeclineReason.INSUFFICIENT_FUNDS
     );
     throw new Error("There were insufficient funds to complete this action.");
+  }
+
+  if (declineReason) {
+    if (fraudSuspected(declineReason)) {
+      const fraudCase = await markReservationAsFraud(
+        reservation,
+        cardId,
+        person
+      );
+      await triggerCardFraudWebhook(cardAuthorizationDeclined, fraudCase);
+    } else {
+      await triggerCardDeclinedWebhook(
+        cardAuthorizationDeclined,
+        declineReason
+      );
+    }
+    return;
   }
 
   person.account.reservations.push(reservation);
