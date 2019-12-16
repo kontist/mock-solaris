@@ -49,6 +49,7 @@ const triggerCardDeclinedWebhook = async (
   reason: CardAuthorizationDeclineReason
 ) => {
   await triggerWebhook(CardWebhookEvent.CARD_AUTHORIZATION_DECLINE, {
+    id: uuid.v4(),
     reason,
     card_transaction: cardAuthorizationDeclined
   });
