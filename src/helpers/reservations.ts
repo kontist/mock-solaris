@@ -522,17 +522,6 @@ const bookReservation = async (person, reservation) => {
   );
 
   await db.savePerson(person);
-
-  const resolvedReservation = {
-    ...reservation,
-    status: ReservationStatus.RESOLVED,
-    resolved_at: moment().toDate()
-  };
-
-  await triggerWebhook(
-    CardWebhookEvent.CARD_AUTHORIZATION_RESOLUTION,
-    resolvedReservation
-  );
   await triggerBookingsWebhook(person.account.id);
 };
 
@@ -552,7 +541,20 @@ export const updateReservation = async ({
   );
 
   if (!reservation) {
-    throw new Error("Reservation ton found");
+    throw new Error("Reservation not found");
+  }
+
+  if (action === ActionType.RESOLVE) {
+    const resolvedReservation = {
+      ...reservation,
+      status: ReservationStatus.RESOLVED,
+      resolved_at: moment().toDate()
+    };
+
+    await triggerWebhook(
+      CardWebhookEvent.CARD_AUTHORIZATION_RESOLUTION,
+      resolvedReservation
+    );
   }
 
   if (action === ActionType.BOOK) {

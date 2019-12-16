@@ -33,6 +33,7 @@ export enum CardStatus {
 }
 
 export enum ActionType {
+  RESOLVE = "RESOLVE",
   BOOK = "BOOK",
   CANCEL = "CANCEL",
   EXPIRE = "EXPIRE"
