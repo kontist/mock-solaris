@@ -513,6 +513,19 @@ export const createReservation = async ({
   await triggerWebhook(CardWebhookEvent.CARD_AUTHORIZATION, reservation);
 };
 
+const resolveReservation = async reservation => {
+  const resolvedReservation = {
+    ...reservation,
+    status: ReservationStatus.RESOLVED,
+    resolved_at: moment().toDate()
+  };
+
+  await triggerWebhook(
+    CardWebhookEvent.CARD_AUTHORIZATION_RESOLUTION,
+    resolvedReservation
+  );
+};
+
 const bookReservation = async (person, reservation) => {
   const booking = creteBookingFromReservation(person, reservation);
 
@@ -522,6 +535,11 @@ const bookReservation = async (person, reservation) => {
   );
 
   await db.savePerson(person);
+
+  if (reservation.status === ReservationStatus.OPEN) {
+    await resolveReservation(reservation);
+  }
+
   await triggerBookingsWebhook(person.account.id);
 };
 
@@ -545,16 +563,7 @@ export const updateReservation = async ({
   }
 
   if (action === ActionType.RESOLVE) {
-    const resolvedReservation = {
-      ...reservation,
-      status: ReservationStatus.RESOLVED,
-      resolved_at: moment().toDate()
-    };
-
-    await triggerWebhook(
-      CardWebhookEvent.CARD_AUTHORIZATION_RESOLUTION,
-      resolvedReservation
-    );
+    return resolveReservation(reservation);
   }
 
   if (action === ActionType.BOOK) {
