@@ -278,7 +278,7 @@ export const creteBookingFromReservation = (person, reservation, incoming) => {
     recipient_bic: person.account.bic,
     recipient_iban: person.account.iban,
     recipient_name: `${person.first_name} ${person.last_name}`,
-    sender_bic: "SOBKDEBBXXX",
+    sender_bic: process.env.SOLARIS_BIC,
     sender_name: SOLARIS_CARDS_ACCOUNT.NAME,
     sender_iban: SOLARIS_CARDS_ACCOUNT.IBAN,
     booking_date: moment().format("YYYY-MM-DD"),

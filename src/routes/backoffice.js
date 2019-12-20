@@ -373,7 +373,7 @@ export const generateBookingForPerson = bookingData => {
   const recipientIBAN = person.account.iban;
   const recipientBIC = person.account.bic;
 
-  const senderIBAN = iban;
+  const senderIBAN = iban || "ES3183888553310516236778";
   const senderBIC = process.env.SOLARIS_BIC;
   const today = moment().format("YYYY-MM-DD");
 
