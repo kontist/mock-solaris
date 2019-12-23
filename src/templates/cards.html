@@ -71,10 +71,10 @@
               <td>{{ cardData.cardDetails.pin || "NOT SET" }}</td>
             </tr>
             <tr>
-              <td>NFC</td>
+              <td>contactless</td>
               <td>
-                  {% if cardData.cardDetails.contactless_enabled %}👍{% endif %}
-                  {% if !cardData.cardDetails.contactless_enabled %}👎{% endif %}
+                  {% if cardData.cardDetails.settings.contactless_enabled %}👍{% endif %}
+                  {% if !cardData.cardDetails.settings.contactless_enabled %}👎{% endif %}
               </td>
             </tr>
             <tr>
