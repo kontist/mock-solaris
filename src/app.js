@@ -290,6 +290,13 @@ router.post(
   safeRequestHandler(cardsAPI.closeCardHandler)
 );
 
+// VIRTUAL CARD DETAILS - in reality this endpoint should run on different server
+router.post(
+  "/cards/:card_id/virtual_card_requests",
+  cardsAPI.cardMiddleware,
+  cardsAPI.getVirtualCardDetails
+);
+
 // SEPA_DIRECT_DEBIT_RETURNS
 router.get(
   "/sepa_direct_debit_returns",

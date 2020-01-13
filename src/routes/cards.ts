@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/camelcase */
+import _ from "lodash";
 import uuid from "uuid";
+import jose from "node-jose";
 import * as express from "express";
 import HttpStatusCodes from "http-status";
 
@@ -561,6 +563,95 @@ export const closeCardHandler = async (
     CardStatus.CLOSED
   );
   res.send(updatedCard);
+};
+
+export const getVirtualCardDetails = async (
+  req: RequestExtendedWithCard,
+  res: express.Response
+) => {
+  const {
+    body: {
+      jwk,
+      jwe: { alg, enc }
+    },
+    card,
+    cardDetails
+  } = req;
+
+  const errors = [
+    "device_id",
+    "signature",
+    "jwk",
+    "jwk[kty]",
+    "jwk[n]",
+    "jwk[e]",
+    "jwe",
+    "jwe[alg]",
+    "jwe[enc]"
+  ]
+    .filter(fieldName => !_.get(req.body, fieldName))
+    .map(fieldName => ({
+      id: uuid.v4(),
+      status: 400,
+      code: "validation_error",
+      title: "Validation Error",
+      detail: `${fieldName} is missing`,
+      source: {
+        field: `${fieldName}`,
+        message: "is missing"
+      }
+    }));
+
+  if (errors.length) {
+    res.status(errors[0].status).send({
+      errors
+    });
+    return;
+  }
+
+  const SUPPORTED_ALG = ["RSA1_5", "RSA_OAEP_256", "RSA_OAEP_256_ANDROID"];
+
+  if (!SUPPORTED_ALG.includes(alg)) {
+    const validAlgMessage = `Valid: ${SUPPORTED_ALG.map(alg => `'${alg}'`).join(
+      ", "
+    )}`;
+    res.status(400).send({
+      errors: [
+        {
+          id: uuid.v4(),
+          status: 400,
+          code: "validation_error",
+          title: "Validation Error",
+          detail: `jwe[alg] is not valid. ${validAlgMessage}`,
+          source: {
+            field: "jwe[alg]",
+            message: `is not valid. ${validAlgMessage}`
+          }
+        }
+      ]
+    });
+    return;
+  }
+
+  const cardDetailsForEncryption = {
+    pan: cardDetails.cardNumber,
+    cvc: cardDetails.cvv,
+    expires_at: card.expiration_date,
+    line_1: card.representation.line_1
+  };
+
+  try {
+    const result = await jose.JWE.createEncrypt(
+      { format: "compact", enc, alg },
+      jwk
+    )
+      .update(Buffer.from(JSON.stringify(cardDetailsForEncryption)))
+      .final();
+    res.send({ data: result });
+  } catch (err) {
+    log.error("An error occurred when fetching virtual card details", err);
+    res.status(500).send(err);
+  }
 };
 
 /* eslint-enable @typescript-eslint/camelcase */

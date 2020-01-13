@@ -497,19 +497,31 @@ export const updateAccountLockingStatusHandler = async (req, res) => {
   res.redirect("back");
 };
 
-const changeCardStatusAllowed = async (personId, cardId, status) => {
+const changeCardStatusAllowed = async (personId, cardId, newCardStatus) => {
   const person = await getPerson(personId);
   const cardData = person.account.cards.find(({ card }) => card.id === cardId);
 
+  const {
+    card: { status: currentCardStatus, type }
+  } = cardData;
+
   if (
-    status === CardStatus.INACTIVE &&
-    cardData.card.status !== CardStatus.PROCESSING
+    type.includes("VIRTUAL") &&
+    newCardStatus === CardStatus.ACTIVE &&
+    [CardStatus.INACTIVE, CardStatus.PROCESSING].includes(currentCardStatus)
+  ) {
+    return;
+  }
+
+  if (
+    newCardStatus === CardStatus.INACTIVE &&
+    currentCardStatus !== CardStatus.PROCESSING
   ) {
     throw new Error(`Allowed to change only from PROCESSING status`);
   }
 
   if (
-    status === CardStatus.ACTIVE &&
+    newCardStatus === CardStatus.ACTIVE &&
     [
       CardStatus.INACTIVE,
       CardStatus.PROCESSING,
