@@ -15,26 +15,73 @@ import {
   MockChangeRequest
 } from "../helpers/types";
 
-import {
-  createCard,
-  activateCard,
-  getCards,
-  validateCardData,
-  validatePersonData,
-  CardErrorCodes,
-  updateCardLimits,
-  validateCardLimits,
-  changeCardStatus,
-  validatePIN,
-  changePIN,
-  confirmChangeCardPIN,
-  updateCardSettings
-} from "../helpers/cards";
+import * as cardHelpers from "../helpers/cards";
 import fraudWatchdog from "../helpers/fraudWatchdog";
 
 type RequestExtendedWithCard = express.Request & {
   card: Card;
   cardDetails: CardDetails;
+};
+
+export const replaceCardHandler = async (
+  req: RequestExtendedWithCard,
+  res: express.Response
+) => {
+  try {
+    const person = await db.findPersonByAccountId(req.card.account_id);
+
+    const { card: newCard, cardDetails } = await cardHelpers.replaceCard(
+      req.body,
+      req.card,
+      req.cardDetails
+    );
+
+    const errors = await cardHelpers.validateCardData(newCard);
+
+    if (errors.length > 0) {
+      res.status(errors[0].status).send({
+        errors
+      });
+      return;
+    }
+    newCard.representation.line_1 = newCard.representation.line_1.replace(
+      /\//g,
+      " "
+    );
+
+    person.account.cards = person.account.cards.map(item => {
+      if (item.card.id === newCard.id) {
+        return {
+          card: newCard,
+          cardDetails
+        };
+      }
+      return item;
+    });
+
+    await db.savePerson(person);
+
+    log.info("(replaceCardHandler) Card replaced", { newCard, cardDetails });
+
+    res.status(HttpStatusCodes.CREATED).send({
+      id: newCard.id,
+      status: newCard.status
+    });
+  } catch (err) {
+    log.error("(replaceCardHandler) Error occurred", err);
+
+    res.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send({
+      errors: [
+        {
+          id: uuid.v4(),
+          status: 500,
+          code: "generic_error",
+          title: "Generic error",
+          detail: `generic error.`
+        }
+      ]
+    });
+  }
 };
 
 export const createCardHandler = async (
@@ -62,9 +109,12 @@ export const createCardHandler = async (
       return;
     }
 
-    const { card, cardDetails } = createCard(req.body, person);
-    const personValidationErrors = await validatePersonData(person);
-    const cardValidationErrors = await validateCardData(card, cardDetails);
+    const { card, cardDetails } = cardHelpers.createCard(req.body, person);
+    const personValidationErrors = await cardHelpers.validatePersonData(person);
+    const cardValidationErrors = await cardHelpers.validateCardData(
+      card,
+      cardDetails
+    );
     const errors = personValidationErrors.concat(cardValidationErrors);
 
     if (errors.length > 0) {
@@ -126,7 +176,7 @@ export const getAccountCardsHandler = async (
     return;
   }
 
-  res.status(HttpStatusCodes.OK).send(getCards(person));
+  res.status(HttpStatusCodes.OK).send(cardHelpers.getCards(person));
 };
 
 export const getCardHandler = async (
@@ -141,7 +191,9 @@ const handleCardActivationError = (
   card: Card,
   res: express.Response
 ) => {
-  if (err.message === CardErrorCodes.CARD_ACTIVATION_INVALID_STATUS) {
+  if (
+    err.message === cardHelpers.CardErrorCodes.CARD_ACTIVATION_INVALID_STATUS
+  ) {
     res.status(HttpStatusCodes.BAD_REQUEST).send({
       errors: [
         {
@@ -160,7 +212,7 @@ const handleCardActivationError = (
     return;
   }
 
-  if (err.message === CardErrorCodes.VERIFICATION_TOKEN_TOO_LONG) {
+  if (err.message === cardHelpers.CardErrorCodes.VERIFICATION_TOKEN_TOO_LONG) {
     res.status(HttpStatusCodes.BAD_REQUEST).send({
       errors: [
         {
@@ -179,13 +231,13 @@ const handleCardActivationError = (
     return;
   }
 
-  if (err.message === CardErrorCodes.INVALID_VERIFICATION_TOKEN) {
+  if (err.message === cardHelpers.CardErrorCodes.INVALID_VERIFICATION_TOKEN) {
     res.status(HttpStatusCodes.BAD_REQUEST).send({
       errors: [
         {
           id: uuid.v4(),
           status: 400,
-          code: CardErrorCodes.INVALID_VERIFICATION_TOKEN,
+          code: cardHelpers.CardErrorCodes.INVALID_VERIFICATION_TOKEN,
           title: "Invalid Verification Token",
           detail: "Invalid Verification Token"
         }
@@ -202,7 +254,7 @@ export const activateCardHandler = async (
   res: express.Response
 ) => {
   try {
-    const updatedCard = await activateCard(
+    const updatedCard = await cardHelpers.activateCard(
       req.card,
       req.body.verification_token
     );
@@ -294,14 +346,14 @@ export const setCardPresentLimitsHandler = async (
   req: RequestExtendedWithCard,
   res: express.Response
 ) => {
-  const validationError = validateCardLimits(req.body);
+  const validationError = cardHelpers.validateCardLimits(req.body);
 
   if (validationError) {
     handleSetCardLimitValidationError(validationError, res);
     return;
   }
 
-  const updatedLimits = await updateCardLimits(
+  const updatedLimits = await cardHelpers.updateCardLimits(
     req.card,
     CardLimitType.PRESENT,
     req.body
@@ -313,14 +365,14 @@ export const setCardNotPresentLimitsHandler = async (
   req: RequestExtendedWithCard,
   res: express.Response
 ) => {
-  const validationError = validateCardLimits(req.body);
+  const validationError = cardHelpers.validateCardLimits(req.body);
 
   if (validationError) {
     handleSetCardLimitValidationError(validationError, res);
     return;
   }
 
-  const updatedLimits = await updateCardLimits(
+  const updatedLimits = await cardHelpers.updateCardLimits(
     req.card,
     CardLimitType.NOT_PRESENT,
     req.body
@@ -385,7 +437,7 @@ export const blockCardHandler = async (
     return;
   }
 
-  const updatedCard = await changeCardStatus(
+  const updatedCard = await cardHelpers.changeCardStatus(
     { personId, accountId },
     cardId,
     CardStatus.BLOCKED
@@ -412,7 +464,7 @@ export const unblockCardHandler = async (
     return;
   }
 
-  const updatedCard = await changeCardStatus(
+  const updatedCard = await cardHelpers.changeCardStatus(
     { personId, accountId },
     cardId,
     CardStatus.ACTIVE
@@ -427,7 +479,7 @@ export const changePINCardHandler = async (
 ) => {
   const { pin } = req.body;
 
-  const pinValidationErrors = validatePIN(pin || "");
+  const pinValidationErrors = cardHelpers.validatePIN(pin || "");
   if (pinValidationErrors.length) {
     res.status(HttpStatusCodes.BAD_REQUEST).send({
       errors: pinValidationErrors
@@ -435,7 +487,7 @@ export const changePINCardHandler = async (
     return;
   }
 
-  const changeRequestResponse = await changePIN(req.card, pin);
+  const changeRequestResponse = await cardHelpers.changePIN(req.card, pin);
   res.status(HttpStatusCodes.ACCEPTED).send(changeRequestResponse);
 };
 
@@ -479,7 +531,10 @@ export const confirmChangeCardPINHandler = async (
     return;
   }
 
-  const confirmResponse = await confirmChangeCardPIN(person, changeRequest);
+  const confirmResponse = await cardHelpers.confirmChangeCardPIN(
+    person,
+    changeRequest
+  );
   res.status(confirmResponse.response_code).send(confirmResponse);
 };
 
@@ -488,7 +543,7 @@ export const changeCardSettingsHandler = async (
   res: express.Response
 ) => {
   const person = await db.getPerson(req.card.person_id);
-  const updatedSettings = await updateCardSettings(
+  const updatedSettings = await cardHelpers.updateCardSettings(
     req.card.id,
     person,
     req.body
@@ -500,7 +555,7 @@ export const closeCardHandler = async (
   req: RequestExtendedWithCard,
   res: express.Response
 ) => {
-  const updatedCard = await changeCardStatus(
+  const updatedCard = await cardHelpers.changeCardStatus(
     { personId: req.card.person_id, accountId: req.card.account_id },
     req.card.id,
     CardStatus.CLOSED

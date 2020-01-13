@@ -119,6 +119,11 @@ export type CreateCardData = {
   line_1: string;
 };
 
+export type ReplaceCardData = {
+  pin?: string;
+  line_1?: string;
+};
+
 type CardLimit = {
   max_amount_cents: number;
   max_transactions: number;

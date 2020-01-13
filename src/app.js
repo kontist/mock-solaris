@@ -191,6 +191,19 @@ router.post(
   safeRequestHandler(cardsAPI.whitelistCardHandler)
 );
 
+const REPLACE_CARD_ALLOWED_STATES = [
+  CardStatus.ACTIVE,
+  CardStatus.BLOCKED,
+  CardStatus.BLOCKED_BY_SOLARIS
+];
+
+router.post(
+  "/cards/:card_id/replace",
+  cardsAPI.cardMiddleware,
+  cardsAPI.cardStatusMiddleware(REPLACE_CARD_ALLOWED_STATES),
+  safeRequestHandler(cardsAPI.replaceCardHandler)
+);
+
 const GET_CARD_LIMITS_CARD_ALLOWED_STATES = [
   CardStatus.INACTIVE,
   CardStatus.ACTIVATION_BLOCKED_BY_SOLARIS,

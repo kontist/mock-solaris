@@ -18,7 +18,8 @@ import {
   CardWebhookEvent,
   ChangeRequestStatus,
   MockChangeRequest,
-  CardSettings
+  CardSettings,
+  ReplaceCardData
 } from "./types";
 
 const CARD_HOLDER_MAX_LENGTH = 21;
@@ -38,7 +39,7 @@ export enum CardErrorCodes {
 
 export const validateCardData = async (
   cardData: Card,
-  cardDetails: CardDetails
+  cardDetails?: CardDetails
 ): Promise<SolarisAPIErrorData[]> => {
   const errors = [];
 
@@ -104,19 +105,21 @@ export const validateCardData = async (
     }
   }
 
-  // check reference uniqueness
-  if (await db.hasCardReference(cardDetails.reference)) {
-    errors.push({
-      id: uuid.v4(),
-      status: 400,
-      code: "validation_error",
-      title: "Validation Error",
-      detail: "card reference is not unique",
-      source: {
-        field: "reference",
-        message: "card reference is not unique"
-      }
-    });
+  if (cardDetails) {
+    // check reference uniqueness
+    if (await db.hasCardReference(cardDetails.reference)) {
+      errors.push({
+        id: uuid.v4(),
+        status: 400,
+        code: "validation_error",
+        title: "Validation Error",
+        detail: "card reference is not unique",
+        source: {
+          field: "reference",
+          message: "card reference is not unique"
+        }
+      });
+    }
   }
 
   return errors;
@@ -176,6 +179,18 @@ const getDefaultCardPresentLimits = () => ({
   }
 });
 
+const getDefaultCardDetails = () => ({
+  token: createCardToken(),
+  cardPresentLimits: getDefaultCardPresentLimits(),
+  cardNotPresentLimits: getDefaultCardNotPresentLimits(),
+  cvv: Math.random()
+    .toString()
+    .substr(-3),
+  settings: {
+    contactless_enabled: true
+  }
+});
+
 export const createCard = (
   cardData: CreateCardData,
   person: MockPerson
@@ -215,21 +230,36 @@ export const createCard = (
     pin,
     reference,
     cardNumber,
-    token: createCardToken(),
-    cardPresentLimits: getDefaultCardPresentLimits(),
-    cardNotPresentLimits: getDefaultCardNotPresentLimits(),
-    cvv: Math.random()
-      .toString()
-      .substr(-3),
-    settings: {
-      contactless_enabled: true
-    }
+    ...getDefaultCardDetails()
   };
 
   return {
     card,
     cardDetails
   };
+};
+
+export const replaceCard = (
+  cardData: ReplaceCardData,
+  card: Card,
+  cardDetails: CardDetails
+): { card: Card; cardDetails: CardDetails } => {
+  const newCard: Card = {
+    ...card,
+    representation: {
+      ...card.representation,
+      line_1: cardData.line_1 || card.representation.line_1
+    },
+    status: CardStatus.PROCESSING
+  };
+
+  const newCardDetails = {
+    ...cardDetails,
+    pin: cardData.pin || cardDetails.pin,
+    ...getDefaultCardDetails()
+  };
+
+  return { card: newCard, cardDetails: newCardDetails };
 };
 
 export const getCards = (person: MockPerson): Card[] => {
