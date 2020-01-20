@@ -545,17 +545,25 @@ const bookReservation = async (person, reservation, increaseAmount) => {
   });
 
   person.transactions.push(booking);
+
   person.account.reservations = person.account.reservations.filter(
     item => item.id !== reservation.id
   );
 
   await db.savePerson(person);
 
-  if (reservation.status === ReservationStatus.OPEN) {
-    await resolveReservation(reservation);
-  }
+  await resolveReservation(reservation);
 
   await triggerBookingsWebhook(person.account.id);
+};
+
+const cancelReservation = async (person, reservation) => {
+  person.account.reservations = person.account.reservations.filter(
+    item => item.id !== reservation.id
+  );
+
+  await db.savePerson(person);
+  await resolveReservation(reservation);
 };
 
 export const updateReservation = async ({
@@ -579,11 +587,17 @@ export const updateReservation = async ({
     throw new Error("Reservation not found");
   }
 
-  if (action === ActionType.RESOLVE) {
-    return resolveReservation(reservation);
-  }
-
-  if (action === ActionType.BOOK) {
-    await bookReservation(person, reservation, increaseAmount);
+  switch (action) {
+    case ActionType.RESOLVE: {
+      return resolveReservation(reservation);
+    }
+    case ActionType.BOOK: {
+      return bookReservation(person, reservation, increaseAmount);
+    }
+    case ActionType.CANCEL: {
+      return cancelReservation(person, reservation);
+    }
+    default:
+      throw new Error("Unknown action type");
   }
 };

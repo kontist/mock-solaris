@@ -236,7 +236,8 @@
                 <select name="action">
                   <option selected="selected" value="BOOK">BOOK</option>
                   <option value="CANCEL">CANCEL</option>
-                  <option value="EXPIRE">EXPIRE</option>
+                  <!-- solaris makes no diference between CANCEL and EXPIRE -->
+                  <option value="CANCEL">EXPIRE</option>
                 </select>
               </div>
               <button type="submit" class="btn btn-primary">Update now</button>
