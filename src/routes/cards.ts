@@ -348,7 +348,10 @@ export const setCardPresentLimitsHandler = async (
   req: RequestExtendedWithCard,
   res: express.Response
 ) => {
-  const validationError = cardHelpers.validateCardLimits(req.body);
+  const validationError = cardHelpers.validateCardLimits(
+    req.body,
+    CardLimitType.PRESENT
+  );
 
   if (validationError) {
     handleSetCardLimitValidationError(validationError, res);
@@ -367,7 +370,10 @@ export const setCardNotPresentLimitsHandler = async (
   req: RequestExtendedWithCard,
   res: express.Response
 ) => {
-  const validationError = cardHelpers.validateCardLimits(req.body);
+  const validationError = cardHelpers.validateCardLimits(
+    req.body,
+    CardLimitType.NOT_PRESENT
+  );
 
   if (validationError) {
     handleSetCardLimitValidationError(validationError, res);

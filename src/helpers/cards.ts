@@ -25,10 +25,26 @@ import {
 const CARD_HOLDER_MAX_LENGTH = 21;
 const CARD_HOLDER_ALLOWED_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 -/.";
 
-const MAX_TRANSACTION_DAILY = 20;
-const MAX_TRANSACTION_MONTHLY = MAX_TRANSACTION_DAILY * 31;
-const MAX_DAILY_AMOUNT_IN_CENTS = 800000;
-const MAX_MONTHLY_AMOUNT_IN_CENTS = 6000000;
+const CARD_PRESENT_DAILY_MAX_NUMBER_TRANSACTIONS = 20;
+const CARD_PRESENT_MONTHLY_MAX_NUMBER_TRANSACTIONS = 200;
+const CARD_NOT_PRESENT_DAILY_MAX_NUMBER_TRANSACTIONS = 20;
+const CARD_NOT_PRESENT_MONTHLY_MAX_NUMBER_TRANSACTIONS = 200;
+
+const DEFAULT_CARD_PRESENT_DAILY_MAX_NUMBER_TRANSACTIONS = 10;
+const DEFAULT_CARD_PRESENT_MONTHLY_MAX_NUMBER_TRANSACTIONS = 100;
+const DEFAULT_CARD_NOT_PRESENT_DAILY_MAX_NUMBER_TRANSACTIONS = 10;
+const DEFAULT_CARD_NOT_PRESENT_MONTHLY_MAX_NUMBER_TRANSACTIONS = 100;
+
+const CARD_PRESENT_DAILY_MAX_AMOUNT_IN_CENTS = 10000 * 100;
+const CARD_PRESENT_MONTHLY_MAX_AMOUNT_IN_CENTS = 25000 * 100;
+const CARD_NOT_PRESENT_DAILY_MAX_AMOUNT_IN_CENTS = 10000 * 100;
+const CARD_NOT_PRESENT_MONTHLY_MAX_AMOUNT_IN_CENTS = 25000 * 100;
+
+const DEFAULT_CARD_PRESENT_DAILY_MAX_AMOUNT_IN_CENTS = 5000 * 100;
+const DEFAULT_CARD_PRESENT_MONTHLY_MAX_AMOUNT_IN_CENTS = 10000 * 100;
+const DEFAULT_CARD_NOT_PRESENT_DAILY_MAX_AMOUNT_IN_CENTS = 5000 * 100;
+const DEFAULT_CARD_NOT_PRESENT_MONTHLY_MAX_AMOUNT_IN_CENTS = 10000 * 100;
+
 export const CHANGE_REQUEST_CHANGE_CARD_PIN = "card_pin";
 
 export enum CardErrorCodes {
@@ -159,23 +175,23 @@ export const createCardToken = (): string =>
 
 const getDefaultCardNotPresentLimits = () => ({
   daily: {
-    max_amount_cents: 150000,
-    max_transactions: 25
+    max_amount_cents: DEFAULT_CARD_NOT_PRESENT_DAILY_MAX_AMOUNT_IN_CENTS,
+    max_transactions: DEFAULT_CARD_NOT_PRESENT_DAILY_MAX_NUMBER_TRANSACTIONS
   },
   monthly: {
-    max_amount_cents: 1000000,
-    max_transactions: 775
+    max_amount_cents: DEFAULT_CARD_NOT_PRESENT_MONTHLY_MAX_AMOUNT_IN_CENTS,
+    max_transactions: DEFAULT_CARD_NOT_PRESENT_MONTHLY_MAX_NUMBER_TRANSACTIONS
   }
 });
 
 const getDefaultCardPresentLimits = () => ({
   daily: {
-    max_amount_cents: 450000,
-    max_transactions: 15
+    max_amount_cents: DEFAULT_CARD_PRESENT_DAILY_MAX_AMOUNT_IN_CENTS,
+    max_transactions: DEFAULT_CARD_PRESENT_DAILY_MAX_NUMBER_TRANSACTIONS
   },
   monthly: {
-    max_amount_cents: 2500000,
-    max_transactions: 465
+    max_amount_cents: DEFAULT_CARD_PRESENT_MONTHLY_MAX_AMOUNT_IN_CENTS,
+    max_transactions: DEFAULT_CARD_PRESENT_MONTHLY_MAX_NUMBER_TRANSACTIONS
   }
 });
 
@@ -340,24 +356,47 @@ export const activateCard = async (
   return cardForActivation;
 };
 
-export const validateCardLimits = (cardLimits: CardLimits): string | null => {
+export const validateCardLimits = (
+  cardLimits: CardLimits,
+  limitType: CardLimitType
+): string | null => {
   const errors = [];
 
+  const maxDailyNumberOfTransactions =
+    limitType === CardLimitType.PRESENT
+      ? CARD_PRESENT_DAILY_MAX_NUMBER_TRANSACTIONS
+      : CARD_NOT_PRESENT_DAILY_MAX_NUMBER_TRANSACTIONS;
+
+  const maxDailyAmountInCents =
+    limitType === CardLimitType.PRESENT
+      ? CARD_PRESENT_DAILY_MAX_AMOUNT_IN_CENTS
+      : CARD_NOT_PRESENT_DAILY_MAX_AMOUNT_IN_CENTS;
+
+  const maxMonthlyNumberOfTransactions =
+    limitType === CardLimitType.PRESENT
+      ? CARD_PRESENT_MONTHLY_MAX_NUMBER_TRANSACTIONS
+      : CARD_NOT_PRESENT_MONTHLY_MAX_NUMBER_TRANSACTIONS;
+
+  const maxMonthlyAmountInCents =
+    limitType === CardLimitType.PRESENT
+      ? CARD_PRESENT_MONTHLY_MAX_AMOUNT_IN_CENTS
+      : CARD_NOT_PRESENT_MONTHLY_MAX_AMOUNT_IN_CENTS;
+
   if (
-    cardLimits.daily.max_transactions > MAX_TRANSACTION_DAILY ||
-    cardLimits.daily.max_amount_cents > MAX_DAILY_AMOUNT_IN_CENTS
+    cardLimits.daily.max_transactions > maxDailyNumberOfTransactions ||
+    cardLimits.daily.max_amount_cents > maxDailyAmountInCents
   ) {
     errors.push(
-      `limit too high. Max DAILY transactions amount: ${MAX_TRANSACTION_DAILY} and Max DAILY amount in cents: ${MAX_DAILY_AMOUNT_IN_CENTS}`
+      `limit too high. Max DAILY transactions amount: ${maxDailyNumberOfTransactions} and Max DAILY amount in cents: ${maxDailyAmountInCents}`
     );
   }
 
   if (
-    cardLimits.monthly.max_transactions > MAX_TRANSACTION_MONTHLY ||
-    cardLimits.monthly.max_amount_cents > MAX_MONTHLY_AMOUNT_IN_CENTS
+    cardLimits.monthly.max_transactions > maxMonthlyNumberOfTransactions ||
+    cardLimits.monthly.max_amount_cents > maxMonthlyAmountInCents
   ) {
     errors.push(
-      `limit too high. Max MONTHLY transactions amount: ${MAX_TRANSACTION_MONTHLY} and Max MONTHLY amount in cents: ${MAX_MONTHLY_AMOUNT_IN_CENTS}`
+      `limit too high. Max MONTHLY transactions amount: ${maxMonthlyNumberOfTransactions} and Max MONTHLY amount in cents: ${maxMonthlyAmountInCents}`
     );
   }
 
