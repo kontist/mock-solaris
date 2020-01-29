@@ -38,7 +38,9 @@
                     <option {% if cardData.card.status==="ACTIVATION_BLOCKED_BY_SOLARIS" %}selected {% endif %}value="ACTIVATION_BLOCKED_BY_SOLARIS">ACTIVATION_BLOCKED_BY_SOLARIS</option>
                     <option {% if cardData.card.status==="CLOSED_BY_SOLARIS" %}selected {% endif %}value="CLOSED_BY_SOLARIS">CLOSED_BY_SOLARIS</option>
                     <option {% if cardData.card.status==="ACTIVE" %}selected {% endif %}value="ACTIVE">ACTIVE</option>
-                    <option {% if cardData.card.status==="INACTIVE" %}selected {% endif %}value="INACTIVE">INACTIVE</option>
+                    {% if cardData.card.type !=="VIRTUAL_VISA_FREELANCE_DEBIT"%}
+                      <option {% if cardData.card.status==="INACTIVE" %}selected {% endif %}value="INACTIVE">INACTIVE</option>
+                    {% endif %}
                   </select>
                   <input type="hidden" name="personId" value={{ person.id }}>
                   <input type="hidden" name="accountId" value={{ person.account.id }}>

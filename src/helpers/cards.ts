@@ -325,6 +325,10 @@ export const activateCard = async (
   cardForActivation: Card,
   verificationToken: string
 ): Promise<Card> => {
+  if (cardForActivation.type === CardType.VIRTUAL_VISA_FREELANCE_DEBIT) {
+    return cardForActivation;
+  }
+
   if (cardForActivation.status !== CardStatus.INACTIVE) {
     throw new Error(CardErrorCodes.CARD_ACTIVATION_INVALID_STATUS);
   }
