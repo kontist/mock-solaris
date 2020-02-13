@@ -15,8 +15,8 @@
 <div class="col-md-12">
   <div class="panel panel-default">
     <div class="panel-heading">Existing cards</div>
-    {% for cardData in person.account.cards %}
-    <table class="table">
+    {% for cardData in person.account.cards.reverse() %}
+    <table class="table" {% if cardData.card.status==="CLOSED_BY_SOLARIS" %}style="opacity: 0.5;"{% endif %}>
       <thead>
         <tr>
           <th>Number</th>
@@ -33,7 +33,7 @@
               <td>Status <b>{{ cardData.card.status }}</b></td>
               <td>
                 <form class="form-inline autosubmitonchange" method="POST" action="/__BACKOFFICE__/changeCardStatus">
-                  <select name="status">
+                  <select name="status" {% if cardData.card.status==="CLOSED_BY_SOLARIS" %}disabled {% endif %}>
                     <option {% if cardData.card.status==="BLOCKED_BY_SOLARIS" %}selected {% endif %}value="BLOCKED_BY_SOLARIS">BLOCKED_BY_SOLARIS</option>
                     <option {% if cardData.card.status==="ACTIVATION_BLOCKED_BY_SOLARIS" %}selected {% endif %}value="ACTIVATION_BLOCKED_BY_SOLARIS">ACTIVATION_BLOCKED_BY_SOLARIS</option>
                     <option {% if cardData.card.status==="CLOSED_BY_SOLARIS" %}selected {% endif %}value="CLOSED_BY_SOLARIS">CLOSED_BY_SOLARIS</option>
@@ -54,7 +54,7 @@
             </tr>
             <tr>
               <td>token</td>
-              <td>{{ cardData.cardDetails.token }}</td>
+              <td><span style="color: red;">{{ cardData.cardDetails.token.slice(0, 6) }}</span>{{ cardData.cardDetails.token.slice(6) }}</td>
             </tr>
             <tr>
               <td>CVV</td>
@@ -79,7 +79,7 @@
                 {% if !cardData.cardDetails.settings.contactless_enabled %}👎{% endif %}
               </td>
             </tr>
-            <tr>
+            <tr {% if cardData.card.type === "VIRTUAL_VISA_FREELANCE_DEBIT"%} style="opacity: 0.4;" {% endif %}>
               <td>card present limits</td>
               <td>
                 <pre>{{ JSON.stringify(cardData.cardDetails.cardPresentLimits, null, 2) }}</pre>
@@ -107,8 +107,8 @@
       <form id="createReservation" method="POST" action="/__BACKOFFICE__/person/{{ person.id }}/reservations">
         <div class="custom-controls-stacked">
           <div class="form-group">
-            {% for cardData in person.account.cards %}
-            <div class="radio">
+            {% for cardData in person.account.cards.reverse() %}
+            <div class="radio" {% if cardData.card.status==="CLOSED_BY_SOLARIS" %}style="opacity: 0.5;"{% endif %}>
               <label>
                 <input checked type="radio" name="cardId" value="{{ cardData.card.id }}">
                 <b>
@@ -123,22 +123,31 @@
           <div class="form-group">
             <label class="col-form-label" for="type">Type</label>
             <select class="form-control" name="type">
+              {% if cardData.card.type === "VIRTUAL_VISA_FREELANCE_DEBIT"%}
+              <option value="PURCHASE">PURCHASE</option>
+              <option value="CREDIT_PRESENTMENT">CREDIT_PRESENTMENT</option>
+              {% else %}
               <option value="PURCHASE">PURCHASE</option>
               <option value="CASH_ATM">CASH_ATM</option>
               <option value="CASH_MANUAL">CASH_MANUAL</option>
               <option value="CREDIT_PRESENTMENT">CREDIT_PRESENTMENT</option>
+              {% endif %}
             </select>
           </div>
 
           <div class="form-group">
             <label class="col-form-label" for="posEntryMode">Point of sale Entry mode</label>
             <select class="form-control" name="posEntryMode">
+              {% if cardData.card.type === "VIRTUAL_VISA_FREELANCE_DEBIT"%}
+              <option value="CARD_NOT_PRESENT">CARD_NOT_PRESENT</option>
+              {% else %}
               <option value="CONTACTLESS">CONTACTLESS</option>
               <option value="CARD_NOT_PRESENT">CARD_NOT_PRESENT</option>
               <option value="CHIP">CHIP</option>
               <option value="MAG_STRIPE">MAG_STRIPE</option>
               <option value="PHONE">PHONE</option>
               <option value="UNKNOWN">UNKNOWN</option>
+              {% endif %}
             </select>
           </div>
 

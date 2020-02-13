@@ -318,94 +318,119 @@ export const validateCardLimits = async (
   cardDetails: CardDetails,
   cardAuthorizationDeclined: CardTransaction
 ) => {
-  if (
-    currentCardUsage.cardPresent.daily.amount >
-    cardDetails.cardPresentLimits.daily.max_amount_cents
-  ) {
-    await triggerCardDeclinedWebhook(
-      cardAuthorizationDeclined,
-      CardAuthorizationDeclineReason.CARD_PRESENT_AMOUNT_LIMIT_REACHED_DAILY
-    );
-    throw new Error("Daily card_present amount limit exceeded");
-  }
+  const isCardNotPresentAuthorization =
+    cardAuthorizationDeclined.pos_entry_mode === POSEntryMode.CARD_NOT_PRESENT;
 
-  if (
-    currentCardUsage.cardPresent.daily.transactions >
-    cardDetails.cardPresentLimits.daily.max_transactions
-  ) {
-    await triggerCardDeclinedWebhook(
-      cardAuthorizationDeclined,
-      CardAuthorizationDeclineReason.CARD_PRESENT_USE_LIMIT_REACHED_DAILY
-    );
-    throw new Error("Daily card_present transaction number limit exceeded");
-  }
+  if (isCardNotPresentAuthorization) {
+    const dailyLimitAfterAuthorization =
+      currentCardUsage.cardNotPresent.daily.amount;
+    const monthlyLimitAfterAuthorization =
+      currentCardUsage.cardNotPresent.monthly.amount;
 
-  if (
-    currentCardUsage.cardNotPresent.daily.amount >
-    cardDetails.cardNotPresentLimits.daily.max_amount_cents
-  ) {
-    await triggerCardDeclinedWebhook(
-      cardAuthorizationDeclined,
-      CardAuthorizationDeclineReason.CARD_NOT_PRESENT_AMOUNT_LIMIT_REACHED_DAILY
-    );
-    throw new Error("Daily card_not_present amount limit exceeded");
-  }
+    if (
+      dailyLimitAfterAuthorization >
+      cardDetails.cardNotPresentLimits.daily.max_amount_cents
+    ) {
+      await triggerCardDeclinedWebhook(
+        cardAuthorizationDeclined,
+        CardAuthorizationDeclineReason.CARD_NOT_PRESENT_AMOUNT_LIMIT_REACHED_DAILY
+      );
+      throw new Error(
+        `Daily card_not_present amount limit exceeded (${dailyLimitAfterAuthorization} > ${cardDetails.cardNotPresentLimits.daily.max_amount_cents})`
+      );
+    }
 
-  if (
-    currentCardUsage.cardNotPresent.daily.transactions >
-    cardDetails.cardNotPresentLimits.daily.max_transactions
-  ) {
-    await triggerCardDeclinedWebhook(
-      cardAuthorizationDeclined,
-      CardAuthorizationDeclineReason.CARD_NOT_PRESENT_USE_LIMIT_REACHED_DAILY
-    );
-    throw new Error("Daily card_not_present transaction number limit exceeded");
-  }
+    if (
+      currentCardUsage.cardNotPresent.daily.transactions >
+      cardDetails.cardNotPresentLimits.daily.max_transactions
+    ) {
+      await triggerCardDeclinedWebhook(
+        cardAuthorizationDeclined,
+        CardAuthorizationDeclineReason.CARD_NOT_PRESENT_USE_LIMIT_REACHED_DAILY
+      );
+      throw new Error(
+        "Daily card_not_present transaction number limit exceeded"
+      );
+    }
 
-  if (
-    currentCardUsage.cardPresent.monthly.amount >
-    cardDetails.cardPresentLimits.monthly.max_amount_cents
-  ) {
-    await triggerCardDeclinedWebhook(
-      cardAuthorizationDeclined,
-      CardAuthorizationDeclineReason.CARD_PRESENT_AMOUNT_LIMIT_REACHED_MONTHLY
-    );
-    throw new Error("Monthly card_present amount limit exceeded");
-  }
+    if (
+      monthlyLimitAfterAuthorization >
+      cardDetails.cardNotPresentLimits.monthly.max_amount_cents
+    ) {
+      await triggerCardDeclinedWebhook(
+        cardAuthorizationDeclined,
+        CardAuthorizationDeclineReason.CARD_NOT_PRESENT_AMOUNT_LIMIT_REACHED_MONTHLY
+      );
+      throw new Error(
+        `Monthly card_not_present amount limit exceeded (${monthlyLimitAfterAuthorization} > ${cardDetails.cardNotPresentLimits.monthly.max_amount_cents})`
+      );
+    }
 
-  if (
-    currentCardUsage.cardPresent.monthly.transactions >
-    cardDetails.cardPresentLimits.monthly.max_transactions
-  ) {
-    await triggerCardDeclinedWebhook(
-      cardAuthorizationDeclined,
-      CardAuthorizationDeclineReason.CARD_PRESENT_USE_LIMIT_REACHED_MONTHLY
-    );
-    throw new Error("Monthly card_present transaction number limit exceeded");
-  }
+    if (
+      currentCardUsage.cardNotPresent.monthly.transactions >
+      cardDetails.cardNotPresentLimits.monthly.max_transactions
+    ) {
+      await triggerCardDeclinedWebhook(
+        cardAuthorizationDeclined,
+        CardAuthorizationDeclineReason.CARD_NOT_PRESENT_USE_LIMIT_REACHED_MONTHLY
+      );
+      throw new Error(
+        "Monthly card_not_present transaction number limit exceeded"
+      );
+    }
+  } else {
+    const dailyLimitAfterAuthorization =
+      currentCardUsage.cardPresent.daily.amount;
+    const monthlyLimitAfterAuthorization =
+      currentCardUsage.cardPresent.monthly.amount;
 
-  if (
-    currentCardUsage.cardNotPresent.monthly.amount >
-    cardDetails.cardNotPresentLimits.monthly.max_amount_cents
-  ) {
-    await triggerCardDeclinedWebhook(
-      cardAuthorizationDeclined,
-      CardAuthorizationDeclineReason.CARD_NOT_PRESENT_AMOUNT_LIMIT_REACHED_MONTHLY
-    );
-    throw new Error("Monthly card_not_present amount limit exceeded");
-  }
+    if (
+      dailyLimitAfterAuthorization >
+      cardDetails.cardPresentLimits.daily.max_amount_cents
+    ) {
+      await triggerCardDeclinedWebhook(
+        cardAuthorizationDeclined,
+        CardAuthorizationDeclineReason.CARD_PRESENT_AMOUNT_LIMIT_REACHED_DAILY
+      );
+      throw new Error(
+        `Daily card_present amount limit exceeded (${dailyLimitAfterAuthorization} > ${cardDetails.cardPresentLimits.daily.max_amount_cents})`
+      );
+    }
 
-  if (
-    currentCardUsage.cardNotPresent.monthly.transactions >
-    cardDetails.cardNotPresentLimits.monthly.max_transactions
-  ) {
-    await triggerCardDeclinedWebhook(
-      cardAuthorizationDeclined,
-      CardAuthorizationDeclineReason.CARD_NOT_PRESENT_USE_LIMIT_REACHED_MONTHLY
-    );
-    throw new Error(
-      "Monthly card_not_present transaction number limit exceeded"
-    );
+    if (
+      currentCardUsage.cardPresent.daily.transactions >
+      cardDetails.cardPresentLimits.daily.max_transactions
+    ) {
+      await triggerCardDeclinedWebhook(
+        cardAuthorizationDeclined,
+        CardAuthorizationDeclineReason.CARD_PRESENT_USE_LIMIT_REACHED_DAILY
+      );
+      throw new Error("Daily card_present transaction number limit exceeded");
+    }
+
+    if (
+      monthlyLimitAfterAuthorization >
+      cardDetails.cardPresentLimits.monthly.max_amount_cents
+    ) {
+      await triggerCardDeclinedWebhook(
+        cardAuthorizationDeclined,
+        CardAuthorizationDeclineReason.CARD_PRESENT_AMOUNT_LIMIT_REACHED_MONTHLY
+      );
+      throw new Error(
+        `Monthly card_present amount limit exceeded (${monthlyLimitAfterAuthorization} > ${cardDetails.cardPresentLimits.monthly.max_amount_cents})`
+      );
+    }
+
+    if (
+      currentCardUsage.cardPresent.monthly.transactions >
+      cardDetails.cardPresentLimits.monthly.max_transactions
+    ) {
+      await triggerCardDeclinedWebhook(
+        cardAuthorizationDeclined,
+        CardAuthorizationDeclineReason.CARD_PRESENT_USE_LIMIT_REACHED_MONTHLY
+      );
+      throw new Error("Monthly card_present transaction number limit exceeded");
+    }
   }
 };
 
@@ -472,6 +497,13 @@ export const createReservation = async ({
 
   if (cardData.card.status !== CardStatus.ACTIVE) {
     throw new Error("Your card is not in active status");
+  }
+
+  if (
+    [POSEntryMode.CONTACTLESS, POSEntryMode.PHONE].includes(posEntryMode) &&
+    !cardData.cardDetails.settings.contactless_enabled
+  ) {
+    throw new Error(`Card has contactless transactions disabled`);
   }
 
   if (person.account.available_balance.value < amount) {
