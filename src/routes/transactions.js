@@ -220,7 +220,8 @@ export const creteBookingFromSepaCreditTransfer = ({
   end_to_end_id = null,
   recipient_iban,
   recipient_name,
-  reference
+  reference,
+  status
 }) => ({
   id: uuid.v4(),
   booking_type: BookingType.SEPA_CREDIT_TRANSFER,
@@ -235,7 +236,7 @@ export const creteBookingFromSepaCreditTransfer = ({
   recipient_iban,
   recipient_name,
   reference,
-  status: "authorization_required",
+  status,
   transaction_id: id,
   booking_date: moment().format("YYYY-MM-DD"),
   valuta_date: moment().format("YYYY-MM-DD"),
