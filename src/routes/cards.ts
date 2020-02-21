@@ -571,6 +571,57 @@ export const closeCardHandler = async (
   res.send(updatedCard);
 };
 
+export const pushProvisioningHandler = async (
+  req: RequestExtendedWithCard,
+  res: express.Response
+) => {
+  const { card } = req;
+  const { wallet_type: walletType } = req.params;
+
+  const errors = [
+    "client_wallet_account_id",
+    "client_device_id",
+    "client_app_id"
+  ]
+    .filter(fieldName => !_.get(req.body, fieldName))
+    .map(fieldName => ({
+      id: uuid.v4(),
+      status: HttpStatusCodes.BAD_REQUEST,
+      code: "validation_error",
+      title: "Validation Error",
+      detail: `${fieldName} is missing`,
+      source: {
+        field: `${fieldName}`,
+        message: "is missing"
+      }
+    }));
+
+  if (errors.length) {
+    res.status(errors[0].status).send({
+      errors
+    });
+    return;
+  }
+
+  if (!["google", "samsung"].includes(walletType)) {
+    res.status(HttpStatusCodes.BAD_REQUEST).send({
+      errors: [
+        {
+          id: uuid.v4(),
+          status: HttpStatusCodes.BAD_REQUEST,
+          code: "invalid_wallet_type_for_push_provisioning",
+          title: "Invalid Wallet Type",
+          detail: `wallet type ${walletType} is not supported`
+        }
+      ]
+    });
+    return;
+  }
+
+  const walletPayload = await cardHelpers.enableGooglePay(card);
+  res.status(HttpStatusCodes.CREATED).send({ wallet_payload: walletPayload });
+};
+
 export const getVirtualCardDetails = async (
   req: RequestExtendedWithCard,
   res: express.Response

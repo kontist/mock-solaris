@@ -44,6 +44,8 @@ const DEFAULT_CARD_PRESENT_DAILY_MAX_AMOUNT_IN_CENTS = 5000 * 100;
 const DEFAULT_CARD_PRESENT_MONTHLY_MAX_AMOUNT_IN_CENTS = 10000 * 100;
 const DEFAULT_CARD_NOT_PRESENT_DAILY_MAX_AMOUNT_IN_CENTS = 5000 * 100;
 const DEFAULT_CARD_NOT_PRESENT_MONTHLY_MAX_AMOUNT_IN_CENTS = 10000 * 100;
+const SOLARIS_HARDCODED_WALLET_PAYLOAD =
+  "eyJhbGciOiJBMjU2R0NNS1ciLCJjaGFubmVsU2VjdXJpdHlDb250ZXh0IjoiU0hBUkVEX1NFQ1JFVCIsImVuYyI6IkEyNTZHQ00iLCJpYXQiOjE1ODA4MTM2NjQsIml2IjoiRm44OENLQUFlTG1KdHhNbiIsImtpZCI6IjhTTU5BWkRZTVFIQUFNNFU3S1ZZMTNDN0NlajVqdEVZbFI1MFhGRTdJd0R4RG9idE0iLCJ0YWciOiJVdGNXRTlwWWdKR1VWUDRoZFJFd3pBIiwidHlwIjoiSk9TRSJ9.Qm5IAXivznZnnDupvWt7JRg7retEIjA4CWRGRaiTpqw.AbNpQJbPzfTp3NyE.PHHBPrH44IKlnuhzdbhJ_wDAuptLP41RfYqsK26yZP8acPlm3ThNYGZbvTXZE1w7d-AKWIHS2UZo1BDEoNsrMT9JeITyWjEyPRfcLmDAe3XU7g5QE-LzwJaB-O8zBWU02LC5qjIHfSTG-zJEBrIn0QZONG7mYnEob9jB1c7WKDtfbRH4Fi0eChRQY20xzsMDRwXn2NjFTPfctGeBUj8hUIuvrWDy5SAKSW-zbEPRnyN4aKutrSarf_Gfdi_ufGlfbC2Ad-ImHzg2TOEQNgN3OUaNkfHEhFxV8-4hS5K7SPMUFSNPnHRy7Ffcg4Btc6RgSNTvykVfGrz8fAdzv5Yxmq-3aJ9BH3of5J7DN0ws6iX67lcpCHvJh6bGJ0iCl3bVE6a9BTHR3vr1lJhS16k8rTfnHyrLwJpsjQa9KfVsjLIEmw.PFLc9sbT7ljf-f3nT5knnw";
 
 export const CHANGE_REQUEST_CHANGE_CARD_PIN = "card_pin";
 
@@ -442,6 +444,18 @@ export const updateCardLimits = async (
   ] = newLimits;
   await db.savePerson(person);
   return newLimits;
+};
+
+export const enableGooglePay = async (card: Card): Promise<string> => {
+  const person = await db.getPerson(card.person_id);
+  const cardIndex = person.account.cards.findIndex(
+    cardData => cardData.card.id === card.id
+  );
+  person.account.cards[
+    cardIndex
+  ].cardDetails.walletPayload = SOLARIS_HARDCODED_WALLET_PAYLOAD;
+  await db.savePerson(person);
+  return SOLARIS_HARDCODED_WALLET_PAYLOAD;
 };
 
 const hasAtLeast3UniqueDigits = (pin: string): boolean =>
