@@ -144,3 +144,11 @@ export const createAccountRequestHandler = async (req, res) => {
 
   res.status(201).send(account);
 };
+
+export const showAccountBalance = async (req, res) => {
+  const { account_id: accountId } = req.params;
+  const person = await findPersonByAccountId(accountId);
+  const balance = _.pick(person.account, ["balance", "available_balance"]);
+
+  res.status(200).send(balance);
+};

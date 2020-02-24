@@ -155,6 +155,10 @@ router.post(
   "/persons/:person_id/accounts",
   safeRequestHandler(accountsAPI.createAccountRequestHandler)
 );
+router.get(
+  "/accounts/:account_id/balance",
+  safeRequestHandler(accountsAPI.showAccountBalance)
+);
 
 // CARDS
 router.post(
