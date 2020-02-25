@@ -86,6 +86,12 @@ export const showPersonAccount = async (req, res) => {
 
   const person = await getPerson(personId);
 
+  person.account = {
+    ...person.account,
+    balance: null,
+    available_balance: null
+  };
+
   res.status(200).send(person.account);
 };
 
@@ -93,7 +99,15 @@ export const showPersonAccounts = async (req, res) => {
   const { person_id: personId } = req.params;
   const person = await getPerson(personId);
 
-  const accounts = person.account ? [person.account] : [];
+  const accounts = person.account
+    ? [
+        {
+          ...person.account,
+          balance: null,
+          available_balance: null
+        }
+      ]
+    : [];
   res.status(200).send(accounts);
 };
 
@@ -108,6 +122,12 @@ export const createAccount = async (personId, data) => {
   };
 
   await savePerson(person);
+
+  person.account = {
+    ...person.account,
+    balance: null,
+    available_balance: null
+  };
 
   return person.account;
 };
