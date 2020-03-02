@@ -2,6 +2,7 @@ import _ from "lodash";
 import fetch from "node-fetch";
 import moment from "moment";
 import uuid from "uuid";
+import HttpStatusCodes from "http-status";
 import {
   getPerson,
   savePerson,
@@ -102,6 +103,14 @@ export const listPersonsCards = async (req, res) => {
 
 export const getPersonHandler = async (req, res) => {
   const person = await findPersonByEmail(req.params.email);
+
+  if (!person) {
+    return res.status(HttpStatusCodes.NOT_FOUND).send({
+      message: "Couldn't find person",
+      details: req.params
+    });
+  }
+
   const mobileNumber = await getMobileNumber(person.id);
   const taxIdentifications = await getTaxIdentifications(person.id);
   const devices = await getDevicesByPersonId(person.id);
