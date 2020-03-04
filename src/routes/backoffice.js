@@ -35,7 +35,8 @@ import {
   CardStatus,
   PersonWebhookEvent,
   AccountWebhookEvent,
-  TransactionWebhookEvent
+  TransactionWebhookEvent,
+  IdentificationStatus
 } from "../helpers/types";
 
 const triggerIdentificationWebhook = payload =>
@@ -160,6 +161,12 @@ export const updatePersonHandler = async (req, res) => {
   res.redirect(`/__BACKOFFICE__/person/${person.email}`);
 };
 
+const shouldMarkMobileNumberAsVerified = identification =>
+  [
+    IdentificationStatus.PENDING_SUCCESSFUL,
+    IdentificationStatus.SUCCESSFUL
+  ].includes(identification.status) && identification.method === "idnow";
+
 export const setIdentificationState = async (req, res) => {
   const { status } = req.body;
 
@@ -178,11 +185,12 @@ export const setIdentificationState = async (req, res) => {
   }
 
   const person = await getPerson(identification.person_id);
-  person.identifications[identification.id].status = status;
+  identification.status = status;
+  person.identifications[identification.id] = identification;
 
   await savePerson(person);
 
-  if (status === "successful" && identification.method === "idnow") {
+  if (shouldMarkMobileNumberAsVerified(identification)) {
     const mobileNumber = await getMobileNumber(identification.person_id);
     if (mobileNumber) {
       mobileNumber.verified = true;
