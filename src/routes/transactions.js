@@ -15,6 +15,15 @@ const SOLARIS_CARDS_ACCOUNT = {
   IBAN: "DE95110101000018501000"
 };
 
+const serializeTransfer = transfer => ({
+  ...transfer,
+  amount: {
+    ...transfer.amount,
+    value: Math.abs(transfer.amount.value),
+    currency: transfer.amount.currency || "EUR"
+  }
+});
+
 export const createSepaDirectDebit = async (req, res) => {
   const {
     amount,
@@ -109,14 +118,7 @@ export const createSepaCreditTransfer = async (req, res) => {
 
   log.debug("booking pushed to list of pending transfers", { queuedBooking });
 
-  res.status(200).send({
-    ...queuedBooking,
-    amount: {
-      ...queuedBooking.amount,
-      value: Math.abs(queuedBooking.amount.value),
-      currency: queuedBooking.amount.currency || "EUR"
-    }
-  });
+  res.status(200).send(serializeTransfer(queuedBooking));
 };
 
 export const authorizeTransaction = async (req, res) => {
@@ -146,8 +148,7 @@ export const authorizeTransaction = async (req, res) => {
   await savePerson(person);
 
   log.info("authorized transfer", { transfer, token });
-
-  res.status(200).send(transfer);
+  res.status(200).send(serializeTransfer(transfer));
 };
 
 export const confirmTransaction = async (req, res) => {
@@ -210,7 +211,7 @@ export const confirmTransaction = async (req, res) => {
 
   log.debug("transfer confirmed", { transfer });
 
-  res.status(200).send(transfer);
+  res.status(200).send(serializeTransfer(transfer));
 };
 
 export const creteBookingFromSepaCreditTransfer = ({
