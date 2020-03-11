@@ -36,8 +36,7 @@ export enum CardStatus {
 export enum ActionType {
   RESOLVE = "RESOLVE",
   BOOK = "BOOK",
-  CANCEL = "CANCEL",
-  EXPIRE = "EXPIRE"
+  CANCEL = "CANCEL"
 }
 
 export enum FxRate {
@@ -308,3 +307,15 @@ export type CardTransaction = {
   amount: Amount;
   original_amount: Amount;
 };
+
+export enum IdentificationStatus {
+  PENDING = "pending",
+  PENDING_SUCCESSFUL = "pending_successful",
+  PENDING_FAILED = "pending_failed",
+  SUCCESSFUL = "successful",
+  FAILED = "failed",
+  EXPIRED = "expired",
+  CREATED = "created",
+  ABORTED = "aborted",
+  CANCELED = "canceled"
+}

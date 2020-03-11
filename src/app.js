@@ -290,6 +290,12 @@ router.post(
   safeRequestHandler(cardsAPI.closeCardHandler)
 );
 
+router.post(
+  "/cards/:card_id/push_provision/:wallet_type",
+  cardsAPI.cardMiddleware,
+  safeRequestHandler(cardsAPI.pushProvisioningHandler)
+);
+
 // VIRTUAL CARD DETAILS - in reality this endpoint should run on different server
 router.post(
   "/cards/:card_id/virtual_card_requests",
