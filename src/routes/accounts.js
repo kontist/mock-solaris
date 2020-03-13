@@ -32,6 +32,21 @@ const DEFAULT_ACCOUNT = {
   closure_reasons: null
 };
 
+const requestAccountFields = [
+  "id",
+  "iban",
+  "bic",
+  "type",
+  "balance",
+  "available_balance",
+  "locking_status",
+  "locking_reasons",
+  "account_limit",
+  "person_id",
+  "status",
+  "closure_reasons"
+];
+
 export const showAccountBookings = async (req, res) => {
   const {
     page: { size, number },
@@ -88,15 +103,18 @@ export const showPersonAccount = async (req, res) => {
   const { person_id: personId } = req.params;
 
   const person = await getPerson(personId);
+  const account = _.pick(person.account, requestAccountFields);
 
-  res.status(200).send(person.account);
+  res.status(200).send(account);
 };
 
 export const showPersonAccounts = async (req, res) => {
   const { person_id: personId } = req.params;
   const person = await getPerson(personId);
 
-  const accounts = person.account ? [person.account] : [];
+  const accounts = person.account
+    ? [_.pick(person.account, requestAccountFields)]
+    : [];
   res.status(200).send(accounts);
 };
 
