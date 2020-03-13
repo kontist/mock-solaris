@@ -1,6 +1,9 @@
 import _ from "lodash";
 import generateIban from "iban-generator";
+import uuid from "uuid";
 import { getPerson, savePerson, findPersonByAccountId } from "../db";
+
+const ACCOUNT_SNAPSHOT_SOURCE = "SOLARISBANK";
 
 const DEFAULT_ACCOUNT = {
   id: "df478cbe801e30550f7cea9340783e6bcacc",
@@ -143,4 +146,56 @@ export const createAccountRequestHandler = async (req, res) => {
   });
 
   res.status(201).send(account);
+};
+
+export const createAccountSnapshot = async (req, res) => {
+  const {
+    body: { account_id: accountId, source }
+  } = req;
+
+  const person = await findPersonByAccountId(accountId);
+
+  if (!person) {
+    return res.status(404).send({
+      id: uuid.v4(),
+      status: 404,
+      code: "not_found",
+      title: "Not Found",
+      detail: `Value: ${accountId} for field: 'account_id' not found`,
+      source: {
+        message: "not found",
+        field: "account_id"
+      }
+    });
+  }
+
+  if (source !== ACCOUNT_SNAPSHOT_SOURCE) {
+    return res.status(400).send({
+      id: uuid.v4(),
+      status: 400,
+      code: "bad_request",
+      title: "Bad Request",
+      detail: `/source: Invalid value for enum`,
+      source: {
+        message: "Invalid value for enum",
+        field: "/source"
+      }
+    });
+  }
+
+  const snapshot = {
+    status: "available",
+    provider: ACCOUNT_SNAPSHOT_SOURCE,
+    id: uuid.v4(),
+    iban: person.account.iban,
+    account_id: accountId
+  };
+
+  person.account.snapshot = snapshot;
+  await savePerson(person);
+
+  res.status(201).send({
+    id: snapshot.id,
+    account_id: accountId
+  });
 };
