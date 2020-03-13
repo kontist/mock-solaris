@@ -212,7 +212,7 @@ export const createAccountSnapshot = async (req, res) => {
   person.account.snapshot = snapshot;
   await savePerson(person);
 
-  res.status(201).send({
+  return res.status(201).send({
     id: snapshot.id,
     account_id: accountId
   });
