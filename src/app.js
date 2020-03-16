@@ -118,6 +118,10 @@ router.patch(
   "/persons/:person_id",
   safeRequestHandler(personsAPI.updatePerson)
 );
+router.post(
+  "/persons/:person_id/credit_records",
+  safeRequestHandler(personsAPI.createCreditRecord)
+);
 
 // DEVICE BINDING
 router.post("/mfa/devices", safeRequestHandler(deviceBindingAPI.createDevice));

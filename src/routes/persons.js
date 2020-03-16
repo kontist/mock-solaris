@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import _ from "lodash";
+import uuid from "uuid";
 
 import { getPerson, getAllPersons, savePerson } from "../db";
 
@@ -197,4 +198,31 @@ export const updatePerson = async (req, res) => {
   _.merge(person, data);
   await savePerson(person);
   return res.status(200).send(person);
+};
+
+export const createCreditRecord = async (req, res) => {
+  const {
+    body: { source }
+  } = req;
+
+  if (source !== "solarisBank") {
+    return res.status(400).send({
+      id: uuid.v4(),
+      status: 400,
+      code: "bad_request",
+      title: "Bad Request",
+      detail: `/source: Invalid value for enum`,
+      source: {
+        message: "Invalid value for enum",
+        field: "/source"
+      }
+    });
+  }
+
+  return res.status(201).send({
+    status: "available",
+    person_id: req.params.person_id,
+    id: uuid.v4(),
+    created_at: new Date().toISOString()
+  });
 };
