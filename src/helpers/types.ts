@@ -319,3 +319,18 @@ export enum IdentificationStatus {
   ABORTED = "aborted",
   CANCELED = "canceled"
 }
+
+export enum OvedraftApplicationStatus {
+  CREATED = "created",
+  INITIAL_SCORING_PENDING = "initial_scoring_pending",
+  ACCOUNT_SNAPSHOT_PENDING = "account_snapshot_pending",
+  ACCOUNT_SNAPSHOT_VERIFICATION_PENDING = "account_snapshot_verification_pending",
+  OFFERED = "offered",
+  REJECTED = "rejected",
+  OVERDRAFT_CREATE = "overdraft_created"
+}
+
+export enum OverdraftApplicationDecision {
+  OFFERED = "OFFERED",
+  REJECTED = "REJECTED"
+}
