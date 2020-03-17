@@ -1,6 +1,9 @@
 import _ from "lodash";
 import generateIban from "iban-generator";
+import uuid from "uuid";
 import { getPerson, savePerson, findPersonByAccountId } from "../db";
+
+const ACCOUNT_SNAPSHOT_SOURCE = "SOLARISBANK";
 
 const DEFAULT_ACCOUNT = {
   id: "df478cbe801e30550f7cea9340783e6bcacc",
@@ -28,6 +31,21 @@ const DEFAULT_ACCOUNT = {
   status: "ACTIVE",
   closure_reasons: null
 };
+
+const requestAccountFields = [
+  "id",
+  "iban",
+  "bic",
+  "type",
+  "balance",
+  "available_balance",
+  "locking_status",
+  "locking_reasons",
+  "account_limit",
+  "person_id",
+  "status",
+  "closure_reasons"
+];
 
 export const showAccountBookings = async (req, res) => {
   const {
@@ -85,14 +103,13 @@ export const showPersonAccount = async (req, res) => {
   const { person_id: personId } = req.params;
 
   const person = await getPerson(personId);
-
-  person.account = {
-    ...person.account,
+  const account = {
+    ..._.pick(person.account, requestAccountFields),
     balance: null,
     available_balance: null
   };
 
-  res.status(200).send(person.account);
+  res.status(200).send(account);
 };
 
 export const showPersonAccounts = async (req, res) => {
@@ -102,7 +119,7 @@ export const showPersonAccounts = async (req, res) => {
   const accounts = person.account
     ? [
         {
-          ...person.account,
+          ..._.pick(person.account, requestAccountFields),
           balance: null,
           available_balance: null
         }
@@ -171,4 +188,56 @@ export const showAccountBalance = async (req, res) => {
   const balance = _.pick(person.account, ["balance", "available_balance"]);
 
   res.status(200).send(balance);
+};
+
+export const createAccountSnapshot = async (req, res) => {
+  const {
+    body: { account_id: accountId, source }
+  } = req;
+
+  const person = await findPersonByAccountId(accountId);
+
+  if (!person) {
+    return res.status(404).send({
+      id: uuid.v4(),
+      status: 404,
+      code: "not_found",
+      title: "Not Found",
+      detail: `Value: ${accountId} for field: 'account_id' not found`,
+      source: {
+        message: "not found",
+        field: "account_id"
+      }
+    });
+  }
+
+  if (source !== ACCOUNT_SNAPSHOT_SOURCE) {
+    return res.status(400).send({
+      id: uuid.v4(),
+      status: 400,
+      code: "bad_request",
+      title: "Bad Request",
+      detail: `/source: Invalid value for enum`,
+      source: {
+        message: "Invalid value for enum",
+        field: "/source"
+      }
+    });
+  }
+
+  const snapshot = {
+    status: "available",
+    provider: ACCOUNT_SNAPSHOT_SOURCE,
+    id: uuid.v4(),
+    iban: person.account.iban,
+    account_id: accountId
+  };
+
+  person.account.snapshot = snapshot;
+  await savePerson(person);
+
+  return res.status(201).send({
+    id: snapshot.id,
+    account_id: accountId
+  });
 };
