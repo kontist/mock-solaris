@@ -7,6 +7,8 @@ import {
   OverdraftApplicationDecision
 } from "../helpers/types";
 
+const INTEREST_RATE = 11.0;
+
 export const createOverdraftApplication = async (req, res) => {
   const {
     body: { credit_record_id: creditRecordId },
@@ -16,7 +18,7 @@ export const createOverdraftApplication = async (req, res) => {
   const person = await getPerson(personId);
 
   if (!person) {
-    return res.status(400).send({
+    return res.status(404).send({
       id: uuid.v4(),
       status: 404,
       code: "not_found",
@@ -25,6 +27,20 @@ export const createOverdraftApplication = async (req, res) => {
       source: {
         message: "not found",
         field: "person_id"
+      }
+    });
+  }
+
+  if (person.creditRecordId !== creditRecordId) {
+    return res.status(404).send({
+      id: uuid.v4(),
+      status: 404,
+      code: "not_found",
+      title: "Not Found",
+      detail: `Value: ${creditRecordId} for field: 'credit_record_id' not found`,
+      source: {
+        message: "not found",
+        field: "credit_record_id"
       }
     });
   }
@@ -42,7 +58,7 @@ export const createOverdraftApplication = async (req, res) => {
     partner_contact_name: null,
     rejection_reasons: [],
     limit: null,
-    interest_rate: 11.0,
+    interest_rate: INTEREST_RATE,
     created_at: new Date().toISOString(),
     account_snapshot_id: null
   };
