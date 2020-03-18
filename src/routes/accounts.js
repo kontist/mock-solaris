@@ -103,7 +103,11 @@ export const showPersonAccount = async (req, res) => {
   const { person_id: personId } = req.params;
 
   const person = await getPerson(personId);
-  const account = _.pick(person.account, requestAccountFields);
+  const account = {
+    ..._.pick(person.account, requestAccountFields),
+    balance: null,
+    available_balance: null
+  };
 
   res.status(200).send(account);
 };
@@ -113,7 +117,13 @@ export const showPersonAccounts = async (req, res) => {
   const person = await getPerson(personId);
 
   const accounts = person.account
-    ? [_.pick(person.account, requestAccountFields)]
+    ? [
+        {
+          ..._.pick(person.account, requestAccountFields),
+          balance: null,
+          available_balance: null
+        }
+      ]
     : [];
   res.status(200).send(accounts);
 };
@@ -129,6 +139,12 @@ export const createAccount = async (personId, data) => {
   };
 
   await savePerson(person);
+
+  person.account = {
+    ...person.account,
+    balance: null,
+    available_balance: null
+  };
 
   return person.account;
 };
@@ -164,6 +180,14 @@ export const createAccountRequestHandler = async (req, res) => {
   });
 
   res.status(201).send(account);
+};
+
+export const showAccountBalance = async (req, res) => {
+  const { account_id: accountId } = req.params;
+  const person = await findPersonByAccountId(accountId);
+  const balance = _.pick(person.account, ["balance", "available_balance"]);
+
+  res.status(200).send(balance);
 };
 
 export const createAccountSnapshot = async (req, res) => {

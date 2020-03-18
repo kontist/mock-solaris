@@ -159,6 +159,10 @@ router.post(
   "/persons/:person_id/accounts",
   safeRequestHandler(accountsAPI.createAccountRequestHandler)
 );
+router.get(
+  "/accounts/:account_id/balance",
+  safeRequestHandler(accountsAPI.showAccountBalance)
+);
 router.post(
   "/persons/:person_id/account_snapshots",
   safeRequestHandler(accountsAPI.createAccountSnapshot)
