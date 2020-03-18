@@ -135,7 +135,8 @@ export const updatePerson = async (req, res) => {
     "business_purpose",
     "industry",
     "industry_key",
-    "terms_conditions_signed_at"
+    "terms_conditions_signed_at",
+    "own_economic_interest_signed_at"
   ];
 
   const editableFields = [
