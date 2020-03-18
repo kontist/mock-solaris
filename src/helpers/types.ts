@@ -172,6 +172,10 @@ export enum CardWebhookEvent {
   "CARD_LIFECYCLE_EVENT" = "CARD_LIFECYCLE_EVENT" // The status of the card is changed.
 }
 
+export enum OverdraftApplicationWebhookEvent {
+  "OVERDRAFT_APPLICATION" = "OVERDRAFT_APPLICATION" // The status is changed.
+}
+
 export enum CardAuthorizationDeclineReason {
   "AUTHENTICATION_REQUIRED" = "AUTHENTICATION_REQUIRED", //	Failed online authentication. Please try again.
   "CARD_BLOCKED" = "CARD_BLOCKED", //	Something went wrong. Contact us for further details.

@@ -4,8 +4,22 @@ import fetch from "node-fetch";
 import * as log from "../logger";
 import { getWebhookByType } from "../db";
 import { generateSolarisWebhookSignature } from "./solarisWebhookSignature";
-import { CardWebhookEvent } from "./types";
+import { CardWebhookEvent, OverdraftApplicationWebhookEvent } from "./types";
 
+const SOLARIS_CARD_AUTHORIZATION_WEBHOOK_ORIGIN_VERIFICATION_SECRET = String(
+  process.env.SOLARIS_CARD_AUTHORIZATION_WEBHOOK_ORIGIN_VERIFICATION_SECRET
+);
+
+const SOLARIS_OVERDRAFT_APPLICATION_WEBHOOK_ORIGIN_VERIFICATION_SECRET = String(
+  process.env.SOLARIS_OVERDRAFT_APPLICATION_WEBHOOK_ORIGIN_VERIFICATION_SECRET
+);
+
+const verificationSecret = {
+  [OverdraftApplicationWebhookEvent.OVERDRAFT_APPLICATION]: SOLARIS_OVERDRAFT_APPLICATION_WEBHOOK_ORIGIN_VERIFICATION_SECRET,
+  [CardWebhookEvent.CARD_AUTHORIZATION]: SOLARIS_CARD_AUTHORIZATION_WEBHOOK_ORIGIN_VERIFICATION_SECRET,
+  [CardWebhookEvent.CARD_AUTHORIZATION_RESOLUTION]: SOLARIS_CARD_AUTHORIZATION_WEBHOOK_ORIGIN_VERIFICATION_SECRET,
+  [CardWebhookEvent.CARD_AUTHORIZATION_DECLINE]: SOLARIS_CARD_AUTHORIZATION_WEBHOOK_ORIGIN_VERIFICATION_SECRET
+};
 export const triggerWebhook = async (type, payload) => {
   const webhook = await getWebhookByType(type);
 
@@ -20,23 +34,21 @@ export const triggerWebhook = async (type, payload) => {
     [
       CardWebhookEvent.CARD_AUTHORIZATION,
       CardWebhookEvent.CARD_AUTHORIZATION_RESOLUTION,
-      CardWebhookEvent.CARD_AUTHORIZATION_DECLINE
+      CardWebhookEvent.CARD_AUTHORIZATION_DECLINE,
+      OverdraftApplicationWebhookEvent.OVERDRAFT_APPLICATION
     ].includes(type)
   ) {
     const solarisWebhookSignature = generateSolarisWebhookSignature(
       payload,
-      String(
-        process.env
-          .SOLARIS_CARD_AUTHORIZATION_WEBHOOK_ORIGIN_VERIFICATION_SECRET
-      )
+      verificationSecret[type]
     );
 
     headers = {
       ...headers,
-      "solaris-entity-id": "1b4a3103-f4ae-42c0-8de6-c6fda9ed60f7",
+      "solaris-entity-id": payload.id || uuid.v4(),
       "solaris-webhook-attempt": "1",
       "solaris-webhook-event-type": type,
-      "solaris-webhook-id": "4d201164-6c5f-4932-9525-abdefc00f5d5",
+      "solaris-webhook-id": uuid.v4(),
       "solaris-webhook-signature": solarisWebhookSignature,
       "solaris-webhook-subscription-id": "STATIC-SUBSCRIPTION"
     };
