@@ -174,6 +174,10 @@ router.post(
   "/persons/:person_id/overdraft_applications",
   safeRequestHandler(ovedraftAPI.createOverdraftApplication)
 );
+router.get(
+  "/persons/:person_id/overdraft_applications/:id",
+  safeRequestHandler(ovedraftAPI.getOverdraftApplication)
+);
 
 // CARDS
 router.post(

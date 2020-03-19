@@ -70,3 +70,31 @@ export const createOverdraftApplication = async (req, res) => {
 
   return res.status(200).send(overdraftApplication);
 };
+
+export const getOverdraftApplication = async (req, res) => {
+  const {
+    params: { person_id: personId, id: applicationId }
+  } = req;
+
+  const person = await getPerson(personId);
+
+  const overdraftApplication = person.account.overdraftApplications.find(
+    app => app.id === applicationId
+  );
+
+  if (!overdraftApplication) {
+    return res.status(404).send({
+      id: uuid.v4(),
+      status: 404,
+      code: "not_found",
+      title: "Not Found",
+      detail: `Value: ${applicationId} for field: 'application_id' not found`,
+      source: {
+        message: "not found",
+        field: "application_id"
+      }
+    });
+  }
+
+  return res.status(200).send(overdraftApplication);
+};
