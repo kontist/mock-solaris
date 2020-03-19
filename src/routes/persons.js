@@ -202,8 +202,11 @@ export const updatePerson = async (req, res) => {
 
 export const createCreditRecord = async (req, res) => {
   const {
-    body: { source }
+    body: { source },
+    params: { person_id: personId }
   } = req;
+
+  const person = await getPerson(personId);
 
   if (source !== "solarisBank") {
     return res.status(400).send({
@@ -218,11 +221,14 @@ export const createCreditRecord = async (req, res) => {
       }
     });
   }
+  const creditRecordId = uuid.v4();
+  person.creditRecordId = creditRecordId;
+  await savePerson(person);
 
   return res.status(201).send({
     status: "available",
     person_id: req.params.person_id,
-    id: uuid.v4(),
+    id: creditRecordId,
     created_at: new Date().toISOString()
   });
 };
