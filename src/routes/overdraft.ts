@@ -63,7 +63,9 @@ export const createOverdraftApplication = async (req, res) => {
     account_snapshot_id: null
   };
 
-  person.account.overdraftApplication = overdraftApplication;
+  person.account.overdraftApplications =
+    person.account.overdraftApplications || [];
+  person.account.overdraftApplications.push(overdraftApplication);
   await savePerson(person);
 
   return res.status(200).send(overdraftApplication);
