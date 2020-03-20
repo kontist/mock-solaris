@@ -25,7 +25,7 @@ import * as batchTransfersAPI from "./routes/batchTransfers";
 import * as cardsAPI from "./routes/cards";
 import * as e2eAPI from "./routes/e2e";
 import * as middlewares from "./helpers/middlewares";
-import * as ovedraftAPI from "./routes/overdraft";
+import * as overdraftAPI from "./routes/overdraft";
 
 import { migrate } from "./db";
 
@@ -172,7 +172,11 @@ router.post(
 // OVERDRAFT
 router.post(
   "/persons/:person_id/overdraft_applications",
-  safeRequestHandler(ovedraftAPI.createOverdraftApplication)
+  safeRequestHandler(overdraftAPI.createOverdraftApplication)
+);
+router.get(
+  "/persons/:person_id/overdraft_applications/:id",
+  safeRequestHandler(overdraftAPI.getOverdraftApplication)
 );
 router.get(
   "/persons/:person_id/overdraft_applications/:id",

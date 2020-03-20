@@ -324,7 +324,7 @@ export enum IdentificationStatus {
   CANCELED = "canceled"
 }
 
-export enum OvedraftApplicationStatus {
+export enum OverdraftApplicationStatus {
   CREATED = "created",
   INITIAL_SCORING_PENDING = "initial_scoring_pending",
   ACCOUNT_SNAPSHOT_PENDING = "account_snapshot_pending",

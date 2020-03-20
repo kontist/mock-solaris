@@ -3,7 +3,7 @@ import uuid from "uuid";
 import { getPerson, savePerson } from "../db";
 
 import {
-  OvedraftApplicationStatus,
+  OverdraftApplicationStatus,
   OverdraftApplicationDecision
 } from "../helpers/types";
 
@@ -50,7 +50,7 @@ export const createOverdraftApplication = async (req, res) => {
     person_id: personId,
     credit_record_id: creditRecordId,
     overdraft_id: null,
-    status: OvedraftApplicationStatus.CREATED,
+    status: OverdraftApplicationStatus.CREATED,
     decision: OverdraftApplicationDecision.OFFERED,
     partner_risk_class: null,
     partner_reference_number: null,
