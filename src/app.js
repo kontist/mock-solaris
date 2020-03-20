@@ -180,7 +180,7 @@ router.get(
 );
 router.get(
   "/persons/:person_id/overdraft_applications/:id",
-  safeRequestHandler(ovedraftAPI.getOverdraftApplication)
+  safeRequestHandler(overdraftAPI.getOverdraftApplication)
 );
 
 // CARDS
