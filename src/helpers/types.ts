@@ -331,7 +331,7 @@ export enum OverdraftApplicationStatus {
   ACCOUNT_SNAPSHOT_VERIFICATION_PENDING = "account_snapshot_verification_pending",
   OFFERED = "offered",
   REJECTED = "rejected",
-  OVERDRAFT_CREATE = "overdraft_created"
+  OVERDRAFT_CREATED = "overdraft_created"
 }
 
 export enum OverdraftApplicationDecision {
