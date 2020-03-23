@@ -591,6 +591,13 @@ app.post(
   })
 );
 
+// BACKOFFICE - OVERDRAFT
+
+app.post(
+  "/__BACKOFFICE__/changeOverdraftApplicationStatus",
+  safeRequestHandler(backofficeAPI.changeOverdraftApplicationStatusHandler)
+);
+
 // WEBHOOKS
 router.get(
   "/webhooks",

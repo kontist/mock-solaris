@@ -38,6 +38,7 @@ import {
   TransactionWebhookEvent,
   IdentificationStatus
 } from "../helpers/types";
+import { changeOverdraftApplicationStatus } from "../helpers/overdraft";
 
 const triggerIdentificationWebhook = payload =>
   triggerWebhook(PersonWebhookEvent.IDENTIFICATION, payload);
@@ -617,6 +618,14 @@ export const updateReservationHandler = async (req, res) => {
     action,
     increaseAmount
   });
+
+  res.redirect("back");
+};
+
+export const changeOverdraftApplicationStatusHandler = async (req, res) => {
+  const { personId, applicationId, status } = req.body;
+
+  await changeOverdraftApplicationStatus(personId, applicationId, status);
 
   res.redirect("back");
 };

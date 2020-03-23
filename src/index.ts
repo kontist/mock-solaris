@@ -12,6 +12,7 @@ import { createCreditPresentment } from "./helpers/creditPresentment";
 import { generateSolarisWebhookSignature } from "./helpers/solarisWebhookSignature";
 import * as webhooks from "./helpers/webhooks";
 import fraudWatchdog from "./helpers/fraudWatchdog";
+import { changeOverdraftApplicationStatus } from "./helpers/overdraft";
 
 export default {
   serve,
@@ -46,5 +47,6 @@ export default {
   createCreditPresentment,
   webhooks,
   fraudWatchdog,
-  generateSolarisWebhookSignature
+  generateSolarisWebhookSignature,
+  changeOverdraftApplicationStatus
 };

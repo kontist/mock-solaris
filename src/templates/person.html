@@ -240,6 +240,49 @@
   </table>
 </div>
 
+{% if person.account.overdraftApplications.length > 0 %}
+<div class="panel panel-default">
+  <div id="overdraft" class="panel-heading">Overdrafts</div>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>id</th>
+        <th>status</th>
+        <th>decision</th>
+        <th>limit</th>
+      </tr>
+    </thead>
+    {% for application in person.account.overdraftApplications %}
+    <tr>
+      <td>
+        {{ application.id }}
+      </td>
+      <td>
+        {{ application.status }}<br>
+        <form class="form-inline autosubmitonchange" method="POST" action="/__BACKOFFICE__/changeOverdraftApplicationStatus">
+          <select name="status" {% if application.status==="rejected" %}disabled {% endif %}>
+            <option selected>change status</option>
+            <option {% if application.status!=="created" %} disabled {% endif %}value="initial_scoring_pending">initial_scoring_pending</option>
+            <option {% if application.status!=="initial_scoring_pending" %} disabled {% endif %}value="account_snapshot_pending">account_snapshot_pending</option>
+            <option {% if application.status!=="account_snapshot_verification_pending" %} disabled {% endif %}value="offered">offered</option>
+            <option value="rejected">rejected</option>
+          </select>
+          <input type="hidden" name="personId" value={{ person.id }}>
+          <input type="hidden" name="applicationId" value={{ application.id }}>
+        </form>
+      </td>
+      <td>
+        {{ application.decision }}
+      </td>
+      <td>
+        {{ application.limit }}
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% endif %}
+
 <div class="panel panel-default">
   <div id="queuedBookings" class="panel-heading">Queued bookings</div>
   {% if person.queuedBookings.length > 0 %}

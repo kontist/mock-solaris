@@ -338,3 +338,17 @@ export enum OverdraftApplicationDecision {
   OFFERED = "OFFERED",
   REJECTED = "REJECTED"
 }
+
+export type OverdraftApplication = {
+  id: string;
+  account_snapshot_id: string | null;
+  created_at: string;
+  limit: Amount | null;
+  credit_record_id: string;
+  rejection_reasons: [string] | null;
+  decision: OverdraftApplicationDecision;
+  overdraft_id: string | null;
+  person_id: string;
+  status: OverdraftApplicationStatus;
+  interest_rate: number;
+};
