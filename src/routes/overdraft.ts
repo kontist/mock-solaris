@@ -2,6 +2,7 @@
 import uuid from "uuid";
 import { getPerson, savePerson } from "../db";
 
+import { generateEntityNotFoundPayload } from "../helpers";
 import {
   OverdraftApplicationStatus,
   OverdraftApplicationDecision
@@ -18,31 +19,15 @@ export const createOverdraftApplication = async (req, res) => {
   const person = await getPerson(personId);
 
   if (!person) {
-    return res.status(404).send({
-      id: uuid.v4(),
-      status: 404,
-      code: "not_found",
-      title: "Not Found",
-      detail: `Value: ${personId} for field: 'person_id' not found`,
-      source: {
-        message: "not found",
-        field: "person_id"
-      }
-    });
+    return res
+      .status(404)
+      .send(generateEntityNotFoundPayload("person_id", personId));
   }
 
   if (person.creditRecordId !== creditRecordId) {
-    return res.status(404).send({
-      id: uuid.v4(),
-      status: 404,
-      code: "not_found",
-      title: "Not Found",
-      detail: `Value: ${creditRecordId} for field: 'credit_record_id' not found`,
-      source: {
-        message: "not found",
-        field: "credit_record_id"
-      }
-    });
+    return res
+      .status(404)
+      .send(generateEntityNotFoundPayload("credit_record_id", creditRecordId));
   }
 
   const overdraftApplication = {
@@ -83,17 +68,9 @@ export const getOverdraftApplication = async (req, res) => {
   );
 
   if (!overdraftApplication) {
-    return res.status(404).send({
-      id: uuid.v4(),
-      status: 404,
-      code: "not_found",
-      title: "Not Found",
-      detail: `Value: ${applicationId} for field: 'application_id' not found`,
-      source: {
-        message: "not found",
-        field: "application_id"
-      }
-    });
+    return res
+      .status(404)
+      .send(generateEntityNotFoundPayload("application_id", applicationId));
   }
 
   return res.status(200).send(overdraftApplication);

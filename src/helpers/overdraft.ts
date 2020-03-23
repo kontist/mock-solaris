@@ -1,3 +1,4 @@
+import uuid from "uuid";
 import { getPerson, savePerson } from "../db";
 import { triggerWebhook } from "./webhooks";
 
@@ -7,6 +8,21 @@ import {
   OverdraftApplicationDecision,
   OverdraftApplicationWebhookEvent
 } from "../helpers/types";
+
+export const generateEntityNotFoundPayload = (
+  field: string,
+  value: string
+) => ({
+  id: uuid.v4(),
+  status: 404,
+  code: "not_found",
+  title: "Not Found",
+  detail: `Value: '${value}' for field: '${field}' not found`,
+  source: {
+    message: "not found",
+    field
+  }
+});
 
 export const changeOverdraftApplicationStatus = async (
   personId: string,
