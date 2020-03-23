@@ -70,10 +70,20 @@ export type CardDetails = {
   settings: CardSettings;
 };
 
+export type AccountSnapshot = {
+  status: string;
+  provider: string;
+  id: string;
+  iban: string;
+  account_id: string;
+};
+
 export type MockAccount = Account & {
   cards: Array<{ card: Card; cardDetails: CardDetails }>;
   reservations: Reservation[];
   fraudReservations: Reservation[];
+  snapshot?: AccountSnapshot;
+  overdraftApplications?: OverdraftApplication[];
 };
 
 export type MockChangeRequest = {
