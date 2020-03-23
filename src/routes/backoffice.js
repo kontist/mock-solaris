@@ -625,7 +625,7 @@ export const updateReservationHandler = async (req, res) => {
 export const changeOverdraftApplicationStatusHandler = async (req, res) => {
   const { personId, applicationId, status } = req.body;
 
-  await changeOverdraftApplicationStatus(personId, applicationId, status);
+  await changeOverdraftApplicationStatus({ personId, applicationId, status });
 
   res.redirect("back");
 };

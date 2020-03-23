@@ -6,7 +6,8 @@ import {
   OverdraftApplication,
   OverdraftApplicationStatus,
   OverdraftApplicationDecision,
-  OverdraftApplicationWebhookEvent
+  OverdraftApplicationWebhookEvent,
+  MockPerson
 } from "../helpers/types";
 
 export const generateEntityNotFoundPayload = (
@@ -24,24 +25,34 @@ export const generateEntityNotFoundPayload = (
   }
 });
 
-export const changeOverdraftApplicationStatus = async (
-  personId: string,
-  applicationId: string,
-  newStatus: OverdraftApplicationStatus
-): Promise<OverdraftApplication> => {
-  const person = await getPerson(personId);
+type ChangeOverdraftApplicationStatusOptions = {
+  personId?: string;
+  person?: MockPerson;
+  applicationId: string;
+  status: OverdraftApplicationStatus;
+};
+
+export const changeOverdraftApplicationStatus = async ({
+  personId,
+  person,
+  applicationId,
+  status
+}: ChangeOverdraftApplicationStatusOptions): Promise<OverdraftApplication> => {
+  if (!person) {
+    person = await getPerson(personId);
+  }
 
   const overdraftApplication = person.account.overdraftApplications.find(
     app => app.id === applicationId
   );
 
-  if (overdraftApplication.status === newStatus) {
+  if (overdraftApplication.status === status) {
     return overdraftApplication;
   }
 
-  overdraftApplication.status = newStatus;
+  overdraftApplication.status = status;
 
-  if (newStatus === OverdraftApplicationStatus.REJECTED) {
+  if (status === OverdraftApplicationStatus.REJECTED) {
     overdraftApplication.decision = OverdraftApplicationDecision.REJECTED;
   }
 

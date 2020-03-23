@@ -2,7 +2,10 @@
 import uuid from "uuid";
 import { getPerson, savePerson } from "../db";
 
-import { generateEntityNotFoundPayload } from "../helpers";
+import {
+  generateEntityNotFoundPayload,
+  changeOverdraftApplicationStatus
+} from "../helpers/overdraft";
 import {
   OverdraftApplicationStatus,
   OverdraftApplicationDecision
@@ -74,4 +77,43 @@ export const getOverdraftApplication = async (req, res) => {
   }
 
   return res.status(200).send(overdraftApplication);
+};
+
+export const linkOverdraftApplicationSnapshot = async (req, res) => {
+  const {
+    body: { account_snapshot_id: accountSnapshotId },
+    params: { person_id: personId, id: applicationId }
+  } = req;
+
+  const person = await getPerson(personId);
+
+  const overdraftApplication = person.account.overdraftApplications.find(
+    app => app.id === applicationId
+  );
+
+  if (!overdraftApplication) {
+    return res
+      .status(404)
+      .send(generateEntityNotFoundPayload("application_id", applicationId));
+  }
+
+  const { snapshot } = person.account;
+
+  if (!snapshot || snapshot.id !== accountSnapshotId) {
+    return res
+      .status(404)
+      .send(
+        generateEntityNotFoundPayload("account_snapshot_id", accountSnapshotId)
+      );
+  }
+
+  overdraftApplication.account_snapshot_id = accountSnapshotId;
+
+  await changeOverdraftApplicationStatus({
+    person,
+    applicationId: overdraftApplication.id,
+    status: OverdraftApplicationStatus.ACCOUNT_SNAPSHOT_VERIFICATION_PENDING
+  });
+
+  res.send(204);
 };
