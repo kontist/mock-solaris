@@ -166,7 +166,6 @@ export const createOverdraft = async (req, res) => {
 
   overdraftApplication.decision = OverdraftApplicationDecision.OFFERED;
   overdraftApplication.overdraft_id = overdraft.id;
-  overdraftApplication.limit = limit;
 
   await changeOverdraftApplicationStatus({
     person,
