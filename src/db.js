@@ -162,6 +162,8 @@ export const savePerson = async person => {
       .filter(booking => booking.status === "accepted")
       .reduce(addAmountValues, 0);
     const reservationsBalance = reservations.reduce(addAmountValues, 0);
+    const limitBalance =
+      (account.account_limit && account.account_limit.value) || 0;
 
     account.balance = {
       value: transactionsBalance
@@ -170,7 +172,10 @@ export const savePerson = async person => {
     account.available_balance = {
       // Confirmed transfers amounts are negative
       value:
-        transactionsBalance + confirmedTransfersBalance - reservationsBalance
+        limitBalance +
+        transactionsBalance +
+        confirmedTransfersBalance -
+        reservationsBalance
     };
 
     person.account = account;

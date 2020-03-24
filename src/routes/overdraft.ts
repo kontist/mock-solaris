@@ -8,7 +8,8 @@ import {
 } from "../helpers/overdraft";
 import {
   OverdraftApplicationStatus,
-  OverdraftApplicationDecision
+  OverdraftApplicationDecision,
+  OverdraftStatus
 } from "../helpers/types";
 
 const INTEREST_RATE = 11.0;
@@ -39,7 +40,7 @@ export const createOverdraftApplication = async (req, res) => {
     credit_record_id: creditRecordId,
     overdraft_id: null,
     status: OverdraftApplicationStatus.CREATED,
-    decision: OverdraftApplicationDecision.OFFERED,
+    decision: null,
     partner_risk_class: null,
     partner_reference_number: null,
     partner_contact_number: null,
@@ -116,4 +117,65 @@ export const linkOverdraftApplicationSnapshot = async (req, res) => {
   });
 
   res.send(204);
+};
+
+export const createOverdraft = async (req, res) => {
+  const {
+    body: { account_id: accountId },
+    params: { person_id: personId, id: applicationId }
+  } = req;
+
+  const person = await getPerson(personId);
+
+  const overdraftApplication = person.account.overdraftApplications.find(
+    app => app.id === applicationId
+  );
+
+  if (!overdraftApplication) {
+    return res
+      .status(404)
+      .send(generateEntityNotFoundPayload("application_id", applicationId));
+  }
+
+  const { account } = person;
+
+  if (person.account.id !== accountId) {
+    return res
+      .status(404)
+      .send(generateEntityNotFoundPayload("account_id", accountId));
+  }
+
+  const limit = {
+    value: 50000,
+    unit: "cents",
+    currency: "EUR"
+  };
+
+  const overdraft = {
+    id: uuid.v4(),
+    status: OverdraftStatus.LIMIT_SET,
+    person_id: personId,
+    limit,
+    interest_rate: INTEREST_RATE,
+    created_at: new Date().toISOString(),
+    account_id: accountId
+  };
+
+  account.overdraft = overdraft;
+  account.account_limit = limit;
+
+  overdraftApplication.decision = OverdraftApplicationDecision.OFFERED;
+  overdraftApplication.overdraft_id = overdraft.id;
+  overdraftApplication.limit = limit;
+
+  await changeOverdraftApplicationStatus({
+    person,
+    applicationId: overdraftApplication.id,
+    status: OverdraftApplicationStatus.OVERDRAFT_CREATED
+  });
+
+  res.status(201).send({
+    ...overdraft,
+    status: OverdraftStatus.CREATED
+  });
 };

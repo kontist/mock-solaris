@@ -84,6 +84,7 @@ export type MockAccount = Account & {
   fraudReservations: Reservation[];
   snapshot?: AccountSnapshot;
   overdraftApplications?: OverdraftApplication[];
+  overdraft?: Overdraft;
 };
 
 export type MockChangeRequest = {
@@ -356,9 +357,24 @@ export type OverdraftApplication = {
   limit: Amount | null;
   credit_record_id: string;
   rejection_reasons: [string] | null;
-  decision: OverdraftApplicationDecision;
+  decision: OverdraftApplicationDecision | null;
   overdraft_id: string | null;
   person_id: string;
   status: OverdraftApplicationStatus;
   interest_rate: number;
+};
+
+export enum OverdraftStatus {
+  CREATED = "created",
+  LIMIT_SET = "limit_set"
+}
+
+export type Overdraft = {
+  status: OverdraftStatus;
+  person_id: string;
+  limit: Amount;
+  interest_rate: number;
+  id: string;
+  created_at: string;
+  account_id: string;
 };
