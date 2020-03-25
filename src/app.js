@@ -182,6 +182,10 @@ router.put(
   "/persons/:person_id/overdraft_applications/:id/account_snapshot",
   safeRequestHandler(overdraftAPI.linkOverdraftApplicationSnapshot)
 );
+router.put(
+  "/persons/:person_id/overdraft_applications/:id/overdraft",
+  safeRequestHandler(overdraftAPI.createOverdraft)
+);
 
 // CARDS
 router.post(
