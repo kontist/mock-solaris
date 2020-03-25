@@ -10,6 +10,12 @@ import {
   MockPerson
 } from "../helpers/types";
 
+export const OVERDRAFT_LIMIT = {
+  value: 50000,
+  unit: "cents",
+  currency: "EUR"
+};
+
 export const generateEntityNotFoundPayload = (
   field: string,
   value: string
@@ -52,8 +58,16 @@ export const changeOverdraftApplicationStatus = async ({
 
   overdraftApplication.status = status;
 
-  if (status === OverdraftApplicationStatus.REJECTED) {
-    overdraftApplication.decision = OverdraftApplicationDecision.REJECTED;
+  switch (status) {
+    case OverdraftApplicationStatus.REJECTED: {
+      overdraftApplication.decision = OverdraftApplicationDecision.REJECTED;
+      break;
+    }
+    case OverdraftApplicationStatus.OFFERED: {
+      overdraftApplication.limit = OVERDRAFT_LIMIT;
+      overdraftApplication.decision = OverdraftApplicationDecision.OFFERED;
+      break;
+    }
   }
 
   await savePerson(person);

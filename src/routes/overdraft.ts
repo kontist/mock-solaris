@@ -4,13 +4,10 @@ import { getPerson, savePerson } from "../db";
 
 import {
   generateEntityNotFoundPayload,
-  changeOverdraftApplicationStatus
+  changeOverdraftApplicationStatus,
+  OVERDRAFT_LIMIT
 } from "../helpers/overdraft";
-import {
-  OverdraftApplicationStatus,
-  OverdraftApplicationDecision,
-  OverdraftStatus
-} from "../helpers/types";
+import { OverdraftApplicationStatus, OverdraftStatus } from "../helpers/types";
 
 const INTEREST_RATE = 11.0;
 
@@ -145,26 +142,19 @@ export const createOverdraft = async (req, res) => {
       .send(generateEntityNotFoundPayload("account_id", accountId));
   }
 
-  const limit = {
-    value: 50000,
-    unit: "cents",
-    currency: "EUR"
-  };
-
   const overdraft = {
     id: uuid.v4(),
     status: OverdraftStatus.LIMIT_SET,
     person_id: personId,
-    limit,
+    limit: OVERDRAFT_LIMIT,
     interest_rate: INTEREST_RATE,
     created_at: new Date().toISOString(),
     account_id: accountId
   };
 
   account.overdraft = overdraft;
-  account.account_limit = limit;
+  account.account_limit = OVERDRAFT_LIMIT;
 
-  overdraftApplication.decision = OverdraftApplicationDecision.OFFERED;
   overdraftApplication.overdraft_id = overdraft.id;
 
   await changeOverdraftApplicationStatus({
