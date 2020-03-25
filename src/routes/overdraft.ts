@@ -115,5 +115,5 @@ export const linkOverdraftApplicationSnapshot = async (req, res) => {
     status: OverdraftApplicationStatus.ACCOUNT_SNAPSHOT_VERIFICATION_PENDING
   });
 
-  res.send(204);
+  res.sendStatus(204);
 };
