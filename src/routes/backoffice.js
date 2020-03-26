@@ -291,7 +291,8 @@ export const processQueuedBooking = async (
     BookingType.SEPA_DIRECT_DEBIT
   ].includes(booking.booking_type);
 
-  const wouldOverdraw = person.account.balance.value < booking.amount.value;
+  const wouldOverdraw =
+    person.account.available_balance.value < booking.amount.value;
 
   let directDebitReturn;
   let sepaDirectDebitReturn;

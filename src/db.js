@@ -2,6 +2,7 @@ import _ from "lodash";
 import Promise from "bluebird";
 
 import * as log from "./logger";
+import { calculateOverdraftInterest } from "./helpers/overdraft";
 
 let redis;
 
@@ -164,6 +165,10 @@ export const savePerson = async person => {
     const reservationsBalance = reservations.reduce(addAmountValues, 0);
     const limitBalance =
       (account.account_limit && account.account_limit.value) || 0;
+
+    if (transactionsBalance < 0) {
+      calculateOverdraftInterest(account, transactionsBalance);
+    }
 
     account.balance = {
       value: transactionsBalance

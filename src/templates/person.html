@@ -115,7 +115,7 @@
         <form method="POST" action="/__BACKOFFICE__/queueBooking/{{ person.email }}">
           <div class="form-group">
             <label>Amount (in cents)</label>
-            <input class="form-control" type="number" name="amount" placeholder="amount (in cents)" required min="-10000000" max="10000000" />
+            <input class="form-control" type="number" name="amount" placeholder="amount (in cents)" autocomplete="off" required min="-10000000" max="10000000" />
           </div>
           <div class="form-group">
             <label>Sender</label>
@@ -221,6 +221,14 @@
     <tr>
       <td>Available balance</td>
       <td>{{ person.account.available_balance.value / 100 }} €</td>
+    </tr>
+    <tr>
+      <td>Limit</td>
+      <td>{{ person.account.account_limit.value / 100 }} €</td>
+    </tr>
+    <tr>
+      <td>Overdraft Interest</td>
+      <td>{{ person.account.overdraftInterest / 100 }} €</td>
     </tr>
     <tr>
       <td>Block status</td>

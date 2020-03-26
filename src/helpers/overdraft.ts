@@ -7,8 +7,11 @@ import {
   OverdraftApplicationStatus,
   OverdraftApplicationDecision,
   OverdraftApplicationWebhookEvent,
-  MockPerson
+  MockPerson,
+  MockAccount
 } from "../helpers/types";
+
+export const INTEREST_RATE = 11.0;
 
 export const OVERDRAFT_LIMIT = {
   value: 50000,
@@ -77,4 +80,15 @@ export const changeOverdraftApplicationStatus = async ({
   );
 
   return overdraftApplication;
+};
+
+export const calculateOverdraftInterest = (
+  account: MockAccount,
+  balance: number
+) => {
+  const daysInYear = 365;
+  const interest = Math.floor(
+    (Math.abs(balance) * INTEREST_RATE) / 100 / daysInYear
+  );
+  account.overdraftInterest = (account.overdraftInterest || 0) + interest;
 };

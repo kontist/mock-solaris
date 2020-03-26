@@ -85,6 +85,7 @@ export type MockAccount = Account & {
   snapshot?: AccountSnapshot;
   overdraftApplications?: OverdraftApplication[];
   overdraft?: Overdraft;
+  overdraftInterest?: number;
 };
 
 export type MockChangeRequest = {

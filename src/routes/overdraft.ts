@@ -5,11 +5,10 @@ import { getPerson, savePerson } from "../db";
 import {
   generateEntityNotFoundPayload,
   changeOverdraftApplicationStatus,
-  OVERDRAFT_LIMIT
+  OVERDRAFT_LIMIT,
+  INTEREST_RATE
 } from "../helpers/overdraft";
 import { OverdraftApplicationStatus, OverdraftStatus } from "../helpers/types";
-
-const INTEREST_RATE = 11.0;
 
 export const createOverdraftApplication = async (req, res) => {
   const {
