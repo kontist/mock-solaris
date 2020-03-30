@@ -605,6 +605,10 @@ app.post(
   "/__BACKOFFICE__/changeOverdraftApplicationStatus",
   safeRequestHandler(backofficeAPI.changeOverdraftApplicationStatusHandler)
 );
+app.post(
+  "/__BACKOFFICE__/issueInterestAccruedBooking/:person_id",
+  safeRequestHandler(backofficeAPI.issueInterestAccruedBookingHandler)
+);
 
 // WEBHOOKS
 router.get(

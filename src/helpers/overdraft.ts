@@ -8,8 +8,13 @@ import {
   OverdraftApplicationDecision,
   OverdraftApplicationWebhookEvent,
   MockPerson,
-  MockAccount
+  MockAccount,
+  BookingType
 } from "../helpers/types";
+import {
+  triggerBookingsWebhook,
+  generateBookingForPerson
+} from "../routes/backoffice";
 
 export const INTEREST_RATE = 11.0;
 
@@ -91,4 +96,27 @@ export const calculateOverdraftInterest = (
     (Math.abs(balance) * INTEREST_RATE) / 100 / daysInYear
   );
   account.overdraftInterest = (account.overdraftInterest || 0) + interest;
+};
+
+export const issueInterestAccruedBooking = async ({
+  personId
+}: {
+  personId: string;
+}) => {
+  const person = await getPerson(personId);
+
+  const booking = generateBookingForPerson({
+    person,
+    amount: -person.account.overdraftInterest,
+    purpose: "Overdraft interest accrued on the account",
+    bookingType: BookingType.INTEREST_ACCRUED
+  });
+
+  person.account.overdraftInterest = 0;
+  person.transactions.push(booking);
+  // we don't want to calculate interest again for this transaction
+  const skipInterest = true;
+
+  await savePerson(person, skipInterest);
+  await triggerBookingsWebhook(person.account.id);
 };

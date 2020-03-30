@@ -228,7 +228,14 @@
     </tr>
     <tr>
       <td>Overdraft Interest</td>
-      <td>{{ person.account.overdraftInterest / 100 }} €</td>
+      <td>
+        <form method="POST" action="/__BACKOFFICE__/issueInterestAccruedBooking/{{ person.id }}">
+          {{ person.account.overdraftInterest / 100 }} €
+          <button type="submit" class="btn btn-warning btn-sm" {% if person.account.overdraftInterest <= 0 %} disabled {% endif %}>
+            Issue
+          </button>
+        </form>
+      </td>
     </tr>
     <tr>
       <td>Block status</td>

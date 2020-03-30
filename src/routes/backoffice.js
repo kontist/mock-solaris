@@ -38,7 +38,10 @@ import {
   TransactionWebhookEvent,
   IdentificationStatus
 } from "../helpers/types";
-import { changeOverdraftApplicationStatus } from "../helpers/overdraft";
+import {
+  changeOverdraftApplicationStatus,
+  issueInterestAccruedBooking
+} from "../helpers/overdraft";
 
 const triggerIdentificationWebhook = payload =>
   triggerWebhook(PersonWebhookEvent.IDENTIFICATION, payload);
@@ -384,8 +387,7 @@ export const generateBookingForPerson = bookingData => {
     iban,
     transactionId,
     bookingDate,
-    valutaDate,
-    status
+    valutaDate
   } = bookingData;
 
   const recipientName = `${person.salutation} ${person.first_name} ${person.last_name}`;
@@ -411,10 +413,9 @@ export const generateBookingForPerson = bookingData => {
     sender_bic: senderBIC,
     sender_iban: senderIBAN,
     sender_name: senderName || "mocksolaris",
-    end_to_end_id: endToEndId,
+    end_to_end_id: endToEndId || uuid.v4(),
     booking_type: bookingType,
-    transaction_id: transactionId,
-    status
+    transaction_id: transactionId || null
   };
 };
 
@@ -457,8 +458,7 @@ export const queueBookingRequestHandler = async (req, res) => {
     iban,
     transactionId,
     bookingDate,
-    valutaDate,
-    status
+    valutaDate
   } = req.body;
 
   senderName = senderName || "mocksolaris";
@@ -477,8 +477,7 @@ export const queueBookingRequestHandler = async (req, res) => {
     iban,
     transactionId,
     bookingDate,
-    valutaDate,
-    status
+    valutaDate
   });
 
   person.queuedBookings.push(queuedBooking);
@@ -627,6 +626,14 @@ export const changeOverdraftApplicationStatusHandler = async (req, res) => {
   const { personId, applicationId, status } = req.body;
 
   await changeOverdraftApplicationStatus({ personId, applicationId, status });
+
+  res.redirect("back");
+};
+
+export const issueInterestAccruedBookingHandler = async (req, res) => {
+  const { person_id: personId } = req.params;
+
+  await issueInterestAccruedBooking({ personId });
 
   res.redirect("back");
 };

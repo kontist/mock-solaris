@@ -146,7 +146,7 @@ export const getTechnicalUserPerson = () => getPerson("mockpersonkontistgmbh");
 
 const addAmountValues = (a, b) => a + b.amount.value;
 
-export const savePerson = async person => {
+export const savePerson = async (person, skipInterest = false) => {
   person.address = person.address || { country: null };
 
   const account = person.account;
@@ -166,7 +166,7 @@ export const savePerson = async person => {
     const limitBalance =
       (account.account_limit && account.account_limit.value) || 0;
 
-    if (transactionsBalance < 0) {
+    if (transactionsBalance < 0 && !skipInterest) {
       calculateOverdraftInterest(account, transactionsBalance);
     }
 
