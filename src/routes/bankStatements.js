@@ -16,6 +16,8 @@ export const createBankStatement = async (req, res) => {
     .startOf("day")
     .isAfter(moment(startDate));
 
+  const isEndDateInvalid = moment(endDate).isAfter(moment());
+
   // Solaris does not allow bank statement creation for dates before account creation date
   if (isStartDateInvalid) {
     res.status(400).send({
@@ -26,6 +28,25 @@ export const createBankStatement = async (req, res) => {
           code: "invalid_model",
           title: "Invalid Model",
           detail: `start_date invalid date ${startDate} is earlier than account opening date ${person.terms_conditions_signed_at}`
+        }
+      ]
+    });
+    return;
+  }
+  // Solaris does not allow bank statement creation for dates in the fuutre
+  if (isEndDateInvalid) {
+    res.status(400).send({
+      errors: [
+        {
+          id: "bab907fa-6dbe-11ea-a2ae-02420a86830b",
+          status: 400,
+          code: "invalid_model",
+          title: "Invalid Model",
+          detail: `end_date invalid date ${endDate}, needs to be in the past`,
+          source: {
+            field: "end_date",
+            message: `invalid date ${endDate}, needs to be in the past`
+          }
         }
       ]
     });
