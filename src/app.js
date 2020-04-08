@@ -14,7 +14,6 @@ import * as taxIdentificationsAPI from "./routes/taxIdentifications";
 import * as transactionsAPI from "./routes/transactions";
 import * as webhooksAPI from "./routes/webhooks";
 import * as backofficeAPI from "./routes/backoffice";
-import * as accountStatementsAPI from "./routes/accountStatements";
 import * as bankStatementsAPI from "./routes/bankStatements";
 import * as mobileNumberAPI from "./routes/mobileNumber";
 import * as changeRequestAPI from "./routes/changeRequest";
@@ -436,16 +435,6 @@ router.patch(
 router.post(
   "/persons/:person_id/accounts/:account_id/transactions/sepa_credit_transfer/batches",
   safeRequestHandler(batchTransfersAPI.createBatchTransfer)
-);
-
-// ACCOUNT STATEMENTS
-router.post(
-  "/accounts/:account_id/statement_of_accounts",
-  safeRequestHandler(accountStatementsAPI.createAccountStatement)
-);
-router.get(
-  "/accounts/:account_id/statement_of_accounts/:statement_of_account_id/bookings",
-  safeRequestHandler(accountStatementsAPI.showAccountStatementBookings)
 );
 
 // BANK STATEMENTS
