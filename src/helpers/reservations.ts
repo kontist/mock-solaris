@@ -27,7 +27,7 @@ import {
   CardAuthorizationDeclinedStatus,
   FraudCase
 } from "./types";
-import fraudWatchdog from "./fraudWatchdog";
+import getFraudWatchdog from "./fraudWatchdog";
 
 const fraudSuspected = (reason: CardAuthorizationDeclineReason) =>
   reason === CardAuthorizationDeclineReason.FRAUD_SUSPECTED;
@@ -73,7 +73,7 @@ export const markReservationAsFraud = async (
   // Wait for response from customer.
   // If response does not arrive
   // within 30 minutes, block the card.
-  fraudWatchdog.watch(fraudCase);
+  getFraudWatchdog().watch(fraudCase);
   return fraudCase;
 };
 

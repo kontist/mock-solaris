@@ -11,7 +11,7 @@ import * as reservations from "./helpers/reservations";
 import { createCreditPresentment } from "./helpers/creditPresentment";
 import { generateSolarisWebhookSignature } from "./helpers/solarisWebhookSignature";
 import * as webhooks from "./helpers/webhooks";
-import fraudWatchdog from "./helpers/fraudWatchdog";
+import getFraudWatchdog from "./helpers/fraudWatchdog";
 import {
   changeOverdraftApplicationStatus,
   issueInterestAccruedBooking
@@ -49,7 +49,7 @@ export default {
   updateReservation: reservations.updateReservation,
   createCreditPresentment,
   webhooks,
-  fraudWatchdog,
+  getFraudWatchdog,
   generateSolarisWebhookSignature,
   changeOverdraftApplicationStatus,
   issueInterestAccruedBooking

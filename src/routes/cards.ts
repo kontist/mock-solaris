@@ -18,7 +18,7 @@ import {
 } from "../helpers/types";
 
 import * as cardHelpers from "../helpers/cards";
-import fraudWatchdog from "../helpers/fraudWatchdog";
+import getFraudWatchdog from "../helpers/fraudWatchdog";
 
 type RequestExtendedWithCard = express.Request & {
   card: Card;
@@ -394,7 +394,7 @@ export const confirmFraudHandler = async (
   res: express.Response
 ) => {
   const { fraud_case_id: fraudCaseId } = req.params;
-  fraudWatchdog.confirmFraud(fraudCaseId);
+  getFraudWatchdog().confirmFraud(fraudCaseId);
   const response = {
     id: fraudCaseId,
     resolution: CaseResolution.CONFIRMED
@@ -407,7 +407,7 @@ export const whitelistCardHandler = async (
   res: express.Response
 ) => {
   const { fraud_case_id: fraudCaseId } = req.params;
-  fraudWatchdog.whitelistCard(fraudCaseId);
+  getFraudWatchdog().whitelistCard(fraudCaseId);
   const response = {
     id: fraudCaseId,
     resolution: CaseResolution.WHITELISTED,

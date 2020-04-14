@@ -148,6 +148,13 @@ export class FraudWatchdog {
   }
 }
 
-const fraudWatchdog = new FraudWatchdog();
+let fraudWatchdog;
 
-export default fraudWatchdog;
+const getFraudWatchdog = () => {
+  if (!fraudWatchdog) {
+    fraudWatchdog = new FraudWatchdog();
+  }
+  return fraudWatchdog;
+};
+
+export default getFraudWatchdog;
