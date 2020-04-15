@@ -114,7 +114,7 @@
             {% for cardData in person.account.cards.reverse() %}
             <div class="radio" {% if cardData.card.status==="CLOSED_BY_SOLARIS" %}style="opacity: 0.5;"{% endif %}>
               <label>
-                <input checked type="radio" name="cardId" value="{{ cardData.card.id }}">
+                <input {% if cardData.card.status === "ACTIVE" %} checked {% else %} disabled {% endif %} type="radio" name="cardId" value="{{ cardData.card.id }}">
                 <b>
                   {{ cardData.card['type'] }}
                 </b>
@@ -127,31 +127,22 @@
           <div class="form-group">
             <label class="col-form-label" for="type">Type</label>
             <select class="form-control" name="type">
-              {% if cardData.card.type === "VIRTUAL_VISA_FREELANCE_DEBIT"%}
-              <option value="PURCHASE">PURCHASE</option>
-              <option value="CREDIT_PRESENTMENT">CREDIT_PRESENTMENT</option>
-              {% else %}
               <option value="PURCHASE">PURCHASE</option>
               <option value="CASH_ATM">CASH_ATM</option>
               <option value="CASH_MANUAL">CASH_MANUAL</option>
               <option value="CREDIT_PRESENTMENT">CREDIT_PRESENTMENT</option>
-              {% endif %}
-            </select>
+=            </select>
           </div>
 
           <div class="form-group">
             <label class="col-form-label" for="posEntryMode">Point of sale Entry mode</label>
             <select class="form-control" name="posEntryMode">
-              {% if cardData.card.type === "VIRTUAL_VISA_FREELANCE_DEBIT"%}
-              <option value="CARD_NOT_PRESENT">CARD_NOT_PRESENT</option>
-              {% else %}
               <option value="CONTACTLESS">CONTACTLESS</option>
               <option value="CARD_NOT_PRESENT">CARD_NOT_PRESENT</option>
               <option value="CHIP">CHIP</option>
               <option value="MAG_STRIPE">MAG_STRIPE</option>
               <option value="PHONE">PHONE</option>
               <option value="UNKNOWN">UNKNOWN</option>
-              {% endif %}
             </select>
           </div>
 
@@ -250,9 +241,7 @@
               <div class="form-group">
                 <select name="action">
                   <option selected="selected" value="BOOK">BOOK</option>
-                  <option value="CANCEL">CANCEL</option>
-                  <!-- solaris makes no diference between CANCEL and EXPIRE -->
-                  <option value="CANCEL">EXPIRE</option>
+                  <option value="EXPIRE">EXPIRE</option>
                 </select>
               </div>
               <button type="submit" class="btn btn-primary">Update now</button>

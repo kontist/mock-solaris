@@ -591,13 +591,19 @@ const bookReservation = async (person, reservation, increaseAmount) => {
   await triggerBookingsWebhook(person.account.id);
 };
 
-const cancelReservation = async (person, reservation) => {
+const expireReservation = async (person, reservation) => {
   person.account.reservations = person.account.reservations.filter(
     item => item.id !== reservation.id
   );
 
+  reservation.status = ReservationStatus.EXPIRED;
+
   await db.savePerson(person);
-  await resolveReservation(reservation);
+
+  await triggerWebhook(
+    CardWebhookEvent.CARD_AUTHORIZATION_RESOLUTION,
+    reservation
+  );
 };
 
 export const updateReservation = async ({
@@ -628,8 +634,8 @@ export const updateReservation = async ({
     case ActionType.BOOK: {
       return bookReservation(person, reservation, increaseAmount);
     }
-    case ActionType.CANCEL: {
-      return cancelReservation(person, reservation);
+    case ActionType.EXPIRE: {
+      return expireReservation(person, reservation);
     }
     default:
       throw new Error("Unknown action type");
