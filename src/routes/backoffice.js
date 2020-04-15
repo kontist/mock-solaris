@@ -413,7 +413,7 @@ export const generateBookingForPerson = bookingData => {
     sender_bic: senderBIC,
     sender_iban: senderIBAN,
     sender_name: senderName || "mocksolaris",
-    end_to_end_id: endToEndId || uuid.v4(),
+    end_to_end_id: endToEndId,
     booking_type: bookingType,
     transaction_id: transactionId || null
   };
