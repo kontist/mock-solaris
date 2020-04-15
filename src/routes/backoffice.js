@@ -387,7 +387,8 @@ export const generateBookingForPerson = bookingData => {
     iban,
     transactionId,
     bookingDate,
-    valutaDate
+    valutaDate,
+    status
   } = bookingData;
 
   const recipientName = `${person.salutation} ${person.first_name} ${person.last_name}`;
@@ -415,7 +416,8 @@ export const generateBookingForPerson = bookingData => {
     sender_name: senderName || "mocksolaris",
     end_to_end_id: endToEndId,
     booking_type: bookingType,
-    transaction_id: transactionId || null
+    transaction_id: transactionId || null,
+    status
   };
 };
 
@@ -458,7 +460,8 @@ export const queueBookingRequestHandler = async (req, res) => {
     iban,
     transactionId,
     bookingDate,
-    valutaDate
+    valutaDate,
+    status
   } = req.body;
 
   senderName = senderName || "mocksolaris";
@@ -477,7 +480,8 @@ export const queueBookingRequestHandler = async (req, res) => {
     iban,
     transactionId,
     bookingDate,
-    valutaDate
+    valutaDate,
+    status
   });
 
   person.queuedBookings.push(queuedBooking);
