@@ -1,4 +1,5 @@
 import _ from "lodash";
+import moment from "moment";
 
 import { getPerson, savePerson, getMobileNumber } from "../db";
 import {
@@ -25,6 +26,8 @@ import {
 } from "./batchTransfers";
 import { CHANGE_REQUEST_CHANGE_CARD_PIN } from "../helpers/cards";
 import { confirmChangeCardPINHandler } from "./cards";
+
+const MAX_CHANGE_REQUEST_AGE_IN_MINUTES = 5;
 
 export const createChangeRequest = async (req, res, person, method, delta) => {
   const personId = person.id;
@@ -109,10 +112,31 @@ export const confirmChangeRequest = async (req, res) => {
   const { person_id: personId, tan } = req.body;
   const person = await getPerson(personId);
 
-  // TODO: Each TAN is limited in time. 5 minutes
+  const age = moment().diff(
+    moment(_.get(person, "changeRequest.createdAt")),
+    "minutes"
+  );
+
+  // A change request older than 5 minutes doesn't exist
+  if (!person.changeRequest || age > MAX_CHANGE_REQUEST_AGE_IN_MINUTES) {
+    return res.status(422).send({
+      errors: [
+        {
+          id: Date.now().toString(),
+          status: 422,
+          code: "unprocessable_entity",
+          title: "Unprocessable Entity",
+          detail: `Unknown change request for Solaris::Person ${personId}`
+        }
+      ]
+    });
+  }
 
   if (tan !== person.changeRequest.token) {
-    // TODO: An invalid TAN also invalidates the action it is meant to authorize
+    // An invalid TAN also invalidates the action it is meant to authorize
+    delete person.changeRequest;
+    await savePerson(person);
+
     return res.status(403).send({
       errors: [
         {
