@@ -15,11 +15,11 @@ import {
   saveMobileNumber,
   deleteMobileNumber,
   saveSepaDirectDebitReturn,
-  getDevicesByPersonId
+  getDevicesByPersonId,
 } from "../db";
 import {
   createSepaDirectDebitReturn,
-  triggerSepaDirectDebitReturnWebhook
+  triggerSepaDirectDebitReturnWebhook,
 } from "../helpers/sepaDirectDebitReturn";
 import { shouldReturnJSON } from "../helpers";
 import { triggerWebhook } from "../helpers/webhooks";
@@ -36,17 +36,17 @@ import {
   PersonWebhookEvent,
   AccountWebhookEvent,
   TransactionWebhookEvent,
-  IdentificationStatus
+  IdentificationStatus,
 } from "../helpers/types";
 import {
   changeOverdraftApplicationStatus,
-  issueInterestAccruedBooking
+  issueInterestAccruedBooking,
 } from "../helpers/overdraft";
 
-const triggerIdentificationWebhook = payload =>
+const triggerIdentificationWebhook = (payload) =>
   triggerWebhook(PersonWebhookEvent.IDENTIFICATION, payload);
 
-const triggerAccountBlockWebhook = async person => {
+const triggerAccountBlockWebhook = async (person) => {
   const { iban, id: accountId, locking_status: lockingStatus } = person.account;
 
   const payload = {
@@ -55,20 +55,20 @@ const triggerAccountBlockWebhook = async person => {
     business_id: null,
     locking_status: lockingStatus,
     updated_at: new Date().toISOString(),
-    iban
+    iban,
   };
 
   await triggerWebhook(AccountWebhookEvent.ACCOUNT_BLOCK, payload);
 };
 
-export const triggerBookingsWebhook = async solarisAccountId => {
+export const triggerBookingsWebhook = async (solarisAccountId) => {
   const payload = { account_id: solarisAccountId };
   await triggerWebhook(TransactionWebhookEvent.BOOKING, payload);
 };
 
 const filterAndSortIdentifications = (identifications, method) => {
   const idents = identifications
-    .filter(identification => identification.identificationLinkCreatedAt)
+    .filter((identification) => identification.identificationLinkCreatedAt)
     .sort(
       (id1, id2) =>
         new Date(id2.identificationLinkCreatedAt).getTime() -
@@ -76,16 +76,16 @@ const filterAndSortIdentifications = (identifications, method) => {
     );
 
   if (method) {
-    return idents.filter(identification => identification.method === method);
+    return idents.filter((identification) => identification.method === method);
   }
 
   return idents;
 };
 
 export const findIdentificationByEmail = (email, method) => {
-  return getAllIdentifications().then(identifications => {
+  return getAllIdentifications().then((identifications) => {
     const userIdentifications = identifications.filter(
-      identification => identification.email === email
+      (identification) => identification.email === email
     );
     const latestIdentification = filterAndSortIdentifications(
       userIdentifications,
@@ -112,7 +112,7 @@ export const getPersonHandler = async (req, res) => {
   if (!person) {
     return res.status(HttpStatusCodes.NOT_FOUND).send({
       message: "Couldn't find person",
-      details: req.params
+      details: req.params,
     });
   }
 
@@ -129,7 +129,7 @@ export const getPersonHandler = async (req, res) => {
       taxIdentifications,
       devices,
       identifications: person.identifications,
-      SEIZURE_STATUSES
+      SEIZURE_STATUSES,
     });
   }
 };
@@ -137,7 +137,7 @@ export const getPersonHandler = async (req, res) => {
 export const updatePersonHandler = async (req, res) => {
   const person = await findPersonByEmail(req.params.email);
 
-  Object.keys(req.body).forEach(key => {
+  Object.keys(req.body).forEach((key) => {
     person[key] = req.body[key];
   });
 
@@ -165,10 +165,10 @@ export const updatePersonHandler = async (req, res) => {
   res.redirect(`/__BACKOFFICE__/person/${person.email}`);
 };
 
-const shouldMarkMobileNumberAsVerified = identification =>
+const shouldMarkMobileNumberAsVerified = (identification) =>
   [
     IdentificationStatus.PENDING_SUCCESSFUL,
-    IdentificationStatus.SUCCESSFUL
+    IdentificationStatus.SUCCESSFUL,
   ].includes(identification.status) && identification.method === "idnow";
 
 export const setIdentificationState = async (req, res) => {
@@ -209,14 +209,14 @@ export const setIdentificationState = async (req, res) => {
     completed_at: identification.completed_at,
     reference: identification.reference,
     method,
-    status
+    status,
   });
 
   res.redirect(`/__BACKOFFICE__/person/${req.params.email}#identifications`);
 };
 
 export const displayBackofficeOverview = (req, res) => {
-  getAllPersons().then(persons => {
+  getAllPersons().then((persons) => {
     res.render("overview", { persons });
   });
 };
@@ -228,7 +228,7 @@ export const processQueuedBookingHandler = async (req, res) => {
   res.redirect("back");
 };
 
-const generateBookingFromStandingOrder = standingOrder => {
+const generateBookingFromStandingOrder = (standingOrder) => {
   return {
     ...standingOrder,
     id: uuid.v4(),
@@ -236,8 +236,8 @@ const generateBookingFromStandingOrder = standingOrder => {
     booking_date: moment().format("YYYY-MM-DD"),
     booking_type: BookingType.SEPA_CREDIT_TRANSFER,
     amount: {
-      value: -Math.abs(standingOrder.amount.value)
-    }
+      value: -Math.abs(standingOrder.amount.value),
+    },
   };
 };
 
@@ -270,7 +270,7 @@ export const processQueuedBooking = async (
 
   let booking;
   if (id) {
-    const findQueuedBooking = queuedBooking => queuedBooking.id === id;
+    const findQueuedBooking = (queuedBooking) => queuedBooking.id === id;
     booking = bookings.find(findQueuedBooking);
     // Standing orders are not removed until cancelled or expired.
     if (!isStandingOrder) {
@@ -286,12 +286,12 @@ export const processQueuedBooking = async (
 
   const allPersons = await getAllPersons();
   const receiver = allPersons
-    .filter(dbPerson => dbPerson.account)
-    .find(dbPerson => dbPerson.account.iban === booking.recipient_iban);
+    .filter((dbPerson) => dbPerson.account)
+    .find((dbPerson) => dbPerson.account.iban === booking.recipient_iban);
 
   const isDirectDebit = [
     BookingType.DIRECT_DEBIT,
-    BookingType.SEPA_DIRECT_DEBIT
+    BookingType.SEPA_DIRECT_DEBIT,
   ].includes(booking.booking_type);
 
   const wouldOverdraw =
@@ -310,16 +310,13 @@ export const processQueuedBooking = async (
         recipient_name: booking.sender_name,
         sender_bic: booking.recipient_bic,
         recipient_bic: booking.sender_bic,
-        id: booking.id
-          .split("-")
-          .reverse()
-          .join("-"),
+        id: booking.id.split("-").reverse().join("-"),
         booking_type: BookingType.SEPA_DIRECT_DEBIT_RETURN,
         amount: {
           value: booking.amount.value,
           unit: "cents",
-          currency: "EUR"
-        }
+          currency: "EUR",
+        },
       };
     }
 
@@ -343,16 +340,16 @@ export const processQueuedBooking = async (
         "processQueuedBooking() Creating Direct Debit Return on Wirecard",
         {
           issueDDRurl,
-          amount: directDebitReturn.amount.value
+          amount: directDebitReturn.amount.value,
         }
       );
 
       await fetch(issueDDRurl, {
         method: "POST",
         headers: {
-          "Content-Type": "application/x-www-form-urlencoded"
+          "Content-Type": "application/x-www-form-urlencoded",
         },
-        body: `amount=${directDebitReturn.amount.value}`
+        body: `amount=${directDebitReturn.amount.value}`,
       });
     }
   }
@@ -376,7 +373,7 @@ export const processQueuedBooking = async (
   return booking;
 };
 
-export const generateBookingForPerson = bookingData => {
+export const generateBookingForPerson = (bookingData) => {
   const {
     person,
     purpose,
@@ -388,7 +385,7 @@ export const generateBookingForPerson = bookingData => {
     transactionId,
     bookingDate,
     valutaDate,
-    status
+    status,
   } = bookingData;
 
   const recipientName = `${person.salutation} ${person.first_name} ${person.last_name}`;
@@ -417,7 +414,7 @@ export const generateBookingForPerson = bookingData => {
     end_to_end_id: endToEndId,
     booking_type: bookingType,
     transaction_id: transactionId || null,
-    status
+    status,
   };
 };
 
@@ -425,7 +422,7 @@ export const generateBookingForPerson = bookingData => {
  * Returns a Person object by either person ID or email.
  * @param {String} personIdOrEmail
  */
-export const findPersonByIdOrEmail = async personIdOrEmail => {
+export const findPersonByIdOrEmail = async (personIdOrEmail) => {
   let findPerson = () => getPerson(personIdOrEmail);
 
   if (personIdOrEmail.includes("@")) {
@@ -461,7 +458,7 @@ export const queueBookingRequestHandler = async (req, res) => {
     transactionId,
     bookingDate,
     valutaDate,
-    status
+    status,
   } = req.body;
 
   senderName = senderName || "mocksolaris";
@@ -481,7 +478,7 @@ export const queueBookingRequestHandler = async (req, res) => {
     transactionId,
     bookingDate,
     valutaDate,
-    status
+    status,
   });
 
   person.queuedBookings.push(queuedBooking);
@@ -504,7 +501,7 @@ export const updateAccountLockingStatus = async (personId, lockingStatus) => {
 
   person.account = {
     ...person.account,
-    locking_status: lockingStatus
+    locking_status: lockingStatus,
   };
 
   await savePerson(person);
@@ -524,7 +521,7 @@ const changeCardStatusAllowed = async (personId, cardId, newCardStatus) => {
   const cardData = person.account.cards.find(({ card }) => card.id === cardId);
 
   const {
-    card: { status: currentCardStatus, type }
+    card: { status: currentCardStatus, type },
   } = cardData;
 
   if (
@@ -548,7 +545,7 @@ const changeCardStatusAllowed = async (personId, cardId, newCardStatus) => {
       CardStatus.INACTIVE,
       CardStatus.PROCESSING,
       CardStatus.CLOSED,
-      CardStatus.CLOSED_BY_SOLARIS
+      CardStatus.CLOSED_BY_SOLARIS,
     ].includes(cardData.card.status)
   ) {
     throw new Error(
@@ -575,7 +572,7 @@ export const createReservationHandler = async (req, res) => {
     type,
     recipient,
     declineReason,
-    posEntryMode
+    posEntryMode,
   } = req.body;
 
   if (!personId) {
@@ -594,7 +591,7 @@ export const createReservationHandler = async (req, res) => {
     type,
     recipient,
     declineReason,
-    posEntryMode
+    posEntryMode,
   };
 
   await (type === TransactionType.CREDIT_PRESENTMENT
@@ -620,7 +617,7 @@ export const updateReservationHandler = async (req, res) => {
     personId,
     reservationId,
     action,
-    increaseAmount
+    increaseAmount,
   });
 
   res.redirect("back");

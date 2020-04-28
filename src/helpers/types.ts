@@ -1,19 +1,19 @@
 export enum ReservationType {
-  CARD_AUTHORIZATION = "CARD_AUTHORIZATION"
+  CARD_AUTHORIZATION = "CARD_AUTHORIZATION",
 }
 
 export enum ReservationStatus {
   OPEN = "OPEN",
   RESOLVED = "RESOLVED",
   ROLLBACK = "ROLLBACK",
-  EXPIRED = "EXPIRED"
+  EXPIRED = "EXPIRED",
 }
 
 export enum TransactionType {
   PURCHASE = "PURCHASE",
   CASH_ATM = "CASH_ATM",
   CASH_MANUAL = "CASH_MANUAL",
-  CREDIT_PRESENTMENT = "CREDIT_PRESENTMENT"
+  CREDIT_PRESENTMENT = "CREDIT_PRESENTMENT",
 }
 
 export enum CardType {
@@ -21,7 +21,7 @@ export enum CardType {
   VISA_BUSINESS_DEBIT = "VISA_BUSINESS_DEBIT",
   MASTERCARD_BUSINESS_DEBIT = "MASTERCARD_BUSINESS_DEBIT",
   VIRTUAL_MASTERCARD_BUSINESS_DEBIT = "VIRTUAL_MASTERCARD_BUSINESS_DEBIT",
-  VIRTUAL_VISA_FREELANCE_DEBIT = "VIRTUAL_VISA_FREELANCE_DEBIT"
+  VIRTUAL_VISA_FREELANCE_DEBIT = "VIRTUAL_VISA_FREELANCE_DEBIT",
 }
 
 export enum CardStatus {
@@ -32,18 +32,18 @@ export enum CardStatus {
   BLOCKED_BY_SOLARIS = "BLOCKED_BY_SOLARIS",
   ACTIVATION_BLOCKED_BY_SOLARIS = "ACTIVATION_BLOCKED_BY_SOLARIS",
   CLOSED = "CLOSED",
-  CLOSED_BY_SOLARIS = "CLOSED_BY_SOLARIS"
+  CLOSED_BY_SOLARIS = "CLOSED_BY_SOLARIS",
 }
 
 export enum ActionType {
   RESOLVE = "RESOLVE",
   BOOK = "BOOK",
-  EXPIRE = "EXPIRE"
+  EXPIRE = "EXPIRE",
 }
 
 export enum FxRate {
   EUR = 1.0,
-  USD = 0.904697
+  USD = 0.904697,
 }
 
 export type Card = {
@@ -149,7 +149,7 @@ export type CardLimits = {
 
 export enum CardLimitType {
   PRESENT = "PRESENT",
-  NOT_PRESENT = "NOT_PRESENT"
+  NOT_PRESENT = "NOT_PRESENT",
 }
 
 export enum CaseResolution {
@@ -157,24 +157,24 @@ export enum CaseResolution {
   CONFIRMED = "CONFIRMED",
   WHITELISTED = "WHITELISTED",
   TIMED_OUT = "TIMED_OUT",
-  TIMEOUT = "TIMEOUT"
+  TIMEOUT = "TIMEOUT",
 }
 
 export enum TransactionWebhookEvent {
   "BOOKING" = "BOOKING",
   "SEPA_SCHEDULED_TRANSACTION" = "SEPA_SCHEDULED_TRANSACTION",
   "SEPA_TIMED_ORDER" = "SEPA_TIMED_ORDER",
-  "SEPA_DIRECT_DEBIT_RETURN" = "SEPA_DIRECT_DEBIT_RETURN"
+  "SEPA_DIRECT_DEBIT_RETURN" = "SEPA_DIRECT_DEBIT_RETURN",
 }
 
 export enum PersonWebhookEvent {
   "IDENTIFICATION" = "IDENTIFICATION",
   "PERSON_SEIZURE_CREATED" = "PERSON_SEIZURE_CREATED",
-  "PERSON_SEIZURE_DELETED" = "PERSON_SEIZURE_DELETED"
+  "PERSON_SEIZURE_DELETED" = "PERSON_SEIZURE_DELETED",
 }
 
 export enum AccountWebhookEvent {
-  "ACCOUNT_BLOCK" = "ACCOUNT_BLOCK"
+  "ACCOUNT_BLOCK" = "ACCOUNT_BLOCK",
 }
 
 export enum CardWebhookEvent {
@@ -183,11 +183,11 @@ export enum CardWebhookEvent {
   "CARD_FRAUD_CASE_TIMEOUT" = "CARD_FRAUD_CASE_TIMEOUT", //	The recorded fraud case didn't received response from the customer
   "CARD_AUTHORIZATION_DECLINE" = "CARD_AUTHORIZATION_DECLINE", //	The transaction was declined.
   "CARD_AUTHORIZATION_RESOLUTION" = "CARD_AUTHORIZATION_RESOLUTION", //	The reservation was cancelled, expired or booked. No push notification for the customer is required for this webhook.
-  "CARD_LIFECYCLE_EVENT" = "CARD_LIFECYCLE_EVENT" // The status of the card is changed.
+  "CARD_LIFECYCLE_EVENT" = "CARD_LIFECYCLE_EVENT", // The status of the card is changed.
 }
 
 export enum OverdraftApplicationWebhookEvent {
-  "OVERDRAFT_APPLICATION" = "OVERDRAFT_APPLICATION" // The status is changed.
+  "OVERDRAFT_APPLICATION" = "OVERDRAFT_APPLICATION", // The status is changed.
 }
 
 export enum CardAuthorizationDeclineReason {
@@ -218,7 +218,7 @@ export enum CardAuthorizationDeclineReason {
   "FRAUD_SUSPECTED" = "FRAUD_SUSPECTED", //	Something went wrong. Contact us for further details.
   "PIN_ENTRY_TIMEOUT" = "PIN_ENTRY_TIMEOUT", //	There was an issue with the merchant terminal. Please try again.
   "RETRY_WITH_CHIP_AND_PIN" = "RETRY_WITH_CHIP_AND_PIN", //	We encountered a problem while trying to approve your transaction. Please try again inserting the card in the merchant terminal.
-  "3DS_FAILED" = "3DS_FAILED" // We could not approve your transaction because the merchant did not provide correct authentication information. Please try again.
+  "3DS_FAILED" = "3DS_FAILED", // We could not approve your transaction because the merchant did not provide correct authentication information. Please try again.
 }
 
 type Amount = {
@@ -285,12 +285,12 @@ export enum BookingType {
   CANCELLATION_SEPA_CREDIT_TRANSFER_RETURN = "CANCELLATION_SEPA_CREDIT_TRANSFER_RETURN",
   CARD_TRANSACTION = "CARD_TRANSACTION",
   INTEREST_ACCRUED = "INTEREST_ACCRUED",
-  CANCELLATION_INTEREST_ACCRUED = "CANCELLATION_INTEREST_ACCRUED"
+  CANCELLATION_INTEREST_ACCRUED = "CANCELLATION_INTEREST_ACCRUED",
 }
 
 export enum CardAuthorizationDeclinedStatus {
   DECLINED = "DECLINED",
-  ACCEPTED = "ACCEPTED"
+  ACCEPTED = "ACCEPTED",
 }
 
 export enum POSEntryMode {
@@ -299,14 +299,14 @@ export enum POSEntryMode {
   "MAG_STRIPE" = "MAG_STRIPE",
   "CARD_NOT_PRESENT" = "CARD_NOT_PRESENT",
   "PHONE" = "PHONE",
-  "UNKNOWN" = "UNKNOWN"
+  "UNKNOWN" = "UNKNOWN",
 }
 
 export enum ChangeRequestStatus {
   AUTHORIZATION_REQUIRED = "AUTHORIZATION_REQUIRED",
   CONFIRMATION_REQUIRED = "CONFIRMATION_REQUIRED",
   COMPLETED = "COMPLETED",
-  FAILED = "FAILED"
+  FAILED = "FAILED",
 }
 
 export type CardSettings = {
@@ -337,7 +337,7 @@ export enum IdentificationStatus {
   EXPIRED = "expired",
   CREATED = "created",
   ABORTED = "aborted",
-  CANCELED = "canceled"
+  CANCELED = "canceled",
 }
 
 export enum OverdraftApplicationStatus {
@@ -347,12 +347,12 @@ export enum OverdraftApplicationStatus {
   ACCOUNT_SNAPSHOT_VERIFICATION_PENDING = "account_snapshot_verification_pending",
   OFFERED = "offered",
   REJECTED = "rejected",
-  OVERDRAFT_CREATED = "overdraft_created"
+  OVERDRAFT_CREATED = "overdraft_created",
 }
 
 export enum OverdraftApplicationDecision {
   OFFERED = "OFFERED",
-  REJECTED = "REJECTED"
+  REJECTED = "REJECTED",
 }
 
 export type OverdraftApplication = {
@@ -371,7 +371,7 @@ export type OverdraftApplication = {
 
 export enum OverdraftStatus {
   CREATED = "created",
-  LIMIT_SET = "limit_set"
+  LIMIT_SET = "limit_set",
 }
 
 export type Overdraft = {

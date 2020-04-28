@@ -13,23 +13,23 @@ const DEFAULT_ACCOUNT = {
   balance: {
     value: 0,
     unit: "cents",
-    currency: "EUR"
+    currency: "EUR",
   },
   available_balance: {
     value: 0,
     unit: "cents",
-    currency: "EUR"
+    currency: "EUR",
   },
   locking_status: "NO_BLOCK",
   locking_reasons: [],
   account_limit: {
     value: 0,
     unit: "cents",
-    currency: "EUR"
+    currency: "EUR",
   },
   person_id: "66a692fdddc32c05ebe1c1f1c3145a3bcper",
   status: "ACTIVE",
-  closure_reasons: null
+  closure_reasons: null,
 };
 
 const requestAccountFields = [
@@ -44,15 +44,15 @@ const requestAccountFields = [
   "account_limit",
   "person_id",
   "status",
-  "closure_reasons"
+  "closure_reasons",
 ];
 
 export const showAccountBookings = async (req, res) => {
   const {
     page: { size, number },
     filter: {
-      booking_date: { min, max }
-    }
+      booking_date: { min, max },
+    },
   } = req.query;
   const { account_id: accountId } = req.params;
 
@@ -61,7 +61,7 @@ export const showAccountBookings = async (req, res) => {
   const maxBookingDate = new Date(max);
 
   const transactions = _.get(person, "transactions", [])
-    .filter(booking => {
+    .filter((booking) => {
       const bookingDate = new Date(booking.booking_date);
       return bookingDate >= minBookingDate && bookingDate <= maxBookingDate;
     })
@@ -75,8 +75,8 @@ export const showAccountReservations = async (req, res) => {
     page: { size, number },
     filter: {
       expires_at: { min, max },
-      reservation_type: reservationType
-    }
+      reservation_type: reservationType,
+    },
   } = req.query;
 
   const { account_id: accountId } = req.params;
@@ -86,7 +86,7 @@ export const showAccountReservations = async (req, res) => {
   const maxExpiresAtDate = new Date(max);
 
   const reservations = _.get(person.account, "reservations", [])
-    .filter(reservation => {
+    .filter((reservation) => {
       const expiresAtDate = new Date(reservation.expires_at);
       return (
         expiresAtDate >= minExpiresAtDate &&
@@ -125,7 +125,7 @@ export const createAccount = async (personId, data) => {
   person.account = {
     ...DEFAULT_ACCOUNT,
     ...person.account,
-    ...data
+    ...data,
   };
 
   await savePerson(person);
@@ -138,10 +138,7 @@ export const createAccountRequestHandler = async (req, res) => {
 
   counter++;
 
-  const accountId = personId
-    .split("")
-    .reverse()
-    .join("");
+  const accountId = personId.split("").reverse().join("");
 
   const iban = generateIban.doIban(
     generateIban.fixCCC(generateIban.randomNumber())
@@ -154,13 +151,13 @@ export const createAccountRequestHandler = async (req, res) => {
     type: "CHECKING_BUSINESS",
     person_id: personId,
     balance: {
-      value: 0 // new accounts have no money
+      value: 0, // new accounts have no money
     },
     available_balance: {
-      value: 0 // new accounts have no money
+      value: 0, // new accounts have no money
     },
     sender_name: `bank-mock-${counter}`,
-    locking_status: "NO_BLOCK"
+    locking_status: "NO_BLOCK",
   });
 
   res.status(201).send(account);
@@ -168,7 +165,7 @@ export const createAccountRequestHandler = async (req, res) => {
 
 export const createAccountSnapshot = async (req, res) => {
   const {
-    body: { account_id: accountId, source }
+    body: { account_id: accountId, source },
   } = req;
 
   const person = await findPersonByAccountId(accountId);
@@ -182,8 +179,8 @@ export const createAccountSnapshot = async (req, res) => {
       detail: `Value: ${accountId} for field: 'account_id' not found`,
       source: {
         message: "not found",
-        field: "account_id"
-      }
+        field: "account_id",
+      },
     });
   }
 
@@ -196,8 +193,8 @@ export const createAccountSnapshot = async (req, res) => {
       detail: `/source: Invalid value for enum`,
       source: {
         message: "Invalid value for enum",
-        field: "/source"
-      }
+        field: "/source",
+      },
     });
   }
 
@@ -206,7 +203,7 @@ export const createAccountSnapshot = async (req, res) => {
     provider: ACCOUNT_SNAPSHOT_SOURCE,
     id: uuid.v4(),
     iban: person.account.iban,
-    account_id: accountId
+    account_id: accountId,
   };
 
   person.account.snapshot = snapshot;
@@ -214,6 +211,6 @@ export const createAccountSnapshot = async (req, res) => {
 
   return res.status(201).send({
     id: snapshot.id,
-    account_id: accountId
+    account_id: accountId,
   });
 };

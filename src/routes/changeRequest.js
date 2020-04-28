@@ -4,7 +4,7 @@ import moment from "moment";
 import { getPerson, savePerson, getMobileNumber } from "../db";
 import {
   removeMobileNumberConfirmChangeRequest,
-  MOBILE_NUMBER_CHANGE_METHOD
+  MOBILE_NUMBER_CHANGE_METHOD,
 } from "./mobileNumber";
 import {
   confirmStandingOrderCreation,
@@ -12,17 +12,17 @@ import {
   confirmStandingOrderCancelation,
   STANDING_ORDER_CREATE_METHOD,
   STANDING_ORDER_UPDATE_METHOD,
-  STANDING_ORDER_CANCEL_METHOD
+  STANDING_ORDER_CANCEL_METHOD,
 } from "./standingOrders";
 import { PERSON_UPDATE } from "./persons";
 import {
   TIN_UPDATE,
-  processChangeRequest as tinProcessChangeRequest
+  processChangeRequest as tinProcessChangeRequest,
 } from "./taxIdentifications";
 import { TIMED_ORDER_CREATE, confirmTimedOrder } from "./timedOrders";
 import {
   BATCH_TRANSFER_CREATE_METHOD,
-  confirmBatchTransfer
+  confirmBatchTransfer,
 } from "./batchTransfers";
 import { CHANGE_REQUEST_CHANGE_CARD_PIN } from "../helpers/cards";
 import { confirmChangeCardPINHandler } from "./cards";
@@ -42,7 +42,7 @@ export const createChangeRequest = async (req, res, person, method, delta) => {
       detail:
         "Unauthorized change request for Solaris::Person " +
         personId +
-        ". While authorization required, no entity with a possibility to authorize data change is present."
+        ". While authorization required, no entity with a possibility to authorize data change is present.",
     });
   }
 
@@ -50,7 +50,7 @@ export const createChangeRequest = async (req, res, person, method, delta) => {
   person.changeRequest = {
     id: changeRequestId,
     method: method,
-    delta: delta
+    delta: delta,
   };
   await savePerson(person);
 
@@ -58,7 +58,7 @@ export const createChangeRequest = async (req, res, person, method, delta) => {
     id: changeRequestId,
     status: "AUTHORIZATION_REQUIRED",
     updated_at: new Date().toISOString(),
-    url: `:env/v1/change_requests/${changeRequestId}/authorize`
+    url: `:env/v1/change_requests/${changeRequestId}/authorize`,
   });
 };
 
@@ -79,9 +79,9 @@ export const authorizeChangeRequest = async (req, res) => {
               status: 404,
               code: "model_not_found",
               title: "Model Not Found",
-              detail: `Couldn't find 'Solaris::MobileNumber' for id '${personId}'.`
-            }
-          ]
+              detail: `Couldn't find 'Solaris::MobileNumber' for id '${personId}'.`,
+            },
+          ],
         });
       }
     }
@@ -90,7 +90,7 @@ export const authorizeChangeRequest = async (req, res) => {
     return res.status(201).send({
       id: changeRequestId,
       status: "CONFIRMATION_REQUIRED",
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
     });
   }
 
@@ -101,9 +101,9 @@ export const authorizeChangeRequest = async (req, res) => {
         status: 401,
         code: "invalid_token",
         title: "Invalid Token",
-        detail: "Token is invalid"
-      }
-    ]
+        detail: "Token is invalid",
+      },
+    ],
   });
 };
 
@@ -126,9 +126,9 @@ export const confirmChangeRequest = async (req, res) => {
           status: 422,
           code: "unprocessable_entity",
           title: "Unprocessable Entity",
-          detail: `Unknown change request for Solaris::Person ${personId}`
-        }
-      ]
+          detail: `Unknown change request for Solaris::Person ${personId}`,
+        },
+      ],
     });
   }
 
@@ -144,9 +144,9 @@ export const confirmChangeRequest = async (req, res) => {
           status: 403,
           code: "invalid_tan",
           title: "Invalid TAN",
-          detail: `Invalid or expired TAN for Solaris`
-        }
-      ]
+          detail: `Invalid or expired TAN for Solaris`,
+        },
+      ],
     });
   }
 
@@ -201,9 +201,7 @@ export const confirmChangeRequest = async (req, res) => {
   return res.status(status).send(response);
 };
 
-const assignAuthorizationToken = async person => {
-  person.changeRequest.token = Date.now()
-    .toString()
-    .substr(-6);
+const assignAuthorizationToken = async (person) => {
+  person.changeRequest.token = Date.now().toString().substr(-6);
   await savePerson(person);
 };

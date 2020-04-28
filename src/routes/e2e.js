@@ -3,12 +3,12 @@ import { getPerson, savePerson } from "../db";
 export const updatePerson = async (req, res) => {
   const {
     params: { person_id: personId },
-    body
+    body,
   } = req;
 
   const person = {
     ...(await getPerson(personId)),
-    ...body
+    ...body,
   };
 
   await savePerson(person);

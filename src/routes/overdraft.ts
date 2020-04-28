@@ -6,14 +6,14 @@ import {
   generateEntityNotFoundPayload,
   changeOverdraftApplicationStatus,
   OVERDRAFT_LIMIT,
-  INTEREST_RATE
+  INTEREST_RATE,
 } from "../helpers/overdraft";
 import { OverdraftApplicationStatus, OverdraftStatus } from "../helpers/types";
 
 export const createOverdraftApplication = async (req, res) => {
   const {
     body: { credit_record_id: creditRecordId },
-    params: { person_id: personId }
+    params: { person_id: personId },
   } = req;
 
   const person = await getPerson(personId);
@@ -45,7 +45,7 @@ export const createOverdraftApplication = async (req, res) => {
     limit: null,
     interest_rate: INTEREST_RATE,
     created_at: new Date().toISOString(),
-    account_snapshot_id: null
+    account_snapshot_id: null,
   };
 
   person.account.overdraftApplications =
@@ -58,13 +58,13 @@ export const createOverdraftApplication = async (req, res) => {
 
 export const getOverdraftApplication = async (req, res) => {
   const {
-    params: { person_id: personId, id: applicationId }
+    params: { person_id: personId, id: applicationId },
   } = req;
 
   const person = await getPerson(personId);
 
   const overdraftApplication = person.account.overdraftApplications.find(
-    app => app.id === applicationId
+    (app) => app.id === applicationId
   );
 
   if (!overdraftApplication) {
@@ -79,13 +79,13 @@ export const getOverdraftApplication = async (req, res) => {
 export const linkOverdraftApplicationSnapshot = async (req, res) => {
   const {
     body: { account_snapshot_id: accountSnapshotId },
-    params: { person_id: personId, id: applicationId }
+    params: { person_id: personId, id: applicationId },
   } = req;
 
   const person = await getPerson(personId);
 
   const overdraftApplication = person.account.overdraftApplications.find(
-    app => app.id === applicationId
+    (app) => app.id === applicationId
   );
 
   if (!overdraftApplication) {
@@ -109,7 +109,7 @@ export const linkOverdraftApplicationSnapshot = async (req, res) => {
   await changeOverdraftApplicationStatus({
     person,
     applicationId: overdraftApplication.id,
-    status: OverdraftApplicationStatus.ACCOUNT_SNAPSHOT_VERIFICATION_PENDING
+    status: OverdraftApplicationStatus.ACCOUNT_SNAPSHOT_VERIFICATION_PENDING,
   });
 
   res.sendStatus(204);
@@ -118,13 +118,13 @@ export const linkOverdraftApplicationSnapshot = async (req, res) => {
 export const createOverdraft = async (req, res) => {
   const {
     body: { account_id: accountId },
-    params: { person_id: personId, id: applicationId }
+    params: { person_id: personId, id: applicationId },
   } = req;
 
   const person = await getPerson(personId);
 
   const overdraftApplication = person.account.overdraftApplications.find(
-    app => app.id === applicationId
+    (app) => app.id === applicationId
   );
 
   if (!overdraftApplication) {
@@ -148,7 +148,7 @@ export const createOverdraft = async (req, res) => {
     limit: OVERDRAFT_LIMIT,
     interest_rate: INTEREST_RATE,
     created_at: new Date().toISOString(),
-    account_id: accountId
+    account_id: accountId,
   };
 
   account.overdraft = overdraft;
@@ -159,11 +159,11 @@ export const createOverdraft = async (req, res) => {
   await changeOverdraftApplicationStatus({
     person,
     applicationId: overdraftApplication.id,
-    status: OverdraftApplicationStatus.OVERDRAFT_CREATED
+    status: OverdraftApplicationStatus.OVERDRAFT_CREATED,
   });
 
   res.status(201).send({
     ...overdraft,
-    status: OverdraftStatus.CREATED
+    status: OverdraftStatus.CREATED,
   });
 };

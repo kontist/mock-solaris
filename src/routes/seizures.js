@@ -9,11 +9,11 @@ import { PersonWebhookEvent } from "../helpers/types";
 
 export const SEIZURE_STATUSES = {
   ACTIVE: "ACTIVE",
-  FULFILLED: "FULFILLED"
+  FULFILLED: "FULFILLED",
 };
 
 const SEIZURE_CUSTOMER_TYPES = {
-  PERSON: "Person"
+  PERSON: "Person",
 };
 
 const SEIZURE_EXAMPLE = {
@@ -27,12 +27,12 @@ const SEIZURE_EXAMPLE = {
   amount: {
     value: 42,
     unit: "cents",
-    currency: "EUR"
+    currency: "EUR",
   },
   additional_cost: {
     value: 42,
     unit: "cents",
-    currency: "EUR"
+    currency: "EUR",
   },
   debtor: {
     name: "Ben Wiseley",
@@ -40,7 +40,7 @@ const SEIZURE_EXAMPLE = {
     postal_code: "10249",
     city: "Berlin",
     country: "DE",
-    state: "BE"
+    state: "BE",
   },
   creditor: {
     name: "Betflix LLC",
@@ -49,7 +49,7 @@ const SEIZURE_EXAMPLE = {
     city: "Berlin",
     country: "DE",
     state: "BE",
-    iban: "DE72110101001000014344"
+    iban: "DE72110101001000014344",
   },
   creditor_representative: {
     name: "Lawyer LLC",
@@ -59,11 +59,11 @@ const SEIZURE_EXAMPLE = {
     country: "DE",
     state: "BE",
     case_number: "42ABC-2",
-    iban: "DE72110101001000014344"
-  }
+    iban: "DE72110101001000014344",
+  },
 };
 
-export const createSeizure = async personId => {
+export const createSeizure = async (personId) => {
   const person = await getPerson(personId);
 
   const today = moment().format("YYYY-MM-DD");
@@ -71,7 +71,7 @@ export const createSeizure = async personId => {
     ...SEIZURE_EXAMPLE,
     id: uuid.v4(),
     enactment_date: today,
-    delivery_date: today
+    delivery_date: today,
   };
 
   await savePerson(person);
@@ -83,7 +83,7 @@ export const createSeizureRequestHandler = async (req, res) => {
 
   log.info("createSeizureRequestHandler()", {
     reqBody: req.body,
-    reqParams: req.params
+    reqParams: req.params,
   });
 
   const person = await createSeizure(personId);
@@ -99,7 +99,7 @@ export const getSeizuresRequestHandler = async (req, res) => {
 
   log.info("getSeizuresRequestHandler()", {
     reqBody: req.body,
-    reqParams: req.params
+    reqParams: req.params,
   });
 
   const person = await getPerson(personId);
@@ -112,7 +112,7 @@ export const deleteSeizureRequestHandler = async (req, res) => {
 
   log.info("deleteSeizureRequestHandler()", {
     reqBody: req.body,
-    reqParams: req.params
+    reqParams: req.params,
   });
 
   const person = await getPerson(personId);
@@ -131,7 +131,7 @@ export const fulfillSeizureRequestHandler = async (req, res) => {
 
   log.info("fulfillSeizureRequestHandler()", {
     reqBody: req.body,
-    reqParams: req.params
+    reqParams: req.params,
   });
 
   const person = await getPerson(personId);
@@ -156,5 +156,5 @@ const triggerPersonSeizureDeletedWebhook = async (personId, seizure) => {
 const getSeizureWebhookPayload = (personId, seizure) => ({
   ...seizure,
   customer_id: personId,
-  customer_type: SEIZURE_CUSTOMER_TYPES.PERSON
+  customer_type: SEIZURE_CUSTOMER_TYPES.PERSON,
 });

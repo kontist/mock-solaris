@@ -18,7 +18,7 @@ if (process.env.MOCKSOLARIS_REDIS_SERVER) {
 
 const redisClient = redis.createClient(process.env.MOCKSOLARIS_REDIS_SERVER);
 
-redisClient.on("error", function(err) {
+redisClient.on("error", function (err) {
   log.error("Error " + err);
 });
 
@@ -42,7 +42,7 @@ export const migrate = async () => {
         line_1: "Torstraße 177",
         postal_code: "10155",
         city: "Berlin",
-        country: "DE"
+        country: "DE",
       },
       fatca_relevant: true,
       email: "kontistgmbh@mocksolaris.example.com",
@@ -61,7 +61,7 @@ export const migrate = async () => {
           person_id: "mock691f4e49fc43b913bd8ede668e187e9a",
           startUrl:
             "https://api.test.idnow.de/api/v1/kontist/identifications/identify-mock691f4e49fc43b913bd8ede668e187e9a-1509032370615/start",
-          email: "i1@kontist.com"
+          email: "i1@kontist.com",
         },
         "identify-mock691f4e49fc43b913bd8ede668e187e9a-1509032371343": {
           id: "identify-mock691f4e49fc43b913bd8ede668e187e9a-1509032371343",
@@ -69,15 +69,15 @@ export const migrate = async () => {
           url: null,
           status: "created",
           completed_at: null,
-          method: "idnow"
-        }
+          method: "idnow",
+        },
       },
       transactions: [
         {
           id: "e0492abb-87fd-42a2-9303-708026b90c8e",
           amount: {
             value: 100,
-            currency: "EUR"
+            currency: "EUR",
           },
           valuta_date: "2017-12-24",
           description: "kauf dir was",
@@ -88,8 +88,8 @@ export const migrate = async () => {
           recipient_name: "Kontist GmbH",
           sender_bic: process.env.SOLARIS_BIC,
           sender_iban: "DE00000000002901",
-          sender_name: "Alexander Baatz Retirement Fund"
-        }
+          sender_name: "Alexander Baatz Retirement Fund",
+        },
       ],
       account: {
         id: process.env.SOLARIS_KONTIST_ACCOUNT_ID,
@@ -98,13 +98,13 @@ export const migrate = async () => {
         type: "CHECKING_BUSINESS",
         person_id: "mockpersonkontistgmbh",
         balance: {
-          value: 100
+          value: 100,
         },
         sender_name: "unknown",
         locking_status: "",
         available_balance: {
-          value: 100
-        }
+          value: 100,
+        },
       },
       billing_account: {
         id: process.env.SOLARIS_KONTIST_BILLING_ACCOUNT_ID,
@@ -113,19 +113,19 @@ export const migrate = async () => {
         type: "CHECKING_BUSINESS",
         person_id: "mockpersonkontistgmbh",
         balance: {
-          value: 100
+          value: 100,
         },
         sender_name: "unknown",
         locking_status: "",
         available_balance: {
-          value: 100
-        }
-      }
+          value: 100,
+        },
+      },
     });
   }
 };
 
-const jsonToPerson = value => {
+const jsonToPerson = (value) => {
   if (!value) {
     throw new Error("did not find person");
   }
@@ -135,7 +135,7 @@ const jsonToPerson = value => {
   return person;
 };
 
-export const getPerson = async personId => {
+export const getPerson = async (personId) => {
   const person = await redisClient
     .getAsync(`${process.env.MOCKSOLARIS_REDIS_PREFIX}:person:${personId}`)
     .then(jsonToPerson);
@@ -157,10 +157,12 @@ export const savePerson = async (person, skipInterest = false) => {
     const reservations = person.account.reservations || [];
     const now = new Date().getTime();
     const transactionsBalance = transactions
-      .filter(transaction => new Date(transaction.valuta_date).getTime() < now)
+      .filter(
+        (transaction) => new Date(transaction.valuta_date).getTime() < now
+      )
       .reduce(addAmountValues, 0);
     const confirmedTransfersBalance = queuedBookings
-      .filter(booking => booking.status === "accepted")
+      .filter((booking) => booking.status === "accepted")
       .reduce(addAmountValues, 0);
     const reservationsBalance = reservations.reduce(addAmountValues, 0);
     const limitBalance =
@@ -171,7 +173,7 @@ export const savePerson = async (person, skipInterest = false) => {
     }
 
     account.balance = {
-      value: transactionsBalance
+      value: transactionsBalance,
     };
 
     account.available_balance = {
@@ -180,7 +182,7 @@ export const savePerson = async (person, skipInterest = false) => {
         limitBalance +
         transactionsBalance +
         confirmedTransfersBalance -
-        reservationsBalance
+        reservationsBalance,
     };
 
     person.account = account;
@@ -195,7 +197,7 @@ export const savePerson = async (person, skipInterest = false) => {
   return response;
 };
 
-export const getTaxIdentifications = async personId =>
+export const getTaxIdentifications = async (personId) =>
   JSON.parse(
     (await redisClient.getAsync(
       `${process.env.MOCKSOLARIS_REDIS_PREFIX}:taxIdentifications:${personId}`
@@ -208,7 +210,7 @@ export const saveTaxIdentifications = async (personId, data) =>
     JSON.stringify(data, undefined, 2)
   );
 
-export const getMobileNumber = async personId =>
+export const getMobileNumber = async (personId) =>
   JSON.parse(
     await redisClient.getAsync(
       `${process.env.MOCKSOLARIS_REDIS_PREFIX}:mobileNumber:${personId}`
@@ -221,12 +223,12 @@ export const saveMobileNumber = async (personId, data) =>
     JSON.stringify(data, undefined, 2)
   );
 
-export const deleteMobileNumber = async personId =>
+export const deleteMobileNumber = async (personId) =>
   redisClient.delAsync(
     `${process.env.MOCKSOLARIS_REDIS_PREFIX}:mobileNumber:${personId}`
   );
 
-export const getDevice = async deviceId =>
+export const getDevice = async (deviceId) =>
   JSON.parse(
     await redisClient.getAsync(
       `${process.env.MOCKSOLARIS_REDIS_PREFIX}:device:${deviceId}`
@@ -236,38 +238,38 @@ export const getDevice = async deviceId =>
 export const getAllDevices = () =>
   redisClient
     .keysAsync(`${process.env.MOCKSOLARIS_REDIS_PREFIX}:device:*`)
-    .then(keys => {
+    .then((keys) => {
       if (keys.length < 1) {
         return [];
       }
       return redisClient.mgetAsync(keys);
     })
-    .then(values => values.map(value => JSON.parse(value)));
+    .then((values) => values.map((value) => JSON.parse(value)));
 
-export const getDevicesByPersonId = personId =>
-  getAllDevices().then(devices =>
-    devices.filter(device => device.person_id === personId)
+export const getDevicesByPersonId = (personId) =>
+  getAllDevices().then((devices) =>
+    devices.filter((device) => device.person_id === personId)
   );
 
-export const saveDevice = async device =>
+export const saveDevice = async (device) =>
   redisClient.setAsync(
     `${process.env.MOCKSOLARIS_REDIS_PREFIX}:device:${device.id}`,
     JSON.stringify(device, undefined, 2)
   );
 
-export const getDeviceChallenge = async challengeId =>
+export const getDeviceChallenge = async (challengeId) =>
   JSON.parse(
     await redisClient.getAsync(
       `${process.env.MOCKSOLARIS_REDIS_PREFIX}:deviceChallenge:${challengeId}`
     )
   );
 
-export const deleteDeviceChallenge = async challengeId =>
+export const deleteDeviceChallenge = async (challengeId) =>
   redisClient.delAsync(
     `${process.env.MOCKSOLARIS_REDIS_PREFIX}:deviceChallenge:${challengeId}`
   );
 
-export const saveDeviceChallenge = async challenge =>
+export const saveDeviceChallenge = async (challenge) =>
   redisClient.setAsync(
     `${process.env.MOCKSOLARIS_REDIS_PREFIX}:deviceChallenge:${challenge.id}`,
     JSON.stringify(challenge, undefined, 2)
@@ -275,7 +277,7 @@ export const saveDeviceChallenge = async challenge =>
 
 export const saveBooking = (accountId, booking) => {
   return findPersonByAccountId(accountId)
-    .then(person => {
+    .then((person) => {
       person.transactions.push(booking);
       return person;
     })
@@ -285,14 +287,14 @@ export const saveBooking = (accountId, booking) => {
 export const getAllPersons = () => {
   return redisClient
     .keysAsync(`${process.env.MOCKSOLARIS_REDIS_PREFIX}:person:*`)
-    .then(keys => {
+    .then((keys) => {
       if (keys.length < 1) {
         return [];
       }
       return redisClient.mgetAsync(keys);
     })
-    .then(values => values.map(jsonToPerson))
-    .then(values =>
+    .then((values) => values.map(jsonToPerson))
+    .then((values) =>
       values.sort((p1, p2) => {
         if (!p1.createdAt && p2.createdAt) return 1;
         if (p1.createdAt && !p2.createdAt) return -1;
@@ -300,10 +302,10 @@ export const getAllPersons = () => {
         return p1.createdAt > p2.createdAt ? -1 : 1;
       })
     )
-    .then(results => results.map(person => augmentPerson(person)));
+    .then((results) => results.map((person) => augmentPerson(person)));
 };
 
-const augmentPerson = person => {
+const augmentPerson = (person) => {
   const augmented = _.cloneDeep(person);
   augmented.fraudCases = augmented.fraudCases || [];
   augmented.timedOrders = augmented.timedOrders || [];
@@ -319,9 +321,9 @@ const augmentPerson = person => {
 };
 
 export const getAllIdentifications = () => {
-  return getAllPersons().then(persons => {
+  return getAllPersons().then((persons) => {
     return _.flattenDeep(
-      persons.map(person => {
+      persons.map((person) => {
         const identification = Object.values(person.identifications || {});
         identification.person = person;
         return identification;
@@ -330,43 +332,43 @@ export const getAllIdentifications = () => {
   });
 };
 
-export const findPersonByAccountField = async findBy => {
+export const findPersonByAccountField = async (findBy) => {
   const persons = await getAllPersons();
-  return persons.filter(person => person.account).find(findBy);
+  return persons.filter((person) => person.account).find(findBy);
 };
 
-export const findPersonByAccountId = accountId =>
+export const findPersonByAccountId = (accountId) =>
   findPersonByAccountField(
-    person =>
+    (person) =>
       person.account.id === accountId ||
       (person.billing_account || {}).id === accountId
   );
 
-export const findPersonByAccountIBAN = iban =>
-  findPersonByAccountField(person => person.account.iban === iban);
+export const findPersonByAccountIBAN = (iban) =>
+  findPersonByAccountField((person) => person.account.iban === iban);
 
-export const findPersonByEmail = email => {
-  return getAllPersons().then(persons => {
-    return persons.find(person => person.email === email);
+export const findPersonByEmail = (email) => {
+  return getAllPersons().then((persons) => {
+    return persons.find((person) => person.email === email);
   });
 };
 
 export const getWebhooks = async () => {
   const webhooks = await redisClient
     .keysAsync(`${process.env.MOCKSOLARIS_REDIS_PREFIX}:webhook:*`)
-    .then(keys => {
+    .then((keys) => {
       if (keys.length < 1) {
         return [];
       }
       return redisClient.mgetAsync(keys);
     })
-    .then(values => values.map(JSON.parse));
+    .then((values) => values.map(JSON.parse));
 
   return webhooks;
 };
 
-export const getWebhookByType = async type =>
-  (await getWebhooks()).find(webhook => webhook.event_type === type);
+export const getWebhookByType = async (type) =>
+  (await getWebhooks()).find((webhook) => webhook.event_type === type);
 
 export const getSepaDirectDebitReturns = async () => {
   const sepaDirectDebitReturns = JSON.parse(
@@ -378,7 +380,7 @@ export const getSepaDirectDebitReturns = async () => {
   return sepaDirectDebitReturns;
 };
 
-export const saveSepaDirectDebitReturn = async sepaDirectDebitReturn => {
+export const saveSepaDirectDebitReturn = async (sepaDirectDebitReturn) => {
   const sepaDirectDebitReturns = await getSepaDirectDebitReturns();
   sepaDirectDebitReturns.push(sepaDirectDebitReturn);
 
@@ -393,7 +395,7 @@ export const saveSepaDirectDebitReturn = async sepaDirectDebitReturn => {
   );
 };
 
-export const saveWebhook = webhook => {
+export const saveWebhook = (webhook) => {
   return redisClient.setAsync(
     `${process.env.MOCKSOLARIS_REDIS_PREFIX}:webhook:${webhook.event_type}`,
     JSON.stringify(webhook, undefined, 2)
@@ -404,15 +406,15 @@ export const flushDb = () => {
   return redisClient.flushdbAsync();
 };
 
-const fillMissingCurrencyForLegacyBooking = booking => ({
+const fillMissingCurrencyForLegacyBooking = (booking) => ({
   ...booking,
   amount: {
     ...booking.amount,
-    currency: booking.amount.currency || "EUR"
-  }
+    currency: booking.amount.currency || "EUR",
+  },
 });
 
-export const getPersonBookings = person => {
+export const getPersonBookings = (person) => {
   return (person.transactions || []).map(fillMissingCurrencyForLegacyBooking);
 };
 
@@ -428,12 +430,12 @@ export const getCardReferences = async () =>
     )) || "[]"
   );
 
-export const hasCardReference = async cardRef => {
+export const hasCardReference = async (cardRef) => {
   const cardReferences = await getCardReferences();
   return cardReferences.includes(cardRef);
 };
 
-export const saveCardReference = async cardRef => {
+export const saveCardReference = async (cardRef) => {
   if (await hasCardReference(cardRef)) {
     return false;
   }
@@ -448,23 +450,23 @@ export const saveCardReference = async cardRef => {
   return true;
 };
 
-export const getCardData = async cardId => {
+export const getCardData = async (cardId) => {
   const persons = await getAllPersons();
 
   const cardData = _(persons)
-    .map(person => _.get(person, "account.cards", []))
+    .map((person) => _.get(person, "account.cards", []))
     .flatten()
     .value()
-    .find(cardData => cardData.card.id === cardId);
+    .find((cardData) => cardData.card.id === cardId);
 
   return cardData;
 };
 
-export const getPersonByFraudCaseId = async fraudCaseId => {
+export const getPersonByFraudCaseId = async (fraudCaseId) => {
   const persons = await getAllPersons();
   return persons.find(
-    p => p.fraudCases.find(c => c.id === fraudCaseId) !== undefined
+    (p) => p.fraudCases.find((c) => c.id === fraudCaseId) !== undefined
   );
 };
 
-export const getCard = async cardId => (await getCardData(cardId)).card;
+export const getCard = async (cardId) => (await getCardData(cardId)).card;

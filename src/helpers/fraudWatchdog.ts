@@ -7,12 +7,12 @@ import {
   CardWebhookEvent,
   MockPerson,
   FraudCase,
-  CaseResolution
+  CaseResolution,
 } from "./types";
 import { mapReservationToCardAuthorization } from "./cardAuthorization";
 
 const getReservationById = (id: string, reservations: Reservation[]) => {
-  return reservations.find(r => r.id === id);
+  return reservations.find((r) => r.id === id);
 };
 
 const now = () => new Date().getTime();
@@ -67,7 +67,7 @@ export class FraudWatchdog {
         resolution: CaseResolution.TIMEOUT,
         respond_until: new Date(fraudCase.reservationExpiresAt).toISOString(),
         whitelisted_until: "null",
-        card_transaction: mapReservationToCardAuthorization(reservation)
+        card_transaction: mapReservationToCardAuthorization(reservation),
       });
       await this._confirmFraud(fraudCaseId, CardStatus.BLOCKED);
     }
@@ -99,9 +99,9 @@ export class FraudWatchdog {
       person.account.fraudReservations
     );
     person.account.fraudReservations = person.account.fraudReservations.filter(
-      r => r.id !== reservation.id
+      (r) => r.id !== reservation.id
     );
-    person.fraudCases = person.fraudCases.filter(f => f.id !== fraudCase.id);
+    person.fraudCases = person.fraudCases.filter((f) => f.id !== fraudCase.id);
     delete this.fraudCases[fraudCaseId];
     await db.savePerson(person);
   }
@@ -125,9 +125,9 @@ export class FraudWatchdog {
     );
 
     person.account.fraudReservations = person.account.fraudReservations.filter(
-      r => r.id !== reservation.id
+      (r) => r.id !== reservation.id
     );
-    person.fraudCases = person.fraudCases.filter(f => f.id !== fraudCase.id);
+    person.fraudCases = person.fraudCases.filter((f) => f.id !== fraudCase.id);
     await db.savePerson(person);
     delete this.fraudCases[fraudCaseId];
 

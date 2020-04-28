@@ -14,7 +14,7 @@ import {
   CardLimitType,
   CardStatus,
   CaseResolution,
-  MockChangeRequest
+  MockChangeRequest,
 } from "../helpers/types";
 
 import * as cardHelpers from "../helpers/cards";
@@ -42,7 +42,7 @@ export const replaceCardHandler = async (
 
     if (errors.length > 0) {
       res.status(errors[0].status).send({
-        errors
+        errors,
       });
       return;
     }
@@ -51,11 +51,11 @@ export const replaceCardHandler = async (
       " "
     );
 
-    person.account.cards = person.account.cards.map(item => {
+    person.account.cards = person.account.cards.map((item) => {
       if (item.card.id === newCard.id) {
         return {
           card: newCard,
-          cardDetails
+          cardDetails,
         };
       }
       return item;
@@ -67,7 +67,7 @@ export const replaceCardHandler = async (
 
     res.status(HttpStatusCodes.CREATED).send({
       id: newCard.id,
-      status: newCard.status
+      status: newCard.status,
     });
   } catch (err) {
     log.error("(replaceCardHandler) Error occurred", err);
@@ -79,9 +79,9 @@ export const replaceCardHandler = async (
           status: 500,
           code: "generic_error",
           title: "Generic error",
-          detail: `generic error.`
-        }
-      ]
+          detail: `generic error.`,
+        },
+      ],
     });
   }
 };
@@ -104,9 +104,9 @@ export const createCardHandler = async (
             status: 404,
             code: "model_not_found",
             title: "Model Not Found",
-            detail: `Couldn't find 'Solaris::Person' for id '${personId}'.`
-          }
-        ]
+            detail: `Couldn't find 'Solaris::Person' for id '${personId}'.`,
+          },
+        ],
       });
       return;
     }
@@ -121,7 +121,7 @@ export const createCardHandler = async (
 
     if (errors.length > 0) {
       res.status(errors[0].status).send({
-        errors
+        errors,
       });
       return;
     }
@@ -137,7 +137,7 @@ export const createCardHandler = async (
 
     res.status(HttpStatusCodes.CREATED).send({
       id: card.id,
-      status: card.status
+      status: card.status,
     });
   } catch (err) {
     log.error("(createCardHandler) Error occurred", err);
@@ -149,9 +149,9 @@ export const createCardHandler = async (
           status: 500,
           code: "generic_error",
           title: "Generic error",
-          detail: `generic error.`
-        }
-      ]
+          detail: `generic error.`,
+        },
+      ],
     });
   }
 };
@@ -171,9 +171,9 @@ export const getAccountCardsHandler = async (
           status: 404,
           code: "model_not_found",
           title: "Model Not Found",
-          detail: `Couldn't find 'Solaris::Account' for id '${accountId}'.`
-        }
-      ]
+          detail: `Couldn't find 'Solaris::Account' for id '${accountId}'.`,
+        },
+      ],
     });
     return;
   }
@@ -206,10 +206,10 @@ const handleCardActivationError = (
           detail: `card is in ${card.status} status`,
           source: {
             field: "card",
-            message: `is in ${card.status} status`
-          }
-        }
-      ]
+            message: `is in ${card.status} status`,
+          },
+        },
+      ],
     });
     return;
   }
@@ -225,10 +225,10 @@ const handleCardActivationError = (
           detail: "verification_token must be at the most 6 characters long",
           source: {
             field: "verification_token",
-            message: "must be at the most 6 characters long"
-          }
-        }
-      ]
+            message: "must be at the most 6 characters long",
+          },
+        },
+      ],
     });
     return;
   }
@@ -241,9 +241,9 @@ const handleCardActivationError = (
           status: 400,
           code: cardHelpers.CardErrorCodes.INVALID_VERIFICATION_TOKEN,
           title: "Invalid Verification Token",
-          detail: "Invalid Verification Token"
-        }
-      ]
+          detail: "Invalid Verification Token",
+        },
+      ],
     });
     return;
   }
@@ -278,9 +278,9 @@ export const cardMiddleware = async (req, res, next) => {
           status: HttpStatusCodes.NOT_FOUND,
           code: "model_not_found",
           title: "Model Not Found",
-          detail: `Couldn't find 'Solaris::CardAccount' for id '${cardId}'.`
-        }
-      ]
+          detail: `Couldn't find 'Solaris::CardAccount' for id '${cardId}'.`,
+        },
+      ],
     });
   }
 
@@ -302,9 +302,9 @@ export const cardStatusMiddleware = (states: CardStatus[]) => async (
         {
           id: uuid.v4(),
           status: HttpStatusCodes.BAD_REQUEST,
-          detail: `card in invalid state.`
-        }
-      ]
+          detail: `card in invalid state.`,
+        },
+      ],
     });
     return;
   }
@@ -337,10 +337,10 @@ const handleSetCardLimitValidationError = (validationError, res) => {
         detail: validationError,
         source: {
           field: "limit",
-          message: validationError.replace(/^limit/, "")
-        }
-      }
-    ]
+          message: validationError.replace(/^limit/, ""),
+        },
+      },
+    ],
   });
 };
 
@@ -397,7 +397,7 @@ export const confirmFraudHandler = async (
   getFraudWatchdog().confirmFraud(fraudCaseId);
   const response = {
     id: fraudCaseId,
-    resolution: CaseResolution.CONFIRMED
+    resolution: CaseResolution.CONFIRMED,
   };
   res.status(HttpStatusCodes.OK).send(response);
 };
@@ -414,7 +414,9 @@ export const whitelistCardHandler = async (
     // https://docs.solarisbank.com/sbdf35fw/api/v1/#5jDUgtyQ-post-whitelist-a-card
     // Card whitelisting timespan, during which the card will not be declined,
     // should the transaction be retried. Timespan is set to 10 mins.
-    whitelisted_until: new Date(new Date().getTime() + 10 * 60000).toISOString()
+    whitelisted_until: new Date(
+      new Date().getTime() + 10 * 60000
+    ).toISOString(),
   };
   res.status(HttpStatusCodes.OK).send(response);
 };
@@ -427,7 +429,7 @@ export const blockCardHandler = async (
     person_id: personId,
     account_id: accountId,
     id: cardId,
-    status
+    status,
   } = req.card;
 
   if (![CardStatus.ACTIVE, CardStatus.BLOCKED].includes(status)) {
@@ -438,9 +440,9 @@ export const blockCardHandler = async (
           status: 400,
           code: "invalid_status",
           title: "Invalid Status",
-          detail: `Expected the status for 'Solaris::PlasticCard' to be 'BLOCKED' but was '${status}'.`
-        }
-      ]
+          detail: `Expected the status for 'Solaris::PlasticCard' to be 'BLOCKED' but was '${status}'.`,
+        },
+      ],
     });
     return;
   }
@@ -462,7 +464,7 @@ export const unblockCardHandler = async (
     person_id: personId,
     account_id: accountId,
     id: cardId,
-    status
+    status,
   } = req.card;
 
   // Solaris sandbox and production does not throw an error in any case.
@@ -490,7 +492,7 @@ export const changePINCardHandler = async (
   const pinValidationErrors = cardHelpers.validatePIN(pin || "");
   if (pinValidationErrors.length) {
     res.status(HttpStatusCodes.BAD_REQUEST).send({
-      errors: pinValidationErrors
+      errors: pinValidationErrors,
     });
     return;
   }
@@ -517,9 +519,9 @@ export const confirmChangeCardPINHandler = async (
           status: HttpStatusCodes.NOT_FOUND,
           code: "model_not_found",
           title: "Model Not Found",
-          detail: `Couldn't find 'Solaris::Changeset' for id '${changeRequestId}'.`
-        }
-      ]
+          detail: `Couldn't find 'Solaris::Changeset' for id '${changeRequestId}'.`,
+        },
+      ],
     });
     return;
   }
@@ -532,9 +534,9 @@ export const confirmChangeCardPINHandler = async (
           status: HttpStatusCodes.UNPROCESSABLE_ENTITY,
           code: "invalid_tan",
           title: "Invalid Tan",
-          detail: `The TAN (${tan}) is invalid`
-        }
-      ]
+          detail: `The TAN (${tan}) is invalid`,
+        },
+      ],
     });
     return;
   }
@@ -581,10 +583,10 @@ export const pushProvisioningHandler = async (
   const errors = [
     "client_wallet_account_id",
     "client_device_id",
-    "client_app_id"
+    "client_app_id",
   ]
-    .filter(fieldName => !_.get(req.body, fieldName))
-    .map(fieldName => ({
+    .filter((fieldName) => !_.get(req.body, fieldName))
+    .map((fieldName) => ({
       id: uuid.v4(),
       status: HttpStatusCodes.BAD_REQUEST,
       code: "validation_error",
@@ -592,13 +594,13 @@ export const pushProvisioningHandler = async (
       detail: `${fieldName} is missing`,
       source: {
         field: `${fieldName}`,
-        message: "is missing"
-      }
+        message: "is missing",
+      },
     }));
 
   if (errors.length) {
     res.status(errors[0].status).send({
-      errors
+      errors,
     });
     return;
   }
@@ -611,9 +613,9 @@ export const pushProvisioningHandler = async (
           status: HttpStatusCodes.BAD_REQUEST,
           code: "invalid_wallet_type_for_push_provisioning",
           title: "Invalid Wallet Type",
-          detail: `wallet type ${walletType} is not supported`
-        }
-      ]
+          detail: `wallet type ${walletType} is not supported`,
+        },
+      ],
     });
     return;
   }
@@ -629,10 +631,10 @@ export const getVirtualCardDetails = async (
   const {
     body: {
       jwk,
-      jwe: { alg, enc }
+      jwe: { alg, enc },
     },
     card,
-    cardDetails
+    cardDetails,
   } = req;
 
   const errors = [
@@ -644,10 +646,10 @@ export const getVirtualCardDetails = async (
     "jwk[e]",
     "jwe",
     "jwe[alg]",
-    "jwe[enc]"
+    "jwe[enc]",
   ]
-    .filter(fieldName => !_.get(req.body, fieldName))
-    .map(fieldName => ({
+    .filter((fieldName) => !_.get(req.body, fieldName))
+    .map((fieldName) => ({
       id: uuid.v4(),
       status: 400,
       code: "validation_error",
@@ -655,13 +657,13 @@ export const getVirtualCardDetails = async (
       detail: `${fieldName} is missing`,
       source: {
         field: `${fieldName}`,
-        message: "is missing"
-      }
+        message: "is missing",
+      },
     }));
 
   if (errors.length) {
     res.status(errors[0].status).send({
-      errors
+      errors,
     });
     return;
   }
@@ -669,9 +671,9 @@ export const getVirtualCardDetails = async (
   const SUPPORTED_ALG = ["RSA1_5", "RSA_OAEP_256", "RSA_OAEP_256_ANDROID"];
 
   if (!SUPPORTED_ALG.includes(alg)) {
-    const validAlgMessage = `Valid: ${SUPPORTED_ALG.map(alg => `'${alg}'`).join(
-      ", "
-    )}`;
+    const validAlgMessage = `Valid: ${SUPPORTED_ALG.map(
+      (alg) => `'${alg}'`
+    ).join(", ")}`;
     res.status(400).send({
       errors: [
         {
@@ -682,10 +684,10 @@ export const getVirtualCardDetails = async (
           detail: `jwe[alg] is not valid. ${validAlgMessage}`,
           source: {
             field: "jwe[alg]",
-            message: `is not valid. ${validAlgMessage}`
-          }
-        }
-      ]
+            message: `is not valid. ${validAlgMessage}`,
+          },
+        },
+      ],
     });
     return;
   }
@@ -694,7 +696,7 @@ export const getVirtualCardDetails = async (
     pan: cardDetails.cardNumber,
     cvc: cardDetails.cvv,
     expires_at: card.expiration_date,
-    line_1: card.representation.line_1
+    line_1: card.representation.line_1,
   };
 
   try {

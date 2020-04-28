@@ -19,7 +19,7 @@ import {
   ChangeRequestStatus,
   MockChangeRequest,
   CardSettings,
-  ReplaceCardData
+  ReplaceCardData,
 } from "./types";
 
 const CARD_HOLDER_MAX_LENGTH = 21;
@@ -52,7 +52,7 @@ export const CHANGE_REQUEST_CHANGE_CARD_PIN = "card_pin";
 export enum CardErrorCodes {
   CARD_ACTIVATION_INVALID_STATUS = "card_activation_invalid_status",
   INVALID_VERIFICATION_TOKEN = "invalid_verification_token",
-  VERIFICATION_TOKEN_TOO_LONG = "verification_token_too_long"
+  VERIFICATION_TOKEN_TOO_LONG = "verification_token_too_long",
 }
 
 export const validateCardData = async (
@@ -70,8 +70,8 @@ export const validateCardData = async (
       detail: "type does not have a valid value",
       source: {
         field: "type",
-        message: "does not have a valid value"
-      }
+        message: "does not have a valid value",
+      },
     });
   }
 
@@ -86,8 +86,8 @@ export const validateCardData = async (
       detail: "line_1 is missing, is empty, is invalid",
       source: {
         field: "line_1",
-        message: "is missing, is empty, is invalid"
-      }
+        message: "is missing, is empty, is invalid",
+      },
     });
   } else if (cardHolder.length > CARD_HOLDER_MAX_LENGTH) {
     errors.push({
@@ -98,13 +98,13 @@ export const validateCardData = async (
       detail: `line_1 is longer than ${CARD_HOLDER_MAX_LENGTH} characters, is invalid`,
       source: {
         field: "line_1",
-        message: `is longer than ${CARD_HOLDER_MAX_LENGTH} characters, is invalid`
-      }
+        message: `is longer than ${CARD_HOLDER_MAX_LENGTH} characters, is invalid`,
+      },
     });
   } else {
     const hasValidChars = cardHolder
       .split("")
-      .every(char => CARD_HOLDER_ALLOWED_CHARS.includes(char));
+      .every((char) => CARD_HOLDER_ALLOWED_CHARS.includes(char));
 
     const [firstName, lastName, ...rest] = cardHolder.split("/");
 
@@ -117,8 +117,8 @@ export const validateCardData = async (
         detail: "line_1 is invalid",
         source: {
           field: "line_1",
-          message: "is invalid"
-        }
+          message: "is invalid",
+        },
       });
     }
   }
@@ -134,8 +134,8 @@ export const validateCardData = async (
         detail: "card reference is not unique",
         source: {
           field: "reference",
-          message: "card reference is not unique"
-        }
+          message: "card reference is not unique",
+        },
       });
     }
   }
@@ -159,8 +159,8 @@ export const validatePersonData = async (
       detail: "user does not have verified mobile_number",
       source: {
         field: "mobile_number",
-        message: "does not have verified mobile_number"
-      }
+        message: "does not have verified mobile_number",
+      },
     });
   }
 
@@ -178,35 +178,33 @@ export const createCardToken = (): string =>
 const getDefaultCardNotPresentLimits = () => ({
   daily: {
     max_amount_cents: DEFAULT_CARD_NOT_PRESENT_DAILY_MAX_AMOUNT_IN_CENTS,
-    max_transactions: DEFAULT_CARD_NOT_PRESENT_DAILY_MAX_NUMBER_TRANSACTIONS
+    max_transactions: DEFAULT_CARD_NOT_PRESENT_DAILY_MAX_NUMBER_TRANSACTIONS,
   },
   monthly: {
     max_amount_cents: DEFAULT_CARD_NOT_PRESENT_MONTHLY_MAX_AMOUNT_IN_CENTS,
-    max_transactions: DEFAULT_CARD_NOT_PRESENT_MONTHLY_MAX_NUMBER_TRANSACTIONS
-  }
+    max_transactions: DEFAULT_CARD_NOT_PRESENT_MONTHLY_MAX_NUMBER_TRANSACTIONS,
+  },
 });
 
 const getDefaultCardPresentLimits = () => ({
   daily: {
     max_amount_cents: DEFAULT_CARD_PRESENT_DAILY_MAX_AMOUNT_IN_CENTS,
-    max_transactions: DEFAULT_CARD_PRESENT_DAILY_MAX_NUMBER_TRANSACTIONS
+    max_transactions: DEFAULT_CARD_PRESENT_DAILY_MAX_NUMBER_TRANSACTIONS,
   },
   monthly: {
     max_amount_cents: DEFAULT_CARD_PRESENT_MONTHLY_MAX_AMOUNT_IN_CENTS,
-    max_transactions: DEFAULT_CARD_PRESENT_MONTHLY_MAX_NUMBER_TRANSACTIONS
-  }
+    max_transactions: DEFAULT_CARD_PRESENT_MONTHLY_MAX_NUMBER_TRANSACTIONS,
+  },
 });
 
 const getDefaultCardDetails = () => ({
   token: createCardToken(),
   cardPresentLimits: getDefaultCardPresentLimits(),
   cardNotPresentLimits: getDefaultCardNotPresentLimits(),
-  cvv: Math.random()
-    .toString()
-    .substr(-3),
+  cvv: Math.random().toString().substr(-3),
   settings: {
-    contactless_enabled: true
-  }
+    contactless_enabled: true,
+  },
 });
 
 export const createCard = (
@@ -218,7 +216,7 @@ export const createCard = (
     type,
     business_id: businessId = null,
     reference,
-    line_1: cardHolder
+    line_1: cardHolder,
   } = cardData;
 
   const id = uuid.v4().replace(/-/g, "");
@@ -240,20 +238,20 @@ export const createCard = (
     representation: {
       line_1: cardHolder,
       formatted_expiration_date: expirationDate.format("MM/YY"),
-      masked_pan: getMaskedCardNumber(cardNumber)
-    }
+      masked_pan: getMaskedCardNumber(cardNumber),
+    },
   };
 
   const cardDetails = {
     pin,
     reference,
     cardNumber,
-    ...getDefaultCardDetails()
+    ...getDefaultCardDetails(),
   };
 
   return {
     card,
-    cardDetails
+    cardDetails,
   };
 };
 
@@ -266,15 +264,15 @@ export const replaceCard = (
     ...card,
     representation: {
       ...card.representation,
-      line_1: cardData.line_1 || card.representation.line_1
+      line_1: cardData.line_1 || card.representation.line_1,
     },
-    status: CardStatus.PROCESSING
+    status: CardStatus.PROCESSING,
   };
 
   const newCardDetails = {
     ...cardDetails,
     pin: cardData.pin || cardDetails.pin,
-    ...getDefaultCardDetails()
+    ...getDefaultCardDetails(),
   };
 
   return { card: newCard, cardDetails: newCardDetails };
@@ -434,7 +432,7 @@ export const updateCardLimits = async (
 ) => {
   const person = await db.getPerson(card.person_id);
   const cardIndex = person.account.cards.findIndex(
-    cardData => cardData.card.id === card.id
+    (cardData) => cardData.card.id === card.id
   );
 
   person.account.cards[cardIndex].cardDetails[
@@ -449,7 +447,7 @@ export const updateCardLimits = async (
 export const enableGooglePay = async (card: Card): Promise<string> => {
   const person = await db.getPerson(card.person_id);
   const cardIndex = person.account.cards.findIndex(
-    cardData => cardData.card.id === card.id
+    (cardData) => cardData.card.id === card.id
   );
   person.account.cards[
     cardIndex
@@ -462,7 +460,7 @@ const hasAtLeast3UniqueDigits = (pin: string): boolean =>
   _.uniq(pin.split("")).length >= 3;
 
 const isSequence = (pin: string): boolean => {
-  const numbers = pin.split("").map(c => parseInt(c, 10));
+  const numbers = pin.split("").map((c) => parseInt(c, 10));
   const increasingSequence = numbers
     .slice(0, numbers.length - 1)
     .every((number, index) => number + 1 === numbers[index + 1]);
@@ -491,9 +489,9 @@ export const validatePIN = (pin: string) => {
         detail: "pin must not contain sequential digits",
         source: {
           field: "pin",
-          message: "must not contain sequential digits"
-        }
-      }
+          message: "must not contain sequential digits",
+        },
+      },
     ]);
   }
 
@@ -507,9 +505,9 @@ export const validatePIN = (pin: string) => {
         detail: "pin must not contain three or more repeating digits",
         source: {
           field: "pin",
-          message: "must not contain three or more repeating digits"
-        }
-      }
+          message: "must not contain three or more repeating digits",
+        },
+      },
     ]);
   }
 
@@ -523,7 +521,7 @@ export const changePIN = async (card: Card, pin: string) => {
     pin,
     changeRequestId,
     cardId: card.id,
-    method: CHANGE_REQUEST_CHANGE_CARD_PIN
+    method: CHANGE_REQUEST_CHANGE_CARD_PIN,
   };
 
   await db.savePerson(person);
@@ -532,7 +530,7 @@ export const changePIN = async (card: Card, pin: string) => {
     id: changeRequestId,
     status: "AUTHORIZATION_REQUIRED",
     updated_at: new Date().toISOString(),
-    url: `:env/v1/change_requests/${changeRequestId}/authorize`
+    url: `:env/v1/change_requests/${changeRequestId}/authorize`,
   };
 };
 
@@ -553,7 +551,7 @@ export const confirmChangeCardPIN = async (
     status: ChangeRequestStatus.COMPLETED,
     updated_at: new Date().toISOString(),
     response_body: "Accepted",
-    response_code: HttpStatusCodes.ACCEPTED
+    response_code: HttpStatusCodes.ACCEPTED,
   };
 };
 

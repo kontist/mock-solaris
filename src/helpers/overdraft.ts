@@ -9,11 +9,11 @@ import {
   OverdraftApplicationWebhookEvent,
   MockPerson,
   MockAccount,
-  BookingType
+  BookingType,
 } from "../helpers/types";
 import {
   triggerBookingsWebhook,
-  generateBookingForPerson
+  generateBookingForPerson,
 } from "../routes/backoffice";
 
 export const INTEREST_RATE = 11.0;
@@ -21,7 +21,7 @@ export const INTEREST_RATE = 11.0;
 export const OVERDRAFT_LIMIT = {
   value: 50000,
   unit: "cents",
-  currency: "EUR"
+  currency: "EUR",
 };
 
 export const generateEntityNotFoundPayload = (
@@ -35,8 +35,8 @@ export const generateEntityNotFoundPayload = (
   detail: `Value: '${value}' for field: '${field}' not found`,
   source: {
     message: "not found",
-    field
-  }
+    field,
+  },
 });
 
 type ChangeOverdraftApplicationStatusOptions = {
@@ -50,14 +50,14 @@ export const changeOverdraftApplicationStatus = async ({
   personId,
   person,
   applicationId,
-  status
+  status,
 }: ChangeOverdraftApplicationStatusOptions): Promise<OverdraftApplication> => {
   if (!person) {
     person = await getPerson(personId);
   }
 
   const overdraftApplication = person.account.overdraftApplications.find(
-    app => app.id === applicationId
+    (app) => app.id === applicationId
   );
 
   if (overdraftApplication.status === status) {
@@ -99,7 +99,7 @@ export const calculateOverdraftInterest = (
 };
 
 export const issueInterestAccruedBooking = async ({
-  personId
+  personId,
 }: {
   personId: string;
 }) => {
@@ -109,7 +109,7 @@ export const issueInterestAccruedBooking = async ({
     person,
     amount: -person.account.overdraftInterest,
     purpose: "Overdraft interest accrued on the account",
-    bookingType: BookingType.INTEREST_ACCRUED
+    bookingType: BookingType.INTEREST_ACCRUED,
   });
 
   person.account.overdraftInterest = 0;

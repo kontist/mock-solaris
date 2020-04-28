@@ -14,12 +14,12 @@ const STANDING_ORDER_PAYMENT_FREQUENCY = {
   MONTHLY: "MONTHLY",
   QUARTERLY: "QUARTERLY",
   EVERYSIXMONTHS: "EVERY_SIX_MONTHS",
-  YEARLY: "ANNUALLY"
+  YEARLY: "ANNUALLY",
 };
 
 const STANDING_ORDER_PAYMENT_STATUSES = {
   EXECUTED: "EXECUTED",
-  DECLINED: "DECLINED"
+  DECLINED: "DECLINED",
 };
 
 export const STANDING_ORDER_CREATE_METHOD = "standing_order:create";
@@ -31,7 +31,7 @@ const STANDING_ORDER_EDITABLE_ATTRIBUTES = [
   "description",
   "end_to_end_id",
   "last_execution_date",
-  "reoccurrence"
+  "reoccurrence",
 ];
 
 export const showStandingOrderRequestHandler = async (req, res) => {
@@ -50,7 +50,7 @@ export const createStandingOrderRequestHandler = async (req, res) => {
 
   log.info("createStandingOrderRequestHandler()", {
     reqBody: req.body,
-    reqParams: req.params
+    reqParams: req.params,
   });
 
   const {
@@ -61,7 +61,7 @@ export const createStandingOrderRequestHandler = async (req, res) => {
     end_to_end_id: endToEndId,
     first_execution_date: firstExecutionDate,
     last_execution_date: lastExecutionDate,
-    reoccurrence
+    reoccurrence,
   } = req.body;
 
   try {
@@ -74,14 +74,14 @@ export const createStandingOrderRequestHandler = async (req, res) => {
       endToEndId,
       firstExecutionDate,
       lastExecutionDate,
-      reoccurrence
+      reoccurrence,
     });
 
     return res.status(202).send({
       id,
       status: "AUTHORIZATION_REQUIRED",
       updated_at: createdAt,
-      url: ":env/v1/change_requests/:id/authorize"
+      url: ":env/v1/change_requests/:id/authorize",
     });
   } catch (err) {
     log.error(
@@ -90,7 +90,7 @@ export const createStandingOrderRequestHandler = async (req, res) => {
     );
     res.status(500).send({
       reason: err.message,
-      status: "Creating Standing Order failed!"
+      status: "Creating Standing Order failed!",
     });
   }
 };
@@ -100,7 +100,7 @@ export const createStandingOrderRequestHandler = async (req, res) => {
  * Returns the standing order.
  * @param {Object} standingOrderData
  */
-export const createStandingOrder = async standingOrderData => {
+export const createStandingOrder = async (standingOrderData) => {
   const {
     personId,
     recipient,
@@ -110,7 +110,7 @@ export const createStandingOrder = async standingOrderData => {
     endToEndId,
     firstExecutionDate,
     lastExecutionDate,
-    reoccurrence
+    reoccurrence,
   } = standingOrderData;
 
   if (!recipient || !iban || !amount || !firstExecutionDate || !reoccurrence) {
@@ -127,7 +127,7 @@ export const createStandingOrder = async standingOrderData => {
     endToEndId,
     firstExecutionDate,
     lastExecutionDate,
-    reoccurrence
+    reoccurrence,
   });
 
   const person = await findPersonByIdOrEmail(personId);
@@ -135,20 +135,20 @@ export const createStandingOrder = async standingOrderData => {
   person.changeRequest = {
     method: STANDING_ORDER_CREATE_METHOD,
     id: crypto.randomBytes(16).toString("hex"),
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
   };
 
   person.unconfirmedStandingOrders = person.unconfirmedStandingOrders || [];
   person.unconfirmedStandingOrders.push({
     standingOrder,
-    changeRequestId: person.changeRequest.id
+    changeRequestId: person.changeRequest.id,
   });
 
   await savePerson(person);
   return person.changeRequest;
 };
 
-export const generateStandingOrderForPerson = standingOrderData => {
+export const generateStandingOrderForPerson = (standingOrderData) => {
   const {
     personId,
     description,
@@ -158,7 +158,7 @@ export const generateStandingOrderForPerson = standingOrderData => {
     endToEndId,
     reoccurrence,
     firstExecutionDate,
-    lastExecutionDate
+    lastExecutionDate,
   } = standingOrderData;
 
   const amountValue = Math.max(0, Math.min(10000000, amount.value));
@@ -171,7 +171,7 @@ export const generateStandingOrderForPerson = standingOrderData => {
     amount: {
       value: amountValue,
       unit: "cents",
-      currency: "EUR"
+      currency: "EUR",
     },
     description,
     end_to_end_id: endToEndId,
@@ -180,7 +180,7 @@ export const generateStandingOrderForPerson = standingOrderData => {
       ? moment(lastExecutionDate).format("YYYY-MM-DD")
       : null,
     month_end_execution: false,
-    reoccurrence
+    reoccurrence,
   };
 };
 
@@ -210,7 +210,7 @@ export const triggerStandingOrderRequestHandler = async (req, res) => {
     personId,
     standingOrderId,
     booking,
-    declineReason
+    declineReason,
   });
 
   res.redirect("back");
@@ -322,7 +322,7 @@ export const updateStandingOrderRequestHandler = async (req, res) => {
   log.info("updateStandingOrderRequestHandler()", {
     reqParams: req.params,
     reqBody: req.body,
-    attributesToUpdate
+    attributesToUpdate,
   });
 
   const changeRequestId = await updateStandingOrder(
@@ -335,7 +335,7 @@ export const updateStandingOrderRequestHandler = async (req, res) => {
     id: changeRequestId,
     status: "AUTHORIZATION_REQUIRED",
     updated_at: new Date().toISOString(),
-    url: `:env/v1/change_requests/${changeRequestId}/authorize`
+    url: `:env/v1/change_requests/${changeRequestId}/authorize`,
   });
 };
 
@@ -351,16 +351,16 @@ export const updateStandingOrder = async (
     id: changeRequestId,
     method: STANDING_ORDER_UPDATE_METHOD,
     standingOrderId,
-    attributesToUpdate
+    attributesToUpdate,
   };
   await savePerson(person);
   return changeRequestId;
 };
 
-export const confirmStandingOrderUpdate = async person => {
+export const confirmStandingOrderUpdate = async (person) => {
   const { standingOrderId, attributesToUpdate } = person.changeRequest;
   const [standingOrder] = person.standingOrders.filter(
-    item => item.id === standingOrderId
+    (item) => item.id === standingOrderId
   );
   _.merge(standingOrder, attributesToUpdate);
   await savePerson(person);
@@ -378,7 +378,7 @@ export const cancelStandingOrderRequestHandler = async (req, res) => {
     id: changeRequestId,
     status: "AUTHORIZATION_REQUIRED",
     updated_at: new Date().toISOString(),
-    url: `:env/v1/change_requests/${changeRequestId}/authorize`
+    url: `:env/v1/change_requests/${changeRequestId}/authorize`,
   });
 };
 
@@ -389,16 +389,16 @@ export const cancelStandingOrder = async (personId, standingOrderId) => {
   person.changeRequest = {
     id: changeRequestId,
     method: STANDING_ORDER_CANCEL_METHOD,
-    standingOrderId
+    standingOrderId,
   };
   await savePerson(person);
   return changeRequestId;
 };
 
-export const confirmStandingOrderCancelation = async person => {
+export const confirmStandingOrderCancelation = async (person) => {
   const standingOrderId = person.changeRequest.standingOrderId;
   const [standingOrder] = person.standingOrders.filter(
-    item => item.id === standingOrderId
+    (item) => item.id === standingOrderId
   );
   standingOrder.status = "CANCELED";
   await savePerson(person);
@@ -418,7 +418,7 @@ const triggerSepaScheduledTransactionWebhook = async ({
   personId,
   standingOrderId,
   booking,
-  declineReason
+  declineReason,
 }) => {
   const { person, standingOrder } = await getPersonWithStandingOrder(
     personId,
@@ -436,7 +436,7 @@ const triggerSepaScheduledTransactionWebhook = async ({
       ? STANDING_ORDER_PAYMENT_STATUSES.DECLINED
       : STANDING_ORDER_PAYMENT_STATUSES.EXECUTED,
     decline_reason: declineReason,
-    transaction_id: booking ? booking.transaction_id : null
+    transaction_id: booking ? booking.transaction_id : null,
   };
 
   await triggerWebhook(
@@ -449,7 +449,7 @@ const getPersonWithStandingOrder = async (personId, standingOrderId) => {
   const person = await getPerson(personId);
 
   const standingOrder = person.standingOrders.find(
-    standingOrder => standingOrder.id === standingOrderId
+    (standingOrder) => standingOrder.id === standingOrderId
   );
 
   if (!standingOrder) {

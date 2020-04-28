@@ -14,7 +14,7 @@ export const requireIdentification = async (req, res) => {
   let identification;
 
   return getPerson(personId)
-    .then(_person => {
+    .then((_person) => {
       person = _person;
 
       identification = {
@@ -24,7 +24,7 @@ export const requireIdentification = async (req, res) => {
         createdAt: new Date(),
         status: "created",
         completed_at: null,
-        method
+        method,
       };
 
       person.identifications[identificationId] = identification;
@@ -40,7 +40,7 @@ export const patchIdentification = async (req, res) => {
 
   const person = (await getPerson(personId)) || {
     identifications: {},
-    transactions: []
+    transactions: [],
   };
   person.identifications[identificationId] =
     person.identifications[identificationId] || {};
@@ -60,7 +60,7 @@ export const patchIdentification = async (req, res) => {
         method: "POST",
         headers: {
           "X-API-KEY": "0A0KQ6KGHUAEN0RLRHLB3V3S840ZWH7ZVXE2WYZ0",
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           name: "Hubot",
@@ -77,8 +77,8 @@ export const patchIdentification = async (req, res) => {
           nationality: "DE",
           street: "Bahnstrasse",
           streetnumber: "27",
-          zipcode: "80127"
-        })
+          zipcode: "80127",
+        }),
       });
 
       const text = await response.text();
@@ -112,7 +112,7 @@ export const patchIdentification = async (req, res) => {
     completed_at: null,
     identificationLinkCreatedAt: new Date(),
     person_id: personId,
-    email: person.email
+    email: person.email,
   };
 
   await savePerson(person);
@@ -124,18 +124,18 @@ export const patchIdentification = async (req, res) => {
     reference,
     completed_at: null,
     method: "idnow",
-    estimated_waiting_time: Math.floor(Math.random() * 10) + 1
+    estimated_waiting_time: Math.floor(Math.random() * 10) + 1,
   });
 };
 
 export const showPersonIdentifications = (req, res) => {
   const personIdentifications = Object.values(req.person.identifications)
-    .filter(identification => identification.status !== "created")
-    .map(identification => {
+    .filter((identification) => identification.status !== "created")
+    .map((identification) => {
       return {
         ...identification,
         id: identification.id.substr(0, 36),
-        status: identification.status || "pending"
+        status: identification.status || "pending",
       };
     });
   res.status(200).send(personIdentifications);

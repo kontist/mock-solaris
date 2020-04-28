@@ -27,9 +27,9 @@ export const createBankStatement = async (req, res) => {
           status: 400,
           code: "invalid_model",
           title: "Invalid Model",
-          detail: `start_date invalid date ${startDate} is earlier than account opening date ${person.terms_conditions_signed_at}`
-        }
-      ]
+          detail: `start_date invalid date ${startDate} is earlier than account opening date ${person.terms_conditions_signed_at}`,
+        },
+      ],
     });
     return;
   }
@@ -45,10 +45,10 @@ export const createBankStatement = async (req, res) => {
           detail: `end_date invalid date ${endDate}, needs to be in the past`,
           source: {
             field: "end_date",
-            message: `invalid date ${endDate}, needs to be in the past`
-          }
-        }
-      ]
+            message: `invalid date ${endDate}, needs to be in the past`,
+          },
+        },
+      ],
     });
     return;
   }
@@ -60,15 +60,12 @@ export const createBankStatement = async (req, res) => {
   const bankStatement = {
     id:
       "mock" +
-      crypto
-        .createHash("md5")
-        .update(JSON.stringify(req.body))
-        .digest("hex"),
+      crypto.createHash("md5").update(JSON.stringify(req.body)).digest("hex"),
     recipient_information: {
       line_1: line1,
       line_2: person.address.line_1,
       line_4: `${person.address.postal_code} ${person.address.city}`,
-      line_5: "Deutschland"
+      line_5: "Deutschland",
     },
     issue_date: new Date().toISOString().slice(0, 10),
     statement_period_start_date: startDate,
@@ -79,14 +76,14 @@ export const createBankStatement = async (req, res) => {
       balance_start: {
         value: 0,
         unit: "cents",
-        currency: "EUR"
+        currency: "EUR",
       },
       balance_end: {
         value: account.balance.value,
         unit: "cents",
-        currency: "EUR"
-      }
-    }
+        currency: "EUR",
+      },
+    },
   };
 
   person.bankStatements = person.bankStatements || [];
@@ -104,11 +101,11 @@ export const createBankStatement = async (req, res) => {
 
 export const showBankStatementBookings = async (req, res) => {
   const {
-    page: { size, number }
+    page: { size, number },
   } = req.query;
   const {
     account_id: accountId,
-    bank_statement_id: bankStatementId
+    bank_statement_id: bankStatementId,
   } = req.params;
 
   const person = await db.findPersonByAccountId(accountId);
@@ -121,19 +118,19 @@ export const showBankStatementBookings = async (req, res) => {
           status: 404,
           code: "model_not_found",
           title: "Model Not Found",
-          detail: `Couldn't find 'Solaris::BankStatement' for id ${bankStatementId}.`
-        }
-      ]
+          detail: `Couldn't find 'Solaris::BankStatement' for id ${bankStatementId}.`,
+        },
+      ],
     });
   }
 
   const bankStatement = (person.bankStatements || []).find(
-    bankStatement => bankStatement.id === bankStatementId
+    (bankStatement) => bankStatement.id === bankStatementId
   );
 
   const {
     statement_period_start_date: startDate,
-    statement_period_end_date: endDate
+    statement_period_end_date: endDate,
   } = bankStatement;
 
   const momentStartDate = moment(startDate);
@@ -141,7 +138,7 @@ export const showBankStatementBookings = async (req, res) => {
 
   const bankStatementsBookings = db
     .getPersonBookings(person)
-    .filter(booking =>
+    .filter((booking) =>
       moment(booking.booking_date).isBetween(
         momentStartDate,
         momentEndDate,

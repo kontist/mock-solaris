@@ -9,10 +9,7 @@ import { createChangeRequest } from "./changeRequest";
 export const createPerson = (req, res) => {
   const personId =
     "mock" +
-    crypto
-      .createHash("md5")
-      .update(JSON.stringify(req.body))
-      .digest("hex");
+    crypto.createHash("md5").update(JSON.stringify(req.body)).digest("hex");
 
   const person = {
     ...req.body,
@@ -21,13 +18,13 @@ export const createPerson = (req, res) => {
     transactions: [],
     statements: [],
     queuedBookings: [],
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
   };
 
   return savePerson(person).then(() => {
     res.status(200).send({
       id: personId,
-      ...req.body
+      ...req.body,
     });
   });
 };
@@ -47,9 +44,9 @@ export const showPerson = async (req, res) => {
             status: 404,
             code: "model_not_found",
             title: "Model Not Found",
-            detail: `Couldn't find 'Solaris::Person' for id '${personId}'.`
-          }
-        ]
+            detail: `Couldn't find 'Solaris::Person' for id '${personId}'.`,
+          },
+        ],
       };
 
       return res.status(404).send(resp);
@@ -59,9 +56,9 @@ export const showPerson = async (req, res) => {
       errors: [
         {
           id: "0a5ec2ea-6772-11e9-a656-02420a868404",
-          status: 500
-        }
-      ]
+          status: 500,
+        },
+      ],
     });
   }
 };
@@ -91,7 +88,7 @@ const isTanRequired = (input, model) => {
   let flag = false;
 
   if (input && model) {
-    Object.keys(input).forEach(key => {
+    Object.keys(input).forEach((key) => {
       if (typeof input[key] === "object" && model[key]) {
         flag = flag || isTanRequired(input[key], model[key]);
       } else if (model[key]) {
@@ -138,7 +135,7 @@ export const updatePerson = async (req, res) => {
     "industry_key",
     "terms_conditions_signed_at",
     "own_economic_interest_signed_at",
-    "business_trading_name"
+    "business_trading_name",
   ];
 
   const editableFields = [
@@ -164,18 +161,18 @@ export const updatePerson = async (req, res) => {
     "industry",
     "industry_key",
     "terms_conditions_signed_at",
-    "business_trading_name"
+    "business_trading_name",
   ];
 
   const {
     params: { person_id: personId },
-    body
+    body,
   } = req;
   const data = _.pick(body, fields);
   const person = await getPerson(personId);
 
   const fieldsBanned = [];
-  Object.keys(data).forEach(key => {
+  Object.keys(data).forEach((key) => {
     if (!editableFields.includes(key)) fieldsBanned.push(key);
   });
 
@@ -185,7 +182,7 @@ export const updatePerson = async (req, res) => {
       status: 400,
       code: "deprecated_params",
       title: "Deprecated Parameters",
-      detail: `Updating ${fieldsBanned[0]} is deprecated.`
+      detail: `Updating ${fieldsBanned[0]} is deprecated.`,
     });
   }
 
@@ -206,7 +203,7 @@ export const updatePerson = async (req, res) => {
 export const createCreditRecord = async (req, res) => {
   const {
     body: { source },
-    params: { person_id: personId }
+    params: { person_id: personId },
   } = req;
 
   const person = await getPerson(personId);
@@ -220,8 +217,8 @@ export const createCreditRecord = async (req, res) => {
       detail: `/source: Invalid value for enum`,
       source: {
         message: "Invalid value for enum",
-        field: "/source"
-      }
+        field: "/source",
+      },
     });
   }
   const creditRecordId = uuid.v4();
@@ -232,6 +229,6 @@ export const createCreditRecord = async (req, res) => {
     status: "available",
     person_id: req.params.person_id,
     id: creditRecordId,
-    created_at: new Date().toISOString()
+    created_at: new Date().toISOString(),
   });
 };

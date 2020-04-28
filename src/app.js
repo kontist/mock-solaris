@@ -40,13 +40,13 @@ function logResponseBody(req, res, next) {
 
   var chunks = [];
 
-  res.write = function(chunk) {
+  res.write = function (chunk) {
     chunks.push(Buffer.from(chunk));
 
     oldWrite.apply(res, arguments);
   };
 
-  res.end = function(chunk) {
+  res.end = function (chunk) {
     if (chunk) {
       chunks.push(Buffer.from(chunk));
     }
@@ -220,7 +220,7 @@ router.post(
 const REPLACE_CARD_ALLOWED_STATES = [
   CardStatus.ACTIVE,
   CardStatus.BLOCKED,
-  CardStatus.BLOCKED_BY_SOLARIS
+  CardStatus.BLOCKED_BY_SOLARIS,
 ];
 
 router.post(
@@ -237,7 +237,7 @@ const GET_CARD_LIMITS_CARD_ALLOWED_STATES = [
   CardStatus.BLOCKED,
   CardStatus.BLOCKED_BY_SOLARIS,
   CardStatus.CLOSED,
-  CardStatus.CLOSED_BY_SOLARIS
+  CardStatus.CLOSED_BY_SOLARIS,
 ];
 
 router.get(
@@ -259,7 +259,7 @@ const SET_CARD_LIMITS_CARD_ALLOWED_STATES = [
   CardStatus.ACTIVATION_BLOCKED_BY_SOLARIS,
   CardStatus.ACTIVE,
   CardStatus.BLOCKED,
-  CardStatus.BLOCKED_BY_SOLARIS
+  CardStatus.BLOCKED_BY_SOLARIS,
 ];
 
 router.put(
@@ -311,7 +311,7 @@ router.post(
   cardsAPI.cardStatusMiddleware([
     CardStatus.INACTIVE,
     CardStatus.ACTIVE,
-    CardStatus.BLOCKED
+    CardStatus.BLOCKED,
   ]),
   safeRequestHandler(cardsAPI.closeCardHandler)
 );
@@ -619,7 +619,7 @@ app.get("*", (req, res) => {
 
 export default app;
 
-export const serve = async port => {
+export const serve = async (port) => {
   await migrate();
 
   return new Promise((resolve, reject) => {

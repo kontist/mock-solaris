@@ -9,7 +9,7 @@ export const getLogglyTransportOptions = () => ({
   token: LOGGLY_KEY,
   subdomain: "kontist",
   tags: ["bankmock.kontist.com"],
-  json: true
+  json: true,
 });
 
 const consoleLogger = new winston.transports.Console();
@@ -27,7 +27,7 @@ export const getExpressLogger = () => {
     msg:
       "HTTP {{req.method}} {{req.url}} {{res.statusCode}} {{res.responseTime}}ms",
     expressFormat: false,
-    colorStatus: false
+    colorStatus: false,
   });
 };
 
@@ -37,7 +37,7 @@ function isError(e) {
   );
 }
 
-const formatLogForError = err => `
+const formatLogForError = (err) => `
 ${util.inspect(err)},
 
 Stack trace:
@@ -57,7 +57,7 @@ export function debug(...args) {
 }
 
 export function error(...args) {
-  const formattedArgs = args.map(arg =>
+  const formattedArgs = args.map((arg) =>
     isError(arg) ? formatLogForError(arg) : arg
   );
 

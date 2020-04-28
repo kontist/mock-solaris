@@ -16,11 +16,11 @@ export const generateToken = async (req, res) => {
       req.query.grant_type === "client_credentials" &&
       [
         process.env.SOLARIS_CLIENT_ID,
-        process.env.SOLARIS_KONTIST_ACCOUNT_CLIENT_ID
+        process.env.SOLARIS_KONTIST_ACCOUNT_CLIENT_ID,
       ].includes(user) &&
       [
         process.env.SOLARIS_CLIENT_SECRET,
-        process.env.SOLARIS_KONTIST_ACCOUNT_CLIENT_SECRET
+        process.env.SOLARIS_KONTIST_ACCOUNT_CLIENT_SECRET,
       ].includes(password);
   }
 
@@ -35,8 +35,6 @@ export const generateToken = async (req, res) => {
   res.status(201).send({
     token_type: "Bearer",
     expires_in: expiresIn,
-    access_token: Buffer.from(token)
-      .toString("base64")
-      .replace(/=/g, "")
+    access_token: Buffer.from(token).toString("base64").replace(/=/g, ""),
   });
 };

@@ -12,10 +12,10 @@ export const indexWebhooksHandler = async (req, res) => {
   res.send(response);
 };
 
-const createWebhook = async newWebhook => {
+const createWebhook = async (newWebhook) => {
   const webhooks = await getWebhooks();
 
-  const webhookExists = webhooks.find(webhook => {
+  const webhookExists = webhooks.find((webhook) => {
     return (
       webhook.url === newWebhook.url &&
       webhook.event_type === newWebhook.event_type
@@ -33,7 +33,7 @@ const createWebhook = async newWebhook => {
 export const createWebhookHandler = async (req, res) => {
   const newWebhook = {
     id: uuid.v4(),
-    ...req.body
+    ...req.body,
   };
 
   log.info("createWebhook", { newWebhook });

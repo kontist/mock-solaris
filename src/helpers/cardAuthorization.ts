@@ -2,7 +2,7 @@
 import {
   Reservation,
   CardAuthorizationDeclinedStatus,
-  CardTransaction
+  CardTransaction,
 } from "./types";
 
 export const mapReservationToCardAuthorization = (
@@ -18,7 +18,7 @@ export const mapReservationToCardAuthorization = (
     pos_entry_mode: meta.pos_entry_mode,
     merchant: meta.merchant,
     amount: reservation.amount,
-    original_amount: meta.original_amount
+    original_amount: meta.original_amount,
   };
 };
 

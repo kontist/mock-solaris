@@ -14,12 +14,12 @@ const SOLARIS_TIMED_ORDER_STATUSES = {
   EXECUTED: "EXECUTED",
   FAILED: "FAILED",
   SCHEDULED: "SCHEDULED",
-  CANCELED: "CANCELED"
+  CANCELED: "CANCELED",
 };
 
 export const TIMED_ORDER_CREATE = "timed_orders:create";
 
-const mapTimedOrderToTransaction = timedOrder => {
+const mapTimedOrderToTransaction = (timedOrder) => {
   const {
     id: timedOrderId,
     executed_at: executedAt,
@@ -31,8 +31,8 @@ const mapTimedOrderToTransaction = timedOrder => {
       recipient_iban: recipientIBAN,
       recipient_name: recipientName,
       recipient_bic: recipientBIC,
-      amount
-    }
+      amount,
+    },
   } = timedOrder;
 
   return {
@@ -43,7 +43,7 @@ const mapTimedOrderToTransaction = timedOrder => {
     name: recipientName,
     amount: {
       ...amount,
-      value: -amount.value
+      value: -amount.value,
     },
     valuta_date: executedAt,
     booking_date: executedAt,
@@ -52,11 +52,11 @@ const mapTimedOrderToTransaction = timedOrder => {
     recipient_bic: recipientBIC,
     transaction_id: timedOrderId,
     status: "accepted",
-    booking_type: BookingType.SEPA_CREDIT_TRANSFER
+    booking_type: BookingType.SEPA_CREDIT_TRANSFER,
   };
 };
 
-const shouldProcessTimedOrder = timedOrder =>
+const shouldProcessTimedOrder = (timedOrder) =>
   timedOrder.status === SOLARIS_TIMED_ORDER_STATUSES.SCHEDULED &&
   !timedOrder.executed_at &&
   moment(timedOrder.execute_at).isSameOrBefore(moment(), "day");
@@ -77,7 +77,9 @@ const processTimedOrder = async (person, timedOrder) => {
     timedOrder.status = SOLARIS_TIMED_ORDER_STATUSES.EXECUTED;
   }
 
-  const itemIndex = person.timedOrders.findIndex(to => to.id === timedOrder.id);
+  const itemIndex = person.timedOrders.findIndex(
+    (to) => to.id === timedOrder.id
+  );
   person.timedOrders[itemIndex] = timedOrder;
   const updatedPerson = await savePerson(person);
 
@@ -95,7 +97,7 @@ export const triggerTimedOrder = async (personId, timedOrderId) => {
   await processTimedOrder(person, timedOrder);
 };
 
-export const processTimedOrders = async personId => {
+export const processTimedOrders = async (personId) => {
   const person = await getPerson(personId);
   for (const timedOrder of person.timedOrders) {
     if (!shouldProcessTimedOrder(timedOrder)) {
@@ -117,8 +119,8 @@ export const createTimedOrder = async (req, res) => {
       recipient_name: recipientName,
       recipient_iban: recipientIban,
       reference,
-      amount
-    }
+      amount,
+    },
   } = body;
 
   const isDataMissing = ![
@@ -128,8 +130,8 @@ export const createTimedOrder = async (req, res) => {
     reference,
     amount.value,
     amount.unit,
-    amount.currency
-  ].every(value => value);
+    amount.currency,
+  ].every((value) => value);
 
   if (isDataMissing) {
     return res.status(HttpStatusCodes.BAD_REQUEST).send({
@@ -139,9 +141,9 @@ export const createTimedOrder = async (req, res) => {
           status: HttpStatusCodes.BAD_REQUEST,
           code: "invalid_model",
           title: "Invalid Model",
-          detail: "missing fields"
-        }
-      ]
+          detail: "missing fields",
+        },
+      ],
     });
   }
 
@@ -164,25 +166,22 @@ export const authorizeTimedOrder = async (req, res) => {
           status: 500,
           code: "generic_error",
           title: "Generic Error",
-          detail: "There was an error."
-        }
-      ]
+          detail: "There was an error.",
+        },
+      ],
     });
   }
 
   const person = await getPerson(personId);
   const timedOrder = person.timedOrders.find(
-    order => order.id === req.params.id
+    (order) => order.id === req.params.id
   );
   timedOrder.status = SOLARIS_TIMED_ORDER_STATUSES.CONFIRMATION_REQUIRED;
 
   person.changeRequest = {
     id,
     method: TIMED_ORDER_CREATE,
-    token: new Date()
-      .getTime()
-      .toString()
-      .slice(-6)
+    token: new Date().getTime().toString().slice(-6),
   };
 
   await savePerson(person);
@@ -204,9 +203,9 @@ export const confirmTimedOrder = async (req, res) => {
           status: 404,
           code: "model_not_found",
           title: "Model Not Found",
-          detail: `Couldn't find 'Solaris::TimedOrder' for id '${id}'.`
-        }
-      ]
+          detail: `Couldn't find 'Solaris::TimedOrder' for id '${id}'.`,
+        },
+      ],
     });
   }
 
@@ -218,14 +217,14 @@ export const confirmTimedOrder = async (req, res) => {
           status: 403,
           code: "invalid_tan",
           title: "Invalid TAN",
-          detail: `Invalid or expired TAN for Solaris::TimedOrder with uid: '${id}'`
-        }
-      ]
+          detail: `Invalid or expired TAN for Solaris::TimedOrder with uid: '${id}'`,
+        },
+      ],
     });
   }
 
   const timedOrder = person.timedOrders.find(
-    order => order.id === req.params.id
+    (order) => order.id === req.params.id
   );
   timedOrder.status = SOLARIS_TIMED_ORDER_STATUSES.SCHEDULED;
   person.changeRequest = null;
@@ -250,7 +249,7 @@ export const fetchTimedOrder = async (req, res) => {
   const person = await getPerson(req.params.person_id);
   const timedOrderId = req.params.id;
   const timedOrder = person.timedOrders.find(
-    order => order.id === timedOrderId
+    (order) => order.id === timedOrderId
   );
 
   if (!timedOrder) {
@@ -261,9 +260,9 @@ export const fetchTimedOrder = async (req, res) => {
           status: 404,
           code: "model_not_found",
           title: "Model Not Found",
-          detail: `Couldn't find 'Solaris::TimedOrder' for id '${timedOrderId}'.`
-        }
-      ]
+          detail: `Couldn't find 'Solaris::TimedOrder' for id '${timedOrderId}'.`,
+        },
+      ],
     });
   }
 
@@ -273,7 +272,7 @@ export const fetchTimedOrder = async (req, res) => {
 export const cancelTimedOrder = async (req, res) => {
   const person = await getPerson(req.params.person_id);
   const timedOrder = person.timedOrders.find(
-    order => order.id === req.params.id
+    (order) => order.id === req.params.id
   );
   timedOrder.status = SOLARIS_TIMED_ORDER_STATUSES.CANCELED;
   timedOrder.scheduled_transaction.status = "canceled";
@@ -283,7 +282,7 @@ export const cancelTimedOrder = async (req, res) => {
   res.send(timedOrder);
 };
 
-export const generateTimedOrder = data => {
+export const generateTimedOrder = (data) => {
   const {
     execute_at: executeAt,
     transaction: {
@@ -293,8 +292,8 @@ export const generateTimedOrder = data => {
       reference,
       description,
       end_to_end_id: e2eId,
-      amount: { value, currency, unit }
-    }
+      amount: { value, currency, unit },
+    },
   } = data;
 
   const template = {
@@ -316,9 +315,9 @@ export const generateTimedOrder = data => {
       amount: {
         value,
         currency,
-        unit
-      }
-    }
+        unit,
+      },
+    },
   };
 
   return template;
@@ -328,7 +327,7 @@ const triggerTimedOrderWebhook = async (person, timedOrder) => {
   const {
     id,
     status,
-    scheduled_transaction: { reference }
+    scheduled_transaction: { reference },
   } = timedOrder;
 
   const payload = {
@@ -336,7 +335,7 @@ const triggerTimedOrderWebhook = async (person, timedOrder) => {
     reference,
     status,
     account_id: person.account.id,
-    processed_at: new Date().toISOString()
+    processed_at: new Date().toISOString(),
   };
 
   await triggerWebhook(TransactionWebhookEvent.SEPA_TIMED_ORDER, payload);

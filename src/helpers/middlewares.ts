@@ -26,9 +26,9 @@ export const withPerson = async (
           status: 404,
           code: "model_not_found",
           title: "Model Not Found",
-          detail: `Couldn't find 'Solaris::Person' for id '${personId}'.`
-        }
-      ]
+          detail: `Couldn't find 'Solaris::Person' for id '${personId}'.`,
+        },
+      ],
     });
     return;
   }

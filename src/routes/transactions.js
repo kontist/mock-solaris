@@ -6,22 +6,22 @@ import {
   getPerson,
   savePerson,
   findPersonByAccountIBAN,
-  getTechnicalUserPerson
+  getTechnicalUserPerson,
 } from "../db";
 import { BookingType } from "../helpers/types";
 
 const SOLARIS_CARDS_ACCOUNT = {
   NAME: "Visa_Solarisbank",
-  IBAN: "DE95110101000018501000"
+  IBAN: "DE95110101000018501000",
 };
 
-const serializeTransfer = transfer => ({
+const serializeTransfer = (transfer) => ({
   ...transfer,
   amount: {
     ...transfer.amount,
     value: Math.abs(transfer.amount.value),
-    currency: transfer.amount.currency || "EUR"
-  }
+    currency: transfer.amount.currency || "EUR",
+  },
 });
 
 export const createSepaDirectDebit = async (req, res) => {
@@ -31,12 +31,12 @@ export const createSepaDirectDebit = async (req, res) => {
     // eslint-disable-next-line camelcase
     collection_date,
     mandate,
-    end_to_end_id: e2eId
+    end_to_end_id: e2eId,
   } = req.body;
 
   log.debug("createSepaDirectDebit", {
     body: req.body,
-    params: req.params
+    params: req.params,
   });
 
   const { debtor_iban: iban } = mandate;
@@ -48,7 +48,7 @@ export const createSepaDirectDebit = async (req, res) => {
     amount: {
       ...amount,
       value: amount.value,
-      currency: amount.currency || "EUR"
+      currency: amount.currency || "EUR",
     },
     description: description,
     collection_date: collection_date,
@@ -64,7 +64,7 @@ export const createSepaDirectDebit = async (req, res) => {
     valuta_date: moment().format("YYYY-MM-DD"),
     recipient_iban: mandate.debtor_iban,
     sender_name: "Kontist GmbH",
-    recipient_name: mandate.debtor_name
+    recipient_name: mandate.debtor_name,
   };
 
   person.queuedBookings.push(queuedBooking);
@@ -76,13 +76,13 @@ export const createSepaDirectDebit = async (req, res) => {
 
   log.debug("Person account balance after update", {
     balance: person.account.balance.value,
-    bookingAmount: amount.value
+    bookingAmount: amount.value,
   });
 
   if (person.account.balance.value < 0) {
     const directDebitReturn = {
       ...queuedBooking,
-      booking_type: BookingType.SEPA_DIRECT_DEBIT_RETURN
+      booking_type: BookingType.SEPA_DIRECT_DEBIT_RETURN,
     };
     person.queuedBookings.push(directDebitReturn);
     technicalPerson.transactions.push(directDebitReturn);
@@ -95,8 +95,8 @@ export const createSepaDirectDebit = async (req, res) => {
     ...queuedBooking,
     amount: {
       ...queuedBooking.amount,
-      value: Math.abs(queuedBooking.amount.value)
-    }
+      value: Math.abs(queuedBooking.amount.value),
+    },
   });
 };
 
@@ -106,7 +106,7 @@ export const createSepaCreditTransfer = async (req, res) => {
 
   log.debug("createSepaCreditTransfer", {
     body: req.body,
-    params: req.params
+    params: req.params,
   });
 
   const person = await getPerson(personId);
@@ -126,23 +126,20 @@ export const authorizeTransaction = async (req, res) => {
 
   log.debug("authorizeTransaction", {
     body: req.body,
-    params: req.params
+    params: req.params,
   });
 
   const person = await getPerson(personId);
   const transfer = person.queuedBookings.find(
-    queuedBooking => queuedBooking.id === transferId
+    (queuedBooking) => queuedBooking.id === transferId
   );
 
   transfer.status = "confirmation_required";
-  const token = new Date()
-    .getTime()
-    .toString()
-    .slice(-6);
+  const token = new Date().getTime().toString().slice(-6);
   person.changeRequest = {
     token,
     id: transferId,
-    method: "wiretransfer"
+    method: "wiretransfer",
   };
 
   await savePerson(person);
@@ -158,13 +155,13 @@ export const confirmTransaction = async (req, res) => {
   const person = await getPerson(personId);
   const changeRequest = person.changeRequest || {};
   const transfer = person.queuedBookings.find(
-    queuedBooking => queuedBooking.id === transferId
+    (queuedBooking) => queuedBooking.id === transferId
   );
 
   log.info("confirmTransaction", {
     body: req.body,
     params: req.params,
-    changeRequest
+    changeRequest,
   });
 
   if (transferId !== changeRequest.id || !transfer) {
@@ -175,9 +172,9 @@ export const confirmTransaction = async (req, res) => {
           status: 404,
           code: "model_not_found",
           title: "Model Not Found",
-          detail: `Couldn't find 'Solaris::WireTransfer' for id '${transferId}'.`
-        }
-      ]
+          detail: `Couldn't find 'Solaris::WireTransfer' for id '${transferId}'.`,
+        },
+      ],
     });
   }
 
@@ -189,9 +186,9 @@ export const confirmTransaction = async (req, res) => {
           status: 403,
           code: "invalid_tan",
           title: "Invalid TAN",
-          detail: `Invalid or expired TAN for Solaris::WireTransfer with id: '${transferId}'`
-        }
-      ]
+          detail: `Invalid or expired TAN for Solaris::WireTransfer with id: '${transferId}'`,
+        },
+      ],
     });
   }
 
@@ -202,7 +199,7 @@ export const confirmTransaction = async (req, res) => {
     booking_date: today,
     valuta_date: today,
     name: `bank-mock-transaction-${Math.random()}`,
-    status: "accepted"
+    status: "accepted",
   });
 
   person.changeRequest = null;
@@ -222,14 +219,14 @@ export const creteBookingFromSepaCreditTransfer = ({
   recipient_iban,
   recipient_name,
   reference,
-  status
+  status,
 }) => ({
   id: uuid.v4(),
   booking_type: BookingType.SEPA_CREDIT_TRANSFER,
   amount: {
     ...amount,
     value: -amount.value,
-    currency: amount.currency || "EUR"
+    currency: amount.currency || "EUR",
   },
   description: description,
   end_to_end_id,
@@ -241,10 +238,10 @@ export const creteBookingFromSepaCreditTransfer = ({
   transaction_id: id,
   booking_date: moment().format("YYYY-MM-DD"),
   valuta_date: moment().format("YYYY-MM-DD"),
-  meta_info: null
+  meta_info: null,
 });
 
-const changeAmountSign = metaInfo => {
+const changeAmountSign = (metaInfo) => {
   const parsedMetaInfo = JSON.parse(metaInfo);
 
   return JSON.stringify({
@@ -253,9 +250,9 @@ const changeAmountSign = metaInfo => {
       original_amount: {
         ...parsedMetaInfo.cards.original_amount,
         // value for booking should be negative
-        value: -parsedMetaInfo.cards.original_amount.value
-      }
-    }
+        value: -parsedMetaInfo.cards.original_amount.value,
+      },
+    },
   });
 };
 
@@ -274,7 +271,7 @@ export const creteBookingFromReservation = (person, reservation, incoming) => {
     amount: {
       unit: "cents",
       currency: "EUR",
-      value: amount
+      value: amount,
     },
     description: reservation.description,
     recipient_bic: person.account.bic,
@@ -285,6 +282,6 @@ export const creteBookingFromReservation = (person, reservation, incoming) => {
     sender_iban: SOLARIS_CARDS_ACCOUNT.IBAN,
     booking_date: moment().format("YYYY-MM-DD"),
     valuta_date: moment().format("YYYY-MM-DD"),
-    meta_info: metaInfo
+    meta_info: metaInfo,
   };
 };

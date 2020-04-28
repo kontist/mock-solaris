@@ -5,14 +5,14 @@ import {
   getDevice,
   saveDeviceChallenge,
   getDeviceChallenge,
-  deleteDeviceChallenge
+  deleteDeviceChallenge,
 } from "../db";
 
 const CHALLENGE_TTL_IN_MILLISECOND = 5 * 60 * 1000;
 
 const newChallengeDates = () => ({
   created_at: new Date().toISOString(),
-  expires_at: new Date(Date.now() + CHALLENGE_TTL_IN_MILLISECOND).toISOString()
+  expires_at: new Date(Date.now() + CHALLENGE_TTL_IN_MILLISECOND).toISOString(),
 });
 
 export const createDevice = async (req, res) => {
@@ -32,10 +32,10 @@ export const createDevice = async (req, res) => {
           detail: "telephone number not found",
           source: {
             field: "number",
-            message: "telephone number not found"
-          }
-        }
-      ]
+            message: "telephone number not found",
+          },
+        },
+      ],
     });
     return;
   }
@@ -51,15 +51,15 @@ export const createDevice = async (req, res) => {
     signatureChallenge: {
       id: deviceId,
       type: "signature",
-      ...newChallengeDates()
-    }
+      ...newChallengeDates(),
+    },
   };
 
   await saveDevice(device);
 
   res.status(202).send({
     id: device.id,
-    challenge: device.signatureChallenge
+    challenge: device.signatureChallenge,
   });
 };
 
@@ -77,9 +77,9 @@ export const verifyDevice = async (req, res) => {
           status: 404,
           code: "not_found",
           title: "Not Found",
-          detail: `signature challenge "${deviceId}" not found`
-        }
-      ]
+          detail: `signature challenge "${deviceId}" not found`,
+        },
+      ],
     });
     return;
   }
@@ -95,17 +95,17 @@ export const verifyDevice = async (req, res) => {
           detail: "length (0) out of bounds (min: 1, max: 2048)",
           source: {
             field: "signature",
-            message: "length (0) out of bounds (min: 1, max: 2048)"
-          }
-        }
-      ]
+            message: "length (0) out of bounds (min: 1, max: 2048)",
+          },
+        },
+      ],
     });
     return;
   }
 
   await saveDevice({
     ...device,
-    verified: true
+    verified: true,
   });
 
   res.sendStatus(204);
@@ -124,9 +124,9 @@ export const getDeviceInfo = async (req, res) => {
           status: 404,
           code: "not_found",
           title: "Not Found",
-          detail: `device "${deviceId}" not found`
-        }
-      ]
+          detail: `device "${deviceId}" not found`,
+        },
+      ],
     });
     return;
   }
@@ -135,7 +135,7 @@ export const getDeviceInfo = async (req, res) => {
     id: device.id,
     person_id: device.person_id,
     name: device.name,
-    created_at: device.signatureChallenge.created_at
+    created_at: device.signatureChallenge.created_at,
   });
 };
 
@@ -155,10 +155,10 @@ export const createDeviceChallenge = async (req, res) => {
           detail: "device-id invalid",
           source: {
             field: "device_id",
-            message: "device-id invalid"
-          }
-        }
-      ]
+            message: "device-id invalid",
+          },
+        },
+      ],
     });
     return;
   }
@@ -167,7 +167,7 @@ export const createDeviceChallenge = async (req, res) => {
     id: uuid.v4(),
     type: "device",
     string_to_sign: uuid.v4(),
-    ...newChallengeDates()
+    ...newChallengeDates(),
   };
 
   await saveDeviceChallenge(deviceChallenge);
@@ -189,9 +189,9 @@ export const verifyDeviceChallenge = async (req, res) => {
           status: 404,
           code: "not_found",
           title: "Not Found",
-          detail: `device challenge "${deviceChallengeId}" not found`
-        }
-      ]
+          detail: `device challenge "${deviceChallengeId}" not found`,
+        },
+      ],
     });
     return;
   }
@@ -207,10 +207,10 @@ export const verifyDeviceChallenge = async (req, res) => {
           detail: "length (0) out of bounds (min: 1, max: 2048)",
           source: {
             field: "signature",
-            message: "length (0) out of bounds (min: 1, max: 2048)"
-          }
-        }
-      ]
+            message: "length (0) out of bounds (min: 1, max: 2048)",
+          },
+        },
+      ],
     });
     return;
   }

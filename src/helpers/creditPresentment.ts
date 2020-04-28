@@ -10,7 +10,7 @@ import {
   TransactionType,
   FxRate,
   CardAuthorizationDeclineReason,
-  POSEntryMode
+  POSEntryMode,
 } from "./types";
 
 export const createCreditPresentment = async ({
@@ -19,7 +19,7 @@ export const createCreditPresentment = async ({
   amount,
   currency,
   type,
-  recipient
+  recipient,
 }: {
   personId: string;
   cardId: string;
@@ -47,7 +47,7 @@ export const createCreditPresentment = async ({
     date,
     type,
     incoming: true,
-    posEntryMode: POSEntryMode.CARD_NOT_PRESENT
+    posEntryMode: POSEntryMode.CARD_NOT_PRESENT,
   });
 
   const booking = creteBookingFromReservation(
@@ -55,7 +55,7 @@ export const createCreditPresentment = async ({
     {
       amount: { value: Math.round(convertedAmount * FxRate[currency]) },
       description: recipient,
-      meta_info: metaInfo
+      meta_info: metaInfo,
     },
     true
   );

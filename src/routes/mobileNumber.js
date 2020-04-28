@@ -6,7 +6,7 @@ import {
   saveMobileNumber,
   deleteMobileNumber,
   getPerson,
-  savePerson
+  savePerson,
 } from "../db";
 
 export const MOBILE_NUMBER_CHANGE_METHOD = "mobile_number_change";
@@ -23,9 +23,9 @@ export const showMobileNumber = async (req, res) => {
           status: 404,
           code: "model_not_found",
           title: "Model Not Found",
-          detail: `Couldn't find 'Solaris::MobileNumber' for id '${personId}'.`
-        }
-      ]
+          detail: `Couldn't find 'Solaris::MobileNumber' for id '${personId}'.`,
+        },
+      ],
     });
   }
 
@@ -44,9 +44,9 @@ export const createMobileNumber = async (req, res) => {
           status: 409,
           code: "mobile_number_exists",
           title: "Mobile Number Exists",
-          detail: `Mobile number already added for person: ${personId}.`
-        }
-      ]
+          detail: `Mobile number already added for person: ${personId}.`,
+        },
+      ],
     });
   }
 
@@ -60,7 +60,7 @@ export const createMobileNumber = async (req, res) => {
   const mobileNumber = {
     id: mobileNumberId,
     number,
-    verified: false
+    verified: false,
   };
 
   await saveMobileNumber(personId, mobileNumber);
@@ -82,17 +82,15 @@ export const authorizeMobileNumber = async (req, res) => {
           status: 404,
           code: "model_not_found",
           title: "Model Not Found",
-          detail: `Couldn't find 'Solaris::MobileNumber' for id '${number}'.`
-        }
-      ]
+          detail: `Couldn't find 'Solaris::MobileNumber' for id '${number}'.`,
+        },
+      ],
     });
   }
 
   person.changeRequest = {
     method: MOBILE_NUMBER_CHANGE_METHOD,
-    token: Date.now()
-      .toString()
-      .substr(-6)
+    token: Date.now().toString().substr(-6),
   };
 
   log.info(
@@ -118,9 +116,9 @@ export const confirmMobileNumber = async (req, res) => {
           status: 404,
           code: "model_not_found",
           title: "Model Not Found",
-          detail: `Couldn't find 'Solaris::MobileNumber' for id '${number}'.`
-        }
-      ]
+          detail: `Couldn't find 'Solaris::MobileNumber' for id '${number}'.`,
+        },
+      ],
     });
   }
 
@@ -132,9 +130,9 @@ export const confirmMobileNumber = async (req, res) => {
           status: 403,
           code: "invalid_tan",
           title: "Invalid TAN",
-          detail: `Invalid or expired TAN for Solaris::MobileNumber with uid: '${existingMobileNumber.id}'`
-        }
-      ]
+          detail: `Invalid or expired TAN for Solaris::MobileNumber with uid: '${existingMobileNumber.id}'`,
+        },
+      ],
     });
   }
 
@@ -143,7 +141,7 @@ export const confirmMobileNumber = async (req, res) => {
 
   const mobileNumber = {
     ...existingMobileNumber,
-    verified: true
+    verified: true,
   };
 
   await saveMobileNumber(personId, mobileNumber);
@@ -165,9 +163,9 @@ export const removeMobileNumber = async (req, res) => {
           status: 403,
           code: "unauthorized_action",
           title: "Unauthorized Action",
-          detail: `Unauthorized action 'destroy' is not allowed for 'Solaris::Service::Person::MobileNumber'`
-        }
-      ]
+          detail: `Unauthorized action 'destroy' is not allowed for 'Solaris::Service::Person::MobileNumber'`,
+        },
+      ],
     });
   }
 
@@ -179,9 +177,9 @@ export const removeMobileNumber = async (req, res) => {
           status: 404,
           code: "model_not_found",
           title: "Model Not Found",
-          detail: `Couldn't find 'Solaris::MobileNumber' for id '${number}'.`
-        }
-      ]
+          detail: `Couldn't find 'Solaris::MobileNumber' for id '${number}'.`,
+        },
+      ],
     });
   }
 
@@ -189,7 +187,7 @@ export const removeMobileNumber = async (req, res) => {
     const changeRequestId = Date.now().toString();
     person.changeRequest = {
       id: changeRequestId,
-      method: MOBILE_NUMBER_CHANGE_METHOD
+      method: MOBILE_NUMBER_CHANGE_METHOD,
     };
     await savePerson(person);
 
@@ -197,7 +195,7 @@ export const removeMobileNumber = async (req, res) => {
       id: changeRequestId,
       status: "AUTHORIZATION_REQUIRED",
       updated_at: new Date().toISOString(),
-      url: `:env/v1/change_requests/${changeRequestId}/authorize`
+      url: `:env/v1/change_requests/${changeRequestId}/authorize`,
     });
   }
 
@@ -206,7 +204,7 @@ export const removeMobileNumber = async (req, res) => {
   return res.status(200).send(existingMobileNumber);
 };
 
-export const removeMobileNumberConfirmChangeRequest = async person => {
+export const removeMobileNumberConfirmChangeRequest = async (person) => {
   await deleteMobileNumber(person.id);
   return getPerson(person.id);
 };

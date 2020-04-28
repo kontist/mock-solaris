@@ -18,7 +18,7 @@ const verificationSecret = {
   [OverdraftApplicationWebhookEvent.OVERDRAFT_APPLICATION]: SOLARIS_OVERDRAFT_APPLICATION_WEBHOOK_ORIGIN_VERIFICATION_SECRET,
   [CardWebhookEvent.CARD_AUTHORIZATION]: SOLARIS_CARD_AUTHORIZATION_WEBHOOK_ORIGIN_VERIFICATION_SECRET,
   [CardWebhookEvent.CARD_AUTHORIZATION_RESOLUTION]: SOLARIS_CARD_AUTHORIZATION_WEBHOOK_ORIGIN_VERIFICATION_SECRET,
-  [CardWebhookEvent.CARD_AUTHORIZATION_DECLINE]: SOLARIS_CARD_AUTHORIZATION_WEBHOOK_ORIGIN_VERIFICATION_SECRET
+  [CardWebhookEvent.CARD_AUTHORIZATION_DECLINE]: SOLARIS_CARD_AUTHORIZATION_WEBHOOK_ORIGIN_VERIFICATION_SECRET,
 };
 export const triggerWebhook = async (type, payload) => {
   const webhook = await getWebhookByType(type);
@@ -35,7 +35,7 @@ export const triggerWebhook = async (type, payload) => {
       CardWebhookEvent.CARD_AUTHORIZATION,
       CardWebhookEvent.CARD_AUTHORIZATION_RESOLUTION,
       CardWebhookEvent.CARD_AUTHORIZATION_DECLINE,
-      OverdraftApplicationWebhookEvent.OVERDRAFT_APPLICATION
+      OverdraftApplicationWebhookEvent.OVERDRAFT_APPLICATION,
     ].includes(type)
   ) {
     const solarisWebhookSignature = generateSolarisWebhookSignature(
@@ -50,7 +50,7 @@ export const triggerWebhook = async (type, payload) => {
       "solaris-webhook-event-type": type,
       "solaris-webhook-id": uuid.v4(),
       "solaris-webhook-signature": solarisWebhookSignature,
-      "solaris-webhook-subscription-id": "STATIC-SUBSCRIPTION"
+      "solaris-webhook-subscription-id": "STATIC-SUBSCRIPTION",
     };
   }
 
@@ -58,8 +58,8 @@ export const triggerWebhook = async (type, payload) => {
     method: "POST",
     body: JSON.stringify({
       id: uuid.v4(),
-      ...payload
+      ...payload,
     }),
-    headers
+    headers,
   });
 };

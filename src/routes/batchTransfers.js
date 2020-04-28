@@ -9,7 +9,7 @@ import { savePerson } from "../db";
 
 export const BATCH_TRANSFER_CREATE_METHOD = "batch_transfer:create";
 
-const validateTransfers = transfers => {
+const validateTransfers = (transfers) => {
   const references = [];
   for (const transfer of transfers) {
     const { recipient_name, recipient_iban, amount, reference } = transfer;
@@ -31,13 +31,13 @@ export const saveBatchTransfer = async (personId, transfers) => {
   person.changeRequest = {
     method: BATCH_TRANSFER_CREATE_METHOD,
     id: crypto.randomBytes(16).toString("hex"),
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
   };
 
   person.unconfirmedBatchTransfers = person.unconfirmedBatchTransfers || [];
   person.unconfirmedBatchTransfers.push({
     transfers,
-    changeRequestId: person.changeRequest.id
+    changeRequestId: person.changeRequest.id,
   });
 
   await savePerson(person);
@@ -56,13 +56,13 @@ export const createBatchTransfer = async (req, res) => {
     id,
     status: "AUTHORIZATION_REQUIRED",
     updated_at: createdAt,
-    url: ":env/v1/change_requests/:id/authorize"
+    url: ":env/v1/change_requests/:id/authorize",
   });
 };
 
 const findUnconfirmedBatchTransfer = (person, changeRequestId) => {
   const index = person.unconfirmedBatchTransfers.findIndex(
-    unconfirmedBatchTransfer =>
+    (unconfirmedBatchTransfer) =>
       unconfirmedBatchTransfer.changeRequestId === changeRequestId
   );
 
@@ -75,7 +75,7 @@ const findUnconfirmedBatchTransfer = (person, changeRequestId) => {
 
   return {
     index,
-    transfers
+    transfers,
   };
 };
 
@@ -87,10 +87,10 @@ export const confirmBatchTransfer = async (person, changeRequestId) => {
 
   person.unconfirmedBatchTransfers.splice(index, 1);
 
-  const acceptedTransfers = transfers.map(transfer => ({
+  const acceptedTransfers = transfers.map((transfer) => ({
     ...transfer,
     id: crypto.randomBytes(16).toString("hex"),
-    status: "accepted"
+    status: "accepted",
   }));
 
   for (const transfer of acceptedTransfers) {
@@ -103,6 +103,6 @@ export const confirmBatchTransfer = async (person, changeRequestId) => {
   return {
     id: crypto.randomBytes(16).toString("hex"),
     status: "ACCEPTED",
-    sepa_credit_transfers: acceptedTransfers
+    sepa_credit_transfers: acceptedTransfers,
   };
 };

@@ -17,11 +17,11 @@ export const createSepaDirectDebitReturn = (person, directDebitReturn) => {
     recorded_at: new Date().toISOString(),
     customer_id: person.id,
     customer_type: "Person",
-    account_id: person.account.id
+    account_id: person.account.id,
   };
 };
 
-export const triggerSepaDirectDebitReturnWebhook = sepaDirectDebitReturn =>
+export const triggerSepaDirectDebitReturnWebhook = (sepaDirectDebitReturn) =>
   triggerWebhook(
     TransactionWebhookEvent.SEPA_DIRECT_DEBIT_RETURN,
     sepaDirectDebitReturn

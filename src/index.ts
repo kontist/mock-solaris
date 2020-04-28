@@ -14,7 +14,7 @@ import * as webhooks from "./helpers/webhooks";
 import getFraudWatchdog from "./helpers/fraudWatchdog";
 import {
   changeOverdraftApplicationStatus,
-  issueInterestAccruedBooking
+  issueInterestAccruedBooking,
 } from "./helpers/overdraft";
 
 export default {
@@ -52,5 +52,5 @@ export default {
   getFraudWatchdog,
   generateSolarisWebhookSignature,
   changeOverdraftApplicationStatus,
-  issueInterestAccruedBooking
+  issueInterestAccruedBooking,
 };

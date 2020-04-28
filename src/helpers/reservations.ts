@@ -25,7 +25,7 @@ import {
   Booking,
   CardTransaction,
   CardAuthorizationDeclinedStatus,
-  FraudCase
+  FraudCase,
 } from "./types";
 import getFraudWatchdog from "./fraudWatchdog";
 
@@ -40,7 +40,7 @@ const triggerCardFraudWebhook = async (
     resolution: "PENDING",
     respond_until: moment(fraudCase.reservationExpiresAt).toISOString(),
     whitelisted_until: "null",
-    card_transaction: cardAuthorizationDeclined
+    card_transaction: cardAuthorizationDeclined,
   });
 };
 
@@ -51,7 +51,7 @@ const triggerCardDeclinedWebhook = async (
   await triggerWebhook(CardWebhookEvent.CARD_AUTHORIZATION_DECLINE, {
     id: uuid.v4(),
     reason,
-    card_transaction: cardAuthorizationDeclined
+    card_transaction: cardAuthorizationDeclined,
   });
 };
 
@@ -65,7 +65,7 @@ export const markReservationAsFraud = async (
     id,
     reservationId: reservation.id,
     reservationExpiresAt: new Date().getTime() + 1800000,
-    cardId
+    cardId,
   };
   person.account.fraudReservations.push(reservation);
   person.fraudCases.push(fraudCase);
@@ -85,7 +85,7 @@ export const generateMetaInfo = ({
   date,
   type,
   incoming,
-  posEntryMode
+  posEntryMode,
 }: {
   originalAmount: number;
   originalCurrency: string;
@@ -103,19 +103,19 @@ export const generateMetaInfo = ({
         country_code: "DE",
         category_code: "7392",
         name: recipient,
-        town: "Berlin"
+        town: "Berlin",
       },
       original_amount: {
         currency: originalCurrency,
         value: originalAmount,
-        fx_rate: FxRate[originalCurrency]
+        fx_rate: FxRate[originalCurrency],
       },
       pos_entry_mode: posEntryMode,
       trace_id: incoming ? null : uuid.v4(),
       transaction_date: moment(date).format("YYYY-MM-DD"),
       transaction_time: incoming ? null : moment(date).toDate(),
-      transaction_type: type
-    }
+      transaction_type: type,
+    },
   });
 };
 
@@ -126,7 +126,7 @@ const mapDataToReservation = ({
   type,
   recipient,
   cardId,
-  posEntryMode
+  posEntryMode,
 }: {
   amount: number;
   originalAmount: number;
@@ -143,7 +143,7 @@ const mapDataToReservation = ({
     amount: {
       value: amount,
       unit: "cents",
-      currency: "EUR"
+      currency: "EUR",
     },
     reservation_type: ReservationType.CARD_AUTHORIZATION,
     reference: uuid.v4(),
@@ -155,14 +155,12 @@ const mapDataToReservation = ({
       cardId,
       date,
       type,
-      posEntryMode
+      posEntryMode,
     }),
-    expires_at: moment(date)
-      .add(1, "month")
-      .format("YYYY-MM-DD"),
+    expires_at: moment(date).add(1, "month").format("YYYY-MM-DD"),
     expired_at: null,
     resolved_at: null,
-    description: recipient
+    description: recipient,
   };
 };
 
@@ -173,7 +171,7 @@ const mapDataToCardAuthorizationDeclined = ({
   type,
   recipient,
   cardId,
-  posEntryMode
+  posEntryMode,
 }: {
   amount: number;
   originalAmount: number;
@@ -192,34 +190,26 @@ const mapDataToCardAuthorizationDeclined = ({
     merchant: {
       country_code: "DE",
       category_code: "5999",
-      name: recipient
+      name: recipient,
     },
     amount: {
       currency: "EUR",
       value: amount,
-      unit: "cents"
+      unit: "cents",
     },
     original_amount: {
       currency: originalCurrency,
       value: originalAmount,
-      unit: "cents"
-    }
+      unit: "cents",
+    },
   };
 };
 
 const computeCardUsage = (person: MockPerson) => {
-  const startOfToday = moment()
-    .startOf("day")
-    .toDate();
-  const endOfToday = moment()
-    .endOf("day")
-    .toDate();
-  const startOfMonth = moment()
-    .startOf("month")
-    .toDate();
-  const endOfMonth = moment()
-    .endOf("month")
-    .toDate();
+  const startOfToday = moment().startOf("day").toDate();
+  const endOfToday = moment().endOf("day").toDate();
+  const startOfMonth = moment().startOf("month").toDate();
+  const endOfMonth = moment().endOf("month").toDate();
 
   const cardReservations = person.account.reservations.filter(
     ({ reservation_type: reservationType }) =>
@@ -243,15 +233,15 @@ const computeCardUsage = (person: MockPerson) => {
     );
   };
 
-  const todayReservations = cardReservations.filter(entry =>
+  const todayReservations = cardReservations.filter((entry) =>
     isBetween(entry, startOfToday, endOfToday)
   );
 
-  const filterByCardNotPresent = reservation =>
+  const filterByCardNotPresent = (reservation) =>
     JSON.parse(reservation.meta_info).cards.pos_entry_mode ===
     POSEntryMode.CARD_NOT_PRESENT;
 
-  const filterByCardPresent = reservation =>
+  const filterByCardPresent = (reservation) =>
     JSON.parse(reservation.meta_info).cards.pos_entry_mode !==
     POSEntryMode.CARD_NOT_PRESENT;
 
@@ -259,7 +249,7 @@ const computeCardUsage = (person: MockPerson) => {
     return total + entry.amount.value;
   };
 
-  const todayBookings = cardBookings.filter(entry =>
+  const todayBookings = cardBookings.filter((entry) =>
     isBetween(entry, startOfToday, endOfToday)
   );
 
@@ -271,45 +261,45 @@ const computeCardUsage = (person: MockPerson) => {
     filterByCardPresent
   );
 
-  const thisMonthReservations = cardReservations.filter(entry =>
+  const thisMonthReservations = cardReservations.filter((entry) =>
     isBetween(entry, startOfMonth, endOfMonth)
   );
 
-  const thisMonthBookings = cardBookings.filter(entry =>
+  const thisMonthBookings = cardBookings.filter((entry) =>
     isBetween(entry, startOfMonth, endOfMonth)
   );
 
   const thisMonthCardNotPresent = [
     ...thisMonthReservations,
-    ...thisMonthBookings
+    ...thisMonthBookings,
   ].filter(filterByCardNotPresent);
 
   const thisMonthCardPresent = [
     ...thisMonthReservations,
-    ...thisMonthBookings
+    ...thisMonthBookings,
   ].filter(filterByCardPresent);
 
   return {
     cardPresent: {
       daily: {
         transactions: todayCardPresent.length,
-        amount: todayCardPresent.reduce(sumAmount, 0)
+        amount: todayCardPresent.reduce(sumAmount, 0),
       },
       monthly: {
         transactions: thisMonthCardPresent.length,
-        amount: thisMonthCardPresent.reduce(sumAmount, 0)
-      }
+        amount: thisMonthCardPresent.reduce(sumAmount, 0),
+      },
     },
     cardNotPresent: {
       daily: {
         transactions: todayCardNotPresent.length,
-        amount: todayCardNotPresent.reduce(sumAmount, 0)
+        amount: todayCardNotPresent.reduce(sumAmount, 0),
       },
       monthly: {
         transactions: thisMonthCardNotPresent.length,
-        amount: thisMonthCardNotPresent.reduce(sumAmount, 0)
-      }
-    }
+        amount: thisMonthCardNotPresent.reduce(sumAmount, 0),
+      },
+    },
   };
 };
 
@@ -442,7 +432,7 @@ export const createReservation = async ({
   type,
   recipient,
   declineReason,
-  posEntryMode = POSEntryMode.CONTACTLESS
+  posEntryMode = POSEntryMode.CONTACTLESS,
 }: {
   personId: string;
   cardId: string;
@@ -463,7 +453,7 @@ export const createReservation = async ({
     type,
     recipient,
     cardId,
-    posEntryMode
+    posEntryMode,
   };
 
   const reservation = mapDataToReservation(cardAuthorizationPayload);
@@ -545,11 +535,11 @@ export const createReservation = async ({
   await triggerWebhook(CardWebhookEvent.CARD_AUTHORIZATION, reservation);
 };
 
-const resolveReservation = async reservation => {
+const resolveReservation = async (reservation) => {
   const resolvedReservation = {
     ...reservation,
     status: ReservationStatus.RESOLVED,
-    resolved_at: moment().toDate()
+    resolved_at: moment().toDate(),
   };
 
   await triggerWebhook(
@@ -574,14 +564,14 @@ const bookReservation = async (person, reservation, increaseAmount) => {
     ...reservation,
     amount: {
       ...reservation.amount,
-      value: reservation.amount.value + additionalAmount
-    }
+      value: reservation.amount.value + additionalAmount,
+    },
   });
 
   person.transactions.push(booking);
 
   person.account.reservations = person.account.reservations.filter(
-    item => item.id !== reservation.id
+    (item) => item.id !== reservation.id
   );
 
   await db.savePerson(person);
@@ -593,7 +583,7 @@ const bookReservation = async (person, reservation, increaseAmount) => {
 
 const expireReservation = async (person, reservation) => {
   person.account.reservations = person.account.reservations.filter(
-    item => item.id !== reservation.id
+    (item) => item.id !== reservation.id
   );
 
   reservation.status = ReservationStatus.EXPIRED;
@@ -610,7 +600,7 @@ export const updateReservation = async ({
   personId,
   reservationId,
   action,
-  increaseAmount
+  increaseAmount,
 }: {
   personId: string;
   reservationId: string;
@@ -620,7 +610,7 @@ export const updateReservation = async ({
   const person = await db.getPerson(personId);
 
   const reservation = person.account.reservations.find(
-    reservation => reservation.id === reservationId
+    (reservation) => reservation.id === reservationId
   );
 
   if (!reservation) {
