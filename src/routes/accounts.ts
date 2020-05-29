@@ -1,5 +1,5 @@
 import _ from "lodash";
-import generateIban from "iban-generator";
+import generateRandomIban from "../helpers/iban";
 import uuid from "node-uuid";
 import { getPerson, savePerson, findPersonByAccountId } from "../db";
 
@@ -140,9 +140,7 @@ export const createAccountRequestHandler = async (req, res) => {
 
   const accountId = personId.split("").reverse().join("");
 
-  const iban = generateIban.doIban(
-    generateIban.fixCCC(generateIban.randomNumber())
-  );
+  const iban = generateRandomIban();
 
   const account = await createAccount(personId, {
     ...DEFAULT_ACCOUNT,
