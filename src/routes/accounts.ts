@@ -1,7 +1,7 @@
 import _ from "lodash";
-import generateRandomIban from "../helpers/iban";
 import uuid from "node-uuid";
 import { getPerson, savePerson, findPersonByAccountId } from "../db";
+import { IBAN } from "ibankit";
 
 const ACCOUNT_SNAPSHOT_SOURCE = "SOLARISBANK";
 
@@ -140,7 +140,7 @@ export const createAccountRequestHandler = async (req, res) => {
 
   const accountId = personId.split("").reverse().join("");
 
-  const iban = generateRandomIban();
+  const iban = IBAN.random("DE").value;
 
   const account = await createAccount(personId, {
     ...DEFAULT_ACCOUNT,
