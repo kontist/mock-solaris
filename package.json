@@ -9,8 +9,8 @@
     "start": "node dist/server.js",
     "debug": "node --nolazy --inspect=0.0.0.0:9559 dist/server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "transpile": "tsc && babel --root-mode upward src --extensions \".js\" --out-dir dist --copy-files --source-maps --quiet && echo \"--ALL FILES TRANSPILED!\"",
-    "transpile-watch": "tsc --watch & babel --root-mode upward src --extensions \".js\" --out-dir dist --copy-files --source-maps --watch"
+    "transpile": "tsc && echo \"--ALL FILES TRANSPILED!\"",
+    "transpile-watch": "tsc --watch"
   },
   "author": "",
   "license": "SEE LICENSE IN PROPERIETARY_LICENSE",
