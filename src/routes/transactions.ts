@@ -256,7 +256,7 @@ const changeAmountSign = (metaInfo) => {
   });
 };
 
-export const creteBookingFromReservation = (person, reservation, incoming) => {
+export const creteBookingFromReservation = (person, reservation, incoming?) => {
   const amount = incoming
     ? reservation.amount.value
     : -reservation.amount.value;

@@ -28,7 +28,7 @@ export const triggerWebhook = async (type, payload) => {
     return;
   }
 
-  let headers = { "Content-Type": "application/json" };
+  let headers: Record<string, string> = { "Content-Type": "application/json" };
 
   if (
     [

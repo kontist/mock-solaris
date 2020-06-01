@@ -140,7 +140,7 @@ export const updateTaxIdentification = async (req, res) => {
 export const showTaxIdentification = async (req, res) => {
   const { person_id: personId, id } = req.params;
 
-  const identification = await getTaxIdentifications(personId).find(
+  const identification = (await getTaxIdentifications(personId)).find(
     (tin) => tin.id === id
   );
 

@@ -463,7 +463,7 @@ export const queueBookingRequestHandler = async (req, res) => {
 
   senderName = senderName || "mocksolaris";
   purpose = purpose || "";
-  amount = amount ? parseInt(amount, 10) : parseInt(Math.random() * 10000, 10);
+  amount = amount ? parseInt(amount, 10) : Math.round(Math.random() * 10000);
 
   const person = await findPerson();
   const queuedBooking = generateBookingForPerson({

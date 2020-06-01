@@ -324,7 +324,7 @@ export const getAllIdentifications = () => {
   return getAllPersons().then((persons) => {
     return _.flattenDeep(
       persons.map((person) => {
-        const identification = Object.values(person.identifications || {});
+        const identification: any = Object.values(person.identifications || {});
         identification.person = person;
         return identification;
       })

@@ -1,6 +1,7 @@
 import uuid from "node-uuid";
 import HttpStatusCodes from "http-status";
 import moment from "moment";
+import * as express from "express";
 
 import { getPerson, savePerson } from "../db";
 import { triggerBookingsWebhook } from "./backoffice";
@@ -189,7 +190,7 @@ export const authorizeTimedOrder = async (req, res) => {
   res.status(HttpStatusCodes.CREATED).send(timedOrder);
 };
 
-export const confirmTimedOrder = async (req, res) => {
+export const confirmTimedOrder = async (req: express.Request, res: express.Response) => {
   const { person_id: personId, id } = req.params;
   const { authorization_token: token } = req.body;
   const person = await getPerson(personId);
@@ -231,7 +232,7 @@ export const confirmTimedOrder = async (req, res) => {
 
   await savePerson(person);
 
-  res.status(HttpStatusCodes.CREATED).send(timedOrder);
+  return res.status(HttpStatusCodes.CREATED).send(timedOrder);
 };
 
 export const fetchTimedOrders = async (req, res) => {

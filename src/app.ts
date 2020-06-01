@@ -65,7 +65,7 @@ function logResponseBody(req, res, next) {
   next();
 }
 
-const router = new Router();
+const router = Router();
 
 app.use(logResponseBody);
 

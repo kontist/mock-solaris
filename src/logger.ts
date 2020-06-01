@@ -18,7 +18,7 @@ export const getExpressLogger = () => {
   const transports = [consoleLogger];
 
   if (LOGGLY_KEY) {
-    transports.push(new winston.transports.Loggly(getLogglyTransportOptions()));
+    transports.push(new winston.transports.Loggly(getLogglyTransportOptions()) as any);
   }
 
   return expressWinston.logger({
@@ -47,32 +47,26 @@ Stack trace:
 ${err.stack}
 `;
 
-export function info(...args) {
-  winston.log("info", ...args);
+export function info(msg: string, ...args: any[]) {
+  winston.log("info", msg, ...args);
 }
 
-export function warn(...args) {
-  winston.log("warn", ...args);
+export function warn(msg: string, ...args: any[]) {
+  winston.log("warn", msg, ...args);
 }
 
-export function debug(...args) {
-  winston.log("debug", ...args);
+export function debug(msg: string, ...args: any[]) {
+  winston.log("debug", msg, ...args);
 }
 
-export function error(...args) {
+export function error(msg: string, ...args: any[]) {
   const formattedArgs = args.map((arg) =>
     isError(arg) ? formatLogForError(arg) : arg
   );
 
-  winston.log("error", ...formattedArgs);
+  winston.log("error", msg, ...formattedArgs);
 }
 
 if (LOGGLY_KEY) {
   winston.add(winston.transports.Loggly, getLogglyTransportOptions());
 }
-
-export const setLogLevel = (logLevel: number | string) => {
-  winston.level = logLevel;
-  winston.transports.Console.level = logLevel;
-  consoleLogger.silent = !logLevel;
-};

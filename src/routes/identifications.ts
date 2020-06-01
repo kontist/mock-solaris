@@ -130,8 +130,8 @@ export const patchIdentification = async (req, res) => {
 
 export const showPersonIdentifications = (req, res) => {
   const personIdentifications = Object.values(req.person.identifications)
-    .filter((identification) => identification.status !== "created")
-    .map((identification) => {
+    .filter((identification: any) => identification.status !== "created")
+    .map((identification: any) => {
       return {
         ...identification,
         id: identification.id.substr(0, 36),
