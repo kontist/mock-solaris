@@ -47,6 +47,8 @@ const requestAccountFields = [
   "closure_reasons",
 ];
 
+const GERMAN_COUNTRY_CODE = "DE";
+
 export const showAccountBookings = async (req, res) => {
   const {
     page: { size, number },
@@ -140,7 +142,7 @@ export const createAccountRequestHandler = async (req, res) => {
 
   const accountId = personId.split("").reverse().join("");
 
-  const iban = IBAN.random("DE").value;
+  const iban = IBAN.random(GERMAN_COUNTRY_CODE).value;
 
   const account = await createAccount(personId, {
     ...DEFAULT_ACCOUNT,
