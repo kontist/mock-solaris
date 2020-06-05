@@ -16,7 +16,8 @@ import {
   generateBookingForPerson,
 } from "../routes/backoffice";
 
-export const INTEREST_RATE = 11.0;
+export const INTEREST_ACCRUAL_RATE = 0.11;
+export const OVERDRAFT_RATE = 0.03;
 
 export const OVERDRAFT_LIMIT = {
   value: 50000,
@@ -93,7 +94,7 @@ export const calculateOverdraftInterest = (
 ) => {
   const daysInYear = 365;
   const interest = Math.floor(
-    (Math.abs(balance) * INTEREST_RATE) / 100 / daysInYear
+    (Math.abs(balance) * INTEREST_ACCRUAL_RATE) / daysInYear
   );
   account.overdraftInterest = (account.overdraftInterest || 0) + interest;
 };

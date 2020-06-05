@@ -6,7 +6,8 @@ import {
   generateEntityNotFoundPayload,
   changeOverdraftApplicationStatus,
   OVERDRAFT_LIMIT,
-  INTEREST_RATE,
+  INTEREST_ACCRUAL_RATE,
+  OVERDRAFT_RATE,
 } from "../helpers/overdraft";
 import { OverdraftApplicationStatus, OverdraftStatus } from "../helpers/types";
 
@@ -43,7 +44,9 @@ export const createOverdraftApplication = async (req, res) => {
     partner_contact_name: null,
     rejection_reasons: [],
     limit: null,
-    interest_rate: INTEREST_RATE,
+    interest_accrual_rate: INTEREST_ACCRUAL_RATE,
+    overdraft_rate: OVERDRAFT_RATE,
+    interest_conditions_enabled: true,
     created_at: new Date().toISOString(),
     account_snapshot_id: null,
   };
@@ -146,7 +149,9 @@ export const createOverdraft = async (req, res) => {
     status: OverdraftStatus.LIMIT_SET,
     person_id: personId,
     limit: OVERDRAFT_LIMIT,
-    interest_rate: INTEREST_RATE,
+    interest_accrual_rate: INTEREST_ACCRUAL_RATE,
+    overdraft_rate: OVERDRAFT_RATE,
+    interest_conditions_enabled: true,
     created_at: new Date().toISOString(),
     account_id: accountId,
   };
