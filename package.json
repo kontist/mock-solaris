@@ -1,9 +1,9 @@
 {
   "name": "@kontist/mock-solaris",
-  "version": "0.0.0",
-  "description": "mocksolaris server",
+  "version": "1.0.0",
+  "description": "Mock Service for Solaris API",
   "main": "dist/index.js",
-  "types": "dist/index.d.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc && cp -r src/templates dist",
     "start": "node dist/server.js",
@@ -12,8 +12,8 @@
     "transpile": "tsc && echo \"--ALL FILES TRANSPILED!\"",
     "transpile-watch": "tsc --watch"
   },
-  "author": "",
-  "license": "SEE LICENSE IN PROPERIETARY_LICENSE",
+  "author": "Kontist GmbH",
+  "license": "Apache-2.0",
   "dependencies": {
     "@types/express": "^4.17.6",
     "bluebird": "^3.4.7",
