@@ -9,10 +9,10 @@ USER node
 
 COPY --chown=node:node package.json .
 
-RUN yarn
+RUN npm ci
 
 COPY --chown=node:node src ./src
 
-RUN yarn build
+RUN npm run build
 
-CMD ["yarn", "start"]
+CMD ["npm", "run", "start"]
