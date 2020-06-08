@@ -4,15 +4,15 @@ WORKDIR /opt/mockSolaris
 
 EXPOSE 2091
 
-# Run as Non-root
-USER node
-
-COPY --chown=node:node package.json .
+COPY --chown=node:node package.json package-lock.json tsconfig.json ./
 
 RUN npm ci
 
 COPY --chown=node:node src ./src
 
-RUN npm run build
+RUN npm run build && rm -Rf src
+
+# Run as Non-root
+USER node
 
 CMD ["npm", "run", "start"]
