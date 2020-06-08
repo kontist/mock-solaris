@@ -1,6 +1,6 @@
 {
   "name": "@kontist/mock-solaris",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Mock Service for Solaris API",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
