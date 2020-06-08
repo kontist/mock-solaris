@@ -1,4 +1,4 @@
-import uuid from "uuid";
+import uuid from "node-uuid";
 import { getPerson, savePerson } from "../db";
 import { triggerWebhook } from "./webhooks";
 

@@ -1,4 +1,4 @@
-import uuid from "uuid";
+import uuid from "node-uuid";
 
 import { triggerWebhook } from "../helpers/webhooks";
 import { TransactionWebhookEvent } from "../helpers/types";

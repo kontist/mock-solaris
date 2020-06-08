@@ -1,7 +1,7 @@
 import crypto from "crypto";
 import assert from "assert";
 import moment from "moment";
-import uuid from "uuid";
+import uuid from "node-uuid";
 import _ from "lodash";
 
 import { getPerson, savePerson } from "../db";

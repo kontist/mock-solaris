@@ -1,7 +1,7 @@
 import _ from "lodash";
 import fetch from "node-fetch";
 import moment from "moment";
-import uuid from "uuid";
+import uuid from "node-uuid";
 import HttpStatusCodes from "http-status";
 import {
   getPerson,

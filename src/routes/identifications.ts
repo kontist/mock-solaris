@@ -1,6 +1,6 @@
 import { getPerson, savePerson } from "../db";
 import * as log from "../logger";
-import uuid from "uuid";
+import uuid from "node-uuid";
 import fetch from "node-fetch";
 
 export const requireIdentification = async (req, res) => {

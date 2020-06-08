@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>{% block title %}🌞 MockSolaris{% endblock %}</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/moment.min.js" integrity="sha256-ABVkpwb9K9PxubvRrHMkk6wmWcIHUE9eBxNZLXYQ84k=" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha256-U5ZEeKfGNOja007MMD3YBI0A3OSZOQbeG6z2f2Y0hu8=" crossorigin="anonymous"></script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, “Roboto”, “Droid Sans”, “Helvetica Neue”, Helvetica, Arial, sans-serif;
+    }
+    .btn-primary {
+      background-color: #f28200;
+      border-color: #f28200;
+      transition: all .2s ease;
+    }
+    .btn-primary:hover {
+      background-color: #a65900;
+      border-color: #a65900;
+    }
+    a {
+      color: #f28200;
+    }
+    a:hover {
+      color: #a65900;
+    }
+    .panel {
+      overflow-y: scroll;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🌞 MockSolaris</h1>
+    {% block content %}{% endblock %}
+  </div>
+</body>
+</html>

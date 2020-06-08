@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import uuid from "uuid";
+import uuid from "node-uuid";
 import moment from "moment";
 import * as log from "../logger";
 import {

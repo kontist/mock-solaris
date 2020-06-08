@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/camelcase */
 import _ from "lodash";
-import uuid from "uuid";
+import uuid from "node-uuid";
 import jose from "node-jose";
 import * as express from "express";
 import HttpStatusCodes from "http-status";

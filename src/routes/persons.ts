@@ -1,6 +1,6 @@
 import crypto from "crypto";
 import _ from "lodash";
-import uuid from "uuid";
+import uuid from "node-uuid";
 
 import { getPerson, getAllPersons, savePerson } from "../db";
 

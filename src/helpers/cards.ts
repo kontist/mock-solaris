@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/camelcase */
 import _ from "lodash";
-import uuid from "uuid";
+import uuid from "node-uuid";
 import moment from "moment";
 import HttpStatusCodes from "http-status";
 import * as db from "../db";

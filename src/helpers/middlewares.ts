@@ -1,4 +1,4 @@
-import uuid from "uuid";
+import uuid from "node-uuid";
 import * as express from "express";
 import HttpStatusCodes from "http-status";
 import { getPerson } from "../db";

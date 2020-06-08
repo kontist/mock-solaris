@@ -1,5 +1,5 @@
 node_modules/
 npm-debug.log
 volume/appendonly.aof
-dist
+# dist
 .vscode

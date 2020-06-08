@@ -1,6 +1,6 @@
 import _ from "lodash";
 import generateIban from "iban-generator";
-import uuid from "uuid";
+import uuid from "node-uuid";
 import { getPerson, savePerson, findPersonByAccountId } from "../db";
 
 const ACCOUNT_SNAPSHOT_SOURCE = "SOLARISBANK";

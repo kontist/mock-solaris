@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/camelcase */
 
-import uuid from "uuid";
+import uuid from "node-uuid";
 import * as db from "../db";
 import moment from "moment";
 
