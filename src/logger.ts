@@ -70,3 +70,9 @@ export function error(msg: string, ...args: any[]) {
 if (LOGGLY_KEY) {
   winston.add(winston.transports.Loggly, getLogglyTransportOptions());
 }
+
+export const setLogLevel = (logLevel: number | string) => {
+  winston.level = String(logLevel);
+  winston.transports.Console.level = String(logLevel);
+  consoleLogger.silent = !logLevel;
+};
