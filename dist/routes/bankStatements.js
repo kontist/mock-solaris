@@ -121,7 +121,7 @@ exports.showBankStatementBookings = async (req, res) => {
             ],
         });
     }
-    const bankStatement = (person.bankStatements || []).find((bankStatement) => bankStatement.id === bankStatementId);
+    const bankStatement = (person.bankStatements || []).find((bs) => bs.id === bankStatementId);
     const { statement_period_start_date: startDate, statement_period_end_date: endDate, } = bankStatement;
     const momentStartDate = moment_1.default(startDate);
     const momentEndDate = moment_1.default(endDate);

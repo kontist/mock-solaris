@@ -672,7 +672,7 @@ export const getVirtualCardDetails = async (
 
   if (!SUPPORTED_ALG.includes(alg)) {
     const validAlgMessage = `Valid: ${SUPPORTED_ALG.map(
-      (alg) => `'${alg}'`
+      (algorithm) => `'${algorithm}'`
     ).join(", ")}`;
     res.status(400).send({
       errors: [

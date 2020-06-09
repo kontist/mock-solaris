@@ -140,7 +140,7 @@ export class FraudWatchdog {
     status: CardStatus
   ) {
     const { card } = person.account.cards.find(
-      ({ card }) => card.id === cardId
+      (cs) => cs.card.id === cardId
     );
     card.status = status;
     await db.savePerson(person);

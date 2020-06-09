@@ -125,7 +125,7 @@ export const showBankStatementBookings = async (req, res) => {
   }
 
   const bankStatement = (person.bankStatements || []).find(
-    (bankStatement) => bankStatement.id === bankStatementId
+    (bs) => bs.id === bankStatementId
   );
 
   const {

@@ -262,11 +262,9 @@ export const processQueuedBooking = async (
   person.transactions = person.transactions || [];
 
   let bookings;
-  if (isStandingOrder) {
-    bookings = person.standingOrders || [];
-  } else {
-    bookings = person.queuedBookings;
-  }
+  bookings = (isStandingOrder) ?
+    person.standingOrders || [] :
+    person.queuedBookings;
 
   let booking;
   if (id) {

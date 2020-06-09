@@ -28,7 +28,7 @@ export const getExpressLogger = () => {
       "HTTP {{req.method}} {{req.url}} {{res.statusCode}} {{res.responseTime}}ms",
     expressFormat: false,
     colorStatus: false,
-    ignoreRoute: function (req, res) {
+    ignoreRoute (req, res) {
       return req.url === "/health";
     },
   });
