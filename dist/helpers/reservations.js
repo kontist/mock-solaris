@@ -334,7 +334,7 @@ const expireReservation = async (person, reservation) => {
 };
 exports.updateReservation = async ({ personId, reservationId, action, increaseAmount, }) => {
     const person = await db.getPerson(personId);
-    const reservation = person.account.reservations.find((reservation) => reservation.id === reservationId);
+    const reservation = person.account.reservations.find((r) => r.id === reservationId);
     if (!reservation) {
         throw new Error("Reservation not found");
     }

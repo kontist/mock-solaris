@@ -204,12 +204,9 @@ exports.processQueuedBooking = async (personIdOrEmail, id, isStandingOrder = fal
     const person = await findPerson();
     person.transactions = person.transactions || [];
     let bookings;
-    if (isStandingOrder) {
-        bookings = person.standingOrders || [];
-    }
-    else {
-        bookings = person.queuedBookings;
-    }
+    bookings = (isStandingOrder) ?
+        person.standingOrders || [] :
+        person.queuedBookings;
     let booking;
     if (id) {
         const findQueuedBooking = (queuedBooking) => queuedBooking.id === id;

@@ -610,7 +610,7 @@ export const updateReservation = async ({
   const person = await db.getPerson(personId);
 
   const reservation = person.account.reservations.find(
-    (reservation) => reservation.id === reservationId
+    (r) => r.id === reservationId
   );
 
   if (!reservation) {

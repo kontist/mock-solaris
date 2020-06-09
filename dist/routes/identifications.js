@@ -63,7 +63,7 @@ exports.patchIdentification = async (req, res) => {
     let createUrl;
     let identificationUrl;
     let startUrl;
-    let reference;
+    const reference = undefined;
     if (person.identifications[identificationId].method === "idnow") {
         createUrl = `https://gateway.test.idnow.de/api/v1/kontist/identifications/${identificationId}/start`;
         identificationUrl = `https://go.test.idnow.de/kontist/identifications/${identificationId}`;

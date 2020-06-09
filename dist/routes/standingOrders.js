@@ -318,7 +318,7 @@ const triggerSepaScheduledTransactionWebhook = async ({ personId, standingOrderI
 };
 const getPersonWithStandingOrder = async (personId, standingOrderId) => {
     const person = await db_1.getPerson(personId);
-    const standingOrder = person.standingOrders.find((standingOrder) => standingOrder.id === standingOrderId);
+    const standingOrder = person.standingOrders.find((so) => so.id === standingOrderId);
     if (!standingOrder) {
         throw new Error(`Person doesn't have standing order with id: ${standingOrderId}`);
     }

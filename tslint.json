@@ -1,0 +1,12 @@
+{
+    "extends": "tslint:latest",
+    "rules": {
+      "interface-name": false,
+      "interface-over-type-literal": false,
+      "variable-name": {
+        "options": [
+          "allow-leading-underscore"
+        ]
+      }
+    }
+  }

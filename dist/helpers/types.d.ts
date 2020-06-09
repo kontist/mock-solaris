@@ -71,10 +71,10 @@ export declare type AccountSnapshot = {
     account_id: string;
 };
 export declare type MockAccount = Account & {
-    cards: Array<{
+    cards: {
         card: Card;
         cardDetails: CardDetails;
-    }>;
+    }[];
     reservations: Reservation[];
     fraudReservations: Reservation[];
     snapshot?: AccountSnapshot;

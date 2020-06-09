@@ -119,7 +119,7 @@ class FraudWatchdog {
         await this._blockCard(fraudCase.cardId, person, status);
     }
     async _blockCard(cardId, person, status) {
-        const { card } = person.account.cards.find(({ card }) => card.id === cardId);
+        const { card } = person.account.cards.find((cs) => cs.card.id === cardId);
         card.status = status;
         await db.savePerson(person);
         await webhooks_1.triggerWebhook(types_1.CardWebhookEvent.CARD_LIFECYCLE_EVENT, card);

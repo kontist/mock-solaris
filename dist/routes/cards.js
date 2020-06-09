@@ -477,7 +477,7 @@ exports.getVirtualCardDetails = async (req, res) => {
     }
     const SUPPORTED_ALG = ["RSA1_5", "RSA_OAEP_256", "RSA_OAEP_256_ANDROID"];
     if (!SUPPORTED_ALG.includes(alg)) {
-        const validAlgMessage = `Valid: ${SUPPORTED_ALG.map((alg) => `'${alg}'`).join(", ")}`;
+        const validAlgMessage = `Valid: ${SUPPORTED_ALG.map((algorithm) => `'${algorithm}'`).join(", ")}`;
         res.status(400).send({
             errors: [
                 {

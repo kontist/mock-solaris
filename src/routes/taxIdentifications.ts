@@ -160,7 +160,7 @@ export const processChangeRequest = async (person) => {
   const id = person.changeRequest.delta.id;
   const storedTin = tins.find((tinRow) => tinRow.id === id);
   const tin = { ...storedTin, ...person.changeRequest.delta };
-  const indexAt = tins.findIndex((tin) => tin.id === id);
+  const indexAt = tins.findIndex((t) => t.id === id);
 
   if (tin.primary) makeTinsNoPrimary(tins);
 
@@ -176,8 +176,8 @@ const makeTinsNoPrimary = (tins) => {
   "In case a consequent tax_identification is submitted as primary"
   "the latest one holds the primary flag and the previously submitted ones lose it."
   */
-  for (let i = 0; i < tins.length; i++) {
-    tins[i].primary = false;
+  for (const tin of tins) {
+    tin.primary = false;
   }
 };
 

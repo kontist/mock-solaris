@@ -38,20 +38,20 @@ function logResponseBody(req, res, next) {
   const oldWrite = res.write;
   const oldEnd = res.end;
 
-  var chunks = [];
+  const chunks = [];
 
-  res.write = function (chunk) {
+  res.write = (chunk) => {
     chunks.push(Buffer.from(chunk));
 
     oldWrite.apply(res, arguments);
   };
 
-  res.end = function (chunk) {
+  res.end = (chunk) => {
     if (chunk) {
       chunks.push(Buffer.from(chunk));
     }
 
-    var body = Buffer.concat(chunks).toString("utf8");
+    let body = Buffer.concat(chunks).toString("utf8");
 
     if ((res.get("content-type") || "").startsWith("text/html")) {
       body = `${body.slice(0, 14)}...`;

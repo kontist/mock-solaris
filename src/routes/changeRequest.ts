@@ -49,8 +49,8 @@ export const createChangeRequest = async (req, res, person, method, delta) => {
   const changeRequestId = Date.now().toString();
   person.changeRequest = {
     id: changeRequestId,
-    method: method,
-    delta: delta,
+    method,
+    delta,
   };
   await savePerson(person);
 

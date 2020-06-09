@@ -449,7 +449,7 @@ const getPersonWithStandingOrder = async (personId, standingOrderId) => {
   const person = await getPerson(personId);
 
   const standingOrder = person.standingOrders.find(
-    (standingOrder) => standingOrder.id === standingOrderId
+    (so) => so.id === standingOrderId
   );
 
   if (!standingOrder) {

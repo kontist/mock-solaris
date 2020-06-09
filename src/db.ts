@@ -8,17 +8,19 @@ let redis;
 
 if (process.env.MOCKSOLARIS_REDIS_SERVER) {
   log.info(`using redis server at ${process.env.MOCKSOLARIS_REDIS_SERVER}`);
+  // tslint:disable-next-line: no-var-requires no-implicit-dependencies
   redis = require("redis");
   Promise.promisifyAll(redis.RedisClient.prototype);
   Promise.promisifyAll(redis.Multi.prototype);
 } else {
   log.info("using memory for not very persistent persistence");
+  // tslint:disable-next-line: no-var-requires
   redis = Promise.promisifyAll(require("redis-mock"));
 }
 
 const redisClient = redis.createClient(process.env.MOCKSOLARIS_REDIS_SERVER);
 
-redisClient.on("error", function (err) {
+redisClient.on("error", (err) => {
   log.error("Error " + err);
 });
 
@@ -457,7 +459,7 @@ export const getCardData = async (cardId) => {
     .map((person) => _.get(person, "account.cards", []))
     .flatten()
     .value()
-    .find((cardData) => cardData.card.id === cardId);
+    .find((cd) => cd.card.id === cardId);
 
   return cardData;
 };
