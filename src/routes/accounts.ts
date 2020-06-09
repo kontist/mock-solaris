@@ -1,7 +1,7 @@
 import _ from "lodash";
 import uuid from "node-uuid";
 import { getPerson, savePerson, findPersonByAccountId } from "../db";
-import { IBAN } from "ibankit";
+import { IBAN, CountryCode } from "ibankit";
 
 const ACCOUNT_SNAPSHOT_SOURCE = "SOLARISBANK";
 
@@ -46,8 +46,6 @@ const requestAccountFields = [
   "status",
   "closure_reasons",
 ];
-
-const GERMAN_COUNTRY_CODE = "DE";
 
 export const showAccountBookings = async (req, res) => {
   const {
@@ -142,7 +140,7 @@ export const createAccountRequestHandler = async (req, res) => {
 
   const accountId = personId.split("").reverse().join("");
 
-  const iban = IBAN.random(GERMAN_COUNTRY_CODE).value;
+  const iban = IBAN.random(CountryCode.DE).toString();
 
   const account = await createAccount(personId, {
     ...DEFAULT_ACCOUNT,
