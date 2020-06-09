@@ -2,6 +2,11 @@
 
 A super minimal implementation of the Solaris backend.
 
+## Screenshots
+
+![Start page](https://github.com/kontist/mock-solaris/blob/assets/start.png)
+![User setup](https://github.com/kontist/mock-solaris/blob/assets/individual-user.png)
+
 ## Usage
 
 ### Build and run
