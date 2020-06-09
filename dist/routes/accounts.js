@@ -5,9 +5,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createAccountSnapshot = exports.createAccountRequestHandler = exports.createAccount = exports.showPersonAccounts = exports.showPersonAccount = exports.showAccountReservations = exports.showAccountBookings = void 0;
 const lodash_1 = __importDefault(require("lodash"));
-const iban_generator_1 = __importDefault(require("iban-generator"));
 const node_uuid_1 = __importDefault(require("node-uuid"));
 const db_1 = require("../db");
+const ibankit_1 = require("ibankit");
 const ACCOUNT_SNAPSHOT_SOURCE = "SOLARISBANK";
 const DEFAULT_ACCOUNT = {
     id: "df478cbe801e30550f7cea9340783e6bcacc",
@@ -108,7 +108,7 @@ exports.createAccountRequestHandler = async (req, res) => {
     const { person_id: personId } = req.params;
     counter++;
     const accountId = personId.split("").reverse().join("");
-    const iban = iban_generator_1.default.doIban(iban_generator_1.default.fixCCC(iban_generator_1.default.randomNumber()));
+    const iban = ibankit_1.IBAN.random(ibankit_1.CountryCode.DE).toString();
     const account = await exports.createAccount(personId, {
         ...DEFAULT_ACCOUNT,
         id: accountId,

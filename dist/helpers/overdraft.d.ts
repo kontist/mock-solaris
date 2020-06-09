@@ -1,5 +1,6 @@
 import { OverdraftApplication, OverdraftApplicationStatus, MockPerson, MockAccount } from "../helpers/types";
-export declare const INTEREST_RATE = 11;
+export declare const INTEREST_ACCRUAL_RATE = 0.11;
+export declare const OVERDRAFT_RATE = 0.03;
 export declare const OVERDRAFT_LIMIT: {
     value: number;
     unit: string;

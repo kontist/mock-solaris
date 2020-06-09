@@ -35,7 +35,9 @@ exports.createOverdraftApplication = async (req, res) => {
         partner_contact_name: null,
         rejection_reasons: [],
         limit: null,
-        interest_rate: overdraft_1.INTEREST_RATE,
+        interest_accrual_rate: overdraft_1.INTEREST_ACCRUAL_RATE,
+        overdraft_rate: overdraft_1.OVERDRAFT_RATE,
+        interest_conditions_enabled: true,
         created_at: new Date().toISOString(),
         account_snapshot_id: null,
     };
@@ -99,7 +101,9 @@ exports.createOverdraft = async (req, res) => {
         status: types_1.OverdraftStatus.LIMIT_SET,
         person_id: personId,
         limit: overdraft_1.OVERDRAFT_LIMIT,
-        interest_rate: overdraft_1.INTEREST_RATE,
+        interest_accrual_rate: overdraft_1.INTEREST_ACCRUAL_RATE,
+        overdraft_rate: overdraft_1.OVERDRAFT_RATE,
+        interest_conditions_enabled: true,
         created_at: new Date().toISOString(),
         account_id: accountId,
     };
