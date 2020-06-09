@@ -59,11 +59,11 @@ function logResponseBody(req, res, next) {
     const oldWrite = res.write;
     const oldEnd = res.end;
     const chunks = [];
-    res.write = (chunk) => {
+    res.write = function (chunk) {
         chunks.push(Buffer.from(chunk));
         oldWrite.apply(res, arguments);
     };
-    res.end = (chunk) => {
+    res.end = function (chunk) {
         if (chunk) {
             chunks.push(Buffer.from(chunk));
         }

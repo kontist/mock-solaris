@@ -32,6 +32,7 @@ import { oauthTokenAuthenticationMiddleware } from "./helpers/oauth";
 import { safeRequestHandler } from "./helpers/safeRequestHandler";
 import { shouldReturnJSON } from "./helpers";
 import { CardStatus } from "./helpers/types";
+import { IncomingMessage } from "http";
 const app = express();
 
 function logResponseBody(req, res, next) {
@@ -40,13 +41,13 @@ function logResponseBody(req, res, next) {
 
   const chunks = [];
 
-  res.write = (chunk) => {
+  res.write = function (chunk) {
     chunks.push(Buffer.from(chunk));
 
     oldWrite.apply(res, arguments);
   };
 
-  res.end = (chunk) => {
+  res.end = function (chunk) {
     if (chunk) {
       chunks.push(Buffer.from(chunk));
     }
