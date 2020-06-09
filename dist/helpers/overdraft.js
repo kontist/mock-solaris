@@ -3,13 +3,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.issueInterestAccruedBooking = exports.calculateOverdraftInterest = exports.changeOverdraftApplicationStatus = exports.generateEntityNotFoundPayload = exports.OVERDRAFT_LIMIT = exports.INTEREST_RATE = void 0;
+exports.issueInterestAccruedBooking = exports.calculateOverdraftInterest = exports.changeOverdraftApplicationStatus = exports.generateEntityNotFoundPayload = exports.OVERDRAFT_LIMIT = exports.OVERDRAFT_RATE = exports.INTEREST_ACCRUAL_RATE = void 0;
 const node_uuid_1 = __importDefault(require("node-uuid"));
 const db_1 = require("../db");
 const webhooks_1 = require("./webhooks");
 const types_1 = require("../helpers/types");
 const backoffice_1 = require("../routes/backoffice");
-exports.INTEREST_RATE = 11.0;
+exports.INTEREST_ACCRUAL_RATE = 0.11;
+exports.OVERDRAFT_RATE = 0.03;
 exports.OVERDRAFT_LIMIT = {
     value: 50000,
     unit: "cents",
@@ -52,7 +53,7 @@ exports.changeOverdraftApplicationStatus = async ({ personId, person, applicatio
 };
 exports.calculateOverdraftInterest = (account, balance) => {
     const daysInYear = 365;
-    const interest = Math.floor((Math.abs(balance) * exports.INTEREST_RATE) / 100 / daysInYear);
+    const interest = Math.floor((Math.abs(balance) * exports.INTEREST_ACCRUAL_RATE) / daysInYear);
     account.overdraftInterest = (account.overdraftInterest || 0) + interest;
 };
 exports.issueInterestAccruedBooking = async ({ personId, }) => {

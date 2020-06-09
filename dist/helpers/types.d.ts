@@ -330,7 +330,9 @@ export declare type OverdraftApplication = {
     overdraft_id: string | null;
     person_id: string;
     status: OverdraftApplicationStatus;
-    interest_rate: number;
+    interest_accrual_rate: number;
+    overdraft_rate: number;
+    interest_conditions_enabled: boolean;
 };
 export declare enum OverdraftStatus {
     CREATED = "created",
@@ -340,7 +342,9 @@ export declare type Overdraft = {
     status: OverdraftStatus;
     person_id: string;
     limit: Amount;
-    interest_rate: number;
+    interest_accrual_rate: number;
+    overdraft_rate: number;
+    interest_conditions_enabled: boolean;
     id: string;
     created_at: string;
     account_id: string;
