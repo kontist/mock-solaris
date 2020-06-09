@@ -1,23 +1,78 @@
-# mocksolaris server
+# Solaris Mock Server
 
-A super minimal, unsupported and error prone mock implementation of Solaris' backend
+A super minimal implementation of the Solaris backend.
 
-## Usage for exploring
+## Usage
 
-### Run this on your development machine
+### Build and run
 
-If your containers are up and running, local `mocksolaris` should be accessible at [http://localhost:2091/\_\_BACKOFFICE\_\_/](http://localhost:2091/__BACKOFFICE__/).
+```
+docker build -t mocksolaris .
+docker run -p 127.0.0.1:2091:2091 mocksolaris
+```
+
+You may now access the backoffice at [http://localhost:2091/\_\_BACKOFFICE\_\_/](http://localhost:2091/__BACKOFFICE__/).
+
+### Example request
+
+```
+curl TODO
+```
 
 ### Persons and accounts
 
 Navigate to the URL mentioned above. From there you can send simple, random transaction(s) to your test account.
 
-### Wire Transfers
+To add further persons, please have a look at the `savePerson` method.
 
-From the app, you can request an outgoing wire transfer as you normally would.
+### Scope
+This mock service currently supports (at different extends)
+* Accounts
+* Statements
+* Transfers (incl. Batch Transfers, Timed Orders and Standing Orders)
+* Change Requests
+* Cards
+* Device Binding
+* Overdraft
+* Seizures
+* Direct Debit Returns
+* Webhooks
+* ...
 
+### TAN
 You can use `111111` as the 6-digit TAN.
 
-Then, you can click on the `Send` button next to the `Pending wire transfer` text.
+## Configuration
+### Enable Redis
 
-You should now no longer see the transaction as "pending" and be able to click it to see its individual transaction screen.
+### Reference
+The following environment variables are supported:
+```
+SOLARIS_CLIENT_ID=...
+SOLARIS_CLIENT_SECRET=...
+SOLARIS_CARD_AUTHORIZATION_WEBHOOK_ORIGIN_VERIFICATION_SECRET=...
+SOLARIS_OVERDRAFT_APPLICATION_WEBHOOK_ORIGIN_VERIFICATION_SECRET=...
+SOLARIS_BIC=SOBKDEBBXXX
+
+MOCKSOLARIS_REDIS_PREFIX=mocksolaris
+MOCKSOLARIS_REDIS_SERVER=redis://:pwd@mocks-redis/
+
+SOLARIS_KONTIST_ACCOUNT_ID=mockaccount_id
+SOLARIS_KONTIST_ACCOUNT_CLIENT_ID=...
+SOLARIS_KONTIST_ACCOUNT_CLIENT_SECRET=...
+SOLARIS_KONTIST_BILLING_ACCOUNT_ID=mockaccount_billing_id
+
+MOCKWIRECARD_BASE_URL=http://mock-wirecard:2943
+
+WIRECARD_IBAN=DE86512308009999837809
+KONTIST_IBAN=DE58110101002263909949
+KONTIST_DD_BILLING_IBAN=DE31110101002781508546
+
+JOBS_USERNAME=jobuser
+JOBS_PASSWORD=jobpassword
+```
+
+## Usage in tests
+
+
+## Contribute
