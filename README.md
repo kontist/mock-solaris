@@ -44,7 +44,10 @@ This mock service currently supports (at different extents)
 * ...
 
 ### TAN
-You can use `111111` as the 6-digit TAN.
+For device binding, you can use any combination as the 6-digit TAN (it is not actually verified).
+
+For other TAN confirmation (Change Requests, Transfer confirmation, etc.), you can find the 6-digit code on your user's UI:
+ ![TAN](https://github.com/kontist/mock-solaris/blob/assets/tan.png)
 
 ## Configuration
 ### Enable Redis
