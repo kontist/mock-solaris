@@ -30,7 +30,7 @@ Navigate to the URL mentioned above. From there you can send simple, random tran
 To add further persons, please have a look at the `savePerson` method.
 
 ### Scope
-This mock service currently supports (at different extends)
+This mock service currently supports (at different extents)
 * Accounts
 * Statements
 * Transfers (incl. Batch Transfers, Timed Orders and Standing Orders)
