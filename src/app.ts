@@ -41,12 +41,14 @@ function logResponseBody(req, res, next) {
 
   const chunks = [];
 
+  // tslint:disable-next-line: only-arrow-functions
   res.write = function (chunk) {
     chunks.push(Buffer.from(chunk));
 
     oldWrite.apply(res, arguments);
   };
 
+  // tslint:disable-next-line: only-arrow-functions
   res.end = function (chunk) {
     if (chunk) {
       chunks.push(Buffer.from(chunk));
