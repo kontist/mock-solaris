@@ -26,7 +26,11 @@ import { triggerWebhook } from "../helpers/webhooks";
 import { SEIZURE_STATUSES } from "./seizures";
 
 import * as log from "../logger";
-import { changeCardStatus } from "../helpers/cards";
+import {
+  changeCardStatus,
+  createProvisioningToken,
+  changeProvisioningTokenStatus,
+} from "../helpers/cards";
 import { createReservation, updateReservation } from "../helpers/reservations";
 import { createCreditPresentment } from "../helpers/creditPresentment";
 import {
@@ -37,6 +41,7 @@ import {
   AccountWebhookEvent,
   TransactionWebhookEvent,
   IdentificationStatus,
+  CardWebhookEvent,
 } from "../helpers/types";
 import {
   changeOverdraftApplicationStatus,
@@ -64,6 +69,19 @@ const triggerAccountBlockWebhook = async (person) => {
 export const triggerBookingsWebhook = async (solarisAccountId) => {
   const payload = { account_id: solarisAccountId };
   await triggerWebhook(TransactionWebhookEvent.BOOKING, payload);
+};
+
+export const provisioningTokenCreationHandler = async (req, res) => {
+  const { personId, cardId } = req.params;
+  await createProvisioningToken(personId, cardId);
+  res.redirect("back");
+};
+
+export const provisioningTokenChangeHandler = async (req, res) => {
+  const { personId, cardId } = req.params;
+  const { status } = req.body;
+  await changeProvisioningTokenStatus(personId, cardId, status);
+  res.redirect("back");
 };
 
 const filterAndSortIdentifications = (identifications, method) => {

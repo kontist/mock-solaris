@@ -57,6 +57,29 @@
               <td><span style="color: red;">{{ cardData.cardDetails.token.slice(0, 6) }}</span>{{ cardData.cardDetails.token.slice(6) }}</td>
             </tr>
             <tr>
+              <td>New Provisioning Token</td>
+              <td>
+                <form class="form-inline autosubmitonchange" method="POST" action="/__BACKOFFICE__/{{ person.id }}/{{ cardData.card.id }}/createProvisioningToken">
+                  <input type="submit" value="Create" />
+                </form>
+              </td>
+            </tr>
+            {% if cardData.provisioningToken %}
+            <tr>
+              <td>Provisioning Token Status</td>
+              <td>
+                <form class="form-inline autosubmitonchange" method="POST" action="/__BACKOFFICE__/{{ person.id }}/{{ cardData.card.id }}/updateProvisioningToken">
+                  <select name="status" {% if cardData.card.status==="CLOSED_BY_SOLARIS" %}disabled {% endif %}>
+                    <option {% if cardData.provisioningToken.token_status === "ACTIVE" %} selected {% endif %} value="ACTIVE">ACTIVE</option>
+                    <option {% if cardData.provisioningToken.token_status === "INACTIVE" %} selected {% endif %}value="INACTIVE">INACTIVE</option>
+                    <option {% if cardData.provisioningToken.token_status === "DEACTIVATED" %} selected {% endif %}value="DEACTIVATED">DEACTIVATED</option>
+                    <option {% if cardData.provisioningToken.token_status === "SUSPENDED" %} selected {% endif %}value="SUSPENDED">SUSPENDED</option>
+                  </select>
+                </form>
+              </td>
+            </tr>
+            {% endif %}
+            <tr>
               <td>CVV</td>
               <td>{{ cardData.cardDetails.cvv }}</td>
             </tr>

@@ -20,6 +20,8 @@ import {
   MockChangeRequest,
   CardSettings,
   ReplaceCardData,
+  ProvisioningTokenStatus,
+  ProvisioningTokenStatusChangePayload
 } from "./types";
 
 const CARD_HOLDER_MAX_LENGTH = 21;
@@ -320,6 +322,150 @@ export const changeCardStatus = async (
 
   return cardData.card;
 };
+
+export const createProvisioningToken = async (
+  personId: string,
+  cardId: string,
+): Promise<Object> => {
+
+  if (!personId) {
+    throw new Error("You have to provide personId");
+  }
+  if (!cardId) {
+    throw new Error("You have to provide cardId");
+  }
+
+  const person = await db.getPerson(personId);
+
+  const cardData = person.account.cards.find(({ card }) => card.id === cardId);
+
+  if (!cardData) {
+    throw new Error("Card not found");
+  }
+  
+  const { provisioningToken } = cardData;
+  let walletId;
+
+  // Deactivate existing token
+  if (provisioningToken) {
+    walletId = provisioningToken.client_wallet_account_id
+    const data = {
+      card_id: cardData.card.id,
+      token_status: ProvisioningTokenStatus.DEACTIVATED,
+      token_reference_id: provisioningToken.token_reference_id,
+      client_wallet_account_id: walletId,
+      wallet_type: "GOOGLE",
+      event_type: "TOKEN_STATUS_UPDATED",
+      message_reason: "TOKEN_DEACTIVATED",
+    };
+    await triggerWebhook(CardWebhookEvent.CARD_TOKEN_LIFECYCLE, data);
+  }
+
+  /**
+   * No go through all creation lifecycle:
+   * - TOKEN_CREATED (INACTIVE)
+   * - LUK_REPLENISHMENT (INACTIVE)
+   * - DEVICE_PROVISIONING_RESULT (INACTIVE)
+   * - OTP_VERIFICATION_RESULT (ACTIVE)
+   */
+  let baseData: ProvisioningTokenStatusChangePayload = {
+    card_id: cardData.card.id,
+    token_reference_id: uuid.v4(),
+    client_wallet_account_id: walletId || uuid.v4(),
+    wallet_type: "GOOGLE",
+  };
+
+  // Token Creation
+  let payload: ProvisioningTokenStatusChangePayload = {
+    ...baseData,
+    token_status: ProvisioningTokenStatus.INACTIVE,
+    event_type: "TOKEN_CREATED",
+    message_reason: "TOKEN_CREATED",
+  }
+  await triggerWebhook(CardWebhookEvent.CARD_TOKEN_LIFECYCLE, payload);
+
+  // From here on event_type is always the same.
+  baseData = {
+    ...baseData,
+    event_type: "TOKEN_STATUS_UPDATED",
+  };
+
+  // Luk replenishment
+  payload = {
+    ...baseData,
+    token_status: ProvisioningTokenStatus.INACTIVE,
+    message_reason: "LUK_REPLENISHMENT",
+  }
+  await triggerWebhook(CardWebhookEvent.CARD_TOKEN_LIFECYCLE, payload);
+
+  // Provisioning Result
+  payload = {
+    ...baseData,
+    token_status: ProvisioningTokenStatus.INACTIVE,
+    message_reason: "DEVICE_PROVISIONING_RESULT",
+  }
+  await triggerWebhook(CardWebhookEvent.CARD_TOKEN_LIFECYCLE, payload);
+
+  // OTP Verification Result
+  payload = {
+    ...baseData,
+    token_status: ProvisioningTokenStatus.ACTIVE,
+    message_reason: "OTP_VERIFICATION_RESULT",
+  }
+  await triggerWebhook(CardWebhookEvent.CARD_TOKEN_LIFECYCLE, payload);
+
+  const { event_type, message_reason, ...newProvisioningToken } = payload;
+  cardData.provisioningToken = newProvisioningToken;
+  return db.savePerson(person);
+};
+
+export const changeProvisioningTokenStatus = async (
+  personId: string,
+  cardId: string,
+  status: ProvisioningTokenStatus
+): Promise<Object> => {
+
+  if (!personId) {
+    throw new Error("You have to provide personId");
+  }
+  if (!cardId) {
+    throw new Error("You have to provide cardId");
+  }
+
+  const person = await db.getPerson(personId);
+
+  const cardData = person.account.cards.find(({ card }) => card.id === cardId);
+
+  if (!cardData) {
+    throw new Error("Card not found");
+  }
+  
+  const { provisioningToken } = cardData;
+
+  if (!provisioningToken) {
+    throw new Error("No Provisioning Token found for the provided card");
+  }
+  
+  const newProvisioningToken = {
+    card_id: provisioningToken.card_id,
+    token_status: status,
+    token_reference_id: provisioningToken.token_reference_id,
+    client_wallet_account_id: provisioningToken.client_wallet_account_id,
+  };
+
+  const payload = {
+    ...newProvisioningToken,
+    message_reason: "SOLARIS_MOCK_CHANGE",
+    event_type: "TOKEN_STATUS_UPDATED",
+    wallet_type: "GOOGLE",
+  }
+  await triggerWebhook(CardWebhookEvent.CARD_TOKEN_LIFECYCLE, payload);
+
+  cardData.provisioningToken = newProvisioningToken;
+  return db.savePerson(person);
+
+
+}
 
 export const activateCard = async (
   cardForActivation: Card,
