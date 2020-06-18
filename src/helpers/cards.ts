@@ -368,7 +368,7 @@ export const createProvisioningToken = async (
   }
 
   /**
-   * No go through all creation lifecycle:
+   * Now go through all creation lifecycle:
    * - TOKEN_CREATED (INACTIVE)
    * - LUK_REPLENISHMENT (INACTIVE)
    * - DEVICE_PROVISIONING_RESULT (INACTIVE)
@@ -447,15 +447,12 @@ export const changeProvisioningTokenStatus = async (
   }
 
   const person = await db.getPerson(personId);
-
   const cardData = person.account.cards.find(({ card }) => card.id === cardId);
-
   if (!cardData) {
     throw new Error("Card not found");
   }
   
   const { provisioningToken } = cardData;
-
   if (!provisioningToken) {
     throw new Error("No Provisioning Token found for the provided card");
   }
