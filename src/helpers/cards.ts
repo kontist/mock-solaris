@@ -326,14 +326,14 @@ export const changeCardStatus = async (
 /**
  * Triggers a series of webhooks calls (CARD_TOKEN_LIFECYCLE) simulating the provisioning token creation
  * lifecycle. When done, it saves the final token in the card information of the person.
- * 
+ *
  * @param personId {string}
  * @param cardId {string}
  */
 export const createProvisioningToken = async (
   personId: string,
   cardId: string,
-): Promise<Object> => {
+): Promise<ProvisioningTokenStatusChangePayload> => {
 
   if (!personId) {
     throw new Error("You have to provide personId");
@@ -344,11 +344,10 @@ export const createProvisioningToken = async (
 
   const person = await db.getPerson(personId);
   const cardData = person.account.cards.find(({ card }) => card.id === cardId);
-
   if (!cardData) {
     throw new Error("Card not found");
   }
-  
+
   const { provisioningToken } = cardData;
   let walletId;
 
@@ -421,10 +420,16 @@ export const createProvisioningToken = async (
   await triggerWebhook(CardWebhookEvent.CARD_TOKEN_LIFECYCLE, payload);
 
   // Extract unnecessary data to save the token's relevant information .
-  const { event_type, message_reason, ...newProvisioningToken } = payload;
+  const {
+    event_type,
+    message_reason,
+    wallet_type,
+    ...newProvisioningToken
+  } = payload;
 
   cardData.provisioningToken = newProvisioningToken;
-  return db.savePerson(person);
+  await db.savePerson(person);
+  return newProvisioningToken;
 };
 
 /**
@@ -437,7 +442,7 @@ export const changeProvisioningTokenStatus = async (
   personId: string,
   cardId: string,
   status: ProvisioningTokenStatus
-): Promise<Object> => {
+): Promise<ProvisioningTokenStatusChangePayload> => {
 
   if (!personId) {
     throw new Error("You have to provide personId");
@@ -451,12 +456,12 @@ export const changeProvisioningTokenStatus = async (
   if (!cardData) {
     throw new Error("Card not found");
   }
-  
+
   const { provisioningToken } = cardData;
   if (!provisioningToken) {
     throw new Error("No Provisioning Token found for the provided card");
   }
-  
+
   const newProvisioningToken = {
     card_id: provisioningToken.card_id,
     token_status: status,
@@ -473,7 +478,8 @@ export const changeProvisioningTokenStatus = async (
   await triggerWebhook(CardWebhookEvent.CARD_TOKEN_LIFECYCLE, payload);
 
   cardData.provisioningToken = newProvisioningToken;
-  return db.savePerson(person);
+  await db.savePerson(person);
+  return newProvisioningToken;
 }
 
 export const activateCard = async (
