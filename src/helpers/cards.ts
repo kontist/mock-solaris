@@ -323,6 +323,13 @@ export const changeCardStatus = async (
   return cardData.card;
 };
 
+/**
+ * Triggers a series of webhooks calls (CARD_TOKEN_LIFECYCLE) simulating the provisioning token creation
+ * lifecycle. When done, it saves the final token in the card information of the person.
+ * 
+ * @param personId {string}
+ * @param cardId {string}
+ */
 export const createProvisioningToken = async (
   personId: string,
   cardId: string,
@@ -336,7 +343,6 @@ export const createProvisioningToken = async (
   }
 
   const person = await db.getPerson(personId);
-
   const cardData = person.account.cards.find(({ card }) => card.id === cardId);
 
   if (!cardData) {
@@ -414,11 +420,19 @@ export const createProvisioningToken = async (
   }
   await triggerWebhook(CardWebhookEvent.CARD_TOKEN_LIFECYCLE, payload);
 
+  // Extract unnecessary data to save the token's relevant information .
   const { event_type, message_reason, ...newProvisioningToken } = payload;
+
   cardData.provisioningToken = newProvisioningToken;
   return db.savePerson(person);
 };
 
+/**
+ * Triggers the CARD_TOKEN_LIFECYCLE webhook with the provided status given an existing person and card.
+ * @param personId {string}
+ * @param cardId {string}
+ * @param status {ProvisioningTokenStatus}
+ */
 export const changeProvisioningTokenStatus = async (
   personId: string,
   cardId: string,
@@ -463,8 +477,6 @@ export const changeProvisioningTokenStatus = async (
 
   cardData.provisioningToken = newProvisioningToken;
   return db.savePerson(person);
-
-
 }
 
 export const activateCard = async (
