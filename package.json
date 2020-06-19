@@ -2,18 +2,16 @@
   "name": "@kontist/mock-solaris",
   "version": "1.0.11",
   "description": "Mock Service for Solaris API",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
   "repository": "https://github.com/kontist/mock-solaris.git",
   "author": "Kontist GmbH",
   "license": "Apache-2.0",
   "scripts": {
-    "build": "tsc && cp -r src/templates dist",
-    "start": "node dist/server.js",
-    "debug": "node --nolazy --inspect=0.0.0.0:9559 dist/server.js",
-    "test": "npm run lint && echo \"Error: no test specified\" && exit 1",
-    "transpile": "tsc && echo \"--ALL FILES TRANSPILED!\"",
-    "transpile-watch": "tsc --watch",
+    "build": "tsc && cp -r src/templates dist/src",
+    "start": "node dist/src/server.js",
+    "debug": "node --nolazy --inspect=0.0.0.0:9559 dist/src/server.js",
+    "test": "npm run lint && npm run build && mocha --recursive 'dist/tests/**/*.spec.js'",
     "lint": "tslint --fix --project ."
   },
   "dependencies": {
@@ -35,9 +33,13 @@
     "winston": "^2.4.4"
   },
   "devDependencies": {
+    "@types/chai": "^4.2.11",
     "@types/express": "^4.17.6",
+    "@types/mocha": "^7.0.2",
     "@types/node": "^13.1.1",
     "@types/node-uuid": "0.0.28",
+    "chai": "^4.2.0",
+    "mocha": "^8.0.1",
     "nodemon": "^2.0.1",
     "tslint": "^6.1.2",
     "typescript": "^3.9.3"
