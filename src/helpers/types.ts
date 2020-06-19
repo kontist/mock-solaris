@@ -188,10 +188,12 @@ export enum PersonWebhookEvent {
   "IDENTIFICATION" = "IDENTIFICATION",
   "PERSON_SEIZURE_CREATED" = "PERSON_SEIZURE_CREATED",
   "PERSON_SEIZURE_DELETED" = "PERSON_SEIZURE_DELETED",
+  "PERSON_DELETED" = "PERSON_DELETED",
 }
 
 export enum AccountWebhookEvent {
   "ACCOUNT_BLOCK" = "ACCOUNT_BLOCK",
+  "ACCOUNT_CLOSURE" = "ACCOUNT_CLOSURE",
 }
 
 export enum CardWebhookEvent {
@@ -202,6 +204,7 @@ export enum CardWebhookEvent {
   "CARD_AUTHORIZATION_RESOLUTION" = "CARD_AUTHORIZATION_RESOLUTION", // 	The reservation was cancelled, expired or booked. No push notification for the customer is required for this webhook.
   "CARD_LIFECYCLE_EVENT" = "CARD_LIFECYCLE_EVENT", // The status of the card is changed.
   "CARD_TOKEN_LIFECYCLE" = "CARD_TOKEN_LIFECYCLE" // Push provisioning token is created or updated.
+  "CARD_FRAUD_CASE" = "CARD_FRAUD_CASE",
 }
 
 export enum OverdraftApplicationWebhookEvent {
