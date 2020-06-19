@@ -17,7 +17,6 @@ const WEBHOOK_SECRETS = {
   [CardWebhookEvent.CARD_FRAUD_CASE_TIMEOUT]: process.env.SOLARIS_CARD_FRAUD_CASE_TIMEOUT_WEBHOOK_SECRET,
   [CardWebhookEvent.CARD_LIFECYCLE_EVENT]: process.env.SOLARIS_CARD_LIFECYCLE_EVENT_WEBHOOK_SECRET,
   [CardWebhookEvent.CARD_TOKEN_LIFECYCLE]: process.env.SOLARIS_CARD_TOKEN_LIFECYCLE_WEBHOOK_SECRET,
-  [CardWebhookEvent.CARD_FRAUD_CASE]: process.env.SOLARIS_CARD_FRAUD_CASE_WEBHOOK_SECRET,
 
   [PersonWebhookEvent.IDENTIFICATION]: process.env. SOLARIS_IDENTIFICATION_WEBHOOK_SECRET,
   [PersonWebhookEvent.PERSON_SEIZURE_CREATED]: process.env.SOLARIS_PERSON_SEIZURE_CREATED_WEBHOOK_SECRET,
@@ -43,15 +42,20 @@ export const triggerWebhook = async (type, payload) => {
 
   let headers: Record<string, string> = { "Content-Type": "application/json" };
 
+  const body = {
+    id: uuid.v4(),
+    ...payload,
+  };
+
   if (WEBHOOK_SECRETS[type]) {
     const solarisWebhookSignature = generateSolarisWebhookSignature(
-      payload,
+      body,
       WEBHOOK_SECRETS[type]
     );
 
     headers = {
       ...headers,
-      "solaris-entity-id": payload.id || uuid.v4(),
+      "solaris-entity-id": body.id,
       "solaris-webhook-attempt": "1",
       "solaris-webhook-event-type": type,
       "solaris-webhook-id": uuid.v4(),
@@ -62,10 +66,7 @@ export const triggerWebhook = async (type, payload) => {
 
   await fetch(webhook.url, {
     method: "POST",
-    body: JSON.stringify({
-      id: uuid.v4(),
-      ...payload,
-    }),
+    body,
     headers,
   });
 };
