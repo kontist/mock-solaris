@@ -29,7 +29,7 @@ const log = __importStar(require("../logger"));
 const db_1 = require("../db");
 const solarisWebhookSignature_1 = require("./solarisWebhookSignature");
 const types_1 = require("./types");
-const verificationSecret = {
+const SOLARIS_WEBHOOK_SECRETS = {
     [types_1.OverdraftApplicationWebhookEvent.OVERDRAFT_APPLICATION]: process.env.SOLARIS_OVERDRAFT_APPLICATION_WEBHOOK_SECRET,
     [types_1.CardWebhookEvent.CARD_AUTHORIZATION]: process.env.SOLARIS_CARD_AUTHORIZATION_WEBHOOK_SECRET,
     [types_1.CardWebhookEvent.CARD_AUTHORIZATION_RESOLUTION]: process.env.SOLARIS_CARD_AUTHORIZATION_RESOLUTION_WEBHOOK_SECRET,
@@ -57,13 +57,8 @@ exports.triggerWebhook = async (type, payload) => {
         return;
     }
     let headers = { "Content-Type": "application/json" };
-    if ([
-        types_1.CardWebhookEvent.CARD_AUTHORIZATION,
-        types_1.CardWebhookEvent.CARD_AUTHORIZATION_RESOLUTION,
-        types_1.CardWebhookEvent.CARD_AUTHORIZATION_DECLINE,
-        types_1.OverdraftApplicationWebhookEvent.OVERDRAFT_APPLICATION,
-    ].includes(type)) {
-        const solarisWebhookSignature = solarisWebhookSignature_1.generateSolarisWebhookSignature(payload, verificationSecret[type]);
+    if (SOLARIS_WEBHOOK_SECRETS[type]) {
+        const solarisWebhookSignature = solarisWebhookSignature_1.generateSolarisWebhookSignature(payload, SOLARIS_WEBHOOK_SECRETS[type]);
         headers = {
             ...headers,
             "solaris-entity-id": payload.id || node_uuid_1.default.v4(),
