@@ -187,7 +187,6 @@ export enum CardWebhookEvent {
   "CARD_AUTHORIZATION_RESOLUTION" = "CARD_AUTHORIZATION_RESOLUTION", // 	The reservation was cancelled, expired or booked. No push notification for the customer is required for this webhook.
   "CARD_LIFECYCLE_EVENT" = "CARD_LIFECYCLE_EVENT", // The status of the card is changed.
   "CARD_TOKEN_LIFECYCLE" = "CARD_TOKEN_LIFECYCLE",
-  "CARD_FRAUD_CASE" = "CARD_FRAUD_CASE",
 }
 
 export enum OverdraftApplicationWebhookEvent {
