@@ -7,7 +7,7 @@ import { generateSolarisWebhookSignature } from "./solarisWebhookSignature";
 import { CardWebhookEvent, OverdraftApplicationWebhookEvent, PersonWebhookEvent, TransactionWebhookEvent, AccountWebhookEvent } from "./types";
 
 
-const verificationSecret = {
+const WEBHOOK_SECRETS = {
   [OverdraftApplicationWebhookEvent.OVERDRAFT_APPLICATION]: process.env.SOLARIS_OVERDRAFT_APPLICATION_WEBHOOK_SECRET,
 
   [CardWebhookEvent.CARD_AUTHORIZATION]: process.env.SOLARIS_CARD_AUTHORIZATION_WEBHOOK_SECRET,
@@ -43,17 +43,10 @@ export const triggerWebhook = async (type, payload) => {
 
   let headers: Record<string, string> = { "Content-Type": "application/json" };
 
-  if (
-    [
-      CardWebhookEvent.CARD_AUTHORIZATION,
-      CardWebhookEvent.CARD_AUTHORIZATION_RESOLUTION,
-      CardWebhookEvent.CARD_AUTHORIZATION_DECLINE,
-      OverdraftApplicationWebhookEvent.OVERDRAFT_APPLICATION,
-    ].includes(type)
-  ) {
+  if (WEBHOOK_SECRETS[type]) {
     const solarisWebhookSignature = generateSolarisWebhookSignature(
       payload,
-      verificationSecret[type]
+      WEBHOOK_SECRETS[type]
     );
 
     headers = {
