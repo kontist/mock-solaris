@@ -43,15 +43,20 @@ export const triggerWebhook = async (type, payload) => {
 
   let headers: Record<string, string> = { "Content-Type": "application/json" };
 
+  const body = {
+    id: uuid.v4(),
+    ...payload,
+  };
+
   if (WEBHOOK_SECRETS[type]) {
     const solarisWebhookSignature = generateSolarisWebhookSignature(
-      payload,
+      body,
       WEBHOOK_SECRETS[type]
     );
 
     headers = {
       ...headers,
-      "solaris-entity-id": payload.id || uuid.v4(),
+      "solaris-entity-id": body.id,
       "solaris-webhook-attempt": "1",
       "solaris-webhook-event-type": type,
       "solaris-webhook-id": uuid.v4(),
@@ -62,10 +67,7 @@ export const triggerWebhook = async (type, payload) => {
 
   await fetch(webhook.url, {
     method: "POST",
-    body: JSON.stringify({
-      id: uuid.v4(),
-      ...payload,
-    }),
+    body,
     headers,
   });
 };
