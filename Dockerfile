@@ -4,7 +4,7 @@ WORKDIR /opt/mockSolaris
 
 EXPOSE 2091
 
-COPY --chown=node:node package.json package-lock.json tsconfig.json ./
+COPY --chown=node:node package.json npm-shrinkwrap.json tsconfig.json ./
 
 RUN npm ci
 
