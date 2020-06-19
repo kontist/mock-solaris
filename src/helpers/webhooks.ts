@@ -66,7 +66,7 @@ export const triggerWebhook = async (type, payload) => {
 
   await fetch(webhook.url, {
     method: "POST",
-    body,
+    body: JSON.stringify(body),
     headers,
   });
 };
