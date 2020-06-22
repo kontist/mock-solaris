@@ -1,7 +1,6 @@
 {
   "compilerOptions": {
     "outDir": "./dist",
-    "rootDir": "src",
     "allowJs": false,
     "target": "es2018",
     "module": "commonjs",
@@ -16,5 +15,5 @@
     "declaration": true,
     "skipLibCheck": true
   },
-  "include": ["src/**/*.ts"]
+  "include": ["**/*.ts"],
 }
