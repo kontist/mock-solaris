@@ -1,7 +1,7 @@
 {
     "all": true,
     "cache": false,
-    "check-coverage": true,
+    "check-coverage": false,
     "branches": 80,
     "lines": 80,
     "functions": 80,
