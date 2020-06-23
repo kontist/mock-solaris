@@ -28,8 +28,7 @@ import { SEIZURE_STATUSES } from "./seizures";
 import * as log from "../logger";
 import {
   changeCardStatus,
-  createProvisioningToken,
-  changeProvisioningTokenStatus,
+  upsertProvisioningToken,
 } from "../helpers/cards";
 import { createReservation, updateReservation } from "../helpers/reservations";
 import { createCreditPresentment } from "../helpers/creditPresentment";
@@ -71,16 +70,10 @@ export const triggerBookingsWebhook = async (solarisAccountId) => {
   await triggerWebhook(TransactionWebhookEvent.BOOKING, payload);
 };
 
-export const provisioningTokenCreationHandler = async (req, res) => {
-  const { personId, cardId } = req.params;
-  await createProvisioningToken(personId, cardId);
-  res.redirect("back");
-};
-
-export const provisioningTokenChangeHandler = async (req, res) => {
+export const provisioningTokenHandler = async (req, res) => {
   const { personId, cardId } = req.params;
   const { status } = req.body;
-  await changeProvisioningTokenStatus(personId, cardId, status);
+  await upsertProvisioningToken(personId, cardId, status);
   res.redirect("back");
 };
 

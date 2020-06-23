@@ -196,6 +196,18 @@ export enum AccountWebhookEvent {
   "ACCOUNT_CLOSURE" = "ACCOUNT_CLOSURE",
 }
 
+export enum ProvisioningTokenEventType {
+  TOKEN_CREATED = "TOKEN_CREATED",
+  TOKEN_STATUS_UPDATED = "TOKEN_STATUS_UPDATED",
+}
+
+export enum ProvisioningTokenMessageReason {
+  TOKEN_CREATED = "TOKEN_CREATED",
+  LUK_REPLENISHMENT = "LUK_REPLENISHMENT",
+  DEVICE_PROVISIONING_RESULT = "DEVICE_PROVISIONING_RESULT",
+  OTP_VERIFICATION_RESULT = "OTP_VERIFICATION_RESULT",
+}
+
 export enum CardWebhookEvent {
   "CARD_AUTHORIZATION" = "CARD_AUTHORIZATION", // 	An authorization was created on the account using the card
   "CARD_FRAUD_CASE_PENDING" = "CARD_FRAUD_CASE_PENDING", // 	A fraud case was recorded, that needs customers immediate respond

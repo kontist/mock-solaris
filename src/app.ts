@@ -552,12 +552,12 @@ app.post(
 
 app.post(
   "/__BACKOFFICE__/:personId/:cardId/createProvisioningToken",
-  safeRequestHandler(backofficeAPI.provisioningTokenCreationHandler)
+  safeRequestHandler(backofficeAPI.provisioningTokenHandler)
 );
 
 app.post(
   "/__BACKOFFICE__/:personId/:cardId/updateProvisioningToken",
-  safeRequestHandler(backofficeAPI.provisioningTokenChangeHandler)
+  safeRequestHandler(backofficeAPI.provisioningTokenHandler)
 );
 
 // BACKOFFICE - STANDING ORDERS
