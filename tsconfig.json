@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "outDir": "./dist",
+    "outDir": "dist/",
     "allowJs": false,
     "target": "es2018",
     "module": "commonjs",
