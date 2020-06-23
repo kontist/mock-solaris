@@ -12,3 +12,4 @@ yarn-error.log*
 !.vscode/launch.json
 dist/tests
 .env
+src
