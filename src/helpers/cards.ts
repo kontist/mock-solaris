@@ -365,17 +365,17 @@ export const upsertProvisioningToken = async (
 };
 
 /**
- * Triggers a series of webhook calls simulating the Provisioning Token creation process, and returns the new token.
- * 
- * @param provisioningToken 
- * @param card_id 
+ * Triggers a series of webhook calls simulating the Provisioning Token creation process,
+ * and returns the new token.
+ *
+ * @param provisioningToken
+ * @param card_id
  * @returns {Promise<ProvisioningTokenStatusChangePayload>} the new provisioning token.
  */
 const triggerProvisioningTokenCreation = async (
   provisioningToken,
-  card_id
-):Promise<ProvisioningTokenStatusChangePayload> => {
-
+  cardId
+): Promise<ProvisioningTokenStatusChangePayload> => {
   let walletId;
   let webhookCalls = [];
 
@@ -384,7 +384,7 @@ const triggerProvisioningTokenCreation = async (
     walletId = provisioningToken.client_wallet_account_id;
 
     webhookCalls.push({
-      card_id,
+      card_id: cardId,
       token_reference_id: provisioningToken.token_reference_id,
       client_wallet_account_id: walletId,
       wallet_type: WALLET_TYPE,
@@ -401,9 +401,9 @@ const triggerProvisioningTokenCreation = async (
    * - DEVICE_PROVISIONING_RESULT (INACTIVE)
    * - OTP_VERIFICATION_RESULT (ACTIVE)
    */
-  
-  let baseData: ProvisioningTokenStatusChangePayload = {
-    card_id,
+
+  const baseData: ProvisioningTokenStatusChangePayload = {
+    card_id: cardId,
     token_reference_id: uuid.v4(),
     client_wallet_account_id: walletId || uuid.v4(),
     wallet_type: WALLET_TYPE,
@@ -444,34 +444,34 @@ const triggerProvisioningTokenCreation = async (
   };
 
   // Extract unnecessary data to save the token's relevant information from last payload.
-  let {
+  const {
     event_type,
     message_reason,
     wallet_type,
     ...newProvisioningToken
   } = webhookCalls[webhookCalls.length - 1];
-  
+
   return newProvisioningToken;
 }
 
 /**
  * Triggers an webhook call to update the existing token.
- * 
- * @param provisioningToken 
+ *
+ * @param provisioningToken
  * @returns {Object} the updated provisioning token
  */
 const triggerProvisioningTokenUpdate = async (
   provisioningToken: ProvisioningTokenStatusChangePayload,
-  token_status: ProvisioningTokenStatus
+  tokenStatus: ProvisioningTokenStatus
 ): Promise<ProvisioningTokenStatusChangePayload> => {
 
   if (!provisioningToken) {
     throw new Error("No Provisioning Token found for the provided card");
   }
-  
+
   const newProvisioningToken = {
     card_id: provisioningToken.card_id,
-    token_status,
+    token_status: tokenStatus,
     token_reference_id: provisioningToken.token_reference_id,
     client_wallet_account_id: provisioningToken.client_wallet_account_id,
   };
