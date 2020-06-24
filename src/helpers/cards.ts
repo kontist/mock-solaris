@@ -375,8 +375,8 @@ export const upsertProvisioningToken = async (
  * @returns {Promise<ProvisioningTokenStatusChangePayload>} the new provisioning token.
  */
 const triggerProvisioningTokenCreation = async (
-  provisioningToken,
-  cardId
+  provisioningToken: ProvisioningTokenStatusChangePayload,
+  cardId: string
 ): Promise<ProvisioningTokenStatusChangePayload> => {
   let walletId;
   let webhookCalls = [];
