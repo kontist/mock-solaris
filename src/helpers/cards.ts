@@ -334,7 +334,7 @@ export const changeCardStatus = async (
  * @param personId {string} - The id of the person whose token will be changed.
  * @param cardId {string} - Google Card id.
  * @param status {ProvisioningTokenStatus} - Status to be set. It determines if it's an update or not.
- * @returns {Promise<ProvisioningTokenStatusChangePayload>} the upserted provisioning token.
+ * @returns {Promise<ProvisioningTokenStatusChangePayload>} - A promise with the upserted provisioning token.
  */
 export const upsertProvisioningToken = async (
   personId: string,
@@ -373,7 +373,7 @@ export const upsertProvisioningToken = async (
  *
  * @param provisioningToken {ProvisioningTokenStatusChangePayload} - Existing user provisioning token.
  * @param cardId {string} - Google card id.
- * @returns {Promise<ProvisioningTokenStatusChangePayload>} - The new provisioning token.
+ * @returns {Promise<ProvisioningTokenStatusChangePayload>} - A promise with the new provisioning token.
  */
 const triggerProvisioningTokenCreation = async (
   provisioningToken: ProvisioningTokenStatusChangePayload,
@@ -462,7 +462,7 @@ const triggerProvisioningTokenCreation = async (
  *
  * @param provisioningToken {ProvisioningTokenStatusChangePayload} - The current provisioning token.
  * @param tokenStatus {ProvisioningTokenStatus} - Chosen status to be set.
- * @returns {Object} - The updated provisioning token.
+ * @returns {Promise<ProvisioningTokenStatusChangePayload>} - A promise with the updated provisioning token.
  */
 const triggerProvisioningTokenUpdate = async (
   provisioningToken: ProvisioningTokenStatusChangePayload,
