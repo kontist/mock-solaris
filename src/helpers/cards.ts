@@ -340,7 +340,6 @@ export const upsertProvisioningToken = async (
   cardId: string,
   status?: ProvisioningTokenStatus
 ): Promise<ProvisioningTokenStatusChangePayload> => {
-
   if (!personId) {
     throw new Error("You have to provide personId");
   }
@@ -357,7 +356,10 @@ export const upsertProvisioningToken = async (
   const { provisioningToken } = cardData;
   const newProvisioningToken = status
     ? await triggerProvisioningTokenUpdate(provisioningToken, status)
-    : await triggerProvisioningTokenCreation(provisioningToken, cardData.card.id);
+    : await triggerProvisioningTokenCreation(
+        provisioningToken,
+        cardData.card.id
+      );
 
   cardData.provisioningToken = newProvisioningToken;
   await db.savePerson(person);
@@ -441,7 +443,7 @@ const triggerProvisioningTokenCreation = async (
 
   for (const payload of webhookCalls) {
     await triggerWebhook(CardWebhookEvent.CARD_TOKEN_LIFECYCLE, payload);
-  };
+  }
 
   // Extract unnecessary data to save the token's relevant information from last payload.
   const {
@@ -452,7 +454,7 @@ const triggerProvisioningTokenCreation = async (
   } = webhookCalls[webhookCalls.length - 1];
 
   return newProvisioningToken;
-}
+};
 
 /**
  * Triggers an webhook call to update the existing token.
@@ -464,7 +466,6 @@ const triggerProvisioningTokenUpdate = async (
   provisioningToken: ProvisioningTokenStatusChangePayload,
   tokenStatus: ProvisioningTokenStatus
 ): Promise<ProvisioningTokenStatusChangePayload> => {
-
   if (!provisioningToken) {
     throw new Error("No Provisioning Token found for the provided card");
   }
@@ -481,11 +482,11 @@ const triggerProvisioningTokenUpdate = async (
     message_reason: "SOLARIS_MOCK_CHANGE",
     event_type: ProvisioningTokenEventType.TOKEN_STATUS_UPDATED,
     wallet_type: "GOOGLE",
-  }
+  };
   await triggerWebhook(CardWebhookEvent.CARD_TOKEN_LIFECYCLE, payload);
 
   return newProvisioningToken;
-}
+};
 
 export const activateCard = async (
   cardForActivation: Card,

@@ -26,10 +26,7 @@ import { triggerWebhook } from "../helpers/webhooks";
 import { SEIZURE_STATUSES } from "./seizures";
 
 import * as log from "../logger";
-import {
-  changeCardStatus,
-  upsertProvisioningToken,
-} from "../helpers/cards";
+import { changeCardStatus, upsertProvisioningToken } from "../helpers/cards";
 import { createReservation, updateReservation } from "../helpers/reservations";
 import { createCreditPresentment } from "../helpers/creditPresentment";
 import {
@@ -273,9 +270,9 @@ export const processQueuedBooking = async (
   person.transactions = person.transactions || [];
 
   let bookings;
-  bookings = (isStandingOrder) ?
-    person.standingOrders || [] :
-    person.queuedBookings;
+  bookings = isStandingOrder
+    ? person.standingOrders || []
+    : person.queuedBookings;
 
   let booking;
   if (id) {

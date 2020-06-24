@@ -43,13 +43,13 @@ export enum ProvisioningTokenStatus {
 }
 
 export type ProvisioningTokenStatusChangePayload = {
-  card_id: string,
-  token_reference_id: string,
-  client_wallet_account_id: string,
-  wallet_type?: string,
-  token_status?: ProvisioningTokenStatus,
-  event_type?: string,
-  message_reason?: string,
+  card_id: string;
+  token_reference_id: string;
+  client_wallet_account_id: string;
+  wallet_type?: string;
+  token_status?: ProvisioningTokenStatus;
+  event_type?: string;
+  message_reason?: string;
 };
 
 export enum ActionType {
