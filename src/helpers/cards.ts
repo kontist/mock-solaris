@@ -331,8 +331,9 @@ export const changeCardStatus = async (
  * Triggers a series of webhooks calls (CARD_TOKEN_LIFECYCLE) simulating the provisioning token creation
  * lifecycle. When done, it saves the final token in the card information of the person.
  *
- * @param personId {string}
- * @param cardId {string}
+ * @param personId {string} - The id of the person whose token will be changed.
+ * @param cardId {string} - Google Card id.
+ * @param status {ProvisioningTokenStatus} - Status to be set. It determines if it's an update or not.
  * @returns {Promise<ProvisioningTokenStatusChangePayload>} the upserted provisioning token.
  */
 export const upsertProvisioningToken = async (
@@ -370,9 +371,9 @@ export const upsertProvisioningToken = async (
  * Triggers a series of webhook calls simulating the Provisioning Token creation process,
  * and returns the new token.
  *
- * @param provisioningToken
- * @param card_id
- * @returns {Promise<ProvisioningTokenStatusChangePayload>} the new provisioning token.
+ * @param provisioningToken {ProvisioningTokenStatusChangePayload} - Existing user provisioning token.
+ * @param cardId {string} - Google card id.
+ * @returns {Promise<ProvisioningTokenStatusChangePayload>} - The new provisioning token.
  */
 const triggerProvisioningTokenCreation = async (
   provisioningToken: ProvisioningTokenStatusChangePayload,
@@ -459,8 +460,9 @@ const triggerProvisioningTokenCreation = async (
 /**
  * Triggers an webhook call to update the existing token.
  *
- * @param provisioningToken
- * @returns {Object} the updated provisioning token
+ * @param provisioningToken {ProvisioningTokenStatusChangePayload} - The current provisioning token.
+ * @param tokenStatus {ProvisioningTokenStatus} - Chosen status to be set.
+ * @returns {Object} - The updated provisioning token.
  */
 const triggerProvisioningTokenUpdate = async (
   provisioningToken: ProvisioningTokenStatusChangePayload,
