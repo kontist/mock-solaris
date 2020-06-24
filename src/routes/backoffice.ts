@@ -37,7 +37,6 @@ import {
   AccountWebhookEvent,
   TransactionWebhookEvent,
   IdentificationStatus,
-  CardWebhookEvent,
 } from "../helpers/types";
 import {
   changeOverdraftApplicationStatus,
@@ -67,6 +66,12 @@ export const triggerBookingsWebhook = async (solarisAccountId) => {
   await triggerWebhook(TransactionWebhookEvent.BOOKING, payload);
 };
 
+/**
+ * Handles changes on the provisioning token and redirects back to refresh data.
+ * Reads the personId and cardId from the url params and the status (if sent) from the body.
+ * @param req {Express.Request}
+ * @param res {Express.Response}
+ */
 export const provisioningTokenHandler = async (req, res) => {
   const { personId, cardId } = req.params;
   const { status } = req.body;
