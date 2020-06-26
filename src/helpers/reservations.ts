@@ -513,12 +513,11 @@ export const createReservation = async ({
       );
       await triggerCardFraudWebhook(cardAuthorizationDeclined, fraudCase);
     } else {
-      await triggerCardDeclinedWebhook(
+      return triggerCardDeclinedWebhook(
         cardAuthorizationDeclined,
         declineReason
       );
     }
-    return;
   }
 
   person.account.reservations.push(reservation);
@@ -533,6 +532,8 @@ export const createReservation = async ({
   await db.savePerson(person);
 
   await triggerWebhook(CardWebhookEvent.CARD_AUTHORIZATION, reservation);
+
+  return reservation;
 };
 
 const resolveReservation = async (reservation) => {
