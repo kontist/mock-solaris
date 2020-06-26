@@ -9,7 +9,9 @@
   "license": "Apache-2.0",
   "scripts": {
     "build": "tsc && cp -r src/templates dist/src",
+    "hot:build": "tsc --watch",
     "start": "node dist/src/server.js",
+    "hot:start": "nodemon --watch dist/ --exec npm run start",
     "debug": "node --nolazy --inspect=0.0.0.0:9559 dist/src/server.js",
     "test": "npm run lint && npm run build && mocha --recursive 'dist/tests/**/*.spec.js'",
     "coverage": "nyc npm run test",

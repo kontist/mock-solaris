@@ -11,7 +11,13 @@ docker build -t mocksolaris .
 docker run -p 127.0.0.1:2091:2091 mocksolaris
 ```
 
-You may now access the backoffice at [http://localhost:2091/\_\_BACKOFFICE\_\_/](http://localhost:2091/__BACKOFFICE__/).
+### Running with hot reloading enabled
+
+You need two terminal sessions:
+
+1. Run `npm run hot:build`
+2. Run `docker run -p 127.0.0.1:2091:2091 -v $(pwd)/dist:/opt/mockSolaris/dist/ mocksolaris npm run hot:start`.
+3. Enjoy. You may now access the backoffice at [http://localhost:2091/\_\_BACKOFFICE\_\_/](http://localhost:2091/__BACKOFFICE__/).
 
 ### Example request
 
@@ -30,30 +36,36 @@ Navigate to the URL mentioned above. From there you can send simple, random tran
 To add further persons, please have a look at the `savePerson` method.
 
 ### Scope
+
 This mock service currently supports (at different extents)
-* Accounts
-* Statements
-* Transfers (incl. Batch Transfers, Timed Orders and Standing Orders)
-* Change Requests
-* Cards
-* Device Binding
-* Overdraft
-* Seizures
-* Direct Debit Returns
-* Webhooks
-* ...
+
+- Accounts
+- Statements
+- Transfers (incl. Batch Transfers, Timed Orders and Standing Orders)
+- Change Requests
+- Cards
+- Device Binding
+- Overdraft
+- Seizures
+- Direct Debit Returns
+- Webhooks
+- ...
 
 ### TAN
+
 For device binding, you can use any combination as the 6-digit TAN (it is not actually verified).
 
 For other TAN confirmation (Change Requests, Transfer confirmation, etc.), you can find the 6-digit code on your user's UI:
- ![TAN](https://github.com/kontist/mock-solaris/blob/assets/tan.png)
+![TAN](https://github.com/kontist/mock-solaris/blob/assets/tan.png)
 
 ## Configuration
+
 ### Enable Redis
 
 ### Reference
+
 The following environment variables are supported:
+
 ```
 SOLARIS_CLIENT_ID=...
 SOLARIS_CLIENT_SECRET=...
@@ -80,6 +92,5 @@ JOBS_PASSWORD=jobpassword
 ```
 
 ## Usage in tests
-
 
 ## Contribute
