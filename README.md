@@ -4,15 +4,6 @@ A super minimal implementation of the Solaris backend.
 
 ## Usage
 
-### Build and run
-
-```
-npm run build
-
-docker build -t mocksolaris .
-docker run -p 127.0.0.1:2091:2091 mocksolaris
-```
-
 ### Running with hot reloading enabled
 
 You need two terminal sessions:

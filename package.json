@@ -8,8 +8,10 @@
   "author": "Kontist GmbH",
   "license": "Apache-2.0",
   "scripts": {
-    "build": "tsc && cp -r src/templates dist/src",
-    "hot:build": "tsc --watch",
+    "clean:dist": "rm -rf dist && mkdir -p dist/src",
+    "copy:assets": "cp -r src/templates dist/src",
+    "build": "npm run clean:dist && npm run copy:assets && tsc",
+    "hot:build": "npm run clean:dist && npm run copy:assets && tsc --watch",
     "start": "node dist/src/server.js",
     "hot:start": "nodemon --watch dist/ --exec npm run start",
     "debug": "node --nolazy --inspect=0.0.0.0:9559 dist/src/server.js",
