@@ -23,10 +23,6 @@ jobs:
         run: |
           git config --global user.email "developer@kontist.com"
           git config --global user.name "GitHub"
-      - name: Use dist dockerfile
-        run: |
-          rm Dockerfile
-          mv Dockerfile.dist Dockerfile
       - name: npm publish
         run: npm publish
         env:

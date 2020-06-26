@@ -7,6 +7,8 @@ A super minimal implementation of the Solaris backend.
 ### Build and run
 
 ```
+npm run build
+
 docker build -t mocksolaris .
 docker run -p 127.0.0.1:2091:2091 mocksolaris
 ```
