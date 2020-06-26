@@ -8,8 +8,8 @@ A super minimal implementation of the Solaris backend.
 
 You need two terminal sessions:
 
-1. `npm run build:docker`
-2. `npm run build:hot` (1st terminal session)
+1. `npm run build:hot` (1st terminal session)
+2. Optionally (if you haven't built before): `npm run build:docker` (2nd terminal session)
 3. `npm run start:docker` (2nd terminal session)
 4. Enjoy. You may now access the backoffice at [http://localhost:2091/\_\_BACKOFFICE\_\_/](http://localhost:2091/__BACKOFFICE__/).
 
