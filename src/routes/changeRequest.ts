@@ -26,6 +26,8 @@ import {
 } from "./batchTransfers";
 import { CHANGE_REQUEST_CHANGE_CARD_PIN } from "../helpers/cards";
 import { confirmChangeCardPINHandler } from "./cards";
+import { PersonWebhookEvent } from "../helpers/types";
+import { triggerWebhook } from "../helpers/webhooks";
 
 const MAX_CHANGE_REQUEST_AGE_IN_MINUTES = 5;
 
@@ -195,8 +197,17 @@ export const confirmChangeRequest = async (req, res) => {
       break;
   }
 
+  const shouldTriggerWebhook = person.changeRequest.method === PERSON_UPDATE;
   delete person.changeRequest;
   await savePerson(person);
+
+  if (shouldTriggerWebhook) {
+    await triggerWebhook(
+      PersonWebhookEvent.PERSON_CHANGED,
+      {},
+      { "solaris-entity-id": personId }
+    );
+  }
 
   return res.status(status).send(response);
 };
