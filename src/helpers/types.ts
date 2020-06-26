@@ -35,6 +35,23 @@ export enum CardStatus {
   CLOSED_BY_SOLARIS = "CLOSED_BY_SOLARIS",
 }
 
+export enum ProvisioningTokenStatus {
+  ACTIVE = "ACTIVE",
+  INACTIVE = "INACTIVE",
+  DEACTIVATED = "DEACTIVATED",
+  SUSPENDED = "SUSPENDED",
+}
+
+export type ProvisioningTokenStatusChangePayload = {
+  card_id: string;
+  token_reference_id: string;
+  client_wallet_account_id: string;
+  wallet_type?: string;
+  token_status?: ProvisioningTokenStatus;
+  event_type?: string;
+  message_reason?: string;
+};
+
 export enum ActionType {
   RESOLVE = "RESOLVE",
   BOOK = "BOOK",
@@ -179,6 +196,18 @@ export enum AccountWebhookEvent {
   "ACCOUNT_CLOSURE" = "ACCOUNT_CLOSURE",
 }
 
+export enum ProvisioningTokenEventType {
+  TOKEN_CREATED = "TOKEN_CREATED",
+  TOKEN_STATUS_UPDATED = "TOKEN_STATUS_UPDATED",
+}
+
+export enum ProvisioningTokenMessageReason {
+  TOKEN_CREATED = "TOKEN_CREATED",
+  LUK_REPLENISHMENT = "LUK_REPLENISHMENT",
+  DEVICE_PROVISIONING_RESULT = "DEVICE_PROVISIONING_RESULT",
+  OTP_VERIFICATION_RESULT = "OTP_VERIFICATION_RESULT",
+}
+
 export enum CardWebhookEvent {
   "CARD_AUTHORIZATION" = "CARD_AUTHORIZATION", // 	An authorization was created on the account using the card
   "CARD_FRAUD_CASE_PENDING" = "CARD_FRAUD_CASE_PENDING", // 	A fraud case was recorded, that needs customers immediate respond
@@ -186,7 +215,7 @@ export enum CardWebhookEvent {
   "CARD_AUTHORIZATION_DECLINE" = "CARD_AUTHORIZATION_DECLINE", // 	The transaction was declined.
   "CARD_AUTHORIZATION_RESOLUTION" = "CARD_AUTHORIZATION_RESOLUTION", // 	The reservation was cancelled, expired or booked. No push notification for the customer is required for this webhook.
   "CARD_LIFECYCLE_EVENT" = "CARD_LIFECYCLE_EVENT", // The status of the card is changed.
-  "CARD_TOKEN_LIFECYCLE" = "CARD_TOKEN_LIFECYCLE",
+  "CARD_TOKEN_LIFECYCLE" = "CARD_TOKEN_LIFECYCLE", // Push provisioning token is created or updated.
 }
 
 export enum OverdraftApplicationWebhookEvent {

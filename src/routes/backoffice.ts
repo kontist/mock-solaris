@@ -26,7 +26,7 @@ import { triggerWebhook } from "../helpers/webhooks";
 import { SEIZURE_STATUSES } from "./seizures";
 
 import * as log from "../logger";
-import { changeCardStatus } from "../helpers/cards";
+import { changeCardStatus, upsertProvisioningToken } from "../helpers/cards";
 import { createReservation, updateReservation } from "../helpers/reservations";
 import { createCreditPresentment } from "../helpers/creditPresentment";
 import {
@@ -64,6 +64,19 @@ const triggerAccountBlockWebhook = async (person) => {
 export const triggerBookingsWebhook = async (solarisAccountId) => {
   const payload = { account_id: solarisAccountId };
   await triggerWebhook(TransactionWebhookEvent.BOOKING, payload);
+};
+
+/**
+ * Handles changes on the provisioning token and redirects back to refresh data.
+ * Reads the personId and cardId from the url params and the status (if sent) from the body.
+ * @param req {Express.Request}
+ * @param res {Express.Response}
+ */
+export const provisioningTokenHandler = async (req, res) => {
+  const { personId, cardId } = req.params;
+  const { status } = req.body;
+  await upsertProvisioningToken(personId, cardId, status);
+  res.redirect("back");
 };
 
 const filterAndSortIdentifications = (identifications, method) => {
@@ -262,9 +275,9 @@ export const processQueuedBooking = async (
   person.transactions = person.transactions || [];
 
   let bookings;
-  bookings = (isStandingOrder) ?
-    person.standingOrders || [] :
-    person.queuedBookings;
+  bookings = isStandingOrder
+    ? person.standingOrders || []
+    : person.queuedBookings;
 
   let booking;
   if (id) {

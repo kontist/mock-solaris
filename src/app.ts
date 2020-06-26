@@ -550,6 +550,16 @@ app.post(
   safeRequestHandler(backofficeAPI.updateReservationHandler)
 );
 
+app.post(
+  "/__BACKOFFICE__/:personId/:cardId/createProvisioningToken",
+  safeRequestHandler(backofficeAPI.provisioningTokenHandler)
+);
+
+app.post(
+  "/__BACKOFFICE__/:personId/:cardId/updateProvisioningToken",
+  safeRequestHandler(backofficeAPI.provisioningTokenHandler)
+);
+
 // BACKOFFICE - STANDING ORDERS
 app.post(
   "/__BACKOFFICE__/triggerStandingOrder/:personId/:standingOrderId",
