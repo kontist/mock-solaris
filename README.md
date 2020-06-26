@@ -8,9 +8,9 @@ A super minimal implementation of the Solaris backend.
 
 You need two terminal sessions:
 
-1. Run `docker build -f Dockerfile.dev -t mocksolaris .`
-2. Run `npm run build:hot`
-3. Run `docker run -p 127.0.0.1:2091:2091 -v $(pwd)/dist:/opt/mockSolaris/dist/ mocksolaris npm run start:hot`.
+1. `npm run build:docker`
+2. `npm run build:hot` (1st terminal session)
+3. `npm run start:docker` (2nd terminal session)
 4. Enjoy. You may now access the backoffice at [http://localhost:2091/\_\_BACKOFFICE\_\_/](http://localhost:2091/__BACKOFFICE__/).
 
 ### Example request
