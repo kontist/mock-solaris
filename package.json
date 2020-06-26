@@ -13,7 +13,7 @@
     "debug": "node --nolazy --inspect=0.0.0.0:9559 dist/src/server.js",
     "test": "npm run lint && npm run build && mocha --recursive 'dist/tests/**/*.spec.js'",
     "coverage": "nyc npm run test",
-    "lint": "tslint --project ."
+    "lint": "eslint --ext .js,.ts --max-warnings 0 ."
   },
   "dependencies": {
     "bluebird": "^3.4.7",
@@ -39,15 +39,26 @@
     "@types/mocha": "^7.0.2",
     "@types/node": "^13.1.1",
     "@types/node-uuid": "0.0.28",
+    "@typescript-eslint/eslint-plugin": "^3.4.0",
+    "@typescript-eslint/parser": "^3.4.0",
     "chai": "^4.2.0",
+    "eslint": "^7.3.1",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-config-semistandard": "^15.0.0",
+    "eslint-config-standard": "^14.1.0",
+    "eslint-plugin-import": "^2.21.2",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^3.1.4",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-standard": "^4.0.1",
+    "eslint-plugin-mocha": "^6.3.0",
+    "husky": "^4.2.5",
     "mocha": "^8.0.1",
     "nodemon": "^2.0.1",
     "nyc": "^15.1.0",
-    "tslint": "^6.1.2",
-    "typescript": "^3.9.3",
     "prettier": "^2.0.5",
     "pretty-quick": "^2.0.1",
-    "husky": "^4.2.5"
+    "typescript": "^3.9.3"
   },
   "husky": {
     "hooks": {
