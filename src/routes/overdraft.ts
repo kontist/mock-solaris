@@ -36,7 +36,7 @@ export const createOverdraftApplication = async (req, res) => {
     person_id: personId,
     credit_record_id: creditRecordId,
     overdraft_id: null,
-    status: OverdraftApplicationStatus.CREATED,
+    status: OverdraftApplicationStatus.ACCOUNT_SNAPSHOT_PENDING,
     decision: null,
     partner_risk_class: null,
     partner_reference_number: null,
