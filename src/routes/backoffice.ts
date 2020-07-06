@@ -605,11 +605,15 @@ export const createReservationHandler = async (req, res) => {
     posEntryMode,
   };
 
-  await (type === TransactionType.CREDIT_PRESENTMENT
+  const reservation = await (type === TransactionType.CREDIT_PRESENTMENT
     ? createCreditPresentment(payload)
     : createReservation(payload));
 
-  res.redirect("back");
+  if (shouldReturnJSON(req)) {
+    res.status(201).send(reservation);
+  } else {
+    res.redirect("back");
+  }
 };
 
 export const updateReservationHandler = async (req, res) => {
