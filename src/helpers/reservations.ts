@@ -511,7 +511,7 @@ export const createReservation = async ({
         cardId,
         person
       );
-      await triggerCardFraudWebhook(cardAuthorizationDeclined, fraudCase);
+      return triggerCardFraudWebhook(cardAuthorizationDeclined, fraudCase);
     } else {
       return triggerCardDeclinedWebhook(
         cardAuthorizationDeclined,
