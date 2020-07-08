@@ -637,6 +637,21 @@ export const getVirtualCardDetails = async (
     cardDetails,
   } = req;
 
+  if (card.status === CardStatus.PROCESSING) {
+    res.status(500).send({
+      errors: [
+        {
+          id: uuid.v4(),
+          status: 500,
+          code: "generic_error",
+          title: "Generic Error",
+          detail: "There was an error.",
+        },
+      ],
+    });
+    return;
+  }
+
   const errors = [
     "device_id",
     "signature",
