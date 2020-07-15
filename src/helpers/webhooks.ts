@@ -22,6 +22,7 @@ const WEBHOOK_SECRETS = {
   [PersonWebhookEvent.PERSON_SEIZURE_CREATED]: process.env.SOLARIS_PERSON_SEIZURE_CREATED_WEBHOOK_SECRET,
   [PersonWebhookEvent.PERSON_SEIZURE_DELETED]: process.env.SOLARIS_PERSON_SEIZURE_DELETED_WEBHOOK_SECRET,
   [PersonWebhookEvent.PERSON_DELETED]: process.env.SOLARIS_PERSON_DELETED_WEBHOOK_SECRET,
+  [PersonWebhookEvent.PERSON_CHANGED]: process.env.SOLARIS_PERSON_CHANGED_WEBHOOK_SECRET,
 
   [TransactionWebhookEvent.BOOKING]: process.env.SOLARIS_BOOKING_WEBHOOK_SECRET ,
   [TransactionWebhookEvent.SEPA_SCHEDULED_TRANSACTION]: process.env.SOLARIS_SEPA_SCHEDULED_TRANSACTION_WEBHOOK_SECRET ,
@@ -32,7 +33,7 @@ const WEBHOOK_SECRETS = {
   [AccountWebhookEvent.ACCOUNT_CLOSURE]: process.env.SOLARIS_ACCOUNT_CLOSURE_WEBHOOK_SECRET,
 };
 
-export const triggerWebhook = async (type, payload) => {
+export const triggerWebhook = async (type, payload, extraHeaders = {}) => {
   const webhook = await getWebhookByType(type);
 
   if (!webhook) {
@@ -61,6 +62,7 @@ export const triggerWebhook = async (type, payload) => {
       "solaris-webhook-id": uuid.v4(),
       "solaris-webhook-signature": solarisWebhookSignature,
       "solaris-webhook-subscription-id": "STATIC-SUBSCRIPTION",
+      ...extraHeaders,
     };
   }
 

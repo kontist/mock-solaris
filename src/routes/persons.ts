@@ -5,6 +5,8 @@ import uuid from "node-uuid";
 import { getPerson, getAllPersons, savePerson } from "../db";
 
 import { createChangeRequest } from "./changeRequest";
+import { triggerWebhook } from "../helpers/webhooks";
+import { PersonWebhookEvent } from "../helpers/types";
 
 export const createPerson = (req, res) => {
   const personId =
@@ -197,6 +199,13 @@ export const updatePerson = async (req, res) => {
 
   _.merge(person, data);
   await savePerson(person);
+
+  await triggerWebhook(
+    PersonWebhookEvent.PERSON_CHANGED,
+    {},
+    { "solaris-entity-id": personId }
+  );
+
   return res.status(200).send(person);
 };
 
