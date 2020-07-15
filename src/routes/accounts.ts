@@ -212,3 +212,11 @@ export const createAccountSnapshot = async (req, res) => {
     account_id: accountId,
   });
 };
+
+export const showAccountBalance = async (req, res) => {
+  const { account_id: accountId } = req.params;
+  const person = await findPersonByAccountId(accountId);
+  const balance = _.pick(person.account, ["balance", "available_balance"]);
+
+  res.status(200).send(balance);
+};

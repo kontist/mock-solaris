@@ -166,6 +166,10 @@ router.post(
   "/persons/:person_id/account_snapshots",
   safeRequestHandler(accountsAPI.createAccountSnapshot)
 );
+router.get(
+  "/accounts/:account_id/balance",
+  safeRequestHandler(accountsAPI.showAccountBalance)
+);
 
 // OVERDRAFT
 router.post(
