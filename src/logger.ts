@@ -18,7 +18,9 @@ export const getExpressLogger = () => {
   const transports = [consoleLogger];
 
   if (LOGGLY_KEY) {
-    transports.push(new winston.transports.Loggly(getLogglyTransportOptions()) as any);
+    transports.push(
+      new winston.transports.Loggly(getLogglyTransportOptions()) as any
+    );
   }
 
   return expressWinston.logger({
@@ -27,8 +29,7 @@ export const getExpressLogger = () => {
     msg:
       "HTTP {{req.method}} {{req.url}} {{res.statusCode}} {{res.responseTime}}ms",
     expressFormat: false,
-    colorStatus: false,
-    ignoreRoute (req, res) {
+    ignoreRoute(req, res) {
       return req.url === "/health";
     },
   });
