@@ -1,0 +1,311 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+
+<ul class="nav nav-tabs">
+  <li role="presentation"><a href="/__BACKOFFICE__/">⬅ Persons</a></li>
+  <li role="presentation"><a href="/__BACKOFFICE__/person/{{ person.email }}">Individual user</a></li>
+  <li role="presentation" class="active"><a href="#">Cards</a></li>
+</ul>
+
+<div class="page-header">
+  <h2>{{ person.email }}</h2>
+</div>
+
+<div class="col-md-12">
+  <div class="panel panel-default">
+    <div class="panel-heading">Existing cards</div>
+    {% for cardData in person.account.cards.reverse() %}
+    <table class="table" {% if cardData.card.status==="CLOSED_BY_SOLARIS" %}style="opacity: 0.5;"{% endif %}>
+      <thead>
+        <tr>
+          <th>Number</th>
+          <th>Type</th>
+          <th>Details<th>
+        </tr>
+      </thead>
+      <tbody>
+        <td>{{ cardData.cardDetails.cardNumber }}</td>
+        <td>{{ cardData.card.type }}</td>
+        <td style="display: flex; flex-direction: row;">
+          <table class="table">
+            <tr>
+              <td>Status <b>{{ cardData.card.status }}</b></td>
+              <td>
+                <form class="form-inline autosubmitonchange" method="POST" action="/__BACKOFFICE__/changeCardStatus">
+                  <select name="status" {% if cardData.card.status==="CLOSED_BY_SOLARIS" %}disabled {% endif %}>
+                    <option {% if cardData.card.status==="BLOCKED_BY_SOLARIS" %}selected {% endif %}value="BLOCKED_BY_SOLARIS">BLOCKED_BY_SOLARIS</option>
+                    <option {% if cardData.card.status==="ACTIVATION_BLOCKED_BY_SOLARIS" %}selected {% endif %}value="ACTIVATION_BLOCKED_BY_SOLARIS">ACTIVATION_BLOCKED_BY_SOLARIS</option>
+                    <option {% if cardData.card.status==="CLOSED_BY_SOLARIS" %}selected {% endif %}value="CLOSED_BY_SOLARIS">CLOSED_BY_SOLARIS</option>
+                    <option {% if cardData.card.status==="ACTIVE" %}selected {% endif %}value="ACTIVE">ACTIVE</option>
+                    {% if cardData.card.type !=="VIRTUAL_VISA_FREELANCE_DEBIT"%}
+                      <option {% if cardData.card.status==="INACTIVE" %}selected {% endif %}value="INACTIVE">INACTIVE</option>
+                    {% endif %}
+                  </select>
+                  <input type="hidden" name="personId" value={{ person.id }}>
+                  <input type="hidden" name="accountId" value={{ person.account.id }}>
+                  <input type="hidden" name="cardId" value={{ cardData.card.id }}>
+                </form>
+              </td>
+            </tr>
+            <tr>
+              <td>card id</td>
+              <td>{{ cardData.card.id }}</td>
+            </tr>
+            <tr>
+              <td>token</td>
+              <td><span style="color: red;">{{ cardData.cardDetails.token.slice(0, 6) }}</span>{{ cardData.cardDetails.token.slice(6) }}</td>
+            </tr>
+            <tr>
+              <td>New Provisioning Token</td>
+              <td>
+                <form class="form-inline autosubmitonchange" method="POST" action="/__BACKOFFICE__/{{ person.id }}/{{ cardData.card.id }}/createProvisioningToken">
+                  <input type="submit" value="Create" />
+                </form>
+              </td>
+            </tr>
+            {% if cardData.provisioningToken %}
+            <tr>
+              <td>Provisioning Token Status</td>
+              <td>
+                <form class="form-inline autosubmitonchange" method="POST" action="/__BACKOFFICE__/{{ person.id }}/{{ cardData.card.id }}/updateProvisioningToken">
+                  <select name="status" {% if cardData.card.status==="CLOSED_BY_SOLARIS" %}disabled {% endif %}>
+                    <option {% if cardData.provisioningToken.token_status === "ACTIVE" %} selected {% endif %} value="ACTIVE">ACTIVE</option>
+                    <option {% if cardData.provisioningToken.token_status === "INACTIVE" %} selected {% endif %}value="INACTIVE">INACTIVE</option>
+                    <option {% if cardData.provisioningToken.token_status === "DEACTIVATED" %} selected {% endif %}value="DEACTIVATED">DEACTIVATED</option>
+                    <option {% if cardData.provisioningToken.token_status === "SUSPENDED" %} selected {% endif %}value="SUSPENDED">SUSPENDED</option>
+                  </select>
+                </form>
+              </td>
+            </tr>
+            {% endif %}
+            <tr>
+              <td>CVV</td>
+              <td>{{ cardData.cardDetails.cvv }}</td>
+            </tr>
+            <tr>
+              <td>expiration date</td>
+              <td>{{ cardData.card.expiration_date }}</td>
+            </tr>
+            <tr>
+              <td>holder</td>
+              <td>{{ cardData.card.representation.line_1 }}</td>
+            </tr>
+            <tr>
+              <td>PIN</td>
+              <td>{{ cardData.cardDetails.pin || "NOT SET" }}</td>
+            </tr>
+            <tr>
+              <td>contactless</td>
+              <td>
+                {% if cardData.cardDetails.settings.contactless_enabled %}👍{% endif %}
+                {% if !cardData.cardDetails.settings.contactless_enabled %}👎{% endif %}
+              </td>
+            </tr>
+            <tr {% if cardData.card.type === "VIRTUAL_VISA_FREELANCE_DEBIT"%} style="opacity: 0.4;" {% endif %}>
+              <td>card present limits</td>
+              <td>
+                <pre>{{ JSON.stringify(cardData.cardDetails.cardPresentLimits, null, 2) }}</pre>
+              </td>
+            </tr>
+            <tr>
+              <td>card not present limits</td>
+              <td>
+                <pre>{{ JSON.stringify(cardData.cardDetails.cardNotPresentLimits, null, 2) }}</pre>
+              </td>
+            </tr>
+            <tr>
+              <td>Google Pay wallet payload</td>
+              <td>{{ cardData.cardDetails.walletPayload }}</td>
+            </tr>
+          </table>
+        </td>
+      </tbody>
+    </table>
+    {% endfor %}
+  </div>
+</div>
+
+{% if person.account.cards[0] %}
+<div class="col-md-5">
+  <div class="panel panel-default">
+    <div class="panel-heading">Use card</div>
+    <div class="panel-body">
+      <form id="createReservation" method="POST" action="/__BACKOFFICE__/person/{{ person.id }}/reservations">
+        <div class="custom-controls-stacked">
+          <div class="form-group">
+            {% for cardData in person.account.cards.reverse() %}
+            <div class="radio" {% if cardData.card.status==="CLOSED_BY_SOLARIS" %}style="opacity: 0.5;"{% endif %}>
+              <label>
+                <input {% if cardData.card.status === "ACTIVE" %} checked {% else %} disabled {% endif %} type="radio" name="cardId" value="{{ cardData.card.id }}">
+                <b>
+                  {{ cardData.card['type'] }}
+                </b>
+                ({{ cardData.cardDetails.cardNumber }})
+                ({{ cardData.card.status }})
+              </label>
+            </div>
+            {% endfor %}
+          </div>
+          <div class="form-group">
+            <label class="col-form-label" for="type">Type</label>
+            <select class="form-control" name="type">
+              <option value="PURCHASE">PURCHASE</option>
+              <option value="CASH_ATM">CASH_ATM</option>
+              <option value="CASH_MANUAL">CASH_MANUAL</option>
+              <option value="CREDIT_PRESENTMENT">CREDIT_PRESENTMENT</option>
+=            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="col-form-label" for="posEntryMode">Point of sale Entry mode</label>
+            <select class="form-control" name="posEntryMode">
+              <option value="CONTACTLESS">CONTACTLESS</option>
+              <option value="CARD_NOT_PRESENT">CARD_NOT_PRESENT</option>
+              <option value="CHIP">CHIP</option>
+              <option value="MAG_STRIPE">MAG_STRIPE</option>
+              <option value="PHONE">PHONE</option>
+              <option value="UNKNOWN">UNKNOWN</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="col-form-label" for="amount">Amount (in cents)</label>
+            <input class="form-control" type="number" name="amount" placeholder="100" autocomplete="off" required />
+          </div>
+
+          <div class="form-group">
+            <label class="col-form-label" for="amount">Currency</label>
+            <select class="form-control" name="currency">
+              <option value="EUR">EUR</option>
+              <option value="USD">USD</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="col-form-label" for="recipient">Recipient</label>
+            <input class="form-control" type="text" name="recipient" value="Willy Wonka" required />
+          </div>
+
+          <div class="form-group">
+            <label class="col-form-label" for="declineReason">Decline reason</label>
+            <select class="form-control" name="declineReason">
+              <option disabled selected value> -- SELECT DECLINE REASON IF NEEDED -- </option>
+              <option value="AUTHENTICATION_REQUIRED">AUTHENTICATION_REQUIRED</option>
+              <option value="CARD_BLOCKED">CARD_BLOCKED</option>
+              <option value="ACCOUNT_CLOSED">ACCOUNT_CLOSED</option>
+              <option value="ACCOUNT_LIMIT_REACHED">ACCOUNT_LIMIT_REACHED</option>
+              <option value="EXPIRY_DATE_INVALID">EXPIRY_DATE_INVALID</option>
+              <option value="CARD_INACTIVE">CARD_INACTIVE</option>
+              <option value="CARD_NOT_PRESENT_AMOUNT_LIMIT_REACHED_DAILY">CARD_NOT_PRESENT_AMOUNT_LIMIT_REACHED_DAILY</option>
+              <option value="CARD_NOT_PRESENT_AMOUNT_LIMIT_REACHED_MONTHLY">CARD_NOT_PRESENT_AMOUNT_LIMIT_REACHED_MONTHLY</option>
+              <option value="CARD_NOT_PRESENT_USE_LIMIT_REACHED_DAILY">CARD_NOT_PRESENT_USE_LIMIT_REACHED_DAILY</option>
+              <option value="CARD_NOT_PRESENT_USE_LIMIT_REACHED_MONTHLY">CARD_NOT_PRESENT_USE_LIMIT_REACHED_MONTHLY</option>
+              <option value="CARD_PRESENT_AMOUNT_LIMIT_REACHED_DAILY">CARD_PRESENT_AMOUNT_LIMIT_REACHED_DAILY</option>
+              <option value="CARD_PRESENT_AMOUNT_LIMIT_REACHED_MONTHLY">CARD_PRESENT_AMOUNT_LIMIT_REACHED_MONTHLY</option>
+              <option value="CARD_PRESENT_USE_LIMIT_REACHED_DAILY">CARD_PRESENT_USE_LIMIT_REACHED_DAILY</option>
+              <option value="CARD_PRESENT_USE_LIMIT_REACHED_MONTHLY">CARD_PRESENT_USE_LIMIT_REACHED_MONTHLY</option>
+              <option value="CASH_ADVANCE_AMOUNT_LIMIT_REACHED_DAILY">CASH_ADVANCE_AMOUNT_LIMIT_REACHED_DAILY</option>
+              <option value="CASH_ADVANCE_AMOUNT_LIMIT_REACHED_MONTHLY">CASH_ADVANCE_AMOUNT_LIMIT_REACHED_MONTHLY</option>
+              <option value="TERMINAL_ERROR">TERMINAL_ERROR</option>
+              <option value="CVV_INCORRECT">CVV_INCORRECT</option>
+              <option value="DUPLICATE_TRANSACTION">DUPLICATE_TRANSACTION</option>
+              <option value="PIN_INCORRECT">PIN_INCORRECT</option>
+              <option value="INSUFFICIENT_FUNDS">INSUFFICIENT_FUNDS</option>
+              <option value="CONTACT_BANK">CONTACT_BANK</option>
+              <option value="INVALID_PIN_BLOCKED">INVALID_PIN_BLOCKED</option>
+              <option value="FRAUD_SUSPECTED">FRAUD_SUSPECTED</option>
+              <option value="PIN_ENTRY_TIMEOUT">PIN_ENTRY_TIMEOUT</option>
+              <option value="RETRY_WITH_CHIP_AND_PIN">RETRY_WITH_CHIP_AND_PIN</option>
+              <option value="3DS_FAILED">3DS_FAILED</option>
+              <option value="RANDOM_STUFF">RANDOM_STUFF</option>
+            </select>
+          </div>
+
+          <div class="slideunlock-wrapper">
+            <button type="submit" class="btn btn-primary btn-block">
+              <span>Tap to pay</span>
+            </button>
+          </div>
+          </fieldset>
+      </form>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="col-md-7">
+  <div class="panel panel-default">
+    <div class="panel-heading">Open reservations</div>
+
+    <div class="vertical-scroll">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>type</th>
+            <th>action</th>
+            <th>Date</th>
+            <th>Amount</th>
+            <th>Recipient</th>
+          </tr>
+        </thead>
+        {% for reservation in person.account.reservations %}
+        <tr>
+          <form id="updateReservation" action="/__BACKOFFICE__/person/{{ person.id }}/reservations/{{ reservation.id }}"
+            method="POST">
+            <td>
+              <div>
+                {{ (JSON.parse(reservation.meta_info)).cards.transaction_type }}
+              </div>
+              <input type="checkbox" id="increaseAmount" name="increaseAmount" value="false" />
+              <label for="increaseAmount">Increase amount</label>
+            </td>
+            <td>
+              <div class="form-group">
+                <select name="action">
+                  <option selected="selected" value="BOOK">BOOK</option>
+                  <option value="EXPIRE">EXPIRE</option>
+                </select>
+              </div>
+              <button type="submit" class="btn btn-primary">Update now</button>
+            </td>
+            <td>{{ (JSON.parse(reservation.meta_info)).cards.transaction_date }}</td>
+            <td>{{ (reservation.amount.value / 100).toFixed(2) }} {{ reservation.amount.currency }}</td>
+            <td>{{ reservation.description }}</td>
+          </form>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="col-md-12">
+  <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+    <div class="panel panel-default">
+      <div class="panel-heading" role="tab" id="headingOne">
+        <h4 class="panel-title">
+          <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true"
+            aria-controls="collapseOne">
+            Raw person data
+          </a>
+          <span class="caret"></span>
+        </h4>
+      </div>
+      <div id="collapseOne" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingOne">
+        <div class="panel-body">
+          <pre>{{ JSON.stringify(person, undefined, 2) }}</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<script>
+  $(".autosubmitonchange").change(function() {
+    this.submit();
+  });
+</script>
+
+{% endblock %}
