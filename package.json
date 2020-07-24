@@ -15,7 +15,7 @@
     "build:docker": "docker build -f Dockerfile.dev -t mocksolaris .",
     "start": "node dist/src/server.js",
     "start:hot": "nodemon --watch dist/ --exec npm run start",
-    "start:docker": "docker run -p 127.0.0.1:2091:2091 -v $(pwd)/dist:/opt/mockSolaris/dist/ mocksolaris npm run start:hot",
+    "start:docker": "docker run -p 127.0.0.1:2091:2091 -v $(pwd)/dist:/opt/mockSolaris/dist/ -v $(pwd)/src/templates:/opt/mockSolaris/dist/src/templates/ mocksolaris npm run start:hot",
     "debug": "node --nolazy --inspect=0.0.0.0:9559 dist/src/server.js",
     "test": "npm run lint && npm run build && mocha --recursive 'dist/tests/**/*.spec.js'",
     "coverage": "nyc npm run test",
