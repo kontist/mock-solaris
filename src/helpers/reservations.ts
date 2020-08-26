@@ -37,6 +37,7 @@ const triggerCardFraudWebhook = async (
   fraudCase
 ) => {
   await triggerWebhook(CardWebhookEvent.CARD_FRAUD_CASE_PENDING, {
+    id: fraudCase.id,
     resolution: "PENDING",
     respond_until: moment(fraudCase.reservationExpiresAt).toISOString(),
     whitelisted_until: "null",
