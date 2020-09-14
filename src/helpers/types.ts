@@ -387,6 +387,7 @@ export enum OverdraftApplicationStatus {
   OFFERED = "offered",
   REJECTED = "rejected",
   OVERDRAFT_CREATED = "overdraft_created",
+  EXPIRED = "expired",
 }
 
 export enum OverdraftApplicationDecision {
