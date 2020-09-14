@@ -282,9 +282,8 @@
         <form class="form-inline autosubmitonchange" method="POST" action="/__BACKOFFICE__/changeOverdraftApplicationStatus">
           <select name="status" {% if application.status==="rejected" %}disabled {% endif %}>
             <option selected>change status</option>
-            <option {% if application.status!=="created" %} disabled {% endif %}value="initial_scoring_pending">initial_scoring_pending</option>
-            <option {% if application.status!=="initial_scoring_pending" %} disabled {% endif %}value="account_snapshot_pending">account_snapshot_pending</option>
             <option {% if application.status!=="account_snapshot_verification_pending" %} disabled {% endif %}value="offered">offered</option>
+            <option {% if application.status!=="offered" %} disabled {% endif %}value="expired">expired</option>
             <option value="rejected">rejected</option>
           </select>
           <input type="hidden" name="personId" value={{ person.id }}>
