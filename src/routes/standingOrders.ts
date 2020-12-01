@@ -190,13 +190,13 @@ export const generateStandingOrderForPerson = (standingOrderData) => {
 export const triggerStandingOrderRequestHandler = async (req, res) => {
   const { personId, standingOrderId } = req.params;
 
-  const declineReason = await checkStandingOrderPreconditions(
+  const declinedReason = await checkStandingOrderPreconditions(
     personId,
     standingOrderId
   );
 
   let booking;
-  if (!declineReason) {
+  if (!declinedReason) {
     booking = await processQueuedBooking(personId, standingOrderId, true);
   }
 
@@ -210,7 +210,7 @@ export const triggerStandingOrderRequestHandler = async (req, res) => {
     personId,
     standingOrderId,
     booking,
-    declineReason,
+    declinedReason,
   });
 
   res.redirect("back");
@@ -418,7 +418,7 @@ const triggerSepaScheduledTransactionWebhook = async ({
   personId,
   standingOrderId,
   booking,
-  declineReason,
+  declinedReason,
 }) => {
   const { person, standingOrder } = await getPersonWithStandingOrder(
     personId,
@@ -432,10 +432,10 @@ const triggerSepaScheduledTransactionWebhook = async ({
     reference: standingOrder.reference,
     source: "standing_order",
     source_id: standingOrder.id,
-    status: declineReason
+    status: declinedReason
       ? STANDING_ORDER_PAYMENT_STATUSES.DECLINED
       : STANDING_ORDER_PAYMENT_STATUSES.EXECUTED,
-    decline_reason: declineReason,
+    declined_reason: declinedReason,
     transaction_id: booking ? booking.transaction_id : null,
   };
 
