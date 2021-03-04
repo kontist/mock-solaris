@@ -625,6 +625,32 @@ export const enableGooglePay = async (card: Card): Promise<string> => {
   return SOLARIS_HARDCODED_WALLET_PAYLOAD;
 };
 
+const APPLE_WALLET_RESPONSE = {
+  encrypted_pass_data: "abcd1234",
+  activation_data: "abcd2345",
+  ephemeral_public_key: "abcd3456",
+};
+
+export const enableApplePay = async (
+  card: Card
+): Promise<{
+  encrypted_pass_data: string;
+  activation_data: string;
+  ephemeral_public_key: string;
+}> => {
+  const person = await db.getPerson(card.person_id);
+  const cardIndex = person.account.cards.findIndex(
+    (cardData) => cardData.card.id === card.id
+  );
+  const cardDetails = person.account.cards[cardIndex].cardDetails;
+  person.account.cards[cardIndex].cardDetails = {
+    ...cardDetails,
+    ...APPLE_WALLET_RESPONSE,
+  };
+  await db.savePerson(person);
+  return APPLE_WALLET_RESPONSE;
+};
+
 const hasAtLeast3UniqueDigits = (pin: string): boolean =>
   _.uniq(pin.split("")).length >= 3;
 
