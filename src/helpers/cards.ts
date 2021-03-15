@@ -626,17 +626,22 @@ export const enableGooglePay = async (card: Card): Promise<string> => {
 };
 
 const APPLE_WALLET_RESPONSE = {
-  encrypted_pass_data: "abcd1234",
-  activation_data: "abcd2345",
-  ephemeral_public_key: "abcd3456",
+  encrypted_primary_account_number: "abcd1234",
+  primary_account_number_prefix: "434971",
+  network_name: "Visa",
+  name: "Firstname Lastname",
+  activation_data:
+    "FQS03REMwOUY0OTYxN0Q1M0RENTY0OETUJQQUMtMS1GSy00MzQ5NzUuMS0tVERZEMzhBNTNFRkYzMTdCODcwQjY0QkFCMTBGNDEzOTMwQjEyM0IxMTIyMDFGNEZFQjhGQTk2RjVCMxxxxx==",
 };
 
 export const enableApplePay = async (
   card: Card
 ): Promise<{
-  encrypted_pass_data: string;
+  encrypted_primary_account_number: string;
+  primary_account_number_prefix: string;
+  network_name: string;
+  name: string;
   activation_data: string;
-  ephemeral_public_key: string;
 }> => {
   const person = await db.getPerson(card.person_id);
   const cardIndex = person.account.cards.findIndex(
