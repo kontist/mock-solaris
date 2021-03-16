@@ -580,11 +580,32 @@ export const pushProvisioningHandler = async (
   const { card } = req;
   const { wallet_type: walletType } = req.params;
 
-  const errors = [
-    "client_wallet_account_id",
-    "client_device_id",
-    "client_app_id",
-  ]
+  if (!["google", "apple"].includes(walletType)) {
+    res.status(HttpStatusCodes.BAD_REQUEST).send({
+      errors: [
+        {
+          id: uuid.v4(),
+          status: HttpStatusCodes.BAD_REQUEST,
+          code: "invalid_wallet_type_for_push_provisioning",
+          title: "Invalid Wallet Type",
+          detail: `wallet type ${walletType} is not supported`,
+        },
+      ],
+    });
+    return;
+  }
+
+  const requiredFields =
+    walletType === "google"
+      ? ["client_wallet_account_id", "client_device_id", "client_app_id"]
+      : ["nonce", "nonce_signature", "certificates"];
+
+  const handler =
+    walletType === "google"
+      ? cardHelpers.enableGooglePay
+      : cardHelpers.enableApplePay;
+
+  const errors = requiredFields
     .filter((fieldName) => !_.get(req.body, fieldName))
     .map((fieldName) => ({
       id: uuid.v4(),
@@ -605,23 +626,9 @@ export const pushProvisioningHandler = async (
     return;
   }
 
-  if (!["google", "samsung"].includes(walletType)) {
-    res.status(HttpStatusCodes.BAD_REQUEST).send({
-      errors: [
-        {
-          id: uuid.v4(),
-          status: HttpStatusCodes.BAD_REQUEST,
-          code: "invalid_wallet_type_for_push_provisioning",
-          title: "Invalid Wallet Type",
-          detail: `wallet type ${walletType} is not supported`,
-        },
-      ],
-    });
-    return;
-  }
-
-  const walletPayload = await cardHelpers.enableGooglePay(card);
-  res.status(HttpStatusCodes.CREATED).send({ wallet_payload: walletPayload });
+  res
+    .status(HttpStatusCodes.CREATED)
+    .send({ wallet_payload: await handler(card) });
 };
 
 export const getVirtualCardDetails = async (
