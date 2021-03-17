@@ -626,10 +626,10 @@ export const enableGooglePay = async (card: Card): Promise<string> => {
 };
 
 const APPLE_WALLET_RESPONSE = {
-  encrypted_primary_account_number: "abcd1234",
-  primary_account_number_prefix: "434971",
-  network_name: "Visa",
-  name: "Firstname Lastname",
+  encrypted_pass_data:
+    "123456+mhOQCOSEcwyPqvqo9C721fSqrRge5VVjJ5wY4dGl2G551234kLqWlVuQ5mM+AJQCL/StJd33yMa0ZL3kWBmqnLvnDOmWo3WUrSVXmB1234oOnVlcZdlKOPP/thheUIspNfNZgRF/DDNOp5UOLf8xNvFIZcJXRoG+BQQMHcgrW9CzTmR9OI4FvotfWT97Hmsqvsn8vwQpXJ2Zl87G+HCxVJrINCWpcOonK2mJv7teC1tU/HP41IIjS03xZK4pKn7AJxKK7tRq+24bEDZlGJu1RS1DQvDikpn0VTjHCU52YuKHGDdwYmM6DU5NgoZASLnjb35Vjdhl19JG3FU50vUkxM3v0mVVDussQz84pHnY8tu9x2dTguTqn7lQOtvQRV+dV9wTS2InCW9AJ3YN5/lOJUZYrn1UwJDQ+vX9jklqJ1/1rZXFCrLtcd00valXmfJnHyZLCzkg/EDPpvKRYAxpKpvFbi7j5xAmfRx+m/uG5zy+qzJLisR3U9Gvq2Ut53eYM6L+XAXeixnB4tlqrTWt168tzhcnrt5v4BCZoHkKK6zhkU3xRQyNVv/ETHmIH0Ga7+ngMnGosb00u8GjxHfVhT9Hgy4UISsxod0vomj+d7ie8gbsGQUYpcV2Ux0X9BWTmLmTM9SBv5M7rylU+BR0bOdcxo2wSRMJ6FsB4bSHyw=",
+  ephemeral_public_key:
+    "123456uejcgogn4uPc/Jq2A9HpnR1234oDKGv6QKC2tM71234k29WVPXMgFkNt0GUjSpTnpvAew+C5eHYj0=",
   activation_data:
     "FQS03REMwOUY0OTYxN0Q1M0RENTY0OETUJQQUMtMS1GSy00MzQ5NzUuMS0tVERZEMzhBNTNFRkYzMTdCODcwQjY0QkFCMTBGNDEzOTMwQjEyM0IxMTIyMDFGNEZFQjhGQTk2RjVCMxxxxx==",
 };
@@ -637,10 +637,8 @@ const APPLE_WALLET_RESPONSE = {
 export const enableApplePay = async (
   card: Card
 ): Promise<{
-  encrypted_primary_account_number: string;
-  primary_account_number_prefix: string;
-  network_name: string;
-  name: string;
+  encrypted_pass_data: string;
+  ephemeral_public_key: string;
   activation_data: string;
 }> => {
   const person = await db.getPerson(card.person_id);
