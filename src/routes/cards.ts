@@ -580,7 +580,7 @@ export const pushProvisioningHandler = async (
   const { card } = req;
   const { wallet_type: walletType } = req.params;
 
-  if (!["google", "apple"].includes(walletType)) {
+  if (!["google", "apple_encrypted"].includes(walletType)) {
     res.status(HttpStatusCodes.BAD_REQUEST).send({
       errors: [
         {
