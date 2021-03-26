@@ -9,7 +9,12 @@ import {
   INTEREST_ACCRUAL_RATE,
   OVERDRAFT_RATE,
 } from "../helpers/overdraft";
-import { OverdraftApplicationStatus, OverdraftStatus } from "../helpers/types";
+import {
+  AccountWebhookEvent,
+  OverdraftApplicationStatus,
+  OverdraftStatus,
+} from "../helpers/types";
+import { triggerWebhook } from "../helpers/webhooks";
 
 export const createOverdraftApplication = async (req, res) => {
   const {
@@ -165,6 +170,10 @@ export const createOverdraft = async (req, res) => {
     person,
     applicationId: overdraftApplication.id,
     status: OverdraftApplicationStatus.OVERDRAFT_CREATED,
+  });
+
+  await triggerWebhook(AccountWebhookEvent.ACCOUNT_LIMIT_CHANGE, {
+    account_id: accountId,
   });
 
   res.status(201).send({
