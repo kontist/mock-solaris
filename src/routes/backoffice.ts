@@ -1,5 +1,4 @@
 import _ from "lodash";
-import fetch from "node-fetch";
 import moment from "moment";
 import uuid from "node-uuid";
 import HttpStatusCodes from "http-status";
@@ -343,26 +342,6 @@ export const processQueuedBooking = async (
       directDebitReturn
     );
     await saveSepaDirectDebitReturn(sepaDirectDebitReturn);
-
-    if (directDebitReturn.recipient_iban === process.env.WIRECARD_IBAN) {
-      const issueDDRurl = `${process.env.MOCKWIRECARD_BASE_URL}/__BACKOFFICE__/customer/${person.email}/issue_ddr`;
-
-      log.info(
-        "processQueuedBooking() Creating Direct Debit Return on Wirecard",
-        {
-          issueDDRurl,
-          amount: directDebitReturn.amount.value,
-        }
-      );
-
-      await fetch(issueDDRurl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body: `amount=${directDebitReturn.amount.value}`,
-      });
-    }
   }
 
   if (receiver) {
