@@ -521,11 +521,11 @@ app.post(
   safeRequestHandler(backofficeAPI.queueBookingRequestHandler)
 );
 app.post(
-  "/__BACKOFFICE__/processQueuedBooking/:personIdOrEmail",
+  "/__BACKOFFICE__/processQueuedBooking/:personId",
   safeRequestHandler(backofficeAPI.processQueuedBookingHandler)
 );
 app.post(
-  "/__BACKOFFICE__/processQueuedBooking/:personIdOrEmail/:id",
+  "/__BACKOFFICE__/processQueuedBooking/:personId/:id",
   safeRequestHandler(backofficeAPI.processQueuedBookingHandler)
 );
 app.post(

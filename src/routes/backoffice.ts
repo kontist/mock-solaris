@@ -234,9 +234,9 @@ export const displayBackofficeOverview = (req, res) => {
 };
 
 export const processQueuedBookingHandler = async (req, res) => {
-  const { personIdOrEmail, id } = req.params;
+  const { personId, id } = req.params;
 
-  await processQueuedBooking(personIdOrEmail, id);
+  await processQueuedBooking(personId, id);
   res.redirect("back");
 };
 
@@ -260,17 +260,11 @@ const generateBookingFromStandingOrder = (standingOrder) => {
  * @param {Boolean} isStandingOrder (Optional) True if is of type standing order.
  */
 export const processQueuedBooking = async (
-  personIdOrEmail,
+  personId,
   id,
   isStandingOrder = false
 ) => {
-  let findPerson = () => getPerson(personIdOrEmail);
-
-  if (personIdOrEmail.includes("@")) {
-    findPerson = () => findPersonByEmail(personIdOrEmail);
-  }
-
-  const person = await findPerson();
+  const person = await getPerson(personId);
   person.transactions = person.transactions || [];
 
   let bookings;
