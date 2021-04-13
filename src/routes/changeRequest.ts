@@ -1,7 +1,12 @@
 import _ from "lodash";
 import moment from "moment";
 
-import { getPerson, savePerson, getMobileNumber } from "../db";
+import {
+  getPerson,
+  savePerson,
+  getMobileNumber,
+  getPersonByDeviceId,
+} from "../db";
 import {
   removeMobileNumberConfirmChangeRequest,
   MOBILE_NUMBER_CHANGE_METHOD,
@@ -26,8 +31,18 @@ import {
 } from "./batchTransfers";
 import { CHANGE_REQUEST_CHANGE_CARD_PIN } from "../helpers/cards";
 import { confirmChangeCardPINHandler } from "./cards";
-import { PersonWebhookEvent } from "../helpers/types";
+import {
+  PersonWebhookEvent,
+  DeliveryMethod,
+  AuthorizeChangeRequestResponse,
+  ChangeRequestStatus,
+} from "../helpers/types";
 import { triggerWebhook } from "../helpers/webhooks";
+import {
+  CARD_TRANSACTION_CONFIRM_METHOD,
+  confirmCardTransaction,
+  declineCardTransaction,
+} from "../helpers/scaChallenge";
 
 const MAX_CHANGE_REQUEST_AGE_IN_MINUTES = 5;
 
@@ -58,19 +73,34 @@ export const createChangeRequest = async (req, res, person, method, delta) => {
 
   return res.status(202).send({
     id: changeRequestId,
-    status: "AUTHORIZATION_REQUIRED",
+    status: ChangeRequestStatus.AUTHORIZATION_REQUIRED,
     updated_at: new Date().toISOString(),
     url: `:env/v1/change_requests/${changeRequestId}/authorize`,
   });
 };
 
 export const authorizeChangeRequest = async (req, res) => {
-  const { person_id: personId, delivery_method: deliveryMethod } = req.body;
+  const {
+    person_id: personId,
+    delivery_method: deliveryMethod,
+    device_id: deviceId,
+  } = req.body;
   const changeRequestId = req.params.change_request_id;
-  const person = await getPerson(personId);
-  const changeRequestMethod = person.changeRequest.method;
+  let person;
 
-  if (personId && deliveryMethod === "mobile_number") {
+  if (!personId) {
+    person = await getPersonByDeviceId(deviceId);
+  } else {
+    person = await getPerson(personId);
+  }
+  const changeRequestMethod = person.changeRequest.method;
+  const response: AuthorizeChangeRequestResponse = {
+    id: changeRequestId,
+    status: ChangeRequestStatus.CONFIRMATION_REQUIRED,
+    updated_at: new Date().toISOString(),
+  };
+
+  if (personId && deliveryMethod === DeliveryMethod.MOBILE_NUMBER) {
     if (changeRequestMethod === MOBILE_NUMBER_CHANGE_METHOD) {
       const existingMobileNumber = await getMobileNumber(personId);
       if (!existingMobileNumber) {
@@ -86,33 +116,28 @@ export const authorizeChangeRequest = async (req, res) => {
           ],
         });
       }
-    }
 
-    await assignAuthorizationToken(person);
-    return res.status(201).send({
-      id: changeRequestId,
-      status: "CONFIRMATION_REQUIRED",
-      updated_at: new Date().toISOString(),
-    });
+      await assignAuthorizationToken(person);
+    }
   }
 
-  return res.status(404).send({
-    errors: [
-      {
-        id: Date.now().toString(),
-        status: 401,
-        code: "invalid_token",
-        title: "Invalid Token",
-        detail: "Token is invalid",
-      },
-    ],
-  });
+  if (deliveryMethod === DeliveryMethod.DEVICE_SIGNING) {
+    response.string_to_sign = Date.now().toString();
+  }
+
+  return res.status(201).send(response);
 };
 
 export const confirmChangeRequest = async (req, res) => {
   const { change_request_id: changeRequestId } = req.params;
-  const { person_id: personId, tan } = req.body;
-  const person = await getPerson(personId);
+  const { person_id: personId, tan, device_id: deviceId } = req.body;
+  let person;
+
+  if (!personId) {
+    person = await getPersonByDeviceId(deviceId);
+  } else {
+    person = await getPerson(personId);
+  }
 
   const age = moment().diff(
     moment(_.get(person, "changeRequest.createdAt")),
@@ -134,7 +159,7 @@ export const confirmChangeRequest = async (req, res) => {
     });
   }
 
-  if (tan !== person.changeRequest.token) {
+  if (tan && tan !== person.changeRequest.token) {
     // An invalid TAN also invalidates the action it is meant to authorize
     delete person.changeRequest;
     await savePerson(person);
@@ -153,8 +178,10 @@ export const confirmChangeRequest = async (req, res) => {
   }
 
   let status = 201;
-  let response: any = { status: "COMPLETED", response_code: status };
-
+  let response: any = {
+    status: ChangeRequestStatus.COMPLETED,
+    response_code: status,
+  };
   switch (person.changeRequest.method) {
     case MOBILE_NUMBER_CHANGE_METHOD:
       response.response_body = await removeMobileNumberConfirmChangeRequest(
@@ -191,6 +218,18 @@ export const confirmChangeRequest = async (req, res) => {
       break;
     case CHANGE_REQUEST_CHANGE_CARD_PIN:
       return confirmChangeCardPINHandler(req, res);
+    case CARD_TRANSACTION_CONFIRM_METHOD:
+      if (
+        changeRequestId === person.changeRequest.authenticateChangeRequestId
+      ) {
+        await confirmCardTransaction(person);
+      } else if (
+        changeRequestId === person.changeRequest.declineChangeRequestId
+      ) {
+        await declineCardTransaction(person);
+      }
+      break;
+
     default:
       status = 400;
       response = { message: "Unknown method!" };

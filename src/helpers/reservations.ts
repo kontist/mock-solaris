@@ -28,6 +28,7 @@ import {
   FraudCase,
 } from "./types";
 import getFraudWatchdog from "./fraudWatchdog";
+import { proceedWithScaChallenge } from "./scaChallenge";
 
 const fraudSuspected = (reason: CardAuthorizationDeclineReason) =>
   reason === CardAuthorizationDeclineReason.FRAUD_SUSPECTED;
@@ -519,6 +520,10 @@ export const createReservation = async ({
         declineReason
       );
     }
+  }
+
+  if (posEntryMode === POSEntryMode.CARD_NOT_PRESENT) {
+    return proceedWithScaChallenge(person, reservation);
   }
 
   person.account.reservations.push(reservation);
