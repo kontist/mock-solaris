@@ -318,6 +318,8 @@ const augmentPerson = (person) => {
     augmented.account.reservations = augmented.account.reservations || [];
     augmented.account.fraudReservations =
       augmented.account.fraudReservations || [];
+    augmented.account.pendingReservation =
+      augmented.account.pendingReservation || {};
   }
   return augmented;
 };
@@ -472,3 +474,8 @@ export const getPersonByFraudCaseId = async (fraudCaseId) => {
 };
 
 export const getCard = async (cardId) => (await getCardData(cardId)).card;
+
+export const getPersonByDeviceId = async deviceId => {
+  const device = await getDevice(deviceId);
+  return getPerson(device.person_id);
+};
