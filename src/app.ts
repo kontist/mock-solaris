@@ -508,16 +508,16 @@ app.post(
 );
 
 app.get(
-  "/__BACKOFFICE__/person/:email",
+  "/__BACKOFFICE__/person/:id",
   safeRequestHandler(backofficeAPI.getPersonHandler)
 );
 app.post(
-  "/__BACKOFFICE__/person/:email",
+  "/__BACKOFFICE__/person/:id",
   safeRequestHandler(backofficeAPI.updatePersonHandler)
 );
 
 app.post(
-  "/__BACKOFFICE__/queueBooking/:accountIdOrEmail",
+  "/__BACKOFFICE__/queueBooking/:personId",
   safeRequestHandler(backofficeAPI.queueBookingRequestHandler)
 );
 app.post(
@@ -535,7 +535,7 @@ app.post(
 
 // BACKOFFICE - CARDS
 app.get(
-  "/__BACKOFFICE__/person/:email/cards",
+  "/__BACKOFFICE__/person/:id/cards",
   safeRequestHandler(backofficeAPI.listPersonsCards)
 );
 

@@ -13,8 +13,8 @@
 
 <ul class="nav nav-tabs">
   <li role="presentation"><a href="/__BACKOFFICE__/">⬅ Persons</a></li>
-<li role="presentation" class="active"><a href="#">Individual user</a></li>
-  <li role="presentation"><a href="/__BACKOFFICE__/person/{{ person.email }}/cards">Cards</a></li>
+<li role="presentation" class="active"><a href="/__BACKOFFICE__/person/{{ person.id }}">Individual user</a></li>
+  <li role="presentation"><a href="/__BACKOFFICE__/person/{{ person.id }}/cards">Cards</a></li>
 </ul>
 
 <div class="page-header">
@@ -113,7 +113,7 @@
     <div class="panel panel-default">
       <div class="panel-heading"><h4>Enqueue a new booking</h4></div>
       <div class="panel-body">
-        <form method="POST" action="/__BACKOFFICE__/queueBooking/{{ person.email }}">
+        <form method="POST" action="/__BACKOFFICE__/queueBooking/{{ person.id }}">
           <div class="form-group">
             <label>Amount (in cents)</label>
             <input class="form-control" type="number" name="amount" placeholder="amount (in cents)" autocomplete="off" required min="-10000000" max="10000000" />
@@ -354,7 +354,7 @@
           {{ queuedBooking.sender_bic }}
         </td>
         <td>
-        <form method="POST" action="/__BACKOFFICE__/processQueuedBooking/{{ person.email }}/{{ queuedBooking.id }}">
+        <form method="POST" action="/__BACKOFFICE__/processQueuedBooking/{{ person.id }}/{{ queuedBooking.id }}">
           <button type="submit" class="btn btn-default">
             ➡️ Process
           </button>

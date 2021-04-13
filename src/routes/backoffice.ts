@@ -114,12 +114,12 @@ export const listPersons = async (req, res) => {
 };
 
 export const listPersonsCards = async (req, res) => {
-  const person = await findPersonByEmail(req.params.email);
+  const person = await getPerson(req.params.id);
   res.render("cards", { person });
 };
 
 export const getPersonHandler = async (req, res) => {
-  const person = await findPersonByEmail(req.params.email);
+  const person = await getPerson(req.params.id);
 
   if (!person) {
     return res.status(HttpStatusCodes.NOT_FOUND).send({
@@ -147,7 +147,7 @@ export const getPersonHandler = async (req, res) => {
 };
 
 export const updatePersonHandler = async (req, res) => {
-  const person = await findPersonByEmail(req.params.email);
+  const person = await getPerson(req.params.id);
 
   Object.keys(req.body).forEach((key) => {
     person[key] = req.body[key];
@@ -174,7 +174,7 @@ export const updatePersonHandler = async (req, res) => {
 
   await savePerson(person);
 
-  res.redirect(`/__BACKOFFICE__/person/${person.email}`);
+  res.redirect(`/__BACKOFFICE__/person/${person.id}`);
 };
 
 const shouldMarkMobileNumberAsVerified = (identification) =>
@@ -224,7 +224,7 @@ export const setIdentificationState = async (req, res) => {
     status,
   });
 
-  res.redirect(`/__BACKOFFICE__/person/${req.params.email}#identifications`);
+  res.redirect(`/__BACKOFFICE__/person/${person.id}#identifications`);
 };
 
 export const displayBackofficeOverview = (req, res) => {
@@ -423,13 +423,7 @@ export const findPersonByIdOrEmail = async (personIdOrEmail) => {
 };
 
 export const queueBookingRequestHandler = async (req, res) => {
-  const { accountIdOrEmail } = req.params;
-
-  let findPerson = () => findPersonByAccountId(accountIdOrEmail);
-
-  if (accountIdOrEmail.includes("@")) {
-    findPerson = () => findPersonByEmail(accountIdOrEmail);
-  }
+  const { personId } = req.params;
 
   log.info(
     "queueBookingRequestHandler()",
@@ -455,7 +449,7 @@ export const queueBookingRequestHandler = async (req, res) => {
   purpose = purpose || "";
   amount = amount ? parseInt(amount, 10) : Math.round(Math.random() * 10000);
 
-  const person = await findPerson();
+  const person = await getPerson(personId);
   const queuedBooking = generateBookingForPerson({
     person,
     purpose,
