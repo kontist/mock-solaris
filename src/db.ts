@@ -349,12 +349,6 @@ export const findPersonByAccountId = (accountId) =>
 export const findPersonByAccountIBAN = (iban) =>
   findPersonByAccountField((person) => person.account.iban === iban);
 
-export const findPersonByEmail = (email) => {
-  return getAllPersons().then((persons) => {
-    return persons.find((person) => person.email === email);
-  });
-};
-
 export const getWebhooks = async () => {
   const webhooks = await redisClient
     .keysAsync(`${process.env.MOCKSOLARIS_REDIS_PREFIX}:webhook:*`)

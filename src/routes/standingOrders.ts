@@ -7,7 +7,7 @@ import _ from "lodash";
 import { getPerson, savePerson } from "../db";
 import { triggerWebhook } from "../helpers/webhooks";
 import * as log from "../logger";
-import { findPersonByIdOrEmail, processQueuedBooking } from "./backoffice";
+import { processQueuedBooking } from "./backoffice";
 import { TransactionWebhookEvent } from "../helpers/types";
 
 const STANDING_ORDER_PAYMENT_FREQUENCY = {
@@ -130,7 +130,7 @@ export const createStandingOrder = async (standingOrderData) => {
     reoccurrence,
   });
 
-  const person = await findPersonByIdOrEmail(personId);
+  const person = await getPerson(personId);
 
   person.changeRequest = {
     method: STANDING_ORDER_CREATE_METHOD,
@@ -344,7 +344,7 @@ export const updateStandingOrder = async (
   standingOrderId,
   attributesToUpdate
 ) => {
-  const person = await findPersonByIdOrEmail(personId);
+  const person = await getPerson(personId);
 
   const changeRequestId = Date.now().toString();
   person.changeRequest = {
@@ -383,7 +383,7 @@ export const cancelStandingOrderRequestHandler = async (req, res) => {
 };
 
 export const cancelStandingOrder = async (personId, standingOrderId) => {
-  const person = await findPersonByIdOrEmail(personId);
+  const person = await getPerson(personId);
 
   const changeRequestId = Date.now().toString();
   person.changeRequest = {

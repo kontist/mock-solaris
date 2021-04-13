@@ -3,9 +3,8 @@ import crypto from "crypto";
 import assert from "assert";
 import HttpStatusCodes from "http-status";
 import * as log from "../logger";
-import { findPersonByIdOrEmail } from "./backoffice";
 import { creteBookingFromSepaCreditTransfer } from "./transactions";
-import { savePerson } from "../db";
+import { getPerson, savePerson } from "../db";
 
 export const BATCH_TRANSFER_CREATE_METHOD = "batch_transfer:create";
 
@@ -26,7 +25,7 @@ const validateTransfers = (transfers) => {
 };
 
 export const saveBatchTransfer = async (personId, transfers) => {
-  const person = await findPersonByIdOrEmail(personId);
+  const person = await getPerson(personId);
 
   person.changeRequest = {
     method: BATCH_TRANSFER_CREATE_METHOD,
