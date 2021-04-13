@@ -1,7 +1,6 @@
 import uuid from "node-uuid";
 import * as db from "../db";
 import moment from "moment";
-import { getDevicesByPersonId } from "../db";
 import { triggerWebhook } from "./webhooks";
 import { CardWebhookEvent, Reservation, MockPerson } from "./types";
 

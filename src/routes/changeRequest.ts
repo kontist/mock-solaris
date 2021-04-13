@@ -86,13 +86,10 @@ export const authorizeChangeRequest = async (req, res) => {
     device_id: deviceId,
   } = req.body;
   const changeRequestId = req.params.change_request_id;
-  let person;
+  const person = personId
+    ? await getPerson(personId)
+    : await getPersonByDeviceId(deviceId);
 
-  if (!personId) {
-    person = await getPersonByDeviceId(deviceId);
-  } else {
-    person = await getPerson(personId);
-  }
   const changeRequestMethod = person.changeRequest.method;
   const response: AuthorizeChangeRequestResponse = {
     id: changeRequestId,
@@ -131,13 +128,9 @@ export const authorizeChangeRequest = async (req, res) => {
 export const confirmChangeRequest = async (req, res) => {
   const { change_request_id: changeRequestId } = req.params;
   const { person_id: personId, tan, device_id: deviceId } = req.body;
-  let person;
-
-  if (!personId) {
-    person = await getPersonByDeviceId(deviceId);
-  } else {
-    person = await getPerson(personId);
-  }
+  const person = personId
+    ? await getPerson(personId)
+    : await getPersonByDeviceId(deviceId);
 
   const age = moment().diff(
     moment(_.get(person, "changeRequest.createdAt")),
