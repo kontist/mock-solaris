@@ -8,8 +8,6 @@ import {
   getAllPersons,
   getAllIdentifications,
   getTaxIdentifications,
-  findPersonByAccountId,
-  findPersonByEmail,
   getMobileNumber,
   saveMobileNumber,
   deleteMobileNumber,
@@ -400,20 +398,6 @@ export const generateBookingForPerson = (bookingData) => {
     transaction_id: transactionId || null,
     status,
   };
-};
-
-/**
- * Returns a Person object by either person ID or email.
- * @param {String} personIdOrEmail
- */
-export const findPersonByIdOrEmail = async (personIdOrEmail) => {
-  let findPerson = () => getPerson(personIdOrEmail);
-
-  if (personIdOrEmail.includes("@")) {
-    findPerson = () => findPersonByEmail(personIdOrEmail);
-  }
-
-  return findPerson();
 };
 
 export const queueBookingRequestHandler = async (req, res) => {
