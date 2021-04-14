@@ -28,7 +28,7 @@ import {
   FraudCase,
 } from "./types";
 import getFraudWatchdog from "./fraudWatchdog";
-import { proceedWithScaChallenge } from "./scaChallenge";
+import {proceedWithSCAChallenge} from "./scaChallenge";
 
 const fraudSuspected = (reason: CardAuthorizationDeclineReason) =>
   reason === CardAuthorizationDeclineReason.FRAUD_SUSPECTED;
@@ -523,7 +523,7 @@ export const createReservation = async ({
   }
 
   if (posEntryMode === POSEntryMode.CARD_NOT_PRESENT) {
-    return proceedWithScaChallenge(person, reservation);
+    return proceedWithSCAChallenge(person, reservation);
   }
 
   person.account.reservations.push(reservation);

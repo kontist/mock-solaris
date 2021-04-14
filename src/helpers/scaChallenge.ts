@@ -6,7 +6,7 @@ import { CardWebhookEvent, Reservation, MockPerson } from "./types";
 
 export const CARD_TRANSACTION_CONFIRM_METHOD = "card_transaction:confirm";
 
-export const proceedWithScaChallenge = async (
+export const proceedWithSCAChallenge = async (
   person: MockPerson,
   reservation: Reservation
 ) => {
@@ -46,7 +46,9 @@ export const confirmCardTransaction = async (person: MockPerson) => {
   const reservation = person.account.pendingReservation;
 
   person.account.reservations.push(reservation);
+  delete person.account.pendingReservation;
   await db.savePerson(person);
+
   return triggerWebhook(CardWebhookEvent.CARD_AUTHORIZATION, reservation);
 };
 
