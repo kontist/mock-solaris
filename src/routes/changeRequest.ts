@@ -127,7 +127,7 @@ export const authorizeChangeRequest = async (req, res) => {
 
 export const confirmChangeRequest = async (req, res) => {
   const { change_request_id: changeRequestId } = req.params;
-  const {person_id: personId, tan, device_id: deviceId, signature} = req.body;
+  const { person_id: personId, tan, device_id: deviceId, signature }  = req.body;
   const person = personId
     ? await getPerson(personId)
     : await getPersonByDeviceId(deviceId);

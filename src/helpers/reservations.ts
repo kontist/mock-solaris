@@ -28,7 +28,7 @@ import {
   FraudCase,
 } from "./types";
 import getFraudWatchdog from "./fraudWatchdog";
-import {proceedWithSCAChallenge} from "./scaChallenge";
+import { proceedWithSCAChallenge } from "./scaChallenge";
 
 const fraudSuspected = (reason: CardAuthorizationDeclineReason) =>
   reason === CardAuthorizationDeclineReason.FRAUD_SUSPECTED;
