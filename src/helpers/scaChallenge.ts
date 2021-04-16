@@ -1,10 +1,11 @@
 import uuid from "node-uuid";
 import * as db from "../db";
-import moment from "moment";
+import moment from "moment-timezone";
 import { triggerWebhook } from "./webhooks";
 import { CardWebhookEvent, Reservation, MockPerson } from "./types";
 
 export const CARD_TRANSACTION_CONFIRM_METHOD = "card_transaction:confirm";
+const BERLIN_TIMEZONE_IDENTIFIER = "Europe/Berlin";
 
 export const proceedWithSCAChallenge = async (
   person: MockPerson,
@@ -31,8 +32,11 @@ export const proceedWithSCAChallenge = async (
       country: "276",
       url: "http://example.com",
     },
-    challenged_at: moment().toDate().toISOString(),
-    expires_at: moment().add(5, "minute").toDate().toISOString(),
+    challenged_at: moment().format(),
+    expires_at: moment
+      .tz(moment(), BERLIN_TIMEZONE_IDENTIFIER)
+      .add(5, "minute")
+      .format(),
     channel: "browser",
     card_id: metaData.card_id,
     person_id: person.id,
