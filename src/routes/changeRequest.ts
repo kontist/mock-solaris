@@ -227,8 +227,18 @@ export const confirmChangeRequest = async (req, res) => {
       break;
 
     default:
-      status = 400;
-      response = { message: "Unknown method!" };
+      status = 404;
+      response = {
+        errors: [
+          {
+            id: Date.now().toString(),
+            status: 404,
+            code: "model_not_found",
+            title: "Model Not Found",
+            detail: `Couldn't find 'Solaris::Changeset' for id '${changeRequestId}'`,
+          },
+        ],
+      };
       break;
   }
 
