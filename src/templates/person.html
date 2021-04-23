@@ -50,7 +50,7 @@
             <label for="mobile_number">Mobile number</label>
             <input type="text" class="form-control" name="mobile_number" id="mobile_number" placeholder="Phone number" value={{ mobileNumber.number }}>
           </div>
-          {% if person.changeRequest %}
+          {% if person.changeRequest && person.changeRequest.method != 'card_transaction:confirm' %}
           <div class="form-group">
             <label for="mobile_number_token">{{person.changeRequest.method}} verification token</label>
             <div>{{ person.changeRequest.token }}</div>
