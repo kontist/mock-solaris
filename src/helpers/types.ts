@@ -405,7 +405,7 @@ export enum OverdraftApplicationDecision {
 }
 
 export enum DeliveryMethod {
-  MOBILE_NUMBER = '"mobile_number"',
+  MOBILE_NUMBER = "mobile_number",
   DEVICE_SIGNING = "device_signing",
 }
 

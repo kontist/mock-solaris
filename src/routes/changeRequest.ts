@@ -113,9 +113,9 @@ export const authorizeChangeRequest = async (req, res) => {
           ],
         });
       }
-
-      await assignAuthorizationToken(person);
     }
+
+    await assignAuthorizationToken(person);
   }
 
   if (deliveryMethod === DeliveryMethod.DEVICE_SIGNING) {
@@ -133,18 +133,9 @@ export const confirmChangeRequest = async (req, res) => {
     : await getPersonByDeviceId(deviceId);
 
   if (deviceId && !signature) {
-    return res.status(400).send({
-      errors: [
-        {
-          id: Date.now().toString(),
-          status: 422,
-          code: "unprocessable_entity",
-          title: "Unprocessable Entity",
-          detail: `Unknown change request for Solaris::Person ${personId}`,
-        },
-      ],
-    });
+    return res.status(403).send({message: "Missing signature"});
   }
+
   const age = moment().diff(
     moment(_.get(person, "changeRequest.createdAt")),
     "minutes"
@@ -170,7 +161,17 @@ export const confirmChangeRequest = async (req, res) => {
     delete person.changeRequest;
     await savePerson(person);
 
-    return res.status(403).send({message: "Missing signature"});
+    return res.status(403).send({
+      errors: [
+        {
+          id: Date.now().toString(),
+          status: 403,
+          code: "invalid_tan",
+          title: "Invalid TAN",
+          detail: `Invalid or expired TAN for Solaris`,
+        },
+      ],
+    });
   }
 
   let status = 202;
