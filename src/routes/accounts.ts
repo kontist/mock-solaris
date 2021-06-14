@@ -74,7 +74,6 @@ export const showAccountReservations = async (req, res) => {
   const {
     page: { size, number },
     filter: {
-      expires_at: { min, max },
       reservation_type: reservationType,
     },
   } = req.query;
@@ -82,18 +81,9 @@ export const showAccountReservations = async (req, res) => {
   const { account_id: accountId } = req.params;
   const person = await findPersonByAccountId(accountId);
 
-  const minExpiresAtDate = new Date(min);
-  const maxExpiresAtDate = new Date(max);
 
   const reservations = _.get(person.account, "reservations", [])
-    .filter((reservation) => {
-      const expiresAtDate = new Date(reservation.expires_at);
-      return (
-        expiresAtDate >= minExpiresAtDate &&
-        expiresAtDate <= maxExpiresAtDate &&
-        reservation.reservation_type === reservationType
-      );
-    })
+    .filter(reservation => reservation.reservation_type === reservationType)
     .slice((number - 1) * size, number * size);
 
   res.status(200).send(reservations);

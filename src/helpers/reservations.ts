@@ -159,7 +159,7 @@ const mapDataToReservation = ({
       type,
       posEntryMode,
     }),
-    expires_at: moment(date).add(1, "month").format("YYYY-MM-DD"),
+    expires_at: null,
     expired_at: null,
     resolved_at: null,
     description: recipient,
