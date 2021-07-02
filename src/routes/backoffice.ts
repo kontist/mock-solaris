@@ -181,6 +181,34 @@ const shouldMarkMobileNumberAsVerified = (identification) =>
     IdentificationStatus.SUCCESSFUL,
   ].includes(identification.status) && identification.method === "idnow";
 
+export const setIdentification = async (req, res) => {
+  const identification = req.body;
+  const personSolarisId = req.params.id;
+  const person = await getPerson(personSolarisId);
+  person.identifications[identification.id] = identification;
+  await savePerson(person);
+
+  if (shouldMarkMobileNumberAsVerified(identification)) {
+    const mobileNumber = await getMobileNumber(identification.person_id);
+    if (mobileNumber) {
+      mobileNumber.verified = true;
+      await saveMobileNumber(identification.person_id, mobileNumber);
+    }
+  }
+
+  await triggerIdentificationWebhook({
+    id: identification.id,
+    url: identification.url,
+    person_id: identification.person_id,
+    completed_at: identification.completed_at,
+    reference: identification.reference,
+    status: identification.status,
+    method: "idnow",
+  });
+
+  res.status(204).send();
+};
+
 export const setIdentificationState = async (req, res) => {
   const { status } = req.body;
 
