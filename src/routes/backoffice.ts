@@ -232,8 +232,10 @@ export const setIdentificationState = async (req, res) => {
   person.identifications[identification.id] = identification;
 
   if (
-    identification.status === IdentificationStatus.SUCCESSFUL ||
-    identification.status === IdentificationStatus.PENDING_SUCCESSFUL
+    [
+      IdentificationStatus.SUCCESSFUL,
+      IdentificationStatus.PENDING_SUCCESSFUL,
+    ].includes(identification.status)
   ) {
     person.screening_progress = ScreeningStatus.SCREENED_ACCEPTED;
   }
