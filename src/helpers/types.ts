@@ -388,6 +388,13 @@ export enum IdentificationStatus {
   CANCELED = "canceled",
 }
 
+export enum ScreeningStatus {
+  NOT_SCREENED = "NOT_SCREENED",
+  POTENTIAL_MATCH = "POTENTIAL_MATCH",
+  SCREENED_ACCEPTED = "SCREENED_ACCEPTED",
+  SCREENED_DECLINED = "SCREENED_DECLINED",
+}
+
 export enum OverdraftApplicationStatus {
   CREATED = "created",
   INITIAL_SCORING_PENDING = "initial_scoring_pending",
