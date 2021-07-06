@@ -54,8 +54,7 @@ export const migrate = async () => {
         "identify-mock691f4e49fc43b913bd8ede668e187e9a-1509032370615": {
           id: "identify-mock691f4e49fc43b913bd8ede668e187e9a-1509032370615",
           reference: null,
-          url:
-            "https://go.test.idnow.de/kontist/identifications/identify-mock691f4e49fc43b913bd8ede668e187e9a-1509032370615",
+          url: "https://go.test.idnow.de/kontist/identifications/identify-mock691f4e49fc43b913bd8ede668e187e9a-1509032370615",
           status: "successful",
           completed_at: null,
           method: "idnow",
@@ -74,6 +73,7 @@ export const migrate = async () => {
           method: "idnow",
         },
       },
+      screening_progress: null,
       transactions: [
         {
           id: "e0492abb-87fd-42a2-9303-708026b90c8e",
@@ -469,7 +469,7 @@ export const getPersonByFraudCaseId = async (fraudCaseId) => {
 
 export const getCard = async (cardId) => (await getCardData(cardId)).card;
 
-export const getPersonByDeviceId = async deviceId => {
+export const getPersonByDeviceId = async (deviceId) => {
   const device = await getDevice(deviceId);
   return getPerson(device.person_id);
 };

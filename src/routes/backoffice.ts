@@ -34,6 +34,7 @@ import {
   AccountWebhookEvent,
   TransactionWebhookEvent,
   IdentificationStatus,
+  ScreeningStatus,
 } from "../helpers/types";
 import {
   changeOverdraftApplicationStatus,
@@ -229,6 +230,15 @@ export const setIdentificationState = async (req, res) => {
   const person = await getPerson(identification.person_id);
   identification.status = status;
   person.identifications[identification.id] = identification;
+
+  if (
+    [
+      IdentificationStatus.SUCCESSFUL,
+      IdentificationStatus.PENDING_SUCCESSFUL,
+    ].includes(identification.status)
+  ) {
+    person.screening_progress = ScreeningStatus.SCREENED_ACCEPTED;
+  }
 
   await savePerson(person);
 
