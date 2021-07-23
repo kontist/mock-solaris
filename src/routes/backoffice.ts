@@ -187,6 +187,16 @@ export const setIdentification = async (req, res) => {
   const personSolarisId = req.params.id;
   const person = await getPerson(personSolarisId);
   person.identifications[identification.id] = identification;
+
+  if (
+    [
+      IdentificationStatus.SUCCESSFUL,
+      IdentificationStatus.PENDING_SUCCESSFUL,
+    ].includes(identification.status)
+  ) {
+    person.screening_progress = ScreeningStatus.SCREENED_ACCEPTED;
+  }
+
   await savePerson(person);
 
   if (shouldMarkMobileNumberAsVerified(identification)) {
