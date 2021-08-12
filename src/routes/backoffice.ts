@@ -361,6 +361,8 @@ export const processQueuedBooking = async (
         sender_bic: booking.recipient_bic,
         recipient_bic: booking.sender_bic,
         id: booking.id.split("-").reverse().join("-"),
+        transaction_id: null,
+        return_transaction_id: booking.transaction_id,
         booking_type: BookingType.SEPA_DIRECT_DEBIT_RETURN,
         amount: {
           value: booking.amount.value,
@@ -443,7 +445,8 @@ export const generateBookingForPerson = (bookingData) => {
     sender_name: senderName || "mocksolaris",
     end_to_end_id: endToEndId,
     booking_type: bookingType,
-    transaction_id: transactionId || null,
+    transaction_id: transactionId || uuid.v4(),
+    return_transaction_id: null,
     status,
   };
 };
@@ -500,6 +503,65 @@ export const queueBookingRequestHandler = async (req, res) => {
   } else {
     res.redirect("back");
   }
+};
+
+export const createDirectDebitReturnHandler = async (req, res) => {
+  const { personId, id } = req.params;
+
+  await createDirectDebitReturn(personId, id);
+  res.redirect("back");
+};
+
+export const createDirectDebitReturn = async (personId, id) => {
+  const person = await getPerson(personId);
+  const directDebit = person.transactions.find(
+    (transaction) => transaction.id === id
+  );
+  const directDebitReturnId = directDebit.id.split("-").reverse().join("-");
+
+  if (
+    person.transactions.some(
+      (transaction) =>
+        transaction.id === directDebitReturnId &&
+        transaction.booking_type === BookingType.SEPA_DIRECT_DEBIT_RETURN
+    )
+  ) {
+    throw new Error("Direct debit return already exists");
+  }
+
+  const today = moment().format("YYYY-MM-DD");
+
+  const directDebitReturn = {
+    ...directDebit,
+    sender_iban: directDebit.recipient_iban,
+    recipient_iban: directDebit.sender_iban,
+    sender_name: directDebit.recipient_name,
+    recipient_name: directDebit.sender_name,
+    sender_bic: directDebit.recipient_bic,
+    recipient_bic: directDebit.sender_bic,
+    id: directDebitReturnId,
+    transaction_id: null,
+    return_transaction_id: directDebit.transaction_id,
+    booking_type: BookingType.SEPA_DIRECT_DEBIT_RETURN,
+    amount: {
+      value: -directDebit.amount.value,
+      unit: "cents",
+      currency: "EUR",
+    },
+    booking_date: today,
+    valuta_date: today,
+  };
+
+  person.transactions.push(directDebitReturn);
+
+  await savePerson(person);
+
+  const sepaDirectDebitReturn = createSepaDirectDebitReturn(
+    person,
+    directDebitReturn
+  );
+  await saveSepaDirectDebitReturn(sepaDirectDebitReturn);
+  await triggerSepaDirectDebitReturnWebhook(sepaDirectDebitReturn);
 };
 
 export const updateAccountLockingStatus = async (personId, lockingStatus) => {

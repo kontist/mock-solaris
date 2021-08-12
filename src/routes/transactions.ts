@@ -54,6 +54,8 @@ export const createSepaDirectDebit = async (req, res) => {
     collection_date,
     end_to_end_id: e2eId || null,
     id: uuid.v4(),
+    transaction_id: uuid.v4(),
+    return_transaction_id: null,
     mandate,
     booking_type: BookingType.DIRECT_DEBIT,
     sender_iban: description.includes("Neuversuch")
@@ -83,6 +85,8 @@ export const createSepaDirectDebit = async (req, res) => {
     const directDebitReturn = {
       ...queuedBooking,
       booking_type: BookingType.SEPA_DIRECT_DEBIT_RETURN,
+      transaction_id: null,
+      return_transaction_id: queuedBooking.transaction_id,
     };
     person.queuedBookings.push(directDebitReturn);
     technicalPerson.transactions.push(directDebitReturn);

@@ -533,6 +533,10 @@ app.post(
   safeRequestHandler(backofficeAPI.processQueuedBookingHandler)
 );
 app.post(
+  "/__BACKOFFICE__/createDirectDebitReturn/:personId/:id",
+  safeRequestHandler(backofficeAPI.createDirectDebitReturnHandler)
+);
+app.post(
   "/__BACKOFFICE__/updateAccountLockingStatus/:personId",
   safeRequestHandler(backofficeAPI.updateAccountLockingStatusHandler)
 );

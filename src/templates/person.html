@@ -418,6 +418,15 @@
           {{ transaction.sender_iban }}<br>
           {{ transaction.sender_bic }}
         </td>
+        <td>
+            {% if transaction.booking_type === "DIRECT_DEBIT" %}
+              <form method="POST" action="/__BACKOFFICE__/createDirectDebitReturn/{{ person.id }}/{{ transaction.id }}">
+                <button type="submit" class="btn btn-default">
+                  🔄 Create DDR
+                </button>
+              </form>
+            {% endif %}
+        </td>
       </tr>
     {% endfor %}
   </table>
