@@ -111,6 +111,20 @@ export const createSepaCreditTransfer = async (req, res) => {
 
   const person = await getPerson(personId);
 
+  if (person.account.available_balance.value < transfer.amount.value) {
+    return res.status(400).send({
+      errors: [
+        {
+          id: uuid.v4(),
+          status: 400,
+          code: "insufficient_funds",
+          title: "Insufficient Funds",
+          detail: `There were insufficient funds to complete this action.`,
+        },
+      ],
+    });
+  }
+
   const queuedBooking = creteBookingFromSepaCreditTransfer(transfer);
   person.queuedBookings.push(queuedBooking);
 
