@@ -2,6 +2,7 @@ import _ from "lodash";
 import uuid from "node-uuid";
 import { getPerson, savePerson, findPersonByAccountId } from "../db";
 import { IBAN, CountryCode } from "ibankit";
+import * as log from "../logger";
 
 const ACCOUNT_SNAPSHOT_SOURCE = "SOLARISBANK";
 
@@ -73,17 +74,14 @@ export const showAccountBookings = async (req, res) => {
 export const showAccountReservations = async (req, res) => {
   const {
     page: { size, number },
-    filter: {
-      reservation_type: reservationType,
-    },
+    filter: { reservation_type: reservationType },
   } = req.query;
 
   const { account_id: accountId } = req.params;
   const person = await findPersonByAccountId(accountId);
 
-
   const reservations = _.get(person.account, "reservations", [])
-    .filter(reservation => reservation.reservation_type === reservationType)
+    .filter((reservation) => reservation.reservation_type === reservationType)
     .slice((number - 1) * size, number * size);
 
   res.status(200).send(reservations);
@@ -111,6 +109,7 @@ export const showPersonAccounts = async (req, res) => {
 let counter = 0;
 
 export const createAccount = async (personId, data) => {
+  log.info(`createAccount() for person.id ${personId}`);
   const person = await getPerson(personId);
   person.account = {
     ...DEFAULT_ACCOUNT,
