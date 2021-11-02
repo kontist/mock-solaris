@@ -421,6 +421,11 @@ export const generateBookingForPerson = (bookingData) => {
   } = bookingData;
 
   const recipientName = `${person.salutation} ${person.first_name} ${person.last_name}`;
+
+  if(!person.account?.iban) {
+    log.info(`generateBookingForPerson(), person.id ${person.id} has no account`, JSON.stringify(person));
+  }
+
   const recipientIBAN = person.account.iban;
   const recipientBIC = person.account.bic;
 
