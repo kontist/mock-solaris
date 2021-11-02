@@ -1,3 +1,5 @@
+/** @format */
+
 import _ from "lodash";
 import moment from "moment";
 import uuid from "node-uuid";
@@ -422,8 +424,11 @@ export const generateBookingForPerson = (bookingData) => {
 
   const recipientName = `${person.salutation} ${person.first_name} ${person.last_name}`;
 
-  if(!person.account?.iban) {
-    log.info(`generateBookingForPerson(), person.id ${person.id} has no account`, JSON.stringify(person));
+  if (!person.account) {
+    log.info(
+      `generateBookingForPerson(), person.id ${person.id} has no account`,
+      JSON.stringify(person)
+    );
   }
 
   const recipientIBAN = person.account.iban;
