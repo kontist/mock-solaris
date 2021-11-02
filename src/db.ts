@@ -152,6 +152,8 @@ const addAmountValues = (a, b) => a + b.amount.value;
 export const savePerson = async (person, skipInterest = false) => {
   person.address = person.address || { country: null };
 
+  log.info(`savePerson() for person.id: ${person.id} started`, JSON.stringify(person));
+
   const account = person.account;
 
   if (account) {
@@ -196,6 +198,8 @@ export const savePerson = async (person, skipInterest = false) => {
     `${process.env.MOCKSOLARIS_REDIS_PREFIX}:person:${person.id}`,
     JSON.stringify(person, undefined, 2)
   );
+
+  log.info(`savePerson() person.id: ${person.id} finished`, JSON.stringify(person));
 
   return response;
 };

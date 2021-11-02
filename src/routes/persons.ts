@@ -7,11 +7,14 @@ import { getPerson, getAllPersons, savePerson } from "../db";
 import { createChangeRequest } from "./changeRequest";
 import { triggerWebhook } from "../helpers/webhooks";
 import { PersonWebhookEvent } from "../helpers/types";
+import * as log from "../logger";
 
 export const createPerson = (req, res) => {
   const personId =
     "mock" +
     crypto.createHash("md5").update(JSON.stringify(req.body)).digest("hex");
+
+  log.info(`creating mocksolaris person with person.id ${personId}`)
 
   const person = {
     ...req.body,
