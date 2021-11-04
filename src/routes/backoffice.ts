@@ -421,8 +421,8 @@ export const generateBookingForPerson = (bookingData) => {
   } = bookingData;
 
   const recipientName = `${person.salutation} ${person.first_name} ${person.last_name}`;
-  const recipientIBAN = person.account.iban;
-  const recipientBIC = person.account.bic;
+  const recipientIBAN = person.account?.iban;
+  const recipientBIC = person.account?.bic;
 
   const senderIBAN = iban || "ES3183888553310516236778";
   const senderBIC = process.env.SOLARIS_BIC;
