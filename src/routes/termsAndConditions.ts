@@ -6,24 +6,24 @@ const EVENT_TYPES = ["APPROVED", "REJECTED"];
 export const createTermsAndConditionsEvent = async (req, res) => {
   const {
     body: {
+      document_id: documentId,
       signed_by: personId,
       event_type: eventType,
       event_timestamp: eventTimestamp,
+      product_name: productName,
     },
   } = req;
 
-  const person = await getPerson(personId);
-
-  if (!person) {
+  if (!documentId) {
     return res.status(400).send({
       id: uuid.v4(),
       status: 400,
       code: "validation_error",
       title: "Validation Error",
-      detail: "signed_by is invalid",
+      detail: "document_id is missing",
       source: {
-        message: "is invalid",
-        field: "signed_by",
+        message: "is missing",
+        field: "document_id",
       },
     });
   }
@@ -42,6 +42,20 @@ export const createTermsAndConditionsEvent = async (req, res) => {
     });
   }
 
+  if (!productName) {
+    return res.status(400).send({
+      id: uuid.v4(),
+      status: 400,
+      code: "validation_error",
+      title: "Validation Error",
+      detail: "product_name is missing",
+      source: {
+        message: "is missing",
+        field: "product_name",
+      },
+    });
+  }
+
   if (!EVENT_TYPES.includes(eventType)) {
     return res.status(400).send({
       id: uuid.v4(),
@@ -52,6 +66,22 @@ export const createTermsAndConditionsEvent = async (req, res) => {
       source: {
         message: "does not have a valid value",
         field: "event_type",
+      },
+    });
+  }
+
+  const person = await getPerson(personId);
+
+  if (!person) {
+    return res.status(400).send({
+      id: uuid.v4(),
+      status: 400,
+      code: "validation_error",
+      title: "Validation Error",
+      detail: "signed_by is invalid",
+      source: {
+        message: "is invalid",
+        field: "signed_by",
       },
     });
   }
