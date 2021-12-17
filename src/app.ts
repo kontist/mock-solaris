@@ -25,6 +25,7 @@ import * as cardsAPI from "./routes/cards";
 import * as e2eAPI from "./routes/e2e";
 import * as middlewares from "./helpers/middlewares";
 import * as overdraftAPI from "./routes/overdraft";
+import * as termsAPI from "./routes/termsAndConditions";
 
 import { migrate } from "./db";
 
@@ -32,7 +33,6 @@ import { oauthTokenAuthenticationMiddleware } from "./helpers/oauth";
 import { safeRequestHandler } from "./helpers/safeRequestHandler";
 import { shouldReturnJSON } from "./helpers";
 import { CardStatus } from "./helpers/types";
-import { IncomingMessage } from "http";
 const app = express();
 
 function logResponseBody(req, res, next) {
@@ -490,6 +490,12 @@ router.post(
 router.get(
   "/persons/:person_id/seizures",
   safeRequestHandler(seizuresAPI.getSeizuresRequestHandler)
+);
+
+// TERMS AND CONDITIONS
+router.post(
+  "/terms_and_conditions_events",
+  safeRequestHandler(termsAPI.createTermsAndConditionsEvent)
 );
 
 // E2E
