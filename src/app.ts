@@ -546,6 +546,10 @@ app.post(
   "/__BACKOFFICE__/updateAccountLockingStatus/:personId",
   safeRequestHandler(backofficeAPI.updateAccountLockingStatusHandler)
 );
+app.post(
+  "/__BACKOFFICE__/setTaxIdentifications/:personId",
+  safeRequestHandler(backofficeAPI.saveTaxIdentificationsHandler)
+);
 
 // BACKOFFICE - CARDS
 app.get(

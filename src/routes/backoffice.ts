@@ -13,6 +13,7 @@ import {
   deleteMobileNumber,
   saveSepaDirectDebitReturn,
   getDevicesByPersonId,
+  saveTaxIdentifications,
 } from "../db";
 import {
   createSepaDirectDebitReturn,
@@ -714,3 +715,8 @@ export const issueInterestAccruedBookingHandler = async (req, res) => {
 
   res.redirect("back");
 };
+
+export const saveTaxIdentificationsHandler = async (req, res) => {
+  await saveTaxIdentifications(req.params.personId, [req.body]);
+  res.status(201).send();
+}
