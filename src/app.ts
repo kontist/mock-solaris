@@ -26,6 +26,7 @@ import * as e2eAPI from "./routes/e2e";
 import * as middlewares from "./helpers/middlewares";
 import * as overdraftAPI from "./routes/overdraft";
 import * as termsAPI from "./routes/termsAndConditions";
+import * as psd2API from "./routes/psd2";
 
 import { migrate } from "./db";
 
@@ -169,6 +170,17 @@ router.post(
 router.get(
   "/accounts/:account_id/balance",
   safeRequestHandler(accountsAPI.showAccountBalance)
+);
+
+// PSD2
+router.get(
+  "/psd2/challenges/:challenge_id",
+  safeRequestHandler(psd2API.verifyChallengeId)
+);
+
+router.patch(
+  "/psd2/challenges/:challenge_id",
+  safeRequestHandler(psd2API.patchChallengeId)
 );
 
 // OVERDRAFT
