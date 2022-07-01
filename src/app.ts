@@ -563,6 +563,22 @@ app.post(
   safeRequestHandler(backofficeAPI.saveTaxIdentificationsHandler)
 );
 
+/*
+ * BACKOFFICE - Screening
+ */
+app.post(
+  "/__BACKOFFICE__/updateScreeningProgress/:personId",
+  safeRequestHandler(backofficeAPI.updateScreeningProgress)
+);
+app.post(
+  "/__BACKOFFICE__/updateRiskClassificationStatus/:personId",
+  safeRequestHandler(backofficeAPI.updateRiskClassificationStatus)
+);
+app.post(
+  "/__BACKOFFICE__/updateCustomerVettingStatus/:personId",
+  safeRequestHandler(backofficeAPI.updateCustomerVettingStatus)
+);
+
 // BACKOFFICE - CARDS
 app.get(
   "/__BACKOFFICE__/person/:id/cards",

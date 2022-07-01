@@ -36,6 +36,8 @@ import {
   TransactionWebhookEvent,
   IdentificationStatus,
   ScreeningStatus,
+  RiskClarificationStatus,
+  CustomerVettingStatus,
 } from "../helpers/types";
 import {
   changeOverdraftApplicationStatus,
@@ -189,6 +191,7 @@ export const setIdentification = async (req, res) => {
   const person = await getPerson(personSolarisId);
   person.identifications[identification.id] = identification;
 
+  // TODO: assign these values manually from the backend tests and remove this
   if (
     [
       IdentificationStatus.SUCCESSFUL,
@@ -196,6 +199,8 @@ export const setIdentification = async (req, res) => {
     ].includes(identification.status)
   ) {
     person.screening_progress = ScreeningStatus.SCREENED_ACCEPTED;
+    person.risk_classification_status = RiskClarificationStatus.NORMAL_RISK;
+    person.customer_vetting_status = CustomerVettingStatus.RISK_ACCEPTED;
   }
 
   await savePerson(person);
@@ -242,13 +247,17 @@ export const setIdentificationState = async (req, res) => {
   identification.status = status;
   person.identifications[identification.id] = identification;
 
+  // screening will not always be accepted.
   if (
     [
       IdentificationStatus.SUCCESSFUL,
       IdentificationStatus.PENDING_SUCCESSFUL,
     ].includes(identification.status)
   ) {
+    // TODO: assign these values manually from the backend tests and remove this
     person.screening_progress = ScreeningStatus.SCREENED_ACCEPTED;
+    person.risk_classification_status = RiskClarificationStatus.NORMAL_RISK;
+    person.customer_vetting_status = CustomerVettingStatus.RISK_ACCEPTED;
   }
 
   await savePerson(person);
@@ -718,10 +727,42 @@ export const issueInterestAccruedBookingHandler = async (req, res) => {
 
 export const saveTaxIdentificationsHandler = async (req, res) => {
   if (!Array.isArray(req.body)) {
-    res.status(400).send({ message: "body needs to be an array of tax identifications" })
+    res
+      .status(400)
+      .send({ message: "body needs to be an array of tax identifications" });
     return;
   }
 
   await saveTaxIdentifications(req.params.personId, req.body);
   res.status(201).send();
+};
+
+export async function updateScreeningProgress(req, res) {
+  if (!req.body.screeningProgress) {
+    res.status(400).send("Missing value: screeningProgress");
+  }
+  const person = await getPerson(req.params.personId);
+  person.screening_progress = req.body.screeningProgress;
+  await savePerson(person);
+  res.redirect("back");
+}
+
+export async function updateRiskClassificationStatus(req, res) {
+  if (!req.body.riskClassificationStatus) {
+    res.status(400).send("Missing value: riskClassificationStatus");
+  }
+  const person = await getPerson(req.params.personId);
+  person.risk_classification_status = req.body.riskClassificationStatus;
+  await savePerson(person);
+  res.redirect("back");
+}
+
+export async function updateCustomerVettingStatus(req, res) {
+  if (!req.body.customerVettingStatus) {
+    res.status(400).send("Missing value: customerVettingStatus");
+  }
+  const person = await getPerson(req.params.personId);
+  person.customer_vetting_status = req.body.customerVettingStatus;
+  await savePerson(person);
+  res.redirect("back");
 }
