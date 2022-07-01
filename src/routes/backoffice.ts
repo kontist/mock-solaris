@@ -35,7 +35,7 @@ import {
   AccountWebhookEvent,
   TransactionWebhookEvent,
   IdentificationStatus,
-  ScreeningStatus,
+  ScreeningProgress,
   RiskClarificationStatus,
   CustomerVettingStatus,
 } from "../helpers/types";
@@ -198,7 +198,7 @@ export const setIdentification = async (req, res) => {
       IdentificationStatus.PENDING_SUCCESSFUL,
     ].includes(identification.status)
   ) {
-    person.screening_progress = ScreeningStatus.SCREENED_ACCEPTED;
+    person.screening_progress = ScreeningProgress.SCREENED_ACCEPTED;
     person.risk_classification_status = RiskClarificationStatus.NORMAL_RISK;
     person.customer_vetting_status = CustomerVettingStatus.RISK_ACCEPTED;
   }
@@ -255,7 +255,7 @@ export const setIdentificationState = async (req, res) => {
     ].includes(identification.status)
   ) {
     // TODO: assign these values manually from the backend tests and remove this
-    person.screening_progress = ScreeningStatus.SCREENED_ACCEPTED;
+    person.screening_progress = ScreeningProgress.SCREENED_ACCEPTED;
     person.risk_classification_status = RiskClarificationStatus.NORMAL_RISK;
     person.customer_vetting_status = CustomerVettingStatus.RISK_ACCEPTED;
   }

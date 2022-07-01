@@ -389,13 +389,6 @@ export enum IdentificationStatus {
   CANCELED = "canceled",
 }
 
-export enum ScreeningStatus {
-  NOT_SCREENED = "NOT_SCREENED",
-  POTENTIAL_MATCH = "POTENTIAL_MATCH",
-  SCREENED_ACCEPTED = "SCREENED_ACCEPTED",
-  SCREENED_DECLINED = "SCREENED_DECLINED",
-}
-
 /*
  * Customer Screening and Risk Checks
  * @see @link{https://docs.solarisbank.com/core/guides/#2Pn2Mvnb-customer-screening-and-risk-checks}
