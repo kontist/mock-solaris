@@ -391,7 +391,7 @@ export enum IdentificationStatus {
 
 /*
  * Customer Screening and Risk Checks
- * @see @link{https://docs.solarisbank.com/core/guides/#2Pn2Mvnb-customer-screening-and-risk-checks}
+ * @see @link{https://docs.solarisbank.com/guides/get-started/digital-banking/onboard-person/#customer-due-diligence-cdd}
  */
 
 export enum ScreeningProgress {
