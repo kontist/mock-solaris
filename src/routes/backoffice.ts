@@ -161,6 +161,9 @@ export const updatePersonHandler = async (req, res) => {
   person.address.postal_code = req.body.postal_code;
   person.address.city = req.body.city;
   person.address.country = req.body.country;
+  person.screening_progress = req.body.screeningProgress;
+  person.risk_classification_status = req.body.riskClassificationStatus;
+  person.customer_vetting_status = req.body.customerVettingStatus;
 
   if (person.fatca_relevant === "null") {
     person.fatca_relevant = null;
@@ -175,6 +178,12 @@ export const updatePersonHandler = async (req, res) => {
   }
 
   await savePerson(person);
+
+  await triggerWebhook(
+    PersonWebhookEvent.PERSON_CHANGED,
+    {},
+    { "solaris-entity-id": req.params.id }
+  );
 
   res.redirect(`/__BACKOFFICE__/person/${person.id}`);
 };
@@ -736,48 +745,3 @@ export const saveTaxIdentificationsHandler = async (req, res) => {
   await saveTaxIdentifications(req.params.personId, req.body);
   res.status(201).send();
 };
-
-export async function updateScreeningProgress(req, res) {
-  if (!req.body.screeningProgress) {
-    res.status(400).send("Missing value: screeningProgress");
-  }
-  const person = await getPerson(req.params.personId);
-  person.screening_progress = req.body.screeningProgress;
-  await savePerson(person);
-  await triggerWebhook(
-    PersonWebhookEvent.PERSON_CHANGED,
-    {},
-    { "solaris-entity-id": req.params.personId }
-  );
-  res.redirect("back");
-}
-
-export async function updateRiskClassificationStatus(req, res) {
-  if (!req.body.riskClassificationStatus) {
-    res.status(400).send("Missing value: riskClassificationStatus");
-  }
-  const person = await getPerson(req.params.personId);
-  person.risk_classification_status = req.body.riskClassificationStatus;
-  await savePerson(person);
-  await triggerWebhook(
-    PersonWebhookEvent.PERSON_CHANGED,
-    {},
-    { "solaris-entity-id": req.params.personId }
-  );
-  res.redirect("back");
-}
-
-export async function updateCustomerVettingStatus(req, res) {
-  if (!req.body.customerVettingStatus) {
-    res.status(400).send("Missing value: customerVettingStatus");
-  }
-  const person = await getPerson(req.params.personId);
-  person.customer_vetting_status = req.body.customerVettingStatus;
-  await savePerson(person);
-  await triggerWebhook(
-    PersonWebhookEvent.PERSON_CHANGED,
-    {},
-    { "solaris-entity-id": req.params.personId }
-  );
-  res.redirect("back");
-}

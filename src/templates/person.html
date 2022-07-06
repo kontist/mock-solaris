@@ -101,6 +101,43 @@
             <input type="text" class="form-control" name="fatca_crs_confirmed_at" id="fatca_crs_confirmed_at" disabled="disabled" value={{ person.fatca_crs_confirmed_at }}>
           </div>
           <p><strong>Company name:</strong> {{ person.business_trading_name }}</p>
+          <div class="form-group">
+          <label for="screeningProgress">Screening Progress</label>
+            <select name="screeningProgress" class="form-control">
+              <option {% if person.screening_progress === "NOT_SCREENED" %}selected {% endif %} value="NOT_SCREENED">NOT_SCREENED</option>
+              <option {% if person.screening_progress === "POTENTIAL_MATCH" %}selected {% endif %} value="POTENTIAL_MATCH">POTENTIAL_MATCH</option>
+              <option {% if person.screening_progress === "SCREENED_ACCEPTED" %}selected {% endif %} value="SCREENED_ACCEPTED">SCREENED_ACCEPTED</option>
+              <option {% if person.screening_progress === "SCREENED_DECLINED" %}selected {% endif %} value="SCREENED_DECLINED">SCREENED_DECLINED</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="riskClassificationStatus">Risk Classification Status</label>
+            <select name="riskClassificationStatus" class="form-control">
+              <option {% if person.risk_classification_status === "NOT_SCORED" %}selected {% endif %} value="NOT_SCORED">NOT_SCORED</option>
+              <option {% if person.risk_classification_status === "POTENTIAL_RISK" %}selected {% endif %} value="POTENTIAL_RISK">POTENTIAL_RISK</option>
+              <option {% if person.risk_classification_status === "NORMAL_RISK" %}selected {% endif %} value="NORMAL_RISK">NORMAL_RISK</option>
+              <option {% if person.risk_classification_status === "INFORMATION_REQUESTED" %}selected {% endif %} value="INFORMATION_REQUESTED">INFORMATION_REQUESTED</option>
+              <option {% if person.risk_classification_status === "INFORMATION_RECEIVED" %}selected {% endif %} value="INFORMATION_RECEIVED">INFORMATION_RECEIVED</option>
+              <option {% if person.risk_classification_status === "RISK_ACCEPTED" %}selected {% endif %} value="RISK_ACCEPTED">RISK_ACCEPTED</option>
+              <option {% if person.risk_classification_status === "RISK_REJECTED" %}selected {% endif %} value="RISK_REJECTED">RISK_REJECTED</option>
+              <option {% if person.risk_classification_status === "CUSTOMER_UNRESPONSIVE" %}selected {% endif %} value="CUSTOMER_UNRESPONSIVE">CUSTOMER_UNRESPONSIVE</option>
+              <option {% if person.risk_classification_status === "SCORING_NOT_REQUIRED" %}selected {% endif %} value="SCORING_NOT_REQUIRED">SCORING_NOT_REQUIRED</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="customerVettingStatus">Customer Vetting Status</label>
+            <select name="customerVettingStatus" class="form-control">
+              <option {% if person.customer_vetting_status === "NOT_VETTED" %}selected {% endif %} value="NOT_VETTED">NOT_VETTED</option>
+              <option {% if person.customer_vetting_status === "NO_MATCH" %}selected {% endif %} value="NO_MATCH">NO_MATCH</option>
+              <option {% if person.customer_vetting_status === "POTENTIAL_MATCH" %}selected {% endif %} value="POTENTIAL_MATCH">POTENTIAL_MATCH</option>
+              <option {% if person.customer_vetting_status === "INFORMATION_REQUESTED" %}selected {% endif %} value="INFORMATION_REQUESTED">INFORMATION_REQUESTED</option>
+              <option {% if person.customer_vetting_status === "INFORMATION_RECEIVED" %}selected {% endif %} value="INFORMATION_RECEIVED">INFORMATION_RECEIVED</option>
+              <option {% if person.customer_vetting_status === "RISK_ACCEPTED" %}selected {% endif %} value="RISK_ACCEPTED">RISK_ACCEPTED</option>
+              <option {% if person.customer_vetting_status === "RISK_REJECTED" %}selected {% endif %} value="RISK_REJECTED">RISK_REJECTED</option>
+              <option {% if person.customer_vetting_status === "CUSTOMER_UNRESPONSIVE" %}selected {% endif %} value="CUSTOMER_UNRESPONSIVE">CUSTOMER_UNRESPONSIVE</option>
+              <option {% if person.customer_vetting_status === "VETTING_NOT_REQUIRED" %}selected {% endif %} value="VETTING_NOT_REQUIRED">VETTING_NOT_REQUIRED</option>
+            </select>
+          </div>
           <button type="submit" class="btn btn-primary btn-block">Submit</button>
         </form>
       </div>
@@ -257,61 +294,7 @@
         </form>
       </td>
     </tr>
-    <tr>
-      <td>Screening Progress</td>
-      <td>
-        <form method="POST" action="/__BACKOFFICE__/updateScreeningProgress/{{ person.id }}" onchange="this.submit()">
-          <fieldset>
-            <select name="screeningProgress">
-              <option {% if person.screening_progress === "NOT_SCREENED" %}selected {% endif %} value="NOT_SCREENED">NOT_SCREENED</option>
-              <option {% if person.screening_progress === "POTENTIAL_MATCH" %}selected {% endif %} value="POTENTIAL_MATCH">POTENTIAL_MATCH</option>
-              <option {% if person.screening_progress === "SCREENED_ACCEPTED" %}selected {% endif %} value="SCREENED_ACCEPTED">SCREENED_ACCEPTED</option>
-              <option {% if person.screening_progress === "SCREENED_DECLINED" %}selected {% endif %} value="SCREENED_DECLINED">SCREENED_DECLINED</option>
-            </select>
-          </fieldset>
-        </form>
-      </td>
-    </tr>
-    <tr>
-      <td>Risk classification status</td>
-      <td>
-        <form method="POST" action="/__BACKOFFICE__/updateRiskClassificationStatus/{{ person.id }}" onchange="this.submit()">
-          <fieldset>
-            <select name="riskClassificationStatus">
-              <option {% if person.risk_classification_status === "NOT_SCORED" %}selected {% endif %} value="NOT_SCORED">NOT_SCORED</option>
-              <option {% if person.risk_classification_status === "POTENTIAL_RISK" %}selected {% endif %} value="POTENTIAL_RISK">POTENTIAL_RISK</option>
-              <option {% if person.risk_classification_status === "NORMAL_RISK" %}selected {% endif %} value="NORMAL_RISK">NORMAL_RISK</option>
-              <option {% if person.risk_classification_status === "INFORMATION_REQUESTED" %}selected {% endif %} value="INFORMATION_REQUESTED">INFORMATION_REQUESTED</option>
-              <option {% if person.risk_classification_status === "INFORMATION_RECEIVED" %}selected {% endif %} value="INFORMATION_RECEIVED">INFORMATION_RECEIVED</option>
-              <option {% if person.risk_classification_status === "RISK_ACCEPTED" %}selected {% endif %} value="RISK_ACCEPTED">RISK_ACCEPTED</option>
-              <option {% if person.risk_classification_status === "RISK_REJECTED" %}selected {% endif %} value="RISK_REJECTED">RISK_REJECTED</option>
-              <option {% if person.risk_classification_status === "CUSTOMER_UNRESPONSIVE" %}selected {% endif %} value="CUSTOMER_UNRESPONSIVE">CUSTOMER_UNRESPONSIVE</option>
-              <option {% if person.risk_classification_status === "SCORING_NOT_REQUIRED" %}selected {% endif %} value="SCORING_NOT_REQUIRED">SCORING_NOT_REQUIRED</option>
-            </select>
-          </fieldset>
-        </form>
-      </td>
-    </tr>
-    <tr>
-      <td>Customer vetting status</td>
-      <td>
-        <form method="POST" action="/__BACKOFFICE__/updateCustomerVettingStatus/{{ person.id }}" onchange="this.submit()">
-          <fieldset>
-            <select name="customerVettingStatus">
-              <option {% if person.customer_vetting_status === "NOT_VETTED" %}selected {% endif %} value="NOT_VETTED">NOT_VETTED</option>
-              <option {% if person.customer_vetting_status === "NO_MATCH" %}selected {% endif %} value="NO_MATCH">NO_MATCH</option>
-              <option {% if person.customer_vetting_status === "POTENTIAL_MATCH" %}selected {% endif %} value="POTENTIAL_MATCH">POTENTIAL_MATCH</option>
-              <option {% if person.customer_vetting_status === "INFORMATION_REQUESTED" %}selected {% endif %} value="INFORMATION_REQUESTED">INFORMATION_REQUESTED</option>
-              <option {% if person.customer_vetting_status === "INFORMATION_RECEIVED" %}selected {% endif %} value="INFORMATION_RECEIVED">INFORMATION_RECEIVED</option>
-              <option {% if person.customer_vetting_status === "RISK_ACCEPTED" %}selected {% endif %} value="RISK_ACCEPTED">RISK_ACCEPTED</option>
-              <option {% if person.customer_vetting_status === "RISK_REJECTED" %}selected {% endif %} value="RISK_REJECTED">RISK_REJECTED</option>
-              <option {% if person.customer_vetting_status === "CUSTOMER_UNRESPONSIVE" %}selected {% endif %} value="CUSTOMER_UNRESPONSIVE">CUSTOMER_UNRESPONSIVE</option>
-              <option {% if person.customer_vetting_status === "VETTING_NOT_REQUIRED" %}selected {% endif %} value="VETTING_NOT_REQUIRED">VETTING_NOT_REQUIRED</option>
-            </select>
-          </fieldset>
-        </form>
-      </td>
-    </tr>
+
   </table>
 </div>
 
