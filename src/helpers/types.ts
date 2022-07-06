@@ -389,12 +389,45 @@ export enum IdentificationStatus {
   CANCELED = "canceled",
 }
 
-export enum ScreeningStatus {
+/*
+ * Customer Screening and Risk Checks
+ * @see @link{https://docs.solarisbank.com/guides/get-started/digital-banking/onboard-person/#customer-due-diligence-cdd}
+ */
+
+export enum ScreeningProgress {
   NOT_SCREENED = "NOT_SCREENED",
   POTENTIAL_MATCH = "POTENTIAL_MATCH",
   SCREENED_ACCEPTED = "SCREENED_ACCEPTED",
   SCREENED_DECLINED = "SCREENED_DECLINED",
 }
+
+export enum RiskClarificationStatus {
+  NOT_SCORED = "NOT_SCORED",
+  POTENTIAL_RISK = "POTENTIAL_RISK",
+  NORMAL_RISK = "NORMAL_RISK",
+  INFORMATION_REQUESTED = "INFORMATION_REQUESTED",
+  INFORMATION_RECEIVED = "INFORMATION_RECEIVED",
+  RISK_ACCEPTED = "RISK_ACCEPTED",
+  RISK_REJECTED = "RISK_REJECTED",
+  CUSTOMER_UNRESPONSIVE = "CUSTOMER_UNRESPONSIVE",
+  SCORING_NOT_REQUIRED = "SCORING_NOT_REQUIRED",
+}
+
+export enum CustomerVettingStatus {
+  NOT_VETTED = "NOT_VETTED",
+  NO_MATCH = "NO_MATCH",
+  POTENTIAL_MATCH = "POTENTIAL_MATCH",
+  INFORMATION_REQUESTED = "INFORMATION_REQUESTED",
+  INFORMATION_RECEIVED = "INFORMATION_RECEIVED",
+  RISK_ACCEPTED = "RISK_ACCEPTED",
+  RISK_REJECTED = "RISK_REJECTED",
+  CUSTOMER_UNRESPONSIVE = "CUSTOMER_UNRESPONSIVE",
+  VETTING_NOT_REQUIRED = "VETTING_NOT_REQUIRED",
+}
+
+/*
+ * End of Customer Screening and Risk Checks
+ */
 
 export enum OverdraftApplicationStatus {
   CREATED = "created",

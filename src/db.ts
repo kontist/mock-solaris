@@ -3,6 +3,7 @@ import Promise from "bluebird";
 
 import * as log from "./logger";
 import { calculateOverdraftInterest } from "./helpers/overdraft";
+import { CustomerVettingStatus, RiskClarificationStatus, ScreeningProgress } from "./helpers/types";
 
 let redis;
 
@@ -74,7 +75,9 @@ export const migrate = async () => {
           method: "idnow",
         },
       },
-      screening_progress: null,
+      screening_progress: ScreeningProgress.SCREENED_ACCEPTED,
+      risk_classification_status: RiskClarificationStatus.RISK_ACCEPTED,
+      customer_vetting_status: CustomerVettingStatus.RISK_ACCEPTED,
       transactions: [
         {
           id: "e0492abb-87fd-42a2-9303-708026b90c8e",
