@@ -235,6 +235,7 @@ export const setIdentification = async (req, res) => {
   res.status(204).send();
 };
 
+// sets identification state from the panel
 export const setIdentificationState = async (req, res) => {
   const { status } = req.body;
 
@@ -255,19 +256,6 @@ export const setIdentificationState = async (req, res) => {
   const person = await getPerson(identification.person_id);
   identification.status = status;
   person.identifications[identification.id] = identification;
-
-  // screening will not always be accepted.
-  if (
-    [
-      IdentificationStatus.SUCCESSFUL,
-      IdentificationStatus.PENDING_SUCCESSFUL
-    ].includes(identification.status)
-  ) {
-    // TODO: assign these values manually from the backend tests and remove this
-    person.screening_progress = ScreeningProgress.SCREENED_ACCEPTED;
-    person.risk_classification_status = RiskClarificationStatus.RISK_ACCEPTED;
-    person.customer_vetting_status = CustomerVettingStatus.RISK_ACCEPTED;
-  }
 
   await savePerson(person);
 
