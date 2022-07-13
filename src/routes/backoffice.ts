@@ -195,13 +195,13 @@ const shouldMarkMobileNumberAsVerified = (identification) =>
   ].includes(identification.status) && identification.method === "idnow";
 
 export const setIdentification = async (req, res) => {
-  const identification = req.body;
+  const { identification, skipSettingScreeningValues } = req.body;
   const personSolarisId = req.params.id;
   const person = await getPerson(personSolarisId);
   person.identifications[identification.id] = identification;
 
   // TODO: assign these values manually from the backend tests and remove this
-  if (
+  if (!(skipSettingScreeningValues === "true") &&
     [
       IdentificationStatus.SUCCESSFUL,
       IdentificationStatus.PENDING_SUCCESSFUL
@@ -236,7 +236,7 @@ export const setIdentification = async (req, res) => {
 };
 
 export const setIdentificationState = async (req, res) => {
-  const { status } = req.body;
+  const { status, skipSettingScreeningValues } = req.body;
 
   log.info("setIdentificationState body", req.body);
   log.info("setIdentificationState params", req.params);
@@ -257,7 +257,7 @@ export const setIdentificationState = async (req, res) => {
   person.identifications[identification.id] = identification;
 
   // screening will not always be accepted.
-  if (
+  if (!(skipSettingScreeningValues === "true") &&
     [
       IdentificationStatus.SUCCESSFUL,
       IdentificationStatus.PENDING_SUCCESSFUL
