@@ -530,7 +530,7 @@ app.post(
 );
 
 app.post(
-  "/__BACKOFFICE__/setScreening/:id",
+  "/__BACKOFFICE__/setScreening/:email",
   safeRequestHandler(backofficeAPI.setScreening)
 );
 

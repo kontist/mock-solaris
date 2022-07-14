@@ -242,9 +242,10 @@ export const setScreening = async (req, res) => {
     risk_classification_status,
     customer_vetting_status,
   } = req.body;
-  const personSolarisId = req.params.id;
 
-  const person = await getPerson(personSolarisId);
+  const person = (await getAllPersons()).find(
+    (person) => person.email === req.params.email
+  );
 
   person.screening_progress = screening_progress;
   person.risk_classification_status = risk_classification_status;
