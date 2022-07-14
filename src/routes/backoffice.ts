@@ -244,7 +244,7 @@ export const setScreening = async (req, res) => {
   } = req.body;
 
   const person = (await getAllPersons()).find(
-    (person) => person.email === req.params.email
+    (item) => item.email === req.params.email
   );
 
   person.screening_progress = screening_progress;
