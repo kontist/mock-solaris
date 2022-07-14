@@ -256,7 +256,7 @@ export const setScreening = async (req, res) => {
   await triggerWebhook(
     PersonWebhookEvent.PERSON_CHANGED,
     {},
-    { "solaris-entity-id": req.params.id }
+    { "solaris-entity-id": person.id }
   );
   res.status(204).send();
 };
