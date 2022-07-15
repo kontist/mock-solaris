@@ -243,16 +243,25 @@ export const setScreening = async (req, res) => {
     customer_vetting_status,
   } = req.body;
 
+  log.info(`setScreening req:`, req);
+
   const person = (await getAllPersons()).find(
     (item) => item.email === req.params.email
   );
+
+  log.info(
+    `getAllPersons last person: `,
+    (await getAllPersons()).length ? (await getAllPersons()).pop() : null
+  );
+  log.info(`setScreening person:`, person);
 
   person.screening_progress = screening_progress;
   person.risk_classification_status = risk_classification_status;
   person.customer_vetting_status = customer_vetting_status;
 
+  log.info(`setScreening person after updated values:`, person);
   await savePerson(person);
-
+  log.info(`setScreening person after saving object to db:`, person);
   await triggerWebhook(
     PersonWebhookEvent.PERSON_CHANGED,
     {},
