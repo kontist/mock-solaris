@@ -21,7 +21,8 @@ curl TODO
 
 ## Backoffice screenshots
 
-![User setup](https://github.com/kontist/mock-solaris/blob/assets/individual-user.png)
+![mockSolarisPerson](https://user-images.githubusercontent.com/6367201/179481833-0d7087cc-1682-435d-94f5-ed316140eaa2.png)
+
 
 ### Persons and accounts
 
