@@ -236,6 +236,10 @@ export const setIdentification = async (req, res) => {
   res.status(204).send();
 };
 
+/*
+ * Set customer screening values which are set by solarisbank
+ * @see @link {https://docs.solarisbank.com/guides/get-started/digital-banking/onboard-person/#customer-due-diligence-cdd}
+ */
 export const setScreening = async (req, res) => {
   const {
     screening_progress,
