@@ -43,6 +43,7 @@ This mock service currently supports (at different extents)
 - Seizures
 - Direct Debit Returns
 - Webhooks
+- Customer Due Diligence
 - ...
 
 ### TAN
@@ -51,6 +52,14 @@ For device binding, you can use any combination as the 6-digit TAN (it is not ac
 
 For other TAN confirmation (Change Requests, Transfer confirmation, etc.), you can find the 6-digit code on your user's UI:
 ![TAN](https://github.com/kontist/mock-solaris/blob/assets/tan.png)
+
+### Onboarding a person - Customer due diligence (CDD)
+
+A successfully onboarded person must have "green" values for screening values. 
+You can set screenng values from the "Person data" section ([More info](https://docs.solarisbank.com/guides/get-started/digital-banking/onboard-person/#customer-due-diligence-cdd))
+
+<img width="532" alt="Screen Shot 2022-07-18 at 11 38 55 AM" src="https://user-images.githubusercontent.com/6367201/179475427-58af2c02-b229-4cab-96a2-089f45356e60.png">
+
 
 ## Configuration
 
