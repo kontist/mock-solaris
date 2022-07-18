@@ -57,7 +57,7 @@ For other TAN confirmation (Change Requests, Transfer confirmation, etc.), you c
 ### Onboarding a person - Customer due diligence (CDD)
 
 A successfully onboarded person must have "green" values for screening values. 
-You can set screenng values from the "Person data" section ([More info](https://docs.solarisbank.com/guides/get-started/digital-banking/onboard-person/#customer-due-diligence-cdd))
+You can set screening values from the "Person data" section ([More info](https://docs.solarisbank.com/guides/get-started/digital-banking/onboard-person/#customer-due-diligence-cdd))
 
 <img width="532" alt="Screen Shot 2022-07-18 at 11 38 55 AM" src="https://user-images.githubusercontent.com/6367201/179475427-58af2c02-b229-4cab-96a2-089f45356e60.png">
 
