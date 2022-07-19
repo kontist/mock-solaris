@@ -195,7 +195,8 @@ const shouldMarkMobileNumberAsVerified = (identification) =>
   ].includes(identification.status) && identification.method === "idnow";
 
 export const setIdentification = async (req, res) => {
-  const { identification, skipSettingScreeningValues } = req.body;
+  const identification = req.body;
+  const { skipSettingScreeningValues } = req.body;
   const personSolarisId = req.params.id;
   const person = await getPerson(personSolarisId);
   person.identifications[identification.id] = identification;
