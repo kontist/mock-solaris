@@ -562,6 +562,7 @@
       <td>{{ identification.reference }}</td>
       <td>
         <form class="form-inline autosubmitonchange" method="POST" action="/__BACKOFFICE__/setIdentificationState/{{ person.email }}?method={{ identification.method }}">
+          <input type="hidden" name="skipSettingScreeningValues" value="true" />
           <select name="status">
               <option {% if identification.status === "pending" %}selected {% endif %}value="pending">pending</option>
               <option {% if identification.status === "pending_successful" %}selected {% endif %}value="pending_successful">pending_successful</option>

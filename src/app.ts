@@ -529,6 +529,11 @@ app.post(
   safeRequestHandler(backofficeAPI.setIdentification)
 );
 
+app.post(
+  "/__BACKOFFICE__/setScreening/:email",
+  safeRequestHandler(backofficeAPI.setScreening)
+);
+
 app.get(
   "/__BACKOFFICE__/person/:id",
   safeRequestHandler(backofficeAPI.getPersonHandler)

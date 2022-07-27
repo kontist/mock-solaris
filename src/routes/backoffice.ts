@@ -196,12 +196,14 @@ const shouldMarkMobileNumberAsVerified = (identification) =>
 
 export const setIdentification = async (req, res) => {
   const identification = req.body;
+  const { skipSettingScreeningValues } = req.body;
   const personSolarisId = req.params.id;
   const person = await getPerson(personSolarisId);
   person.identifications[identification.id] = identification;
 
   // TODO: assign these values manually from the backend tests and remove this
   if (
+    !(skipSettingScreeningValues === "true") &&
     [
       IdentificationStatus.SUCCESSFUL,
       IdentificationStatus.PENDING_SUCCESSFUL
@@ -235,8 +237,37 @@ export const setIdentification = async (req, res) => {
   res.status(204).send();
 };
 
+/*
+ * Set customer screening values which are set by solarisbank
+ * @see @link {https://docs.solarisbank.com/guides/get-started/digital-banking/onboard-person/#customer-due-diligence-cdd}
+ */
+export const setScreening = async (req, res) => {
+  const {
+    screening_progress,
+    risk_classification_status,
+    customer_vetting_status
+  } = req.body;
+
+  const person = (await getAllPersons()).find(
+    (item) => item.email === req.params.email
+  );
+  log.info(`setScreening person:`, person);
+
+  person.screening_progress = screening_progress;
+  person.risk_classification_status = risk_classification_status;
+  person.customer_vetting_status = customer_vetting_status;
+
+  await savePerson(person);
+  await triggerWebhook(
+    PersonWebhookEvent.PERSON_CHANGED,
+    {},
+    { "solaris-entity-id": person.id }
+  );
+  res.status(204).send();
+};
+
 export const setIdentificationState = async (req, res) => {
-  const { status } = req.body;
+  const { status, skipSettingScreeningValues } = req.body;
 
   log.info("setIdentificationState body", req.body);
   log.info("setIdentificationState params", req.params);
@@ -258,6 +289,7 @@ export const setIdentificationState = async (req, res) => {
 
   // screening will not always be accepted.
   if (
+    !(skipSettingScreeningValues === "true") &&
     [
       IdentificationStatus.SUCCESSFUL,
       IdentificationStatus.PENDING_SUCCESSFUL
