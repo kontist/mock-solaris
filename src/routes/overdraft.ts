@@ -172,8 +172,11 @@ export const createOverdraft = async (req, res) => {
     status: OverdraftApplicationStatus.OVERDRAFT_CREATED,
   });
 
-  await triggerWebhook(AccountWebhookEvent.ACCOUNT_LIMIT_CHANGE, {
-    account_id: accountId,
+  await triggerWebhook({
+    type: AccountWebhookEvent.ACCOUNT_LIMIT_CHANGE,
+    payload: {
+      account_id: accountId,
+    },
   });
 
   res.status(201).send({

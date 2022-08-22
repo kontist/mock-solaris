@@ -190,7 +190,10 @@ export const authorizeTimedOrder = async (req, res) => {
   res.status(HttpStatusCodes.CREATED).send(timedOrder);
 };
 
-export const confirmTimedOrder = async (req: express.Request, res: express.Response) => {
+export const confirmTimedOrder = async (
+  req: express.Request,
+  res: express.Response
+) => {
   const { person_id: personId, id } = req.params;
   const { authorization_token: token } = req.body;
   const person = await getPerson(personId);
@@ -339,5 +342,8 @@ const triggerTimedOrderWebhook = async (person, timedOrder) => {
     processed_at: new Date().toISOString(),
   };
 
-  await triggerWebhook(TransactionWebhookEvent.SEPA_TIMED_ORDER, payload);
+  await triggerWebhook({
+    type: TransactionWebhookEvent.SEPA_TIMED_ORDER,
+    payload,
+  });
 };

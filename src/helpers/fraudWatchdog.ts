@@ -63,11 +63,14 @@ export class FraudWatchdog {
         fraudCase.reservationId,
         person.account.fraudReservations
       );
-      await triggerWebhook(CardWebhookEvent.CARD_FRAUD_CASE_TIMEOUT, {
-        resolution: CaseResolution.TIMEOUT,
-        respond_until: new Date(fraudCase.reservationExpiresAt).toISOString(),
-        whitelisted_until: "null",
-        card_transaction: mapReservationToCardAuthorization(reservation),
+      await triggerWebhook({
+        type: CardWebhookEvent.CARD_FRAUD_CASE_TIMEOUT,
+        payload: {
+          resolution: CaseResolution.TIMEOUT,
+          respond_until: new Date(fraudCase.reservationExpiresAt).toISOString(),
+          whitelisted_until: "null",
+          card_transaction: mapReservationToCardAuthorization(reservation),
+        },
       });
       await this._confirmFraud(fraudCaseId, CardStatus.BLOCKED);
     }
@@ -139,12 +142,13 @@ export class FraudWatchdog {
     person: MockPerson,
     status: CardStatus
   ) {
-    const { card } = person.account.cards.find(
-      (cs) => cs.card.id === cardId
-    );
+    const { card } = person.account.cards.find((cs) => cs.card.id === cardId);
     card.status = status;
     await db.savePerson(person);
-    await triggerWebhook(CardWebhookEvent.CARD_LIFECYCLE_EVENT, card);
+    await triggerWebhook({
+      type: CardWebhookEvent.CARD_LIFECYCLE_EVENT,
+      payload: card,
+    });
   }
 }
 

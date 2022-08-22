@@ -37,12 +37,15 @@ const triggerCardFraudWebhook = async (
   cardAuthorizationDeclined,
   fraudCase
 ) => {
-  await triggerWebhook(CardWebhookEvent.CARD_FRAUD_CASE_PENDING, {
-    id: fraudCase.id,
-    resolution: "PENDING",
-    respond_until: moment(fraudCase.reservationExpiresAt).toISOString(),
-    whitelisted_until: "null",
-    card_transaction: cardAuthorizationDeclined,
+  await triggerWebhook({
+    type: CardWebhookEvent.CARD_FRAUD_CASE_PENDING,
+    payload: {
+      id: fraudCase.id,
+      resolution: "PENDING",
+      respond_until: moment(fraudCase.reservationExpiresAt).toISOString(),
+      whitelisted_until: "null",
+      card_transaction: cardAuthorizationDeclined,
+    },
   });
 };
 
@@ -50,10 +53,13 @@ const triggerCardDeclinedWebhook = async (
   cardAuthorizationDeclined: CardTransaction,
   reason: CardAuthorizationDeclineReason
 ) => {
-  await triggerWebhook(CardWebhookEvent.CARD_AUTHORIZATION_DECLINE, {
-    id: uuid.v4(),
-    reason,
-    card_transaction: cardAuthorizationDeclined,
+  await triggerWebhook({
+    type: CardWebhookEvent.CARD_AUTHORIZATION_DECLINE,
+    payload: {
+      id: uuid.v4(),
+      reason,
+      card_transaction: cardAuthorizationDeclined,
+    },
   });
 };
 
@@ -537,7 +543,10 @@ export const createReservation = async ({
 
   await db.savePerson(person);
 
-  await triggerWebhook(CardWebhookEvent.CARD_AUTHORIZATION, reservation);
+  await triggerWebhook({
+    type: CardWebhookEvent.CARD_AUTHORIZATION,
+    payload: reservation,
+  });
 
   return reservation;
 };
@@ -549,10 +558,10 @@ const resolveReservation = async (reservation) => {
     resolved_at: moment().toDate(),
   };
 
-  await triggerWebhook(
-    CardWebhookEvent.CARD_AUTHORIZATION_RESOLUTION,
-    resolvedReservation
-  );
+  await triggerWebhook({
+    type: CardWebhookEvent.CARD_AUTHORIZATION_RESOLUTION,
+    payload: resolvedReservation,
+  });
 };
 
 const bookReservation = async (person, reservation, increaseAmount) => {
@@ -597,10 +606,10 @@ const expireReservation = async (person, reservation) => {
 
   await db.savePerson(person);
 
-  await triggerWebhook(
-    CardWebhookEvent.CARD_AUTHORIZATION_RESOLUTION,
-    reservation
-  );
+  await triggerWebhook({
+    type: CardWebhookEvent.CARD_AUTHORIZATION_RESOLUTION,
+    payload: reservation,
+  });
 };
 
 export const updateReservation = async ({

@@ -2,6 +2,7 @@ import uuid from "node-uuid";
 import fetch from "node-fetch";
 
 import * as log from "../logger";
+import { WebhookType } from "../helpers/types";
 import { getWebhookByType } from "../db";
 import { generateSolarisWebhookSignature } from "./solarisWebhookSignature";
 import {
@@ -60,7 +61,17 @@ const WEBHOOK_SECRETS = {
     process.env.SOLARIS_ACCOUNT_LIMIT_CHANGE_WEBHOOK_SECRET,
 };
 
-export const triggerWebhook = async (type, payload, extraHeaders = {}) => {
+export const triggerWebhook = async ({
+  type,
+  payload,
+  extraHeaders = {},
+  origin,
+}: {
+  type: WebhookType;
+  payload: Record<string, unknown>;
+  extraHeaders?: Record<string, unknown>;
+  origin?: string;
+}) => {
   const webhook = await getWebhookByType(type);
 
   if (!webhook) {
@@ -93,7 +104,11 @@ export const triggerWebhook = async (type, payload, extraHeaders = {}) => {
     };
   }
 
-  await fetch(webhook.url, {
+  const webhookUrl = origin
+    ? `${origin}/${webhook.url.split("/").splice(3).join("/")}`
+    : webhook.url;
+
+  await fetch(webhookUrl, {
     method: "POST",
     body: JSON.stringify(body),
     headers,

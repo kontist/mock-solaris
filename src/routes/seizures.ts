@@ -145,12 +145,18 @@ export const fulfillSeizureRequestHandler = async (req, res) => {
 
 const triggerPersonSeizureCreatedWebhook = async (personId, seizure) => {
   const payload = getSeizureWebhookPayload(personId, seizure);
-  await triggerWebhook(PersonWebhookEvent.PERSON_SEIZURE_CREATED, payload);
+  await triggerWebhook({
+    type: PersonWebhookEvent.PERSON_SEIZURE_CREATED,
+    payload,
+  });
 };
 
 const triggerPersonSeizureDeletedWebhook = async (personId, seizure) => {
   const payload = getSeizureWebhookPayload(personId, seizure);
-  await triggerWebhook(PersonWebhookEvent.PERSON_SEIZURE_DELETED, payload);
+  await triggerWebhook({
+    type: PersonWebhookEvent.PERSON_SEIZURE_DELETED,
+    payload,
+  });
 };
 
 const getSeizureWebhookPayload = (personId, seizure) => ({

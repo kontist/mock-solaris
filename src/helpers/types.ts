@@ -238,6 +238,13 @@ export enum OverdraftApplicationWebhookEvent {
   "OVERDRAFT_APPLICATION" = "OVERDRAFT_APPLICATION", // The status is changed.
 }
 
+export type WebhookType =
+  | OverdraftApplicationWebhookEvent
+  | CardWebhookEvent
+  | TransactionWebhookEvent
+  | PersonWebhookEvent
+  | AccountWebhookEvent;
+
 export enum CardAuthorizationDeclineReason {
   "AUTHENTICATION_REQUIRED" = "AUTHENTICATION_REQUIRED", // 	Failed online authentication. Please try again.
   "CARD_BLOCKED" = "CARD_BLOCKED", // 	Something went wrong. Contact us for further details.

@@ -439,10 +439,10 @@ const triggerSepaScheduledTransactionWebhook = async ({
     transaction_id: booking ? booking.transaction_id : null,
   };
 
-  await triggerWebhook(
-    TransactionWebhookEvent.SEPA_SCHEDULED_TRANSACTION,
-    payload
-  );
+  await triggerWebhook({
+    type: TransactionWebhookEvent.SEPA_SCHEDULED_TRANSACTION,
+    payload,
+  });
 };
 
 const getPersonWithStandingOrder = async (personId, standingOrderId) => {

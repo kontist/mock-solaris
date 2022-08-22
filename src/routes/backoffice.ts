@@ -13,11 +13,11 @@ import {
   deleteMobileNumber,
   saveSepaDirectDebitReturn,
   getDevicesByPersonId,
-  saveTaxIdentifications
+  saveTaxIdentifications,
 } from "../db";
 import {
   createSepaDirectDebitReturn,
-  triggerSepaDirectDebitReturnWebhook
+  triggerSepaDirectDebitReturnWebhook,
 } from "../helpers/sepaDirectDebitReturn";
 import { shouldReturnJSON } from "../helpers";
 import { triggerWebhook } from "../helpers/webhooks";
@@ -37,15 +37,15 @@ import {
   IdentificationStatus,
   ScreeningProgress,
   RiskClarificationStatus,
-  CustomerVettingStatus
+  CustomerVettingStatus,
 } from "../helpers/types";
 import {
   changeOverdraftApplicationStatus,
-  issueInterestAccruedBooking
+  issueInterestAccruedBooking,
 } from "../helpers/overdraft";
 
 const triggerIdentificationWebhook = (payload) =>
-  triggerWebhook(PersonWebhookEvent.IDENTIFICATION, payload);
+  triggerWebhook({ type: PersonWebhookEvent.IDENTIFICATION, payload });
 
 const triggerAccountBlockWebhook = async (person) => {
   const { iban, id: accountId, locking_status: lockingStatus } = person.account;
@@ -56,15 +56,15 @@ const triggerAccountBlockWebhook = async (person) => {
     business_id: null,
     locking_status: lockingStatus,
     updated_at: new Date().toISOString(),
-    iban
+    iban,
   };
 
-  await triggerWebhook(AccountWebhookEvent.ACCOUNT_BLOCK, payload);
+  await triggerWebhook({ type: AccountWebhookEvent.ACCOUNT_BLOCK, payload });
 };
 
 export const triggerBookingsWebhook = async (solarisAccountId) => {
   const payload = { account_id: solarisAccountId };
-  await triggerWebhook(TransactionWebhookEvent.BOOKING, payload);
+  await triggerWebhook({ type: TransactionWebhookEvent.BOOKING, payload });
 };
 
 /**
@@ -126,7 +126,7 @@ export const getPersonHandler = async (req, res) => {
   if (!person) {
     return res.status(HttpStatusCodes.NOT_FOUND).send({
       message: "Couldn't find person",
-      details: req.params
+      details: req.params,
     });
   }
 
@@ -143,7 +143,7 @@ export const getPersonHandler = async (req, res) => {
       taxIdentifications,
       devices,
       identifications: person.identifications,
-      SEIZURE_STATUSES
+      SEIZURE_STATUSES,
     });
   }
 };
@@ -179,11 +179,11 @@ export const updatePersonHandler = async (req, res) => {
 
   await savePerson(person);
 
-  await triggerWebhook(
-    PersonWebhookEvent.PERSON_CHANGED,
-    {},
-    { "solaris-entity-id": req.params.id }
-  );
+  await triggerWebhook({
+    type: PersonWebhookEvent.PERSON_CHANGED,
+    payload: {},
+    extraHeaders: { "solaris-entity-id": req.params.id },
+  });
 
   res.redirect(`/__BACKOFFICE__/person/${person.id}`);
 };
@@ -191,7 +191,7 @@ export const updatePersonHandler = async (req, res) => {
 const shouldMarkMobileNumberAsVerified = (identification) =>
   [
     IdentificationStatus.PENDING_SUCCESSFUL,
-    IdentificationStatus.SUCCESSFUL
+    IdentificationStatus.SUCCESSFUL,
   ].includes(identification.status) && identification.method === "idnow";
 
 export const setIdentification = async (req, res) => {
@@ -206,7 +206,7 @@ export const setIdentification = async (req, res) => {
     !(skipSettingScreeningValues === "true") &&
     [
       IdentificationStatus.SUCCESSFUL,
-      IdentificationStatus.PENDING_SUCCESSFUL
+      IdentificationStatus.PENDING_SUCCESSFUL,
     ].includes(identification.status)
   ) {
     person.screening_progress = ScreeningProgress.SCREENED_ACCEPTED;
@@ -231,7 +231,7 @@ export const setIdentification = async (req, res) => {
     completed_at: identification.completed_at,
     reference: identification.reference,
     status: identification.status,
-    method: "idnow"
+    method: "idnow",
   });
 
   res.status(204).send();
@@ -245,7 +245,7 @@ export const setScreening = async (req, res) => {
   const {
     screening_progress,
     risk_classification_status,
-    customer_vetting_status
+    customer_vetting_status,
   } = req.body;
 
   const person = (await getAllPersons()).find(
@@ -258,11 +258,11 @@ export const setScreening = async (req, res) => {
   person.customer_vetting_status = customer_vetting_status;
 
   await savePerson(person);
-  await triggerWebhook(
-    PersonWebhookEvent.PERSON_CHANGED,
-    {},
-    { "solaris-entity-id": person.id }
-  );
+  await triggerWebhook({
+    type: PersonWebhookEvent.PERSON_CHANGED,
+    payload: {},
+    extraHeaders: { "solaris-entity-id": person.id },
+  });
   res.status(204).send();
 };
 
@@ -292,7 +292,7 @@ export const setIdentificationState = async (req, res) => {
     !(skipSettingScreeningValues === "true") &&
     [
       IdentificationStatus.SUCCESSFUL,
-      IdentificationStatus.PENDING_SUCCESSFUL
+      IdentificationStatus.PENDING_SUCCESSFUL,
     ].includes(identification.status)
   ) {
     // TODO: assign these values manually from the backend tests and remove this
@@ -318,7 +318,7 @@ export const setIdentificationState = async (req, res) => {
     completed_at: identification.completed_at,
     reference: identification.reference,
     method,
-    status
+    status,
   });
 
   res.redirect(`/__BACKOFFICE__/person/${person.id}#identifications`);
@@ -345,8 +345,8 @@ const generateBookingFromStandingOrder = (standingOrder) => {
     booking_date: moment().format("YYYY-MM-DD"),
     booking_type: BookingType.SEPA_CREDIT_TRANSFER,
     amount: {
-      value: -Math.abs(standingOrder.amount.value)
-    }
+      value: -Math.abs(standingOrder.amount.value),
+    },
   };
 };
 
@@ -392,7 +392,7 @@ export const processQueuedBooking = async (
 
   const isDirectDebit = [
     BookingType.DIRECT_DEBIT,
-    BookingType.SEPA_DIRECT_DEBIT
+    BookingType.SEPA_DIRECT_DEBIT,
   ].includes(booking.booking_type);
 
   const wouldOverdraw =
@@ -418,8 +418,8 @@ export const processQueuedBooking = async (
         amount: {
           value: booking.amount.value,
           unit: "cents",
-          currency: "EUR"
-        }
+          currency: "EUR",
+        },
       };
     }
 
@@ -468,7 +468,7 @@ export const generateBookingForPerson = (bookingData) => {
     transactionId,
     bookingDate,
     valutaDate,
-    status
+    status,
   } = bookingData;
 
   const recipientName = `${person.salutation} ${person.first_name} ${person.last_name}`;
@@ -498,7 +498,7 @@ export const generateBookingForPerson = (bookingData) => {
     booking_type: bookingType,
     transaction_id: transactionId || uuid.v4(),
     return_transaction_id: null,
-    status
+    status,
   };
 };
 
@@ -522,7 +522,7 @@ export const queueBookingRequestHandler = async (req, res) => {
     transactionId,
     bookingDate,
     valutaDate,
-    status
+    status,
   } = req.body;
 
   senderName = senderName || "mocksolaris";
@@ -542,7 +542,7 @@ export const queueBookingRequestHandler = async (req, res) => {
     transactionId,
     bookingDate,
     valutaDate,
-    status
+    status,
   });
 
   person.queuedBookings.push(queuedBooking);
@@ -597,10 +597,10 @@ export const createDirectDebitReturn = async (personId, id) => {
     amount: {
       value: -directDebit.amount.value,
       unit: "cents",
-      currency: "EUR"
+      currency: "EUR",
     },
     booking_date: today,
-    valuta_date: today
+    valuta_date: today,
   };
 
   person.transactions.push(directDebitReturn);
@@ -624,7 +624,7 @@ export const updateAccountLockingStatus = async (personId, lockingStatus) => {
 
   person.account = {
     ...person.account,
-    locking_status: lockingStatus
+    locking_status: lockingStatus,
   };
 
   await savePerson(person);
@@ -644,7 +644,7 @@ const changeCardStatusAllowed = async (personId, cardId, newCardStatus) => {
   const cardData = person.account.cards.find(({ card }) => card.id === cardId);
 
   const {
-    card: { status: currentCardStatus, type }
+    card: { status: currentCardStatus, type },
   } = cardData;
 
   if (
@@ -668,7 +668,7 @@ const changeCardStatusAllowed = async (personId, cardId, newCardStatus) => {
       CardStatus.INACTIVE,
       CardStatus.PROCESSING,
       CardStatus.CLOSED,
-      CardStatus.CLOSED_BY_SOLARIS
+      CardStatus.CLOSED_BY_SOLARIS,
     ].includes(cardData.card.status)
   ) {
     throw new Error(
@@ -695,7 +695,7 @@ export const createReservationHandler = async (req, res) => {
     type,
     recipient,
     declineReason,
-    posEntryMode
+    posEntryMode,
   } = req.body;
 
   if (!personId) {
@@ -714,7 +714,7 @@ export const createReservationHandler = async (req, res) => {
     type,
     recipient,
     declineReason,
-    posEntryMode
+    posEntryMode,
   };
 
   const reservation = await (type === TransactionType.CREDIT_PRESENTMENT
@@ -744,7 +744,7 @@ export const updateReservationHandler = async (req, res) => {
     personId,
     reservationId,
     action,
-    increaseAmount
+    increaseAmount,
   });
 
   res.redirect("back");

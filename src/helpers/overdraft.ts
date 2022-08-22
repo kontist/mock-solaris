@@ -80,10 +80,10 @@ export const changeOverdraftApplicationStatus = async ({
   }
 
   await savePerson(person);
-  await triggerWebhook(
-    OverdraftApplicationWebhookEvent.OVERDRAFT_APPLICATION,
-    overdraftApplication
-  );
+  await triggerWebhook({
+    type: OverdraftApplicationWebhookEvent.OVERDRAFT_APPLICATION,
+    payload: overdraftApplication,
+  });
 
   return overdraftApplication;
 };

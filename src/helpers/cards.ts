@@ -322,7 +322,10 @@ export const changeCardStatus = async (
   cardData.card.status = newCardStatus;
 
   await db.savePerson(person);
-  await triggerWebhook(CardWebhookEvent.CARD_LIFECYCLE_EVENT, cardData.card);
+  await triggerWebhook({
+    type: CardWebhookEvent.CARD_LIFECYCLE_EVENT,
+    payload: cardData.card,
+  });
 
   return cardData.card;
 };
@@ -443,7 +446,10 @@ const triggerProvisioningTokenCreation = async (
   ];
 
   for (const payload of webhookCalls) {
-    await triggerWebhook(CardWebhookEvent.CARD_TOKEN_LIFECYCLE, payload);
+    await triggerWebhook({
+      type: CardWebhookEvent.CARD_TOKEN_LIFECYCLE,
+      payload,
+    });
   }
 
   // Extract unnecessary data to save the token's relevant information from last payload.
@@ -485,7 +491,10 @@ const triggerProvisioningTokenUpdate = async (
     event_type: ProvisioningTokenEventType.TOKEN_STATUS_UPDATED,
     wallet_type: "GOOGLE",
   };
-  await triggerWebhook(CardWebhookEvent.CARD_TOKEN_LIFECYCLE, payload);
+  await triggerWebhook({
+    type: CardWebhookEvent.CARD_TOKEN_LIFECYCLE,
+    payload,
+  });
 
   return newProvisioningToken;
 };
@@ -522,10 +531,10 @@ export const activateCard = async (
   cardForActivation.status = CardStatus.ACTIVE;
   person.account.cards[cardIndex].card = cardForActivation;
   await db.savePerson(person);
-  await triggerWebhook(
-    CardWebhookEvent.CARD_LIFECYCLE_EVENT,
-    cardForActivation
-  );
+  await triggerWebhook({
+    type: CardWebhookEvent.CARD_LIFECYCLE_EVENT,
+    payload: cardForActivation,
+  });
   return cardForActivation;
 };
 

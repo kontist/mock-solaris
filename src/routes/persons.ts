@@ -200,11 +200,11 @@ export const updatePerson = async (req, res) => {
   _.merge(person, data);
   await savePerson(person);
 
-  await triggerWebhook(
-    PersonWebhookEvent.PERSON_CHANGED,
-    {},
-    { "solaris-entity-id": personId }
-  );
+  await triggerWebhook({
+    type: PersonWebhookEvent.PERSON_CHANGED,
+    payload: {},
+    extraHeaders: { "solaris-entity-id": personId },
+  });
 
   return res.status(200).send(person);
 };

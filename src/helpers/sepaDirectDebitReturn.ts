@@ -22,7 +22,7 @@ export const createSepaDirectDebitReturn = (person, directDebitReturn) => {
 };
 
 export const triggerSepaDirectDebitReturnWebhook = (sepaDirectDebitReturn) =>
-  triggerWebhook(
-    TransactionWebhookEvent.SEPA_DIRECT_DEBIT_RETURN,
-    sepaDirectDebitReturn
-  );
+  triggerWebhook({
+    type: TransactionWebhookEvent.SEPA_DIRECT_DEBIT_RETURN,
+    payload: sepaDirectDebitReturn,
+  });
