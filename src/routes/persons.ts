@@ -21,6 +21,7 @@ export const createPerson = (req, res) => {
     statements: [],
     queuedBookings: [],
     createdAt: new Date().toISOString(),
+    origin: req.headers["origin"],
   };
 
   return savePerson(person).then(() => {
