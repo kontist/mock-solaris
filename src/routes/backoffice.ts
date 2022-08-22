@@ -38,6 +38,7 @@ import {
   ScreeningProgress,
   RiskClarificationStatus,
   CustomerVettingStatus,
+  MockPerson,
 } from "../helpers/types";
 import {
   changeOverdraftApplicationStatus,
@@ -47,7 +48,7 @@ import {
 const triggerIdentificationWebhook = (payload) =>
   triggerWebhook({ type: PersonWebhookEvent.IDENTIFICATION, payload });
 
-const triggerAccountBlockWebhook = async (person) => {
+const triggerAccountBlockWebhook = async (person: MockPerson) => {
   const { iban, id: accountId, locking_status: lockingStatus } = person.account;
 
   const payload = {
@@ -59,7 +60,11 @@ const triggerAccountBlockWebhook = async (person) => {
     iban,
   };
 
-  await triggerWebhook({ type: AccountWebhookEvent.ACCOUNT_BLOCK, payload });
+  await triggerWebhook({
+    type: AccountWebhookEvent.ACCOUNT_BLOCK,
+    payload,
+    origin: person.origin,
+  });
 };
 
 export const triggerBookingsWebhook = async (solarisAccountId) => {
@@ -183,6 +188,7 @@ export const updatePersonHandler = async (req, res) => {
     type: PersonWebhookEvent.PERSON_CHANGED,
     payload: {},
     extraHeaders: { "solaris-entity-id": req.params.id },
+    origin: person.origin,
   });
 
   res.redirect(`/__BACKOFFICE__/person/${person.id}`);
@@ -262,6 +268,7 @@ export const setScreening = async (req, res) => {
     type: PersonWebhookEvent.PERSON_CHANGED,
     payload: {},
     extraHeaders: { "solaris-entity-id": person.id },
+    origin: person.origin,
   });
   res.status(204).send();
 };

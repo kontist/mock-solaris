@@ -295,12 +295,12 @@ export const changeCardStatus = async (
   cardId: string,
   newCardStatus: CardStatus
 ): Promise<Card> => {
-  let person;
+  let person: MockPerson;
 
   if (personId) {
     person = await db.getPerson(personId);
   } else if (accountId) {
-    person = db.findPersonByAccountId(accountId);
+    person = await db.findPersonByAccountId(accountId);
   } else {
     throw new Error("You have to provide personId or accountId");
   }
@@ -325,6 +325,7 @@ export const changeCardStatus = async (
   await triggerWebhook({
     type: CardWebhookEvent.CARD_LIFECYCLE_EVENT,
     payload: cardData.card,
+    origin: person.origin,
   });
 
   return cardData.card;
@@ -534,6 +535,7 @@ export const activateCard = async (
   await triggerWebhook({
     type: CardWebhookEvent.CARD_LIFECYCLE_EVENT,
     payload: cardForActivation,
+    origin: person.origin,
   });
   return cardForActivation;
 };

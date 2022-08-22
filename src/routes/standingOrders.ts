@@ -8,7 +8,11 @@ import { getPerson, savePerson } from "../db";
 import { triggerWebhook } from "../helpers/webhooks";
 import * as log from "../logger";
 import { processQueuedBooking } from "./backoffice";
-import { TransactionWebhookEvent } from "../helpers/types";
+import {
+  MockPerson,
+  StandingOrder,
+  TransactionWebhookEvent,
+} from "../helpers/types";
 
 const STANDING_ORDER_PAYMENT_FREQUENCY = {
   MONTHLY: "MONTHLY",
@@ -442,10 +446,17 @@ const triggerSepaScheduledTransactionWebhook = async ({
   await triggerWebhook({
     type: TransactionWebhookEvent.SEPA_SCHEDULED_TRANSACTION,
     payload,
+    origin: person.origin,
   });
 };
 
-const getPersonWithStandingOrder = async (personId, standingOrderId) => {
+const getPersonWithStandingOrder = async (
+  personId,
+  standingOrderId
+): Promise<{
+  person: MockPerson;
+  standingOrder: StandingOrder;
+}> => {
   const person = await getPerson(personId);
 
   const standingOrder = person.standingOrders.find(

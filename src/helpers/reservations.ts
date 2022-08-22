@@ -546,6 +546,7 @@ export const createReservation = async ({
   await triggerWebhook({
     type: CardWebhookEvent.CARD_AUTHORIZATION,
     payload: reservation,
+    origin: person.origin,
   });
 
   return reservation;
@@ -597,7 +598,7 @@ const bookReservation = async (person, reservation, increaseAmount) => {
   await triggerBookingsWebhook(person.account.id);
 };
 
-const expireReservation = async (person, reservation) => {
+const expireReservation = async (person: MockPerson, reservation) => {
   person.account.reservations = person.account.reservations.filter(
     (item) => item.id !== reservation.id
   );
@@ -609,6 +610,7 @@ const expireReservation = async (person, reservation) => {
   await triggerWebhook({
     type: CardWebhookEvent.CARD_AUTHORIZATION_RESOLUTION,
     payload: reservation,
+    origin: person.origin,
   });
 };
 

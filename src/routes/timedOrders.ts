@@ -6,7 +6,11 @@ import * as express from "express";
 import { getPerson, savePerson } from "../db";
 import { triggerBookingsWebhook } from "./backoffice";
 import { triggerWebhook } from "../helpers/webhooks";
-import { BookingType, TransactionWebhookEvent } from "../helpers/types";
+import {
+  BookingType,
+  MockPerson,
+  TransactionWebhookEvent,
+} from "../helpers/types";
 
 const SOLARIS_TIMED_ORDER_STATUSES = {
   CREATED: "CREATED",
@@ -327,7 +331,7 @@ export const generateTimedOrder = (data) => {
   return template;
 };
 
-const triggerTimedOrderWebhook = async (person, timedOrder) => {
+const triggerTimedOrderWebhook = async (person: MockPerson, timedOrder) => {
   const {
     id,
     status,
@@ -345,5 +349,6 @@ const triggerTimedOrderWebhook = async (person, timedOrder) => {
   await triggerWebhook({
     type: TransactionWebhookEvent.SEPA_TIMED_ORDER,
     payload,
+    origin: person.origin,
   });
 };

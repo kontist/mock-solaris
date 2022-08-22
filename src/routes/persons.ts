@@ -6,7 +6,7 @@ import { getPerson, getAllPersons, savePerson } from "../db";
 
 import { createChangeRequest } from "./changeRequest";
 import { triggerWebhook } from "../helpers/webhooks";
-import { PersonWebhookEvent } from "../helpers/types";
+import { MockPerson, PersonWebhookEvent } from "../helpers/types";
 
 export const createPerson = (req, res) => {
   const personId =
@@ -172,7 +172,7 @@ export const updatePerson = async (req, res) => {
     body,
   } = req;
   const data = _.pick(body, fields);
-  const person = await getPerson(personId);
+  const person = (await getPerson(personId)) as MockPerson;
 
   const fieldsBanned = [];
   Object.keys(data).forEach((key) => {
@@ -205,6 +205,7 @@ export const updatePerson = async (req, res) => {
     type: PersonWebhookEvent.PERSON_CHANGED,
     payload: {},
     extraHeaders: { "solaris-entity-id": personId },
+    origin: person.origin,
   });
 
   return res.status(200).send(person);

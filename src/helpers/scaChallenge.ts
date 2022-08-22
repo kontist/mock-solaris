@@ -46,6 +46,7 @@ export const proceedWithSCAChallenge = async (
         changeRequestData.authenticateChangeRequestId,
       decline_change_request_id: changeRequestData.declineChangeRequestId,
     },
+    origin: person.origin,
   });
 };
 
@@ -59,6 +60,7 @@ export const confirmCardTransaction = async (person: MockPerson) => {
   return triggerWebhook({
     type: CardWebhookEvent.CARD_AUTHORIZATION,
     payload: reservation,
+    origin: person.origin,
   });
 };
 

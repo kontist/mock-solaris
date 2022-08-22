@@ -105,7 +105,8 @@ export type AccountSnapshot = {
   account_id: string;
 };
 
-export type MockAccount = Account & {
+export type MockAccount = {
+  id: string;
   cards: { card: Card; cardDetails: CardDetails }[];
   reservations: Reservation[];
   fraudReservations: Reservation[];
@@ -114,6 +115,10 @@ export type MockAccount = Account & {
   overdraftApplications?: OverdraftApplication[];
   overdraft?: Overdraft;
   overdraftInterest?: number;
+  balance: Amount;
+  account_limit?: Amount;
+  locking_status: string;
+  iban: string;
 };
 
 export type MockChangeRequest = {
@@ -125,7 +130,18 @@ export type MockChangeRequest = {
   authenticateChangeRequestId?: string;
   method?: string;
   createdAt: string;
+  delta?: Record<string, unknown>;
 };
+
+export interface StandingOrder {
+  id: string;
+  amount: Amount;
+  reference: string;
+  next_occurrence?: string;
+  status: string;
+  last_execution_date?: string;
+  reoccurrence?: string;
+}
 
 export type MockPerson = {
   id: string;
@@ -133,6 +149,8 @@ export type MockPerson = {
   account?: MockAccount;
   transactions: Booking[];
   changeRequest?: MockChangeRequest;
+  origin?: string;
+  queuedBookings?: Record<string, unknown>[];
 };
 
 export type FraudCase = {
