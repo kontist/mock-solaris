@@ -1,7 +1,7 @@
 import uuid from "node-uuid";
 
 import { triggerWebhook } from "../helpers/webhooks";
-import { TransactionWebhookEvent } from "../helpers/types";
+import { MockPerson, TransactionWebhookEvent } from "../helpers/types";
 
 export const createSepaDirectDebitReturn = (person, directDebitReturn) => {
   return {
@@ -21,8 +21,12 @@ export const createSepaDirectDebitReturn = (person, directDebitReturn) => {
   };
 };
 
-export const triggerSepaDirectDebitReturnWebhook = (sepaDirectDebitReturn) =>
+export const triggerSepaDirectDebitReturnWebhook = (
+  sepaDirectDebitReturn,
+  person: MockPerson
+) =>
   triggerWebhook({
     type: TransactionWebhookEvent.SEPA_DIRECT_DEBIT_RETURN,
     payload: sepaDirectDebitReturn,
+    origin: person.origin,
   });

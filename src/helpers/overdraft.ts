@@ -120,5 +120,5 @@ export const issueInterestAccruedBooking = async ({
   const skipInterest = true;
 
   await savePerson(person, skipInterest);
-  await triggerBookingsWebhook(person.account.id);
+  await triggerBookingsWebhook(person);
 };

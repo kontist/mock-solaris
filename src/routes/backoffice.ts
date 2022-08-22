@@ -67,9 +67,13 @@ const triggerAccountBlockWebhook = async (person: MockPerson) => {
   });
 };
 
-export const triggerBookingsWebhook = async (solarisAccountId) => {
-  const payload = { account_id: solarisAccountId };
-  await triggerWebhook({ type: TransactionWebhookEvent.BOOKING, payload });
+export const triggerBookingsWebhook = async (person: MockPerson) => {
+  const payload = { account_id: person.account.id };
+  await triggerWebhook({
+    type: TransactionWebhookEvent.BOOKING,
+    payload,
+    origin: person.origin,
+  });
 };
 
 /**
@@ -454,10 +458,10 @@ export const processQueuedBooking = async (
   }
 
   await savePerson(person);
-  await triggerBookingsWebhook(person.account.id);
+  await triggerBookingsWebhook(person);
 
   if (sepaDirectDebitReturn) {
-    await triggerSepaDirectDebitReturnWebhook(sepaDirectDebitReturn);
+    await triggerSepaDirectDebitReturnWebhook(sepaDirectDebitReturn, person);
   }
 
   return booking;
@@ -619,7 +623,7 @@ export const createDirectDebitReturn = async (personId, id) => {
     directDebitReturn
   );
   await saveSepaDirectDebitReturn(sepaDirectDebitReturn);
-  await triggerSepaDirectDebitReturnWebhook(sepaDirectDebitReturn);
+  await triggerSepaDirectDebitReturnWebhook(sepaDirectDebitReturn, person);
 };
 
 export const updateAccountLockingStatus = async (personId, lockingStatus) => {

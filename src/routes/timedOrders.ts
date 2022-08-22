@@ -90,7 +90,7 @@ const processTimedOrder = async (person, timedOrder) => {
 
   await triggerTimedOrderWebhook(person, timedOrder);
   if (timedOrder.status === SOLARIS_TIMED_ORDER_STATUSES.EXECUTED) {
-    await triggerBookingsWebhook(person.account.id);
+    await triggerBookingsWebhook(person);
   }
 
   return updatedPerson;

@@ -352,7 +352,7 @@ export const upsertProvisioningToken = async (
     throw new Error("You have to provide cardId");
   }
 
-  const person = await db.getPerson(personId);
+  const person = (await db.getPerson(personId)) as MockPerson;
   const cardData = person.account.cards.find(({ card }) => card.id === cardId);
   if (!cardData) {
     throw new Error("Card not found");
@@ -360,10 +360,11 @@ export const upsertProvisioningToken = async (
 
   const { provisioningToken } = cardData;
   const newProvisioningToken = status
-    ? await triggerProvisioningTokenUpdate(provisioningToken, status)
+    ? await triggerProvisioningTokenUpdate(provisioningToken, status, person)
     : await triggerProvisioningTokenCreation(
         provisioningToken,
-        cardData.card.id
+        cardData.card.id,
+        person
       );
 
   cardData.provisioningToken = newProvisioningToken;
@@ -381,7 +382,8 @@ export const upsertProvisioningToken = async (
  */
 const triggerProvisioningTokenCreation = async (
   provisioningToken: ProvisioningTokenStatusChangePayload,
-  cardId: string
+  cardId: string,
+  person: MockPerson
 ): Promise<ProvisioningTokenStatusChangePayload> => {
   let walletId;
   let webhookCalls = [];
@@ -450,6 +452,7 @@ const triggerProvisioningTokenCreation = async (
     await triggerWebhook({
       type: CardWebhookEvent.CARD_TOKEN_LIFECYCLE,
       payload,
+      origin: person.origin,
     });
   }
 
@@ -473,7 +476,8 @@ const triggerProvisioningTokenCreation = async (
  */
 const triggerProvisioningTokenUpdate = async (
   provisioningToken: ProvisioningTokenStatusChangePayload,
-  tokenStatus: ProvisioningTokenStatus
+  tokenStatus: ProvisioningTokenStatus,
+  person: MockPerson
 ): Promise<ProvisioningTokenStatusChangePayload> => {
   if (!provisioningToken) {
     throw new Error("No Provisioning Token found for the provided card");
@@ -495,6 +499,7 @@ const triggerProvisioningTokenUpdate = async (
   await triggerWebhook({
     type: CardWebhookEvent.CARD_TOKEN_LIFECYCLE,
     payload,
+    origin: person.origin,
   });
 
   return newProvisioningToken;

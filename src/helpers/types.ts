@@ -107,7 +107,11 @@ export type AccountSnapshot = {
 
 export type MockAccount = {
   id: string;
-  cards: { card: Card; cardDetails: CardDetails }[];
+  cards: {
+    card: Card;
+    cardDetails: CardDetails;
+    provisioningToken?: ProvisioningTokenStatusChangePayload;
+  }[];
   reservations: Reservation[];
   fraudReservations: Reservation[];
   pendingReservation: Reservation;
@@ -119,6 +123,7 @@ export type MockAccount = {
   account_limit?: Amount;
   locking_status: string;
   iban: string;
+  available_balance?: Amount;
 };
 
 export type MockChangeRequest = {
@@ -151,6 +156,7 @@ export type MockPerson = {
   changeRequest?: MockChangeRequest;
   origin?: string;
   queuedBookings?: Record<string, unknown>[];
+  seizure?: Record<string, unknown>;
 };
 
 export type FraudCase = {
