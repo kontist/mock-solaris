@@ -39,16 +39,19 @@
           <div class="row">
             <div class="form-group col-md-6">
               <label for="first_name">First name</label>
-              <input type="text" class="form-control" name="first_name" id="first_name" placeholder="First name" value={{ person.first_name }}>
+              <input type="text" class="form-control" name="first_name" id="first_name" placeholder="First name"
+                value="{{ person.first_name }}">
             </div>
             <div class="form-group col-md-6">
               <label for="last_name">Last name</label>
-              <input type="text" class="form-control" name="last_name" id="last_name" placeholder="Last name" value={{ person.last_name }}>
+              <input type="text" class="form-control" name="last_name" id="last_name" placeholder="Last name"
+                value="{{ person.last_name }}">
             </div>
           </div>
           <div class="form-group">
             <label for="mobile_number">Mobile number</label>
-            <input type="text" class="form-control" name="mobile_number" id="mobile_number" placeholder="Phone number" value={{ mobileNumber.number }}>
+            <input type="text" class="form-control" name="mobile_number" id="mobile_number" placeholder="Phone number"
+              value="{{ mobileNumber.number }}">
           </div>
           {% if person.changeRequest && person.changeRequest.method != 'card_transaction:confirm' %}
           <div class="form-group">
@@ -59,25 +62,29 @@
           <div class="row">
             <div class="form-group col-md-6">
               <label for="line_1">Address line_1</label>
-              <input type="text" class="form-control" name="line_1" id="line_1" placeholder="Address line_1" value={{ person.address.line_1 }}>
+              <input type="text" class="form-control" name="line_1" id="line_1" placeholder="Address line_1"
+                value="{{ person.address.line_1 }}">
             </div>
             <div class="form-group col-md-6">
               <label for="line_2">Address line_2</label>
-              <input type="text" class="form-control" name="line_2" id="line_2" placeholder="Address line_2" value={{ person.address.line_2 }}>
+              <input type="text" class="form-control" name="line_2" id="line_2" placeholder="Address line_2"
+                value="{{ person.address.line_2 }}">
             </div>
           </div>
           <div class="row">
             <div class="form-group col-md-4">
               <label for="city">City</label>
-              <input type="text" class="form-control" name="city" id="city" placeholder="City" value={{ person.address.city }}>
+              <input type="text" class="form-control" name="city" id="city" placeholder="City" value="{{ person.address.city }}">
             </div>
             <div class="form-group col-md-4">
               <label for="postal_code">Postal code</label>
-              <input type="text" class="form-control" name="postal_code" id="postal_code" placeholder="Postal code" value={{ person.address.postal_code }}>
+              <input type="text" class="form-control" name="postal_code" id="postal_code" placeholder="Postal code"
+                value="{{ person.address.postal_code }}">
             </div>
             <div class="form-group col-md-4">
               <label for="country">Country</label>
-              <input type="text" class="form-control" name="country" id="country" placeholder="Country" value={{ person.address.country }}>
+              <input type="text" class="form-control" name="country" id="country" placeholder="Country"
+                value="{{ person.address.country }}">
             </div>
           </div>
           <div class="form-group">
@@ -90,15 +97,18 @@
           </div>
           <div class="form-group">
             <label for="terms_conditions_signed_at">Terms and conditions signed at</label>
-            <input type="text" class="form-control" name="terms_conditions_signed_at" id="terms_conditions_signed_at" disabled="disabled" value={{ person.terms_conditions_signed_at }}>
+            <input type="text" class="form-control" name="terms_conditions_signed_at" id="terms_conditions_signed_at"
+              disabled="disabled" value="{{ person.terms_conditions_signed_at }}">
           </div>
           <div class="form-group">
             <label for="own_economic_interest_signed_at">Own economic interest signed at</label>
-            <input type="text" class="form-control" name="own_economic_interest_signed_at" id="own_economic_interest_signed_at" disabled="disabled" value={{ person.own_economic_interest_signed_at }}>
+            <input type="text" class="form-control" name="own_economic_interest_signed_at" id="own_economic_interest_signed_at"
+              disabled="disabled" value="{{ person.own_economic_interest_signed_at }}">
           </div>
           <div class="form-group">
             <label for="fatca_crs_confirmed_at">FATCA and CRS confirmed at</label>
-            <input type="text" class="form-control" name="fatca_crs_confirmed_at" id="fatca_crs_confirmed_at" disabled="disabled" value={{ person.fatca_crs_confirmed_at }}>
+            <input type="text" class="form-control" name="fatca_crs_confirmed_at" id="fatca_crs_confirmed_at" disabled="disabled"
+              value="{{ person.fatca_crs_confirmed_at }}">
           </div>
           <p><strong>Company name:</strong> {{ person.business_trading_name }}</p>
           <div class="form-group">
@@ -324,8 +334,8 @@
             <option {% if application.status!=="offered" %} disabled {% endif %}value="expired">expired</option>
             <option value="rejected">rejected</option>
           </select>
-          <input type="hidden" name="personId" value={{ person.id }}>
-          <input type="hidden" name="applicationId" value={{ application.id }}>
+          <input type="hidden" name="personId" value="{{ person.id }}">
+          <input type="hidden" name="applicationId" value="{{ application.id }}">
         </form>
       </td>
       <td>
