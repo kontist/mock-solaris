@@ -61,6 +61,12 @@ const WEBHOOK_SECRETS = {
     process.env.SOLARIS_ACCOUNT_LIMIT_CHANGE_WEBHOOK_SECRET,
 };
 
+export const getWebhookUrl = (url: string, origin?: string) => {
+  return origin
+    ? `${origin.replace(/\/$/, "")}/${url.split("/").splice(3).join("/")}`
+    : url;
+};
+
 export const triggerWebhook = async ({
   type,
   payload,
@@ -104,11 +110,7 @@ export const triggerWebhook = async ({
     };
   }
 
-  const webhookUrl = origin
-    ? `${origin}/${webhook.url.split("/").splice(3).join("/")}`
-    : webhook.url;
-
-  await fetch(webhookUrl, {
+  await fetch(getWebhookUrl(webhook.url, origin), {
     method: "POST",
     body: JSON.stringify(body),
     headers,
