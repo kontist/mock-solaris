@@ -110,9 +110,16 @@ export const triggerWebhook = async ({
     };
   }
 
-  await fetch(getWebhookUrl(webhook.url, origin), {
-    method: "POST",
-    body: JSON.stringify(body),
-    headers,
-  });
+  const webhookUrl = getWebhookUrl(webhook.url, origin);
+
+  try {
+    await fetch(webhookUrl, {
+      method: "POST",
+      body: JSON.stringify(body),
+      headers,
+    });
+  } catch (err) {
+    log.error(`Webhook request to ${webhookUrl} failed`, err);
+    throw err;
+  }
 };
