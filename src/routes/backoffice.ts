@@ -157,6 +157,21 @@ export const getPersonHandler = async (req, res) => {
   }
 };
 
+export const patchPerson = async (req, res) => {
+  log.info(`Updating person "${req.params.id}" with params`, req.body);
+
+  const person = await getPerson(req.params.id);
+
+  if (req.body.origin) {
+    if (!/http(s)?:\/\//.test(req.body.origin)) {
+      throw new Error(`Invalid origin provided: ${req.body.origin}`);
+    }
+  }
+
+  await savePerson(_.merge(person, req.body));
+  res.redirect(`/__BACKOFFICE__/person/${person.id}`);
+};
+
 export const updatePersonHandler = async (req, res) => {
   const person = await getPerson(req.params.id);
 

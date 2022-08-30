@@ -542,6 +542,10 @@ app.post(
   "/__BACKOFFICE__/person/:id",
   safeRequestHandler(backofficeAPI.updatePersonHandler)
 );
+app.post(
+  "/__BACKOFFICE__/patchPerson/:id",
+  safeRequestHandler(backofficeAPI.patchPerson)
+);
 
 app.post(
   "/__BACKOFFICE__/queueBooking/:personId",
@@ -677,7 +681,7 @@ export const serve = async (port) => {
   return new Promise((resolve, reject) => {
     app.listen(port, () => {
       log.debug(`mocksolaris listening on http://localhost:${port}/!`);
-      resolve();
+      resolve(null);
     });
   });
 };

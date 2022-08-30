@@ -256,6 +256,7 @@
     </div>
   </div>
 </div>
+
 <h3 id="account"> Account for {{ person.email }} </h3>
 {% if person.account %}
 
@@ -737,6 +738,29 @@
     </div>
   </div>
 </div>
+
+{% if person.origin %}
+<div class="panel panel-default">
+  <div class="panel-body">
+    <p>In input field below you can provide Backend API URL. This allows to use different webhook URLs when user data changes in mock server.</p>
+    <form method="POST" action="/__BACKOFFICE__/patchPerson/{{ person.id }}" class="form-inline">
+      <label for="origin">Backend API URL</label>
+      <input 
+        type="text" 
+        class="form-control" 
+        name="origin" 
+        id="origin" 
+        placeholder="Provide Backend API base url"
+        value="{{ person.origin }}"
+        style="min-width: 300px;"
+      >
+      <button type="submit" class="btn btn-warning btn-sm">
+        Update
+      </button>
+    </form>
+  </div>
+</div>
+{% endif %}
 
 <script>
 $(".autosubmitonchange").change(function() {
