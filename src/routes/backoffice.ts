@@ -78,7 +78,7 @@ export const setAccountIsPKontoFlag = async (personId, isPKonto) => {
 
   person.account = person.account || {};
 
-  const previousIsPKonto = person.account.isPKonto;
+  const previousIsPKonto = person.account.is_pkonto;
 
   person.account = {
     ...person.account,
