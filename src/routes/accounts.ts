@@ -32,6 +32,24 @@ const DEFAULT_ACCOUNT = {
   closure_reasons: null,
 };
 
+const DEFAULT_SEIZURE_PROTECTION = {
+  current_blocked_amount: {
+    value: 10000,
+    currency: "EUR",
+    unit: "cents",
+  },
+  protected_amount: {
+    value: 5000,
+    currency: "EUR",
+    unit: "cents",
+  },
+  protected_amount_expiring: {
+    value: 0,
+    currency: "EUR",
+    unit: "cents",
+  },
+  protected_amount_expiring_date: "2022-07-31",
+};
 const requestAccountFields = [
   "id",
   "iban",
@@ -73,17 +91,14 @@ export const showAccountBookings = async (req, res) => {
 export const showAccountReservations = async (req, res) => {
   const {
     page: { size, number },
-    filter: {
-      reservation_type: reservationType,
-    },
+    filter: { reservation_type: reservationType },
   } = req.query;
 
   const { account_id: accountId } = req.params;
   const person = await findPersonByAccountId(accountId);
 
-
   const reservations = _.get(person.account, "reservations", [])
-    .filter(reservation => reservation.reservation_type === reservationType)
+    .filter((reservation) => reservation.reservation_type === reservationType)
     .slice((number - 1) * size, number * size);
 
   res.status(200).send(reservations);
@@ -206,7 +221,18 @@ export const createAccountSnapshot = async (req, res) => {
 export const showAccountBalance = async (req, res) => {
   const { account_id: accountId } = req.params;
   const person = await findPersonByAccountId(accountId);
-  const balance = _.pick(person.account, ["balance", "available_balance"]);
+  let balance = _.pick(person.account, [
+    "balance",
+    "available_balance",
+    "seizure_protection",
+  ]);
+
+  if (person.account.is_pkonto && !balance?.seizure_protection) {
+    balance = {
+      ...balance,
+      seizure_protection: DEFAULT_SEIZURE_PROTECTION,
+    };
+  }
 
   res.status(200).send(balance);
 };

@@ -3,7 +3,11 @@ import Promise from "bluebird";
 
 import * as log from "./logger";
 import { calculateOverdraftInterest } from "./helpers/overdraft";
-import { CustomerVettingStatus, RiskClarificationStatus, ScreeningProgress } from "./helpers/types";
+import {
+  CustomerVettingStatus,
+  RiskClarificationStatus,
+  ScreeningProgress,
+} from "./helpers/types";
 
 let redis;
 
@@ -111,6 +115,7 @@ export const migrate = async () => {
         available_balance: {
           value: 100,
         },
+        is_pkonto: false,
       },
       billing_account: {
         id: process.env.SOLARIS_KONTIST_BILLING_ACCOUNT_ID,

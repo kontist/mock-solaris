@@ -193,6 +193,25 @@
       <i>This person does not have an account.</i>
     {% endif %}
 
+    <!-- Seizures Protection -->
+    <div class="panel panel-default">
+      <div class="panel-heading"><h4>Seizure Protection</h4></div>
+      <div class="panel-body">
+          <form method="POST" action="/__BACKOFFICE__/setAccountAsPKonto/{{ person.id }}">
+            <div class="form-group">
+              <label for="isPKonto">Is account P-Konto?</label>
+              <select name="isPKonto" class="form-control">
+                <option {% if person.account.is_pkonto === true %}selected {% endif %} value="true">Yes</option>
+                <option {% if person.account.is_pkonto === false %}selected {% endif %} value="false">No</option>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">
+              Save Seizure Protection
+            </button>
+          </form>
+      </div>
+    </div>
+
     <!-- Seizures -->
     <div class="panel panel-default">
       <div class="panel-heading"><h4>Seizures</h4></div>
