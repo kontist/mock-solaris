@@ -48,12 +48,7 @@ const triggerIdentificationWebhook = (payload) =>
   triggerWebhook(PersonWebhookEvent.IDENTIFICATION, payload);
 
 const triggerAccountBlockWebhook = async (person) => {
-  const {
-    iban,
-    id: accountId,
-    locking_status: lockingStatus,
-    is_pkonto: isPKonto,
-  } = person.account;
+  const { iban, id: accountId, locking_status: lockingStatus } = person.account;
 
   const payload = {
     account_id: accountId,
@@ -61,7 +56,6 @@ const triggerAccountBlockWebhook = async (person) => {
     business_id: null,
     locking_status: lockingStatus,
     updated_at: new Date().toISOString(),
-    is_pkonto: isPKonto,
     iban,
   };
 
@@ -73,27 +67,48 @@ export const triggerBookingsWebhook = async (solarisAccountId) => {
   await triggerWebhook(TransactionWebhookEvent.BOOKING, payload);
 };
 
-export const setAccountIsPKontoFlag = async (personId, isPKonto) => {
+const triggerAccountPKontoWebhook = async (person) => {
+  const { iban, id: accountId, is_pkonto: isPkonto } = person.account;
+
+  const payload = {
+    account_id: accountId,
+    person_id: person.id,
+    business_id: null,
+    updated_at: new Date().toISOString(),
+    is_pkonto: isPkonto,
+    iban,
+  };
+
+  await triggerWebhook(AccountWebhookEvent.ACCOUNT_PKONTO_CHANGE, payload);
+};
+
+export const setAccountIsPkontoFlag = async (personId, isPkonto) => {
   const person = await getPerson(personId);
 
-  person.account = person.account || {};
+  if (!person.account) return null;
 
-  const previousIsPKonto = person.account.is_pkonto;
+  const previousIsPkonto = person.account.is_pkonto;
+
+  if (isPkonto === "true") {
+    isPkonto = true;
+  } else if (isPkonto === "false") {
+    isPkonto = false;
+  }
 
   person.account = {
     ...person.account,
-    is_pkonto: isPKonto,
+    is_pkonto: isPkonto,
   };
 
   await savePerson(person);
 
-  if (isPKonto !== previousIsPKonto) {
-    await triggerAccountBlockWebhook(person);
+  if (isPkonto !== previousIsPkonto) {
+    await triggerAccountPKontoWebhook(person);
   }
 };
 
-export const setAccountIsPKontoFlagHandler = async (req, res) => {
-  await setAccountIsPKontoFlag(req.params.personId, req.body.isPKonto);
+export const setAccountIsPkontoFlagHandler = async (req, res) => {
+  await setAccountIsPkontoFlag(req.params.personId, req.body.isPkonto);
   res.redirect("back");
 };
 

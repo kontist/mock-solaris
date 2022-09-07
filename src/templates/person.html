@@ -197,10 +197,10 @@
     <div class="panel panel-default">
       <div class="panel-heading"><h4>Seizure Protection</h4></div>
       <div class="panel-body">
-          <form method="POST" action="/__BACKOFFICE__/setAccountIsPKonto/{{ person.id }}">
+          <form method="POST" action="/__BACKOFFICE__/setAccountIsPkonto/{{ person.id }}">
             <div class="form-group">
-              <label for="isPKonto">Is account P-Konto?</label>
-              <select name="isPKonto" class="form-control">
+              <label for="isPkonto">Is account P-Konto?</label>
+              <select name="isPkonto" class="form-control">
                 <option {% if person.account.is_pkonto === true %}selected {% endif %} value="true">Yes</option>
                 <option {% if person.account.is_pkonto === false %}selected {% endif %} value="false">No</option>
               </select>

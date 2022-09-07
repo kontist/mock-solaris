@@ -116,6 +116,7 @@ export const migrate = async () => {
           value: 100,
         },
         is_pkonto: false,
+        seizure_protection: null,
       },
       billing_account: {
         id: process.env.SOLARIS_KONTIST_BILLING_ACCOUNT_ID,
@@ -134,6 +135,25 @@ export const migrate = async () => {
       },
     });
   }
+};
+
+const DEFAULT_SEIZURE_PROTECTION = {
+  current_blocked_amount: {
+    value: 10000,
+    currency: "EUR",
+    unit: "cents",
+  },
+  protected_amount: {
+    value: 5000,
+    currency: "EUR",
+    unit: "cents",
+  },
+  protected_amount_expiring: {
+    value: 0,
+    currency: "EUR",
+    unit: "cents",
+  },
+  protected_amount_expiring_date: "2022-07-31",
 };
 
 const jsonToPerson = (value) => {
@@ -195,6 +215,8 @@ export const savePerson = async (person, skipInterest = false) => {
         confirmedTransfersBalance -
         reservationsBalance,
     };
+
+    account.seizure_protection =  account.is_pkonto ? DEFAULT_SEIZURE_PROTECTION : null;
 
     person.account = account;
     person.timedOrders = person.timedOrders || [];
