@@ -607,8 +607,8 @@ app.post(
 
 // BACKOFFICE - SEIZURES PROTECTION
 app.post(
-  "/__BACKOFFICE__/setAccountIsPkonto/:personId",
-  safeRequestHandler(backofficeAPI.setAccountIsPkontoFlagHandler)
+  "/__BACKOFFICE__/setAccountSeizureProtection/:personId",
+  safeRequestHandler(backofficeAPI.setAccountSeizureProtectionHandler)
 );
 
 // BACKOFFICE - SEIZURES

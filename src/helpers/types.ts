@@ -209,7 +209,6 @@ export enum AccountWebhookEvent {
   "ACCOUNT_BLOCK" = "ACCOUNT_BLOCK",
   "ACCOUNT_CLOSURE" = "ACCOUNT_CLOSURE",
   "ACCOUNT_LIMIT_CHANGE" = "ACCOUNT_LIMIT_CHANGE",
-  "ACCOUNT_PKONTO_CHANGE" = "ACCOUNT_PKONTO_CHANGE",
 }
 
 export enum ProvisioningTokenEventType {

@@ -115,7 +115,6 @@ export const migrate = async () => {
         available_balance: {
           value: 100,
         },
-        is_pkonto: false,
         seizure_protection: null,
       },
       billing_account: {
@@ -215,8 +214,6 @@ export const savePerson = async (person, skipInterest = false) => {
         confirmedTransfersBalance -
         reservationsBalance,
     };
-
-    account.seizure_protection =  account.is_pkonto ? DEFAULT_SEIZURE_PROTECTION : null;
 
     person.account = account;
     person.timedOrders = person.timedOrders || [];

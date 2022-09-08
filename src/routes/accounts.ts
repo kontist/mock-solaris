@@ -30,7 +30,6 @@ const DEFAULT_ACCOUNT = {
   person_id: "66a692fdddc32c05ebe1c1f1c3145a3bcper",
   status: "ACTIVE",
   closure_reasons: null,
-  is_pkonto: false,
   seizure_protection: null,
 };
 

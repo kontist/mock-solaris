@@ -67,48 +67,42 @@ export const triggerBookingsWebhook = async (solarisAccountId) => {
   await triggerWebhook(TransactionWebhookEvent.BOOKING, payload);
 };
 
-const triggerAccountPKontoWebhook = async (person) => {
-  const { iban, id: accountId, is_pkonto: isPkonto } = person.account;
+export const setAccountSeizureProtectionHandler = async (req, res) => {
+  const { personId } = req.params;
+  const {
+    currentBlockedAmount,
+    protectedAmount,
+    protectedAmountExpiring,
+    protectedAmountExpiringDate,
+  } = req.body;
 
-  const payload = {
-    account_id: accountId,
-    person_id: person.id,
-    business_id: null,
-    updated_at: new Date().toISOString(),
-    is_pkonto: isPkonto,
-    iban,
-  };
-
-  await triggerWebhook(AccountWebhookEvent.ACCOUNT_PKONTO_CHANGE, payload);
-};
-
-export const setAccountIsPkontoFlag = async (personId, isPkonto) => {
   const person = await getPerson(personId);
 
   if (!person.account) return null;
 
-  const previousIsPkonto = person.account.is_pkonto;
-
-  if (isPkonto === "true") {
-    isPkonto = true;
-  } else if (isPkonto === "false") {
-    isPkonto = false;
-  }
-
   person.account = {
     ...person.account,
-    is_pkonto: isPkonto,
+    seizure_protection: {
+      current_blocked_amount: {
+        value: currentBlockedAmount,
+        currency: "EUR",
+        unit: "cents",
+      },
+      protected_amount: {
+        value: protectedAmount,
+        currency: "EUR",
+        unit: "cents",
+      },
+      protected_amount_expiring: {
+        value: protectedAmountExpiring,
+        currency: "EUR",
+        unit: "cents",
+      },
+      protected_amount_expiring_date: protectedAmountExpiringDate,
+    },
   };
 
   await savePerson(person);
-
-  if (isPkonto !== previousIsPkonto) {
-    await triggerAccountPKontoWebhook(person);
-  }
-};
-
-export const setAccountIsPkontoFlagHandler = async (req, res) => {
-  await setAccountIsPkontoFlag(req.params.personId, req.body.isPkonto);
   res.redirect("back");
 };
 
