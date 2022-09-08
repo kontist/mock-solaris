@@ -136,25 +136,6 @@ export const migrate = async () => {
   }
 };
 
-const DEFAULT_SEIZURE_PROTECTION = {
-  current_blocked_amount: {
-    value: 10000,
-    currency: "EUR",
-    unit: "cents",
-  },
-  protected_amount: {
-    value: 5000,
-    currency: "EUR",
-    unit: "cents",
-  },
-  protected_amount_expiring: {
-    value: 0,
-    currency: "EUR",
-    unit: "cents",
-  },
-  protected_amount_expiring_date: "2022-07-31",
-};
-
 const jsonToPerson = (value) => {
   if (!value) {
     throw new Error("did not find person");
