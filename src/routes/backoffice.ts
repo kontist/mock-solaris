@@ -67,7 +67,7 @@ export const triggerBookingsWebhook = async (solarisAccountId) => {
   await triggerWebhook(TransactionWebhookEvent.BOOKING, payload);
 };
 
-export const setAccountSeizureProtectionHandler = async (req, res) => {
+export const addAccountSeizureProtectionHandler = async (req, res) => {
   const { email } = req.params;
 
   const {
@@ -105,7 +105,34 @@ export const setAccountSeizureProtectionHandler = async (req, res) => {
   };
 
   await savePerson(person);
-  res.redirect("back");
+
+  if (shouldReturnJSON(req)) {
+    res.status(200).send(person.account);
+  } else {
+    res.redirect("back");
+  }
+};
+
+export const deleteAccountSeizureProtectionHandler = async (req, res) => {
+  const { email } = req.params;
+
+  const persons = await getAllPersons();
+  const person = persons.find((item) => item.email === email);
+
+  if (!person?.account) return null;
+
+  person.account = {
+    ...person.account,
+    seizure_protection: null,
+  };
+
+  await savePerson(person);
+
+  if (shouldReturnJSON(req)) {
+    res.status(204).send();
+  } else {
+    res.redirect("back");
+  }
 };
 
 /**

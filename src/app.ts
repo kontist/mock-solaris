@@ -607,8 +607,12 @@ app.post(
 
 // BACKOFFICE - SEIZURES PROTECTION
 app.post(
-  "/__BACKOFFICE__/setAccountSeizureProtection/:email",
-  safeRequestHandler(backofficeAPI.setAccountSeizureProtectionHandler)
+  "/__BACKOFFICE__/addAccountSeizureProtection/:email",
+  safeRequestHandler(backofficeAPI.addAccountSeizureProtectionHandler)
+);
+app.post(
+  "/__BACKOFFICE__/deleteAccountSeizureProtection/:email",
+  safeRequestHandler(backofficeAPI.deleteAccountSeizureProtectionHandler)
 );
 
 // BACKOFFICE - SEIZURES
