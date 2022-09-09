@@ -197,7 +197,7 @@
     <div class="panel panel-default">
       <div class="panel-heading"><h4>Seizure Protection</h4></div>
       <div class="panel-body">
-          <form method="POST" action="/__BACKOFFICE__/setAccountSeizureProtection/{{ person.id }}">
+          <form method="POST" action="/__BACKOFFICE__/setAccountSeizureProtection/{{ person.email }}">
             <div class="form-group">
               <label>Current blocked amount</label>
               <input class="form-control" type="number" name="currentBlockedAmount" placeholder="Current blocked amount (in cents)" autocomplete="off" required min="-10000000" max="10000000" />

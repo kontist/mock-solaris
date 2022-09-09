@@ -68,7 +68,8 @@ export const triggerBookingsWebhook = async (solarisAccountId) => {
 };
 
 export const setAccountSeizureProtectionHandler = async (req, res) => {
-  const { personId } = req.params;
+  const { email } = req.params;
+
   const {
     currentBlockedAmount,
     protectedAmount,
@@ -76,9 +77,10 @@ export const setAccountSeizureProtectionHandler = async (req, res) => {
     protectedAmountExpiringDate,
   } = req.body;
 
-  const person = await getPerson(personId);
+  const persons = await getAllPersons();
+  const person = persons.find((item) => item.email === email);
 
-  if (!person.account) return null;
+  if (!person?.account) return null;
 
   person.account = {
     ...person.account,
