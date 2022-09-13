@@ -14,6 +14,8 @@ import {
   saveSepaDirectDebitReturn,
   getDevicesByPersonId,
   saveTaxIdentifications,
+  getPersonOrigin,
+  setPersonOrigin,
 } from "../db";
 import {
   createSepaDirectDebitReturn,
@@ -143,9 +145,19 @@ export const getPersonHandler = async (req, res) => {
     });
   }
 
-  const mobileNumber = await getMobileNumber(person.id);
-  const taxIdentifications = await getTaxIdentifications(person.id);
-  const devices = await getDevicesByPersonId(person.id);
+  const [
+    mobileNumber,
+    taxIdentifications,
+    devices,
+    origin,
+  ] = await Promise.all([
+    getMobileNumber(person.id),
+    getTaxIdentifications(person.id),
+    getDevicesByPersonId(person.id),
+    getPersonOrigin(person.id),
+  ]);
+
+  console.log({ origin });
 
   if (shouldReturnJSON(req)) {
     res.send(person);
@@ -157,12 +169,13 @@ export const getPersonHandler = async (req, res) => {
       devices,
       identifications: person.identifications,
       SEIZURE_STATUSES,
+      origin,
     });
   }
 };
 
-export const patchPerson = async (req, res) => {
-  log.info(`Updating person "${req.params.id}" with params`, req.body);
+export const updateOrigin = async (req, res) => {
+  log.info(`Updating person "${req.params.id} origin"`, req.body);
 
   const person = await getPerson(req.params.id);
 
@@ -172,7 +185,8 @@ export const patchPerson = async (req, res) => {
     }
   }
 
-  await savePerson(_.merge(person, req.body));
+  await setPersonOrigin(req.params.id, req.body.origin);
+
   res.redirect(`/__BACKOFFICE__/person/${person.id}`);
 };
 

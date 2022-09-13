@@ -148,7 +148,7 @@ export const triggerWebhook = async ({
     }
   } catch (err) {
     if (personOrigin && (err.code === "ECONNREFUSED" || err.statusCode > 500)) {
-      await setPersonOrigin(personId, null);
+      await setPersonOrigin(personId);
     }
 
     log.error(`Webhook request to ${webhookUrl} failed`, err);

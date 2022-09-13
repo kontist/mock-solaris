@@ -543,8 +543,8 @@ app.post(
   safeRequestHandler(backofficeAPI.updatePersonHandler)
 );
 app.post(
-  "/__BACKOFFICE__/patchPerson/:id",
-  safeRequestHandler(backofficeAPI.patchPerson)
+  "/__BACKOFFICE__/updateOrigin/:id",
+  safeRequestHandler(backofficeAPI.updateOrigin)
 );
 
 app.post(
