@@ -2,13 +2,13 @@ import crypto from "crypto";
 import _ from "lodash";
 import uuid from "node-uuid";
 
-import { getPerson, getAllPersons, savePerson } from "../db";
+import { getPerson, getAllPersons, savePerson, setPersonOrigin } from "../db";
 
 import { createChangeRequest } from "./changeRequest";
 import { triggerWebhook } from "../helpers/webhooks";
 import { MockPerson, PersonWebhookEvent } from "../helpers/types";
 
-export const createPerson = (req, res) => {
+export const createPerson = async (req, res) => {
   const personId =
     "mock" +
     crypto.createHash("md5").update(JSON.stringify(req.body)).digest("hex");
@@ -21,15 +21,20 @@ export const createPerson = (req, res) => {
     statements: [],
     queuedBookings: [],
     createdAt: new Date().toISOString(),
-    origin: req.headers.origin,
   };
 
-  return savePerson(person).then(() => {
+  const result = await savePerson(person).then(() => {
     res.status(200).send({
       id: personId,
       ...req.body,
     });
   });
+
+  if (req.headers.origin) {
+    await setPersonOrigin(personId, req.headers.origin);
+  }
+
+  return result;
 };
 
 export const showPerson = async (req, res) => {

@@ -3,7 +3,7 @@ import fetch, { Response } from "node-fetch";
 
 import * as log from "../logger";
 import { WebhookType } from "../helpers/types";
-import { getWebhookByType } from "../db";
+import { getPersonOrigin, getWebhookByType, setPersonOrigin } from "../db";
 import { generateSolarisWebhookSignature } from "./solarisWebhookSignature";
 import {
   CardWebhookEvent,
@@ -88,12 +88,12 @@ export const triggerWebhook = async ({
   type,
   payload,
   extraHeaders = {},
-  origin,
+  personId,
 }: {
   type: WebhookType;
   payload: Record<string, unknown>;
   extraHeaders?: Record<string, unknown>;
-  origin?: string;
+  personId?: string;
 }) => {
   const webhook = await getWebhookByType(type);
 
@@ -127,7 +127,13 @@ export const triggerWebhook = async ({
     };
   }
 
-  const webhookUrl = getWebhookUrl(webhook.url, origin);
+  const personOrigin = personId && (await getPersonOrigin(personId));
+  const webhookUrl = getWebhookUrl(webhook.url, personOrigin);
+
+  console.log({
+    personOrigin,
+    webhookUrl,
+  });
 
   try {
     const requestBody = JSON.stringify(body);
@@ -141,8 +147,8 @@ export const triggerWebhook = async ({
       throw new WebhookRequestError(response, requestBody);
     }
   } catch (err) {
-    if (err.code === "ECONNREFUSED" || err.statusCode > 500) {
-      // TODO: reset origin
+    if (personOrigin && (err.code === "ECONNREFUSED" || err.statusCode > 500)) {
+      await setPersonOrigin(personId, null);
     }
 
     log.error(`Webhook request to ${webhookUrl} failed`, err);

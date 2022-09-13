@@ -484,3 +484,18 @@ export const getPersonByDeviceId = async (deviceId) => {
   const device = await getDevice(deviceId);
   return getPerson(device.person_id);
 };
+
+export const setPersonOrigin = async (personId: string, origin?: string) => {
+  await redisClient.setAsync(
+    `${process.env.MOCKSOLARIS_REDIS_PREFIX}:person-origin:${personId}`,
+    origin || null
+  );
+};
+
+export const getPersonOrigin = async (
+  personId: string
+): Promise<string | null> => {
+  return await redisClient.getAsync(
+    `${process.env.MOCKSOLARIS_REDIS_PREFIX}:person-origin:${personId}`
+  );
+};
