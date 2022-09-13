@@ -1,5 +1,5 @@
 import uuid from "node-uuid";
-import fetch from "node-fetch";
+import fetch, { Response } from "node-fetch";
 
 import * as log from "../logger";
 import { WebhookType } from "../helpers/types";
@@ -12,6 +12,23 @@ import {
   TransactionWebhookEvent,
   AccountWebhookEvent,
 } from "./types";
+
+class WebhookRequestError extends Error {
+  statusCode: number;
+  statusText: string;
+  responseText?: string;
+  requestBody?: string;
+  url: string;
+
+  constructor(response: Response, requestBody?: string) {
+    super();
+    this.url = response.url;
+    this.name = this.constructor.name;
+    this.statusCode = response.status;
+    this.statusText = response.statusText;
+    this.requestBody = requestBody;
+  }
+}
 
 const WEBHOOK_SECRETS = {
   [OverdraftApplicationWebhookEvent.OVERDRAFT_APPLICATION]:
@@ -113,12 +130,21 @@ export const triggerWebhook = async ({
   const webhookUrl = getWebhookUrl(webhook.url, origin);
 
   try {
-    await fetch(webhookUrl, {
+    const requestBody = JSON.stringify(body);
+    const response = await fetch(webhookUrl, {
       method: "POST",
-      body: JSON.stringify(body),
+      body: requestBody,
       headers,
     });
+
+    if (!response.ok) {
+      throw new WebhookRequestError(response, requestBody);
+    }
   } catch (err) {
+    if (err.code === "ECONNREFUSED" || err.statusCode > 500) {
+      // TODO: reset origin
+    }
+
     log.error(`Webhook request to ${webhookUrl} failed`, err);
     throw err;
   }
