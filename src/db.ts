@@ -116,6 +116,7 @@ export const migrate = async () => {
         available_balance: {
           value: 100,
         },
+        seizure_protection: null,
       },
       billing_account: {
         id: process.env.SOLARIS_KONTIST_BILLING_ACCOUNT_ID,

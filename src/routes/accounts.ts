@@ -30,6 +30,7 @@ const DEFAULT_ACCOUNT = {
   person_id: "66a692fdddc32c05ebe1c1f1c3145a3bcper",
   status: "ACTIVE",
   closure_reasons: null,
+  seizure_protection: null,
 };
 
 const requestAccountFields = [
@@ -73,17 +74,14 @@ export const showAccountBookings = async (req, res) => {
 export const showAccountReservations = async (req, res) => {
   const {
     page: { size, number },
-    filter: {
-      reservation_type: reservationType,
-    },
+    filter: { reservation_type: reservationType },
   } = req.query;
 
   const { account_id: accountId } = req.params;
   const person = await findPersonByAccountId(accountId);
 
-
   const reservations = _.get(person.account, "reservations", [])
-    .filter(reservation => reservation.reservation_type === reservationType)
+    .filter((reservation) => reservation.reservation_type === reservationType)
     .slice((number - 1) * size, number * size);
 
   res.status(200).send(reservations);
@@ -206,7 +204,11 @@ export const createAccountSnapshot = async (req, res) => {
 export const showAccountBalance = async (req, res) => {
   const { account_id: accountId } = req.params;
   const person = await findPersonByAccountId(accountId);
-  const balance = _.pick(person.account, ["balance", "available_balance"]);
+  const balance = _.pick(person.account, [
+    "balance",
+    "available_balance",
+    "seizure_protection",
+  ]);
 
   res.status(200).send(balance);
 };

@@ -193,6 +193,64 @@
       <i>This person does not have an account.</i>
     {% endif %}
 
+    <!-- Seizures Protection -->
+    <div class="panel panel-default">
+      <div class="panel-heading"><h4>Seizure Protection</h4></div>
+      <div class="panel-body">
+        {% if person.account.seizure_protection %}
+          <form method="POST" action="/__BACKOFFICE__/deleteAccountSeizureProtection/{{ person.email }}">
+            <div class="alert alert-info">
+              Account is seizure protected!
+            </div>
+            <button type="submit" class="btn btn-danger btn-block">
+              Delete seizure protection
+            </button>
+          </form>
+          <br>
+          <div class="panel-group">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h4 class="panel-title">
+                  <a data-toggle="collapse" href="#seizureProtectionRawData">
+                    Raw seizure protection data
+                  </a>
+                  <span class="caret"></span>
+                </h4>
+              </div>
+              <div id="seizureProtectionRawData" class="panel-collapse collapse">
+                <div class="panel-body">
+                  <pre>{{ JSON.stringify(person.account.seizure_protection, undefined, 2) }}</pre>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% else %}
+          <form method="POST" action="/__BACKOFFICE__/addAccountSeizureProtection/{{ person.email }}">
+            <div class="form-group">
+              <label>Current blocked amount</label>
+              <input class="form-control" type="number" name="currentBlockedAmount" placeholder="Current blocked amount (in cents)" autocomplete="off" required min="-10000000" max="10000000" />
+            </div>
+            <div class="form-group">
+              <label>Protected amount</label>
+              <input class="form-control" type="number" name="protectedAmount" placeholder="Protected amount (in cents)" autocomplete="off" required min="-10000000" max="10000000" />
+            </div>
+            <div class="form-group">
+              <label>Protected amount expiring</label>
+              <input class="form-control" type="number" name="protectedAmountExpiring" placeholder="Protected amount expiring (in cents)" autocomplete="off" required min="-10000000" max="10000000" />
+            </div>
+            <div class="form-group">
+              <label>Protected amount expiring Date</label>
+              <input class="form-control" type="date" name="protectedAmountExpiringDate" placeholder="Protected amount expiring date" autocomplete="off" required min="2020-01-01" />
+            </div>
+            <br>
+            <button type="submit" class="btn btn-primary btn-block">
+              Save seizure protection
+            </button>
+          </form>
+        {% endif %}
+      </div>
+    </div>
+
     <!-- Seizures -->
     <div class="panel panel-default">
       <div class="panel-heading"><h4>Seizures</h4></div>

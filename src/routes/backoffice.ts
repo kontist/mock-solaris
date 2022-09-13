@@ -82,6 +82,74 @@ export const triggerBookingsWebhook = async (person: MockPerson) => {
   });
 };
 
+export const addAccountSeizureProtectionHandler = async (req, res) => {
+  const { email } = req.params;
+
+  const {
+    currentBlockedAmount,
+    protectedAmount,
+    protectedAmountExpiring,
+    protectedAmountExpiringDate,
+  } = req.body;
+
+  const persons = await getAllPersons();
+  const person = persons.find((item) => item.email === email);
+
+  if (!person?.account) return null;
+
+  person.account = {
+    ...person.account,
+    seizure_protection: {
+      current_blocked_amount: {
+        value: currentBlockedAmount,
+        currency: "EUR",
+        unit: "cents",
+      },
+      protected_amount: {
+        value: protectedAmount,
+        currency: "EUR",
+        unit: "cents",
+      },
+      protected_amount_expiring: {
+        value: protectedAmountExpiring,
+        currency: "EUR",
+        unit: "cents",
+      },
+      protected_amount_expiring_date: protectedAmountExpiringDate,
+    },
+  };
+
+  await savePerson(person);
+
+  if (shouldReturnJSON(req)) {
+    res.status(200).send(person.account);
+  } else {
+    res.redirect("back");
+  }
+};
+
+export const deleteAccountSeizureProtectionHandler = async (req, res) => {
+  const { email } = req.params;
+
+  const persons = await getAllPersons();
+  const person = persons.find((item) => item.email === email);
+
+  if (!person?.account) return null;
+
+  person.account = {
+    ...person.account,
+    seizure_protection: null,
+  };
+
+  await savePerson(person);
+
+  if (shouldReturnJSON(req)) {
+    res.status(204).send();
+  } else {
+    res.redirect("back");
+  }
+};
+
 /**
  * Handles changes on the provisioning token and redirects back to refresh data.
  * Reads the personId and cardId from the url params and the status (if sent) from the body.
