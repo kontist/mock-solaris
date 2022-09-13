@@ -495,7 +495,7 @@ export const setPersonOrigin = async (personId: string, origin?: string) => {
 export const getPersonOrigin = async (
   personId: string
 ): Promise<string | null> => {
-  return await redisClient.getAsync(
+  return redisClient.getAsync(
     `${process.env.MOCKSOLARIS_REDIS_PREFIX}:person-origin:${personId}`
   );
 };

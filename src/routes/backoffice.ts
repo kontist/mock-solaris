@@ -157,8 +157,6 @@ export const getPersonHandler = async (req, res) => {
     getPersonOrigin(person.id),
   ]);
 
-  console.log({ origin });
-
   if (shouldReturnJSON(req)) {
     res.send(person);
   } else {
