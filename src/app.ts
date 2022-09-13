@@ -605,6 +605,16 @@ app.post(
   safeRequestHandler(standingOrdersAPI.triggerStandingOrderRequestHandler)
 );
 
+// BACKOFFICE - SEIZURES PROTECTION
+app.post(
+  "/__BACKOFFICE__/addAccountSeizureProtection/:email",
+  safeRequestHandler(backofficeAPI.addAccountSeizureProtectionHandler)
+);
+app.post(
+  "/__BACKOFFICE__/deleteAccountSeizureProtection/:email",
+  safeRequestHandler(backofficeAPI.deleteAccountSeizureProtectionHandler)
+);
+
 // BACKOFFICE - SEIZURES
 app.post(
   "/__BACKOFFICE__/createSeizure/:person_id",
