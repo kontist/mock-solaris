@@ -127,17 +127,9 @@ export const triggerWebhook = async ({
     };
   }
 
-  const personOrigin = personId && (await getPersonOrigin(personId));
-  const webhookUrl = getWebhookUrl(webhook.url, personOrigin);
-
-  console.log({
-    personOrigin,
-    webhookUrl,
-  });
-
-  try {
+  const triggerRequest = async (url) => {
     const requestBody = JSON.stringify(body);
-    const response = await fetch(webhookUrl, {
+    const response = await fetch(url, {
       method: "POST",
       body: requestBody,
       headers,
@@ -146,9 +138,20 @@ export const triggerWebhook = async ({
     if (!response.ok) {
       throw new WebhookRequestError(response, requestBody);
     }
+  };
+
+  const personOrigin = personId && (await getPersonOrigin(personId));
+  const webhookUrl = getWebhookUrl(webhook.url, personOrigin);
+
+  try {
+    await triggerRequest(webhookUrl);
   } catch (err) {
     if (personOrigin && (err.code === "ECONNREFUSED" || err.statusCode > 500)) {
+      // if preview env doesn't exist anymore,
+      // we reset the origin and retrigger request with default webhook url
       await setPersonOrigin(personId);
+      await triggerRequest(getWebhookUrl(webhook.url));
+      return;
     }
 
     log.error(`Webhook request to ${webhookUrl} failed`, err);
