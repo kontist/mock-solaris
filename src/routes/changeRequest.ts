@@ -253,7 +253,7 @@ export const confirmChangeRequest = async (req, res) => {
       type: PersonWebhookEvent.PERSON_CHANGED,
       payload: {},
       extraHeaders: { "solaris-entity-id": personId },
-      origin: person.origin,
+      personId: person.id,
     });
   }
 

@@ -40,7 +40,7 @@ const triggerCardFraudWebhook = async (
 ) => {
   await triggerWebhook({
     type: CardWebhookEvent.CARD_FRAUD_CASE_PENDING,
-    origin: person.origin,
+    personId: person.id,
     payload: {
       id: fraudCase.id,
       resolution: "PENDING",
@@ -58,7 +58,7 @@ const triggerCardDeclinedWebhook = async (
 ) => {
   await triggerWebhook({
     type: CardWebhookEvent.CARD_AUTHORIZATION_DECLINE,
-    origin: person.origin,
+    personId: person.id,
     payload: {
       id: uuid.v4(),
       reason,
@@ -568,7 +568,7 @@ export const createReservation = async ({
   await triggerWebhook({
     type: CardWebhookEvent.CARD_AUTHORIZATION,
     payload: reservation,
-    origin: person.origin,
+    personId: person.id,
   });
 
   return reservation;
@@ -584,7 +584,7 @@ const resolveReservation = async (reservation, person: MockPerson) => {
   await triggerWebhook({
     type: CardWebhookEvent.CARD_AUTHORIZATION_RESOLUTION,
     payload: resolvedReservation,
-    origin: person.origin,
+    personId: person.id,
   });
 };
 
@@ -633,7 +633,7 @@ const expireReservation = async (person: MockPerson, reservation) => {
   await triggerWebhook({
     type: CardWebhookEvent.CARD_AUTHORIZATION_RESOLUTION,
     payload: reservation,
-    origin: person.origin,
+    personId: person.id,
   });
 };
 

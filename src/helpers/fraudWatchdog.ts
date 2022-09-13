@@ -71,7 +71,7 @@ export class FraudWatchdog {
           whitelisted_until: "null",
           card_transaction: mapReservationToCardAuthorization(reservation),
         },
-        origin: person.origin,
+        personId: person.id,
       });
       await this._confirmFraud(fraudCaseId, CardStatus.BLOCKED);
     }
@@ -149,7 +149,7 @@ export class FraudWatchdog {
     await triggerWebhook({
       type: CardWebhookEvent.CARD_LIFECYCLE_EVENT,
       payload: card,
-      origin: person.origin,
+      personId: person.id,
     });
   }
 }

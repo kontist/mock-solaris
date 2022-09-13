@@ -178,7 +178,7 @@ export const createOverdraft = async (req, res) => {
     payload: {
       account_id: accountId,
     },
-    origin: person.origin,
+    personId: person.id,
   });
 
   res.status(201).send({

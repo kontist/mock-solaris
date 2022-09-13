@@ -45,8 +45,12 @@ import {
   issueInterestAccruedBooking,
 } from "../helpers/overdraft";
 
-const triggerIdentificationWebhook = (payload, origin?: string) =>
-  triggerWebhook({ type: PersonWebhookEvent.IDENTIFICATION, payload, origin });
+const triggerIdentificationWebhook = (payload, personId?: string) =>
+  triggerWebhook({
+    type: PersonWebhookEvent.IDENTIFICATION,
+    payload,
+    personId,
+  });
 
 const triggerAccountBlockWebhook = async (person: MockPerson) => {
   const { iban, id: accountId, locking_status: lockingStatus } = person.account;
@@ -63,7 +67,7 @@ const triggerAccountBlockWebhook = async (person: MockPerson) => {
   await triggerWebhook({
     type: AccountWebhookEvent.ACCOUNT_BLOCK,
     payload,
-    origin: person.origin,
+    personId: person.id,
   });
 };
 
@@ -72,7 +76,7 @@ export const triggerBookingsWebhook = async (person: MockPerson) => {
   await triggerWebhook({
     type: TransactionWebhookEvent.BOOKING,
     payload,
-    origin: person.origin,
+    personId: person.id,
   });
 };
 
@@ -207,7 +211,7 @@ export const updatePersonHandler = async (req, res) => {
     type: PersonWebhookEvent.PERSON_CHANGED,
     payload: {},
     extraHeaders: { "solaris-entity-id": req.params.id },
-    origin: person.origin,
+    personId: person.id,
   });
 
   res.redirect(`/__BACKOFFICE__/person/${person.id}`);
@@ -259,7 +263,7 @@ export const setIdentification = async (req, res) => {
       status: identification.status,
       method: "idnow",
     },
-    person.origin
+    person.id
   );
 
   res.status(204).send();
@@ -290,7 +294,7 @@ export const setScreening = async (req, res) => {
     type: PersonWebhookEvent.PERSON_CHANGED,
     payload: {},
     extraHeaders: { "solaris-entity-id": person.id },
-    origin: person.origin,
+    personId: person.id,
   });
   res.status(204).send();
 };
@@ -350,7 +354,7 @@ export const setIdentificationState = async (req, res) => {
       method,
       status,
     },
-    person.origin
+    person.id
   );
 
   res.redirect(`/__BACKOFFICE__/person/${person.id}#identifications`);

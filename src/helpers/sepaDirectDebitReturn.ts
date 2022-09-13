@@ -28,5 +28,5 @@ export const triggerSepaDirectDebitReturnWebhook = (
   triggerWebhook({
     type: TransactionWebhookEvent.SEPA_DIRECT_DEBIT_RETURN,
     payload: sepaDirectDebitReturn,
-    origin: person.origin,
+    personId: person.id,
   });
