@@ -45,8 +45,8 @@ import {
   issueInterestAccruedBooking,
 } from "../helpers/overdraft";
 
-const triggerIdentificationWebhook = (payload) =>
-  triggerWebhook({ type: PersonWebhookEvent.IDENTIFICATION, payload });
+const triggerIdentificationWebhook = (payload, origin?: string) =>
+  triggerWebhook({ type: PersonWebhookEvent.IDENTIFICATION, payload, origin });
 
 const triggerAccountBlockWebhook = async (person: MockPerson) => {
   const { iban, id: accountId, locking_status: lockingStatus } = person.account;
@@ -249,15 +249,18 @@ export const setIdentification = async (req, res) => {
     }
   }
 
-  await triggerIdentificationWebhook({
-    id: identification.id,
-    url: identification.url,
-    person_id: identification.person_id,
-    completed_at: identification.completed_at,
-    reference: identification.reference,
-    status: identification.status,
-    method: "idnow",
-  });
+  await triggerIdentificationWebhook(
+    {
+      id: identification.id,
+      url: identification.url,
+      person_id: identification.person_id,
+      completed_at: identification.completed_at,
+      reference: identification.reference,
+      status: identification.status,
+      method: "idnow",
+    },
+    person.origin
+  );
 
   res.status(204).send();
 };
@@ -337,15 +340,18 @@ export const setIdentificationState = async (req, res) => {
     }
   }
 
-  await triggerIdentificationWebhook({
-    id: identification.id,
-    url: identification.url,
-    person_id: identification.person_id,
-    completed_at: identification.completed_at,
-    reference: identification.reference,
-    method,
-    status,
-  });
+  await triggerIdentificationWebhook(
+    {
+      id: identification.id,
+      url: identification.url,
+      person_id: identification.person_id,
+      completed_at: identification.completed_at,
+      reference: identification.reference,
+      method,
+      status,
+    },
+    person.origin
+  );
 
   res.redirect(`/__BACKOFFICE__/person/${person.id}#identifications`);
 };
