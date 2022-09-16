@@ -5,7 +5,7 @@ import * as log from "../logger";
 import { getPerson, savePerson } from "../db";
 import { triggerWebhook } from "../helpers/webhooks";
 import { updateAccountLockingStatus } from "./backoffice";
-import { PersonWebhookEvent } from "../helpers/types";
+import { MockPerson, PersonWebhookEvent } from "../helpers/types";
 
 export const SEIZURE_STATUSES = {
   ACTIVE: "ACTIVE",
@@ -88,7 +88,7 @@ export const createSeizureRequestHandler = async (req, res) => {
 
   const person = await createSeizure(personId);
 
-  await triggerPersonSeizureCreatedWebhook(person.id, person.seizure);
+  await triggerPersonSeizureCreatedWebhook(person);
   await updateAccountLockingStatus(person.id, "BLOCK");
 
   res.redirect("back");
@@ -120,7 +120,7 @@ export const deleteSeizureRequestHandler = async (req, res) => {
   person.seizure = null;
 
   await savePerson(person);
-  await triggerPersonSeizureDeletedWebhook(person.id, deletedSeizure);
+  await triggerPersonSeizureDeletedWebhook(person, deletedSeizure);
   await updateAccountLockingStatus(person.id, "NO_BLOCK");
 
   res.redirect("back");
@@ -143,14 +143,25 @@ export const fulfillSeizureRequestHandler = async (req, res) => {
   res.redirect("back");
 };
 
-const triggerPersonSeizureCreatedWebhook = async (personId, seizure) => {
-  const payload = getSeizureWebhookPayload(personId, seizure);
-  await triggerWebhook(PersonWebhookEvent.PERSON_SEIZURE_CREATED, payload);
+const triggerPersonSeizureCreatedWebhook = async (person: MockPerson) => {
+  const payload = getSeizureWebhookPayload(person.id, person.seizure);
+  await triggerWebhook({
+    type: PersonWebhookEvent.PERSON_SEIZURE_CREATED,
+    payload,
+    personId: person.id,
+  });
 };
 
-const triggerPersonSeizureDeletedWebhook = async (personId, seizure) => {
-  const payload = getSeizureWebhookPayload(personId, seizure);
-  await triggerWebhook(PersonWebhookEvent.PERSON_SEIZURE_DELETED, payload);
+const triggerPersonSeizureDeletedWebhook = async (
+  person: MockPerson,
+  seizure
+) => {
+  const payload = getSeizureWebhookPayload(person.id, seizure);
+  await triggerWebhook({
+    type: PersonWebhookEvent.PERSON_SEIZURE_DELETED,
+    payload,
+    personId: person.id,
+  });
 };
 
 const getSeizureWebhookPayload = (personId, seizure) => ({

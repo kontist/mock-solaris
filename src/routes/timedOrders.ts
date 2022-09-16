@@ -6,7 +6,11 @@ import * as express from "express";
 import { getPerson, savePerson } from "../db";
 import { triggerBookingsWebhook } from "./backoffice";
 import { triggerWebhook } from "../helpers/webhooks";
-import { BookingType, TransactionWebhookEvent } from "../helpers/types";
+import {
+  BookingType,
+  MockPerson,
+  TransactionWebhookEvent,
+} from "../helpers/types";
 
 const SOLARIS_TIMED_ORDER_STATUSES = {
   CREATED: "CREATED",
@@ -86,7 +90,7 @@ const processTimedOrder = async (person, timedOrder) => {
 
   await triggerTimedOrderWebhook(person, timedOrder);
   if (timedOrder.status === SOLARIS_TIMED_ORDER_STATUSES.EXECUTED) {
-    await triggerBookingsWebhook(person.account.id);
+    await triggerBookingsWebhook(person);
   }
 
   return updatedPerson;
@@ -190,7 +194,10 @@ export const authorizeTimedOrder = async (req, res) => {
   res.status(HttpStatusCodes.CREATED).send(timedOrder);
 };
 
-export const confirmTimedOrder = async (req: express.Request, res: express.Response) => {
+export const confirmTimedOrder = async (
+  req: express.Request,
+  res: express.Response
+) => {
   const { person_id: personId, id } = req.params;
   const { authorization_token: token } = req.body;
   const person = await getPerson(personId);
@@ -324,7 +331,7 @@ export const generateTimedOrder = (data) => {
   return template;
 };
 
-const triggerTimedOrderWebhook = async (person, timedOrder) => {
+const triggerTimedOrderWebhook = async (person: MockPerson, timedOrder) => {
   const {
     id,
     status,
@@ -339,5 +346,9 @@ const triggerTimedOrderWebhook = async (person, timedOrder) => {
     processed_at: new Date().toISOString(),
   };
 
-  await triggerWebhook(TransactionWebhookEvent.SEPA_TIMED_ORDER, payload);
+  await triggerWebhook({
+    type: TransactionWebhookEvent.SEPA_TIMED_ORDER,
+    payload,
+    personId: person.id,
+  });
 };

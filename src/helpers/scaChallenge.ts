@@ -25,24 +25,28 @@ export const proceedWithSCAChallenge = async (
   };
   await db.savePerson(person);
 
-  await triggerWebhook(CardWebhookEvent.SCA_CHALLENGE, {
-    amount: reservation.amount,
-    merchant: {
-      name: metaData.merchant.name,
-      country: "276",
-      url: "http://example.com",
+  await triggerWebhook({
+    type: CardWebhookEvent.SCA_CHALLENGE,
+    payload: {
+      amount: reservation.amount,
+      merchant: {
+        name: metaData.merchant.name,
+        country: "276",
+        url: "http://example.com",
+      },
+      challenged_at: moment().format(),
+      expires_at: moment
+        .tz(moment(), BERLIN_TIMEZONE_IDENTIFIER)
+        .add(5, "minute")
+        .format(),
+      channel: "browser",
+      card_id: metaData.card_id,
+      person_id: person.id,
+      authenticate_change_request_id:
+        changeRequestData.authenticateChangeRequestId,
+      decline_change_request_id: changeRequestData.declineChangeRequestId,
     },
-    challenged_at: moment().format(),
-    expires_at: moment
-      .tz(moment(), BERLIN_TIMEZONE_IDENTIFIER)
-      .add(5, "minute")
-      .format(),
-    channel: "browser",
-    card_id: metaData.card_id,
-    person_id: person.id,
-    authenticate_change_request_id:
-      changeRequestData.authenticateChangeRequestId,
-    decline_change_request_id: changeRequestData.declineChangeRequestId,
+    personId: person.id,
   });
 };
 
@@ -53,7 +57,11 @@ export const confirmCardTransaction = async (person: MockPerson) => {
   delete person.account.pendingReservation;
   await db.savePerson(person);
 
-  return triggerWebhook(CardWebhookEvent.CARD_AUTHORIZATION, reservation);
+  return triggerWebhook({
+    type: CardWebhookEvent.CARD_AUTHORIZATION,
+    payload: reservation,
+    personId: person.id,
+  });
 };
 
 export const declineCardTransaction = async (person: MockPerson) => {

@@ -1,8 +1,9 @@
 import uuid from "node-uuid";
-import fetch from "node-fetch";
+import fetch, { Response } from "node-fetch";
 
 import * as log from "../logger";
-import { getWebhookByType } from "../db";
+import { WebhookType } from "../helpers/types";
+import { getPersonOrigin, getWebhookByType, setPersonOrigin } from "../db";
 import { generateSolarisWebhookSignature } from "./solarisWebhookSignature";
 import {
   CardWebhookEvent,
@@ -11,6 +12,23 @@ import {
   TransactionWebhookEvent,
   AccountWebhookEvent,
 } from "./types";
+
+class WebhookRequestError extends Error {
+  statusCode: number;
+  statusText: string;
+  responseText?: string;
+  requestBody?: string;
+  url: string;
+
+  constructor(response: Response, requestBody?: string) {
+    super();
+    this.url = response.url;
+    this.name = this.constructor.name;
+    this.statusCode = response.status;
+    this.statusText = response.statusText;
+    this.requestBody = requestBody;
+  }
+}
 
 const WEBHOOK_SECRETS = {
   [OverdraftApplicationWebhookEvent.OVERDRAFT_APPLICATION]:
@@ -60,7 +78,23 @@ const WEBHOOK_SECRETS = {
     process.env.SOLARIS_ACCOUNT_LIMIT_CHANGE_WEBHOOK_SECRET,
 };
 
-export const triggerWebhook = async (type, payload, extraHeaders = {}) => {
+export const getWebhookUrl = (url: string, origin?: string) => {
+  return origin
+    ? `${origin.replace(/\/$/, "")}/${url.split("/").splice(3).join("/")}`
+    : url;
+};
+
+export const triggerWebhook = async ({
+  type,
+  payload,
+  extraHeaders = {},
+  personId,
+}: {
+  type: WebhookType;
+  payload: Record<string, unknown>;
+  extraHeaders?: Record<string, unknown>;
+  personId?: string;
+}) => {
   const webhook = await getWebhookByType(type);
 
   if (!webhook) {
@@ -93,9 +127,34 @@ export const triggerWebhook = async (type, payload, extraHeaders = {}) => {
     };
   }
 
-  await fetch(webhook.url, {
-    method: "POST",
-    body: JSON.stringify(body),
-    headers,
-  });
+  const triggerRequest = async (url) => {
+    const requestBody = JSON.stringify(body);
+    const response = await fetch(url, {
+      method: "POST",
+      body: requestBody,
+      headers,
+    });
+
+    if (!response.ok) {
+      throw new WebhookRequestError(response, requestBody);
+    }
+  };
+
+  const personOrigin = personId && (await getPersonOrigin(personId));
+  const webhookUrl = getWebhookUrl(webhook.url, personOrigin);
+
+  try {
+    await triggerRequest(webhookUrl);
+  } catch (err) {
+    if (personOrigin && (err.code === "ECONNREFUSED" || err.statusCode > 500)) {
+      // if preview env doesn't exist anymore,
+      // we reset the origin and retrigger request with default webhook url
+      await setPersonOrigin(personId);
+      await triggerRequest(getWebhookUrl(webhook.url));
+      return;
+    }
+
+    log.error(`Webhook request to ${webhookUrl} failed`, err);
+    throw err;
+  }
 };

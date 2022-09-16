@@ -5,6 +5,7 @@ import * as log from "./logger";
 import { calculateOverdraftInterest } from "./helpers/overdraft";
 import {
   CustomerVettingStatus,
+  MockPerson,
   RiskClarificationStatus,
   ScreeningProgress,
 } from "./helpers/types";
@@ -146,7 +147,7 @@ const jsonToPerson = (value) => {
   return person;
 };
 
-export const getPerson = async (personId) => {
+export const getPerson = async (personId: string): Promise<MockPerson> => {
   const person = await redisClient
     .getAsync(`${process.env.MOCKSOLARIS_REDIS_PREFIX}:person:${personId}`)
     .then(jsonToPerson);
@@ -295,7 +296,7 @@ export const saveBooking = (accountId, booking) => {
     .then(savePerson);
 };
 
-export const getAllPersons = () => {
+export const getAllPersons = (): Promise<MockPerson[]> => {
   return redisClient
     .keysAsync(`${process.env.MOCKSOLARIS_REDIS_PREFIX}:person:*`)
     .then((keys) => {
@@ -316,7 +317,7 @@ export const getAllPersons = () => {
     .then((results) => results.map((person) => augmentPerson(person)));
 };
 
-const augmentPerson = (person) => {
+const augmentPerson = (person: MockPerson): MockPerson => {
   const augmented = _.cloneDeep(person);
   augmented.fraudCases = augmented.fraudCases || [];
   augmented.timedOrders = augmented.timedOrders || [];
@@ -469,7 +470,9 @@ export const getCardData = async (cardId) => {
   return cardData;
 };
 
-export const getPersonByFraudCaseId = async (fraudCaseId) => {
+export const getPersonByFraudCaseId = async (
+  fraudCaseId
+): Promise<MockPerson> => {
   const persons = await getAllPersons();
   return persons.find(
     (p) => p.fraudCases.find((c) => c.id === fraudCaseId) !== undefined
@@ -481,4 +484,19 @@ export const getCard = async (cardId) => (await getCardData(cardId)).card;
 export const getPersonByDeviceId = async (deviceId) => {
   const device = await getDevice(deviceId);
   return getPerson(device.person_id);
+};
+
+export const setPersonOrigin = async (personId: string, origin?: string) => {
+  await redisClient.setAsync(
+    `${process.env.MOCKSOLARIS_REDIS_PREFIX}:person-origin:${personId}`,
+    origin || ""
+  );
+};
+
+export const getPersonOrigin = async (
+  personId: string
+): Promise<string | null> => {
+  return redisClient.getAsync(
+    `${process.env.MOCKSOLARIS_REDIS_PREFIX}:person-origin:${personId}`
+  );
 };

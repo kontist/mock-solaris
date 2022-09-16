@@ -36,6 +36,7 @@ import {
   DeliveryMethod,
   AuthorizeChangeRequestResponse,
   ChangeRequestStatus,
+  MockPerson,
 } from "../helpers/types";
 import { triggerWebhook } from "../helpers/webhooks";
 import {
@@ -127,13 +128,13 @@ export const authorizeChangeRequest = async (req, res) => {
 
 export const confirmChangeRequest = async (req, res) => {
   const { change_request_id: changeRequestId } = req.params;
-  const { person_id: personId, tan, device_id: deviceId, signature }  = req.body;
-  const person = personId
+  const { person_id: personId, tan, device_id: deviceId, signature } = req.body;
+  const person = (personId
     ? await getPerson(personId)
-    : await getPersonByDeviceId(deviceId);
+    : await getPersonByDeviceId(deviceId)) as MockPerson;
 
   if (deviceId && !signature) {
-    return res.status(403).send({message: "Missing signature"});
+    return res.status(403).send({ message: "Missing signature" });
   }
 
   const age = moment().diff(
@@ -248,11 +249,12 @@ export const confirmChangeRequest = async (req, res) => {
   await savePerson(person);
 
   if (shouldTriggerWebhook) {
-    await triggerWebhook(
-      PersonWebhookEvent.PERSON_CHANGED,
-      {},
-      { "solaris-entity-id": personId }
-    );
+    await triggerWebhook({
+      type: PersonWebhookEvent.PERSON_CHANGED,
+      payload: {},
+      extraHeaders: { "solaris-entity-id": personId },
+      personId: person.id,
+    });
   }
 
   return res.status(status).send(response);

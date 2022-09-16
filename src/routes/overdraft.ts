@@ -11,6 +11,7 @@ import {
 } from "../helpers/overdraft";
 import {
   AccountWebhookEvent,
+  MockPerson,
   OverdraftApplicationStatus,
   OverdraftStatus,
 } from "../helpers/types";
@@ -129,7 +130,7 @@ export const createOverdraft = async (req, res) => {
     params: { person_id: personId, id: applicationId },
   } = req;
 
-  const person = await getPerson(personId);
+  const person = (await getPerson(personId)) as MockPerson;
 
   const overdraftApplication = person.account.overdraftApplications.find(
     (app) => app.id === applicationId
@@ -172,8 +173,12 @@ export const createOverdraft = async (req, res) => {
     status: OverdraftApplicationStatus.OVERDRAFT_CREATED,
   });
 
-  await triggerWebhook(AccountWebhookEvent.ACCOUNT_LIMIT_CHANGE, {
-    account_id: accountId,
+  await triggerWebhook({
+    type: AccountWebhookEvent.ACCOUNT_LIMIT_CHANGE,
+    payload: {
+      account_id: accountId,
+    },
+    personId: person.id,
   });
 
   res.status(201).send({

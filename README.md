@@ -23,7 +23,6 @@ curl TODO
 
 ![mockSolarisPerson](https://user-images.githubusercontent.com/47757191/189340823-2b200e6f-5068-4a32-8936-9b7b4d7ae38e.png)
 
-
 ### Persons and accounts
 
 Navigate to the URL mentioned above. From there you can send simple, random transaction(s) to your test account.
@@ -56,13 +55,14 @@ For other TAN confirmation (Change Requests, Transfer confirmation, etc.), you c
 
 ### Onboarding a person - Customer due diligence (CDD)
 
-A successfully onboarded person must have "green" values for screening values. 
+A successfully onboarded person must have "green" values for screening values.
 You can set screening values from the "Person data" section ([More info](https://docs.solarisbank.com/guides/get-started/digital-banking/onboard-person/#customer-due-diligence-cdd))
 
 <img width="532" alt="Screen Shot 2022-07-18 at 11 38 55 AM" src="https://user-images.githubusercontent.com/6367201/179475427-58af2c02-b229-4cab-96a2-089f45356e60.png">
 
 ### Seizure Protection
-When querying the balance for P-konto accounts, you will get a `seizure_protection` object as stated in this [API](https://docs.solarisgroup.com/api-reference/digital-banking/account-management/#tag/Accounts/paths/~1v1~1accounts~1{account_id}~1balance/get). Since solaris does not support changing an account to P-konto; we mocked the existence of seizure protection. 
+
+When querying the balance for P-konto accounts, you will get a `seizure_protection` object as stated in this [API](https://docs.solarisgroup.com/api-reference/digital-banking/account-management/#tag/Accounts/paths/~1v1~1accounts~1{account_id}~1balance/get). Since solaris does not support changing an account to P-konto; we mocked the existence of seizure protection.
 
 You can modify the values of seizure protection in this section:
 

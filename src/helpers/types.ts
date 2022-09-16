@@ -105,8 +105,13 @@ export type AccountSnapshot = {
   account_id: string;
 };
 
-export type MockAccount = Account & {
-  cards: { card: Card; cardDetails: CardDetails }[];
+export type MockAccount = {
+  id: string;
+  cards: {
+    card: Card;
+    cardDetails: CardDetails;
+    provisioningToken?: ProvisioningTokenStatusChangePayload;
+  }[];
   reservations: Reservation[];
   fraudReservations: Reservation[];
   pendingReservation: Reservation;
@@ -114,6 +119,11 @@ export type MockAccount = Account & {
   overdraftApplications?: OverdraftApplication[];
   overdraft?: Overdraft;
   overdraftInterest?: number;
+  balance: Amount;
+  account_limit?: Amount;
+  locking_status: string;
+  iban: string;
+  available_balance?: Amount;
 };
 
 export type MockChangeRequest = {
@@ -125,7 +135,18 @@ export type MockChangeRequest = {
   authenticateChangeRequestId?: string;
   method?: string;
   createdAt: string;
+  delta?: Record<string, unknown>;
 };
+
+export interface StandingOrder {
+  id: string;
+  amount: Amount;
+  reference: string;
+  next_occurrence?: string;
+  status: string;
+  last_execution_date?: string;
+  reoccurrence?: string;
+}
 
 export type MockPerson = {
   id: string;
@@ -133,6 +154,9 @@ export type MockPerson = {
   account?: MockAccount;
   transactions: Booking[];
   changeRequest?: MockChangeRequest;
+  origin?: string;
+  queuedBookings?: Record<string, unknown>[];
+  seizure?: Record<string, unknown>;
 };
 
 export type FraudCase = {
@@ -237,6 +261,13 @@ export enum CardWebhookEvent {
 export enum OverdraftApplicationWebhookEvent {
   "OVERDRAFT_APPLICATION" = "OVERDRAFT_APPLICATION", // The status is changed.
 }
+
+export type WebhookType =
+  | OverdraftApplicationWebhookEvent
+  | CardWebhookEvent
+  | TransactionWebhookEvent
+  | PersonWebhookEvent
+  | AccountWebhookEvent;
 
 export enum CardAuthorizationDeclineReason {
   "AUTHENTICATION_REQUIRED" = "AUTHENTICATION_REQUIRED", // 	Failed online authentication. Please try again.

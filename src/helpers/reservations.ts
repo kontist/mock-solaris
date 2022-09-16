@@ -35,25 +35,35 @@ const fraudSuspected = (reason: CardAuthorizationDeclineReason) =>
 
 const triggerCardFraudWebhook = async (
   cardAuthorizationDeclined,
-  fraudCase
+  fraudCase,
+  person: MockPerson
 ) => {
-  await triggerWebhook(CardWebhookEvent.CARD_FRAUD_CASE_PENDING, {
-    id: fraudCase.id,
-    resolution: "PENDING",
-    respond_until: moment(fraudCase.reservationExpiresAt).toISOString(),
-    whitelisted_until: "null",
-    card_transaction: cardAuthorizationDeclined,
+  await triggerWebhook({
+    type: CardWebhookEvent.CARD_FRAUD_CASE_PENDING,
+    personId: person.id,
+    payload: {
+      id: fraudCase.id,
+      resolution: "PENDING",
+      respond_until: moment(fraudCase.reservationExpiresAt).toISOString(),
+      whitelisted_until: "null",
+      card_transaction: cardAuthorizationDeclined,
+    },
   });
 };
 
 const triggerCardDeclinedWebhook = async (
   cardAuthorizationDeclined: CardTransaction,
-  reason: CardAuthorizationDeclineReason
+  reason: CardAuthorizationDeclineReason,
+  person: MockPerson
 ) => {
-  await triggerWebhook(CardWebhookEvent.CARD_AUTHORIZATION_DECLINE, {
-    id: uuid.v4(),
-    reason,
-    card_transaction: cardAuthorizationDeclined,
+  await triggerWebhook({
+    type: CardWebhookEvent.CARD_AUTHORIZATION_DECLINE,
+    personId: person.id,
+    payload: {
+      id: uuid.v4(),
+      reason,
+      card_transaction: cardAuthorizationDeclined,
+    },
   });
 };
 
@@ -308,7 +318,8 @@ const computeCardUsage = (person: MockPerson) => {
 export const validateCardLimits = async (
   currentCardUsage,
   cardDetails: CardDetails,
-  cardAuthorizationDeclined: CardTransaction
+  cardAuthorizationDeclined: CardTransaction,
+  person: MockPerson
 ) => {
   const isCardNotPresentAuthorization =
     cardAuthorizationDeclined.pos_entry_mode === POSEntryMode.CARD_NOT_PRESENT;
@@ -325,7 +336,8 @@ export const validateCardLimits = async (
     ) {
       await triggerCardDeclinedWebhook(
         cardAuthorizationDeclined,
-        CardAuthorizationDeclineReason.CARD_NOT_PRESENT_AMOUNT_LIMIT_REACHED_DAILY
+        CardAuthorizationDeclineReason.CARD_NOT_PRESENT_AMOUNT_LIMIT_REACHED_DAILY,
+        person
       );
       throw new Error(
         `Daily card_not_present amount limit exceeded (${dailyLimitAfterAuthorization} > ${cardDetails.cardNotPresentLimits.daily.max_amount_cents})`
@@ -338,7 +350,8 @@ export const validateCardLimits = async (
     ) {
       await triggerCardDeclinedWebhook(
         cardAuthorizationDeclined,
-        CardAuthorizationDeclineReason.CARD_NOT_PRESENT_USE_LIMIT_REACHED_DAILY
+        CardAuthorizationDeclineReason.CARD_NOT_PRESENT_USE_LIMIT_REACHED_DAILY,
+        person
       );
       throw new Error(
         "Daily card_not_present transaction number limit exceeded"
@@ -351,7 +364,8 @@ export const validateCardLimits = async (
     ) {
       await triggerCardDeclinedWebhook(
         cardAuthorizationDeclined,
-        CardAuthorizationDeclineReason.CARD_NOT_PRESENT_AMOUNT_LIMIT_REACHED_MONTHLY
+        CardAuthorizationDeclineReason.CARD_NOT_PRESENT_AMOUNT_LIMIT_REACHED_MONTHLY,
+        person
       );
       throw new Error(
         `Monthly card_not_present amount limit exceeded (${monthlyLimitAfterAuthorization} > ${cardDetails.cardNotPresentLimits.monthly.max_amount_cents})`
@@ -364,7 +378,8 @@ export const validateCardLimits = async (
     ) {
       await triggerCardDeclinedWebhook(
         cardAuthorizationDeclined,
-        CardAuthorizationDeclineReason.CARD_NOT_PRESENT_USE_LIMIT_REACHED_MONTHLY
+        CardAuthorizationDeclineReason.CARD_NOT_PRESENT_USE_LIMIT_REACHED_MONTHLY,
+        person
       );
       throw new Error(
         "Monthly card_not_present transaction number limit exceeded"
@@ -382,7 +397,8 @@ export const validateCardLimits = async (
     ) {
       await triggerCardDeclinedWebhook(
         cardAuthorizationDeclined,
-        CardAuthorizationDeclineReason.CARD_PRESENT_AMOUNT_LIMIT_REACHED_DAILY
+        CardAuthorizationDeclineReason.CARD_PRESENT_AMOUNT_LIMIT_REACHED_DAILY,
+        person
       );
       throw new Error(
         `Daily card_present amount limit exceeded (${dailyLimitAfterAuthorization} > ${cardDetails.cardPresentLimits.daily.max_amount_cents})`
@@ -395,7 +411,8 @@ export const validateCardLimits = async (
     ) {
       await triggerCardDeclinedWebhook(
         cardAuthorizationDeclined,
-        CardAuthorizationDeclineReason.CARD_PRESENT_USE_LIMIT_REACHED_DAILY
+        CardAuthorizationDeclineReason.CARD_PRESENT_USE_LIMIT_REACHED_DAILY,
+        person
       );
       throw new Error("Daily card_present transaction number limit exceeded");
     }
@@ -406,7 +423,8 @@ export const validateCardLimits = async (
     ) {
       await triggerCardDeclinedWebhook(
         cardAuthorizationDeclined,
-        CardAuthorizationDeclineReason.CARD_PRESENT_AMOUNT_LIMIT_REACHED_MONTHLY
+        CardAuthorizationDeclineReason.CARD_PRESENT_AMOUNT_LIMIT_REACHED_MONTHLY,
+        person
       );
       throw new Error(
         `Monthly card_present amount limit exceeded (${monthlyLimitAfterAuthorization} > ${cardDetails.cardPresentLimits.monthly.max_amount_cents})`
@@ -419,7 +437,8 @@ export const validateCardLimits = async (
     ) {
       await triggerCardDeclinedWebhook(
         cardAuthorizationDeclined,
-        CardAuthorizationDeclineReason.CARD_PRESENT_USE_LIMIT_REACHED_MONTHLY
+        CardAuthorizationDeclineReason.CARD_PRESENT_USE_LIMIT_REACHED_MONTHLY,
+        person
       );
       throw new Error("Monthly card_present transaction number limit exceeded");
     }
@@ -445,7 +464,7 @@ export const createReservation = async ({
   declineReason?: CardAuthorizationDeclineReason;
   posEntryMode?: POSEntryMode;
 }) => {
-  const person = await db.getPerson(personId);
+  const person = (await db.getPerson(personId)) as MockPerson;
   const cardData = person.account.cards.find(({ card }) => card.id === cardId);
   const convertedAmount = Math.abs(parseInt(amount, 10));
   const cardAuthorizationPayload = {
@@ -474,7 +493,8 @@ export const createReservation = async ({
   ) {
     await triggerCardDeclinedWebhook(
       cardAuthorizationDeclined,
-      CardAuthorizationDeclineReason.CARD_BLOCKED
+      CardAuthorizationDeclineReason.CARD_BLOCKED,
+      person
     );
     throw new Error("Your card is blocked");
   }
@@ -482,7 +502,8 @@ export const createReservation = async ({
   if (cardData.card.status === CardStatus.INACTIVE) {
     await triggerCardDeclinedWebhook(
       cardAuthorizationDeclined,
-      CardAuthorizationDeclineReason.CARD_INACTIVE
+      CardAuthorizationDeclineReason.CARD_INACTIVE,
+      person
     );
     throw new Error("Your card is in inactive status");
   }
@@ -498,10 +519,11 @@ export const createReservation = async ({
     throw new Error(`Card has contactless transactions disabled`);
   }
 
-  if (person.account.available_balance.value < amount) {
+  if (person.account.available_balance.value < parseInt(amount, 10)) {
     await triggerCardDeclinedWebhook(
       cardAuthorizationDeclined,
-      CardAuthorizationDeclineReason.INSUFFICIENT_FUNDS
+      CardAuthorizationDeclineReason.INSUFFICIENT_FUNDS,
+      person
     );
     throw new Error("There were insufficient funds to complete this action.");
   }
@@ -513,11 +535,16 @@ export const createReservation = async ({
         cardId,
         person
       );
-      return triggerCardFraudWebhook(cardAuthorizationDeclined, fraudCase);
+      return triggerCardFraudWebhook(
+        cardAuthorizationDeclined,
+        fraudCase,
+        person
+      );
     } else {
       return triggerCardDeclinedWebhook(
         cardAuthorizationDeclined,
-        declineReason
+        declineReason,
+        person
       );
     }
   }
@@ -532,27 +559,33 @@ export const createReservation = async ({
   await validateCardLimits(
     currentCardUsages,
     cardData.cardDetails,
-    cardAuthorizationDeclined
+    cardAuthorizationDeclined,
+    person
   );
 
   await db.savePerson(person);
 
-  await triggerWebhook(CardWebhookEvent.CARD_AUTHORIZATION, reservation);
+  await triggerWebhook({
+    type: CardWebhookEvent.CARD_AUTHORIZATION,
+    payload: reservation,
+    personId: person.id,
+  });
 
   return reservation;
 };
 
-const resolveReservation = async (reservation) => {
+const resolveReservation = async (reservation, person: MockPerson) => {
   const resolvedReservation = {
     ...reservation,
     status: ReservationStatus.RESOLVED,
     resolved_at: moment().toDate(),
   };
 
-  await triggerWebhook(
-    CardWebhookEvent.CARD_AUTHORIZATION_RESOLUTION,
-    resolvedReservation
-  );
+  await triggerWebhook({
+    type: CardWebhookEvent.CARD_AUTHORIZATION_RESOLUTION,
+    payload: resolvedReservation,
+    personId: person.id,
+  });
 };
 
 const bookReservation = async (person, reservation, increaseAmount) => {
@@ -583,12 +616,12 @@ const bookReservation = async (person, reservation, increaseAmount) => {
 
   await db.savePerson(person);
 
-  await resolveReservation(reservation);
+  await resolveReservation(reservation, person);
 
-  await triggerBookingsWebhook(person.account.id);
+  await triggerBookingsWebhook(person);
 };
 
-const expireReservation = async (person, reservation) => {
+const expireReservation = async (person: MockPerson, reservation) => {
   person.account.reservations = person.account.reservations.filter(
     (item) => item.id !== reservation.id
   );
@@ -597,10 +630,11 @@ const expireReservation = async (person, reservation) => {
 
   await db.savePerson(person);
 
-  await triggerWebhook(
-    CardWebhookEvent.CARD_AUTHORIZATION_RESOLUTION,
-    reservation
-  );
+  await triggerWebhook({
+    type: CardWebhookEvent.CARD_AUTHORIZATION_RESOLUTION,
+    payload: reservation,
+    personId: person.id,
+  });
 };
 
 export const updateReservation = async ({
@@ -626,7 +660,7 @@ export const updateReservation = async ({
 
   switch (action) {
     case ActionType.RESOLVE: {
-      return resolveReservation(reservation);
+      return resolveReservation(reservation, person);
     }
     case ActionType.BOOK: {
       return bookReservation(person, reservation, increaseAmount);

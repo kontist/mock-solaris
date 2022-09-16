@@ -32,6 +32,7 @@
         "@types/express": "^4.17.6",
         "@types/mocha": "^7.0.2",
         "@types/node": "^13.1.1",
+        "@types/node-fetch": "^2.6.2",
         "@types/node-uuid": "0.0.28",
         "chai": "^4.2.0",
         "husky": "^4.2.5",
@@ -479,6 +480,30 @@
       "resolved": "https://registry.npmjs.org/@types/node/-/node-13.13.9.tgz",
       "integrity": "sha512-EPZBIGed5gNnfWCiwEIwTE2Jdg4813odnG8iNPMQGrqVxrI+wL68SPtPeCX+ZxGBaA6pKAVc6jaKgP/Q0QzfdQ==",
       "dev": true
+    },
+    "node_modules/@types/node-fetch": {
+      "version": "2.6.2",
+      "resolved": "https://registry.npmjs.org/@types/node-fetch/-/node-fetch-2.6.2.tgz",
+      "integrity": "sha512-DHqhlq5jeESLy19TYhLakJ07kNumXWjcDdxXsLUMJZ6ue8VZJj4kLPQVE/2mdHh3xZziNF1xppu5lwmS53HR+A==",
+      "dev": true,
+      "dependencies": {
+        "@types/node": "*",
+        "form-data": "^3.0.0"
+      }
+    },
+    "node_modules/@types/node-fetch/node_modules/form-data": {
+      "version": "3.0.1",
+      "resolved": "https://registry.npmjs.org/form-data/-/form-data-3.0.1.tgz",
+      "integrity": "sha512-RHkBKtLWUVwd7SqRIvCZMEvAMoGUp0XU+seQiZejj0COz3RI3hWP4sCv3gZWWLjJTd7rGwcsF5eKZGii0r/hbg==",
+      "dev": true,
+      "dependencies": {
+        "asynckit": "^0.4.0",
+        "combined-stream": "^1.0.8",
+        "mime-types": "^2.1.12"
+      },
+      "engines": {
+        "node": ">= 6"
+      }
     },
     "node_modules/@types/node-uuid": {
       "version": "0.0.28",
@@ -6021,6 +6046,29 @@
       "resolved": "https://registry.npmjs.org/@types/node/-/node-13.13.9.tgz",
       "integrity": "sha512-EPZBIGed5gNnfWCiwEIwTE2Jdg4813odnG8iNPMQGrqVxrI+wL68SPtPeCX+ZxGBaA6pKAVc6jaKgP/Q0QzfdQ==",
       "dev": true
+    },
+    "@types/node-fetch": {
+      "version": "2.6.2",
+      "resolved": "https://registry.npmjs.org/@types/node-fetch/-/node-fetch-2.6.2.tgz",
+      "integrity": "sha512-DHqhlq5jeESLy19TYhLakJ07kNumXWjcDdxXsLUMJZ6ue8VZJj4kLPQVE/2mdHh3xZziNF1xppu5lwmS53HR+A==",
+      "dev": true,
+      "requires": {
+        "@types/node": "*",
+        "form-data": "^3.0.0"
+      },
+      "dependencies": {
+        "form-data": {
+          "version": "3.0.1",
+          "resolved": "https://registry.npmjs.org/form-data/-/form-data-3.0.1.tgz",
+          "integrity": "sha512-RHkBKtLWUVwd7SqRIvCZMEvAMoGUp0XU+seQiZejj0COz3RI3hWP4sCv3gZWWLjJTd7rGwcsF5eKZGii0r/hbg==",
+          "dev": true,
+          "requires": {
+            "asynckit": "^0.4.0",
+            "combined-stream": "^1.0.8",
+            "mime-types": "^2.1.12"
+          }
+        }
+      }
     },
     "@types/node-uuid": {
       "version": "0.0.28",

@@ -2,13 +2,13 @@ import crypto from "crypto";
 import _ from "lodash";
 import uuid from "node-uuid";
 
-import { getPerson, getAllPersons, savePerson } from "../db";
+import { getPerson, getAllPersons, savePerson, setPersonOrigin } from "../db";
 
 import { createChangeRequest } from "./changeRequest";
 import { triggerWebhook } from "../helpers/webhooks";
-import { PersonWebhookEvent } from "../helpers/types";
+import { MockPerson, PersonWebhookEvent } from "../helpers/types";
 
-export const createPerson = (req, res) => {
+export const createPerson = async (req, res) => {
   const personId =
     "mock" +
     crypto.createHash("md5").update(JSON.stringify(req.body)).digest("hex");
@@ -23,12 +23,18 @@ export const createPerson = (req, res) => {
     createdAt: new Date().toISOString(),
   };
 
-  return savePerson(person).then(() => {
+  const result = await savePerson(person).then(() => {
     res.status(200).send({
       id: personId,
       ...req.body,
     });
   });
+
+  if (req.headers.origin) {
+    await setPersonOrigin(personId, req.headers.origin);
+  }
+
+  return result;
 };
 
 export const showPerson = async (req, res) => {
@@ -171,7 +177,7 @@ export const updatePerson = async (req, res) => {
     body,
   } = req;
   const data = _.pick(body, fields);
-  const person = await getPerson(personId);
+  const person = (await getPerson(personId)) as MockPerson;
 
   const fieldsBanned = [];
   Object.keys(data).forEach((key) => {
@@ -200,11 +206,12 @@ export const updatePerson = async (req, res) => {
   _.merge(person, data);
   await savePerson(person);
 
-  await triggerWebhook(
-    PersonWebhookEvent.PERSON_CHANGED,
-    {},
-    { "solaris-entity-id": personId }
-  );
+  await triggerWebhook({
+    type: PersonWebhookEvent.PERSON_CHANGED,
+    payload: {},
+    extraHeaders: { "solaris-entity-id": personId },
+    personId: person.id,
+  });
 
   return res.status(200).send(person);
 };

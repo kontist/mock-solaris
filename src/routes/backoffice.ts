@@ -14,6 +14,8 @@ import {
   saveSepaDirectDebitReturn,
   getDevicesByPersonId,
   saveTaxIdentifications,
+  getPersonOrigin,
+  setPersonOrigin,
 } from "../db";
 import {
   createSepaDirectDebitReturn,
@@ -38,16 +40,21 @@ import {
   ScreeningProgress,
   RiskClarificationStatus,
   CustomerVettingStatus,
+  MockPerson,
 } from "../helpers/types";
 import {
   changeOverdraftApplicationStatus,
   issueInterestAccruedBooking,
 } from "../helpers/overdraft";
 
-const triggerIdentificationWebhook = (payload) =>
-  triggerWebhook(PersonWebhookEvent.IDENTIFICATION, payload);
+const triggerIdentificationWebhook = (payload, personId?: string) =>
+  triggerWebhook({
+    type: PersonWebhookEvent.IDENTIFICATION,
+    payload,
+    personId,
+  });
 
-const triggerAccountBlockWebhook = async (person) => {
+const triggerAccountBlockWebhook = async (person: MockPerson) => {
   const { iban, id: accountId, locking_status: lockingStatus } = person.account;
 
   const payload = {
@@ -59,12 +66,20 @@ const triggerAccountBlockWebhook = async (person) => {
     iban,
   };
 
-  await triggerWebhook(AccountWebhookEvent.ACCOUNT_BLOCK, payload);
+  await triggerWebhook({
+    type: AccountWebhookEvent.ACCOUNT_BLOCK,
+    payload,
+    personId: person.id,
+  });
 };
 
-export const triggerBookingsWebhook = async (solarisAccountId) => {
-  const payload = { account_id: solarisAccountId };
-  await triggerWebhook(TransactionWebhookEvent.BOOKING, payload);
+export const triggerBookingsWebhook = async (person: MockPerson) => {
+  const payload = { account_id: person.account.id };
+  await triggerWebhook({
+    type: TransactionWebhookEvent.BOOKING,
+    payload,
+    personId: person.id,
+  });
 };
 
 export const addAccountSeizureProtectionHandler = async (req, res) => {
@@ -198,9 +213,17 @@ export const getPersonHandler = async (req, res) => {
     });
   }
 
-  const mobileNumber = await getMobileNumber(person.id);
-  const taxIdentifications = await getTaxIdentifications(person.id);
-  const devices = await getDevicesByPersonId(person.id);
+  const [
+    mobileNumber,
+    taxIdentifications,
+    devices,
+    origin,
+  ] = await Promise.all([
+    getMobileNumber(person.id),
+    getTaxIdentifications(person.id),
+    getDevicesByPersonId(person.id),
+    getPersonOrigin(person.id),
+  ]);
 
   if (shouldReturnJSON(req)) {
     res.send(person);
@@ -212,8 +235,25 @@ export const getPersonHandler = async (req, res) => {
       devices,
       identifications: person.identifications,
       SEIZURE_STATUSES,
+      origin,
     });
   }
+};
+
+export const updateOrigin = async (req, res) => {
+  log.info(`Updating person "${req.params.id} origin"`, req.body);
+
+  const person = await getPerson(req.params.id);
+
+  if (req.body.origin) {
+    if (!/http(s)?:\/\//.test(req.body.origin)) {
+      throw new Error(`Invalid origin provided: ${req.body.origin}`);
+    }
+  }
+
+  await setPersonOrigin(req.params.id, req.body.origin);
+
+  res.redirect(`/__BACKOFFICE__/person/${person.id}`);
 };
 
 export const updatePersonHandler = async (req, res) => {
@@ -247,11 +287,12 @@ export const updatePersonHandler = async (req, res) => {
 
   await savePerson(person);
 
-  await triggerWebhook(
-    PersonWebhookEvent.PERSON_CHANGED,
-    {},
-    { "solaris-entity-id": req.params.id }
-  );
+  await triggerWebhook({
+    type: PersonWebhookEvent.PERSON_CHANGED,
+    payload: {},
+    extraHeaders: { "solaris-entity-id": req.params.id },
+    personId: person.id,
+  });
 
   res.redirect(`/__BACKOFFICE__/person/${person.id}`);
 };
@@ -292,15 +333,18 @@ export const setIdentification = async (req, res) => {
     }
   }
 
-  await triggerIdentificationWebhook({
-    id: identification.id,
-    url: identification.url,
-    person_id: identification.person_id,
-    completed_at: identification.completed_at,
-    reference: identification.reference,
-    status: identification.status,
-    method: "idnow",
-  });
+  await triggerIdentificationWebhook(
+    {
+      id: identification.id,
+      url: identification.url,
+      person_id: identification.person_id,
+      completed_at: identification.completed_at,
+      reference: identification.reference,
+      status: identification.status,
+      method: "idnow",
+    },
+    person.id
+  );
 
   res.status(204).send();
 };
@@ -326,11 +370,12 @@ export const setScreening = async (req, res) => {
   person.customer_vetting_status = customer_vetting_status;
 
   await savePerson(person);
-  await triggerWebhook(
-    PersonWebhookEvent.PERSON_CHANGED,
-    {},
-    { "solaris-entity-id": person.id }
-  );
+  await triggerWebhook({
+    type: PersonWebhookEvent.PERSON_CHANGED,
+    payload: {},
+    extraHeaders: { "solaris-entity-id": person.id },
+    personId: person.id,
+  });
   res.status(204).send();
 };
 
@@ -379,15 +424,18 @@ export const setIdentificationState = async (req, res) => {
     }
   }
 
-  await triggerIdentificationWebhook({
-    id: identification.id,
-    url: identification.url,
-    person_id: identification.person_id,
-    completed_at: identification.completed_at,
-    reference: identification.reference,
-    method,
-    status,
-  });
+  await triggerIdentificationWebhook(
+    {
+      id: identification.id,
+      url: identification.url,
+      person_id: identification.person_id,
+      completed_at: identification.completed_at,
+      reference: identification.reference,
+      method,
+      status,
+    },
+    person.id
+  );
 
   res.redirect(`/__BACKOFFICE__/person/${person.id}#identifications`);
 };
@@ -515,10 +563,10 @@ export const processQueuedBooking = async (
   }
 
   await savePerson(person);
-  await triggerBookingsWebhook(person.account.id);
+  await triggerBookingsWebhook(person);
 
   if (sepaDirectDebitReturn) {
-    await triggerSepaDirectDebitReturnWebhook(sepaDirectDebitReturn);
+    await triggerSepaDirectDebitReturnWebhook(sepaDirectDebitReturn, person);
   }
 
   return booking;
@@ -680,7 +728,7 @@ export const createDirectDebitReturn = async (personId, id) => {
     directDebitReturn
   );
   await saveSepaDirectDebitReturn(sepaDirectDebitReturn);
-  await triggerSepaDirectDebitReturnWebhook(sepaDirectDebitReturn);
+  await triggerSepaDirectDebitReturnWebhook(sepaDirectDebitReturn, person);
 };
 
 export const updateAccountLockingStatus = async (personId, lockingStatus) => {

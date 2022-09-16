@@ -80,10 +80,11 @@ export const changeOverdraftApplicationStatus = async ({
   }
 
   await savePerson(person);
-  await triggerWebhook(
-    OverdraftApplicationWebhookEvent.OVERDRAFT_APPLICATION,
-    overdraftApplication
-  );
+  await triggerWebhook({
+    type: OverdraftApplicationWebhookEvent.OVERDRAFT_APPLICATION,
+    payload: overdraftApplication,
+    personId: person.id,
+  });
 
   return overdraftApplication;
 };
@@ -119,5 +120,5 @@ export const issueInterestAccruedBooking = async ({
   const skipInterest = true;
 
   await savePerson(person, skipInterest);
-  await triggerBookingsWebhook(person.account.id);
+  await triggerBookingsWebhook(person);
 };

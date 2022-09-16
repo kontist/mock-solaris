@@ -295,12 +295,12 @@ export const changeCardStatus = async (
   cardId: string,
   newCardStatus: CardStatus
 ): Promise<Card> => {
-  let person;
+  let person: MockPerson;
 
   if (personId) {
     person = await db.getPerson(personId);
   } else if (accountId) {
-    person = db.findPersonByAccountId(accountId);
+    person = await db.findPersonByAccountId(accountId);
   } else {
     throw new Error("You have to provide personId or accountId");
   }
@@ -322,7 +322,11 @@ export const changeCardStatus = async (
   cardData.card.status = newCardStatus;
 
   await db.savePerson(person);
-  await triggerWebhook(CardWebhookEvent.CARD_LIFECYCLE_EVENT, cardData.card);
+  await triggerWebhook({
+    type: CardWebhookEvent.CARD_LIFECYCLE_EVENT,
+    payload: cardData.card,
+    personId: person.id,
+  });
 
   return cardData.card;
 };
@@ -348,7 +352,7 @@ export const upsertProvisioningToken = async (
     throw new Error("You have to provide cardId");
   }
 
-  const person = await db.getPerson(personId);
+  const person = (await db.getPerson(personId)) as MockPerson;
   const cardData = person.account.cards.find(({ card }) => card.id === cardId);
   if (!cardData) {
     throw new Error("Card not found");
@@ -356,10 +360,11 @@ export const upsertProvisioningToken = async (
 
   const { provisioningToken } = cardData;
   const newProvisioningToken = status
-    ? await triggerProvisioningTokenUpdate(provisioningToken, status)
+    ? await triggerProvisioningTokenUpdate(provisioningToken, status, person)
     : await triggerProvisioningTokenCreation(
         provisioningToken,
-        cardData.card.id
+        cardData.card.id,
+        person
       );
 
   cardData.provisioningToken = newProvisioningToken;
@@ -377,7 +382,8 @@ export const upsertProvisioningToken = async (
  */
 const triggerProvisioningTokenCreation = async (
   provisioningToken: ProvisioningTokenStatusChangePayload,
-  cardId: string
+  cardId: string,
+  person: MockPerson
 ): Promise<ProvisioningTokenStatusChangePayload> => {
   let walletId;
   let webhookCalls = [];
@@ -443,7 +449,11 @@ const triggerProvisioningTokenCreation = async (
   ];
 
   for (const payload of webhookCalls) {
-    await triggerWebhook(CardWebhookEvent.CARD_TOKEN_LIFECYCLE, payload);
+    await triggerWebhook({
+      type: CardWebhookEvent.CARD_TOKEN_LIFECYCLE,
+      payload,
+      personId: person.id,
+    });
   }
 
   // Extract unnecessary data to save the token's relevant information from last payload.
@@ -466,7 +476,8 @@ const triggerProvisioningTokenCreation = async (
  */
 const triggerProvisioningTokenUpdate = async (
   provisioningToken: ProvisioningTokenStatusChangePayload,
-  tokenStatus: ProvisioningTokenStatus
+  tokenStatus: ProvisioningTokenStatus,
+  person: MockPerson
 ): Promise<ProvisioningTokenStatusChangePayload> => {
   if (!provisioningToken) {
     throw new Error("No Provisioning Token found for the provided card");
@@ -485,7 +496,11 @@ const triggerProvisioningTokenUpdate = async (
     event_type: ProvisioningTokenEventType.TOKEN_STATUS_UPDATED,
     wallet_type: "GOOGLE",
   };
-  await triggerWebhook(CardWebhookEvent.CARD_TOKEN_LIFECYCLE, payload);
+  await triggerWebhook({
+    type: CardWebhookEvent.CARD_TOKEN_LIFECYCLE,
+    payload,
+    personId: person.id,
+  });
 
   return newProvisioningToken;
 };
@@ -522,10 +537,11 @@ export const activateCard = async (
   cardForActivation.status = CardStatus.ACTIVE;
   person.account.cards[cardIndex].card = cardForActivation;
   await db.savePerson(person);
-  await triggerWebhook(
-    CardWebhookEvent.CARD_LIFECYCLE_EVENT,
-    cardForActivation
-  );
+  await triggerWebhook({
+    type: CardWebhookEvent.CARD_LIFECYCLE_EVENT,
+    payload: cardForActivation,
+    personId: person.id,
+  });
   return cardForActivation;
 };
 
