@@ -336,7 +336,7 @@ router.post(
 );
 
 router.post(
-  "/cards/:card_id/push_provision/:wallet_type",
+  "/cards/:card_id/sca_push_provision/:wallet_type",
   cardsAPI.cardMiddleware,
   safeRequestHandler(cardsAPI.pushProvisioningHandler)
 );
