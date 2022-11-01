@@ -1,12 +1,12 @@
 {
   "name": "@kontist/mock-solaris",
-  "version": "1.0.56",
+  "version": "1.0.57",
   "lockfileVersion": 2,
   "requires": true,
   "packages": {
     "": {
       "name": "@kontist/mock-solaris",
-      "version": "1.0.56",
+      "version": "1.0.57",
       "license": "Apache-2.0",
       "dependencies": {
         "bluebird": "^3.4.7",
@@ -24,6 +24,7 @@
         "redis": "^3.0.2",
         "redis-mock": "^0.49.0",
         "swig": "^1.4.2",
+        "validate-steuerid": "1.0.4",
         "winston": "^2.4.4",
         "winston-loggly-bulk": "2.0.3"
       },
@@ -5258,6 +5259,14 @@
         "node": ">= 0.4.0"
       }
     },
+    "node_modules/validate-steuerid": {
+      "version": "1.0.4",
+      "resolved": "https://registry.npmjs.org/validate-steuerid/-/validate-steuerid-1.0.4.tgz",
+      "integrity": "sha512-23i7Y9zxzqT8oNd3WeeSdhC4EHrHizcWx6+k6TrqteTsjyruufldNcbX7SfrKP6L/tpb2AEnz61QjHqUdGyEKg==",
+      "engines": {
+        "node": ">=12"
+      }
+    },
     "node_modules/vary": {
       "version": "1.1.2",
       "resolved": "https://registry.npmjs.org/vary/-/vary-1.1.2.tgz",
@@ -9754,6 +9763,11 @@
       "version": "1.0.1",
       "resolved": "https://registry.npmjs.org/utils-merge/-/utils-merge-1.0.1.tgz",
       "integrity": "sha1-n5VxD1CiZ5R7LMwSR0HBAoQn5xM="
+    },
+    "validate-steuerid": {
+      "version": "1.0.4",
+      "resolved": "https://registry.npmjs.org/validate-steuerid/-/validate-steuerid-1.0.4.tgz",
+      "integrity": "sha512-23i7Y9zxzqT8oNd3WeeSdhC4EHrHizcWx6+k6TrqteTsjyruufldNcbX7SfrKP6L/tpb2AEnz61QjHqUdGyEKg=="
     },
     "vary": {
       "version": "1.1.2",

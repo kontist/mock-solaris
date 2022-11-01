@@ -7,8 +7,22 @@ import {
 } from "../db";
 
 import { createChangeRequest } from "./changeRequest";
+import { isSteuerIdValid } from "validate-steuerid";
 
 export const TIN_UPDATE = "Patch/tax-indentifications/id";
+
+const deTaxIdValidationError = {
+  id: Date.now().toString(),
+  status: 400,
+  code: "invalid_model",
+  title: "Invalid Model",
+  detail:
+    "number is not a valid person tax identification number for country: DE",
+  source: {
+    field: "number",
+    message: "is not a valid person tax identification number for country: DE",
+  },
+};
 
 export const submitTaxIdentification = async (req, res) => {
   const { person_id: personId } = req.params;
@@ -42,6 +56,12 @@ export const submitTaxIdentification = async (req, res) => {
           detail: "invalid tax_identification",
         },
       ],
+    });
+  }
+
+  if (!isSteuerIdValid(tin.number) && tin.country === "DE") {
+    return res.status(400).send({
+      errors: [deTaxIdValidationError],
     });
   }
 
@@ -115,6 +135,12 @@ export const updateTaxIdentification = async (req, res) => {
           detail: "invalid tax_identification",
         },
       ],
+    });
+  }
+
+  if (!isSteuerIdValid(tin.number) && tin.country === "DE") {
+    return res.status(400).send({
+      errors: [deTaxIdValidationError],
     });
   }
 
