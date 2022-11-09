@@ -1,4 +1,5 @@
 import crypto from "crypto";
+import uuid from "node-uuid";
 
 import {
   getPerson,
@@ -12,7 +13,7 @@ import { isSteuerIdValid } from "validate-steuerid";
 export const TIN_UPDATE = "Patch/tax-indentifications/id";
 
 const deTaxIdValidationError = {
-  id: Date.now().toString(),
+  id: uuid.v4(),
   status: 400,
   code: "invalid_model",
   title: "Invalid Model",
@@ -49,7 +50,7 @@ export const submitTaxIdentification = async (req, res) => {
     return res.status(400).send({
       errors: [
         {
-          id: Date.now().toString(),
+          id: uuid.v4(),
           status: 400,
           code: "",
           title: "",
@@ -70,7 +71,7 @@ export const submitTaxIdentification = async (req, res) => {
       return res.status(400).send({
         errors: [
           {
-            id: Date.now().toString(),
+            id: uuid.v4(),
             status: 400,
             code: "invalid_model",
             title: "Invalid Model",
@@ -85,7 +86,7 @@ export const submitTaxIdentification = async (req, res) => {
     return res.status(400).send({
       errors: [
         {
-          id: Date.now().toString(),
+          id: uuid.v4(),
           status: 400,
           code: "invalid_model",
           title: "Invalid Model",
@@ -112,7 +113,7 @@ export const updateTaxIdentification = async (req, res) => {
     return res.status(404).send({
       errors: [
         {
-          id: Date.now().toString(),
+          id: uuid.v4(),
           status: 404,
           code: "model_not_found",
           title: "Model Not Found",
@@ -128,7 +129,7 @@ export const updateTaxIdentification = async (req, res) => {
     return res.status(400).send({
       errors: [
         {
-          id: Date.now().toString(),
+          id: uuid.v4(),
           status: 400,
           code: "",
           title: "",
@@ -149,7 +150,7 @@ export const updateTaxIdentification = async (req, res) => {
       return res.status(400).send({
         errors: [
           {
-            id: Date.now().toString(),
+            id: uuid.v4(),
             status: 400,
             code: "",
             title: "",
