@@ -1,4 +1,5 @@
 import crypto from "crypto";
+import uuid from "node-uuid";
 
 import {
   getPerson,
@@ -7,8 +8,23 @@ import {
 } from "../db";
 
 import { createChangeRequest } from "./changeRequest";
+import { isSteuerIdValid } from "validate-steuerid";
 
 export const TIN_UPDATE = "Patch/tax-indentifications/id";
+
+const getTaxIdValidationError = (country = "DE") => {
+  return {
+    id: uuid.v4(),
+    status: 400,
+    code: "invalid_model",
+    title: "Invalid Model",
+    detail: `number is not a valid person tax identification number for country: ${country}`,
+    source: {
+      field: "number",
+      message: `is not a valid person tax identification number for country: ${country}`,
+    },
+  };
+};
 
 export const submitTaxIdentification = async (req, res) => {
   const { person_id: personId } = req.params;
@@ -35,7 +51,7 @@ export const submitTaxIdentification = async (req, res) => {
     return res.status(400).send({
       errors: [
         {
-          id: Date.now().toString(),
+          id: uuid.v4(),
           status: 400,
           code: "",
           title: "",
@@ -45,12 +61,18 @@ export const submitTaxIdentification = async (req, res) => {
     });
   }
 
+  if (!isSteuerIdValid(tin.number) && tin.country === "DE") {
+    return res.status(400).send({
+      errors: [getTaxIdValidationError()],
+    });
+  }
+
   if (tins.length) {
     if (tins.find((tinRow) => tinRow.country === tin.country)) {
       return res.status(400).send({
         errors: [
           {
-            id: Date.now().toString(),
+            id: uuid.v4(),
             status: 400,
             code: "invalid_model",
             title: "Invalid Model",
@@ -65,7 +87,7 @@ export const submitTaxIdentification = async (req, res) => {
     return res.status(400).send({
       errors: [
         {
-          id: Date.now().toString(),
+          id: uuid.v4(),
           status: 400,
           code: "invalid_model",
           title: "Invalid Model",
@@ -92,7 +114,7 @@ export const updateTaxIdentification = async (req, res) => {
     return res.status(404).send({
       errors: [
         {
-          id: Date.now().toString(),
+          id: uuid.v4(),
           status: 404,
           code: "model_not_found",
           title: "Model Not Found",
@@ -108,7 +130,7 @@ export const updateTaxIdentification = async (req, res) => {
     return res.status(400).send({
       errors: [
         {
-          id: Date.now().toString(),
+          id: uuid.v4(),
           status: 400,
           code: "",
           title: "",
@@ -118,12 +140,18 @@ export const updateTaxIdentification = async (req, res) => {
     });
   }
 
+  if (!isSteuerIdValid(tin.number) && tin.country === "DE") {
+    return res.status(400).send({
+      errors: [getTaxIdValidationError()],
+    });
+  }
+
   if (!tin.primary) {
     if (!tins.find((tinRow) => tinRow.primary === true)) {
       return res.status(400).send({
         errors: [
           {
-            id: Date.now().toString(),
+            id: uuid.v4(),
             status: 400,
             code: "",
             title: "",
