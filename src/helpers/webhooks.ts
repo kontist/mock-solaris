@@ -98,7 +98,7 @@ export const triggerWebhook = async ({
   const webhook = await getWebhookByType(type);
 
   if (!webhook) {
-    log.warn(`(triggerWebhook) Webhook with type "${type}" does not exist`);
+    log.warning(`(triggerWebhook) Webhook with type "${type}" does not exist`);
     return;
   }
 
