@@ -1,24 +1,34 @@
 import util from "util";
 import winston from "winston";
 import expressWinston from "express-winston";
-import "winston-loggly-bulk";
+import { Loggly } from "winston-loggly-bulk";
+import * as Transport from "winston-transport";
 
 const { LOGGLY_KEY } = process.env;
-
-export const getLogglyTransportOptions = () => ({
-  token: LOGGLY_KEY,
-  subdomain: "kontist",
-  tags: ["bankmock.kontist.com"],
-  json: true,
-});
-
 const consoleLogger = new winston.transports.Console();
+let loggly: Loggly;
+
+winston.add(
+  new winston.transports.Console({
+    format: winston.format.simple(),
+  })
+);
+
+if (LOGGLY_KEY) {
+  loggly = new Loggly({
+    format: winston.format.simple(),
+    token: LOGGLY_KEY,
+    subdomain: "kontist",
+    tags: ["mockSolaris"],
+    json: true,
+  });
+  winston.add(loggly);
+}
 
 export const getExpressLogger = () => {
-  const transports = [consoleLogger];
-
-  if (LOGGLY_KEY) {
-    transports.push(new winston.transports.Loggly(getLogglyTransportOptions()) as any);
+  const transports: Transport[] = [consoleLogger];
+  if (loggly) {
+    transports.push(loggly);
   }
 
   return expressWinston.logger({
@@ -27,52 +37,28 @@ export const getExpressLogger = () => {
     msg:
       "HTTP {{req.method}} {{req.url}} {{res.statusCode}} {{res.responseTime}}ms",
     expressFormat: false,
-    colorStatus: false,
-    ignoreRoute (req, res) {
-      return req.url === "/health";
-    },
+    ignoreRoute: (req) => req.url === "/health",
   });
 };
 
-function isError(e) {
-  return (
-    Object.prototype.toString.call(e) === "[object Error]" || e instanceof Error
-  );
+export function info(message: string, ...meta: any[]) {
+  winston.log("info", util.format(message, ...meta));
 }
 
-const formatLogForError = (err) => `
-${util.inspect(err)},
-
-Stack trace:
-${err.stack}
-`;
-
-export function info(msg: string, ...args: any[]) {
-  winston.log("info", msg, ...args);
+export function warn(message: string, ...meta: any[]) {
+  winston.log("warn", util.format(message, ...meta));
 }
 
-export function warn(msg: string, ...args: any[]) {
-  winston.log("warn", msg, ...args);
+export function debug(message: string, ...meta: any[]) {
+  winston.log("debug", util.format(message, ...meta));
 }
 
-export function debug(msg: string, ...args: any[]) {
-  winston.log("debug", msg, ...args);
+export function error(message: string | Error, ...meta: any[]) {
+  winston.log("error", util.format(message, ...meta));
 }
 
-export function error(msg: string, ...args: any[]) {
-  const formattedArgs = args.map((arg) =>
-    isError(arg) ? formatLogForError(arg) : arg
-  );
-
-  winston.log("error", msg, ...formattedArgs);
-}
-
-if (LOGGLY_KEY) {
-  winston.add(winston.transports.Loggly, getLogglyTransportOptions());
-}
-
-export const setLogLevel = (logLevel: number | string) => {
-  winston.level = String(logLevel);
-  winston.transports.Console.level = String(logLevel);
+export const setLogLevel = (logLevel: string) => {
+  winston.level = logLevel;
+  winston.transports.Console.level = logLevel;
   consoleLogger.silent = !logLevel;
 };
