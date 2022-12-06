@@ -8,7 +8,30 @@ const { LOGGLY_KEY } = process.env;
 const consoleLogger = new winston.transports.Console();
 let loggly: Loggly;
 
-winston.add(
+export enum LogLevel {
+  DEBUG = "debug",
+  INFO = "info",
+  WARNING = "warning",
+  ERROR = "error",
+  FATAL = "fatal",
+}
+
+const isTest = process.env.NODE_ENV === "test";
+const level = isTest ? LogLevel.FATAL : LogLevel.INFO;
+
+const logger = winston.createLogger({
+  silent: isTest,
+  level,
+  levels: {
+    [LogLevel.DEBUG]: 4,
+    [LogLevel.INFO]: 3,
+    [LogLevel.WARNING]: 2,
+    [LogLevel.ERROR]: 1,
+    [LogLevel.FATAL]: 0,
+  },
+});
+
+logger.add(
   new winston.transports.Console({
     format: winston.format.simple(),
   })
@@ -22,7 +45,7 @@ if (LOGGLY_KEY) {
     tags: ["mockSolaris"],
     json: true,
   });
-  winston.add(loggly);
+  logger.add(loggly);
 }
 
 export const getExpressLogger = () => {
@@ -32,6 +55,7 @@ export const getExpressLogger = () => {
   }
 
   return expressWinston.logger({
+    winstonInstance: logger,
     transports,
     meta: false,
     msg:
@@ -41,24 +65,23 @@ export const getExpressLogger = () => {
   });
 };
 
-export function info(message: string, ...meta: any[]) {
-  winston.log("info", util.format(message, ...meta));
+type LogArguments = any[];
+export function info(...args: LogArguments) {
+  logger.info(util.format(args));
 }
 
-export function warn(message: string, ...meta: any[]) {
-  winston.log("warn", util.format(message, ...meta));
+export function warning(...args: LogArguments) {
+  logger.warning(util.format(args));
 }
 
-export function debug(message: string, ...meta: any[]) {
-  winston.log("debug", util.format(message, ...meta));
+export function debug(...args: LogArguments) {
+  logger.debug(util.format(args));
 }
 
-export function error(message: string | Error, ...meta: any[]) {
-  winston.log("error", util.format(message, ...meta));
+export function error(...args: LogArguments) {
+  logger.error(util.format(args));
 }
 
 export const setLogLevel = (logLevel: string) => {
-  winston.level = logLevel;
-  winston.transports.Console.level = logLevel;
-  consoleLogger.silent = !logLevel;
+  logger.level = logLevel;
 };

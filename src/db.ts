@@ -35,7 +35,7 @@ export const migrate = async () => {
     await getPerson("mockpersonkontistgmbh");
     throw new Error("during development, we create it every time");
   } catch (error) {
-    log.warn("kontistGmbHAccount not found, creating");
+    log.warning("kontistGmbHAccount not found, creating");
 
     await savePerson({
       salutation: "MR",
