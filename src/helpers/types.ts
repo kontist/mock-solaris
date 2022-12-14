@@ -158,6 +158,7 @@ export type MockPerson = {
   origin?: string;
   queuedBookings?: Record<string, unknown>[];
   seizure?: Record<string, unknown>;
+  postboxItems?: Record<string, unknown>[];
 };
 
 export type FraudCase = {
@@ -263,12 +264,17 @@ export enum OverdraftApplicationWebhookEvent {
   "OVERDRAFT_APPLICATION" = "OVERDRAFT_APPLICATION", // The status is changed.
 }
 
+export enum PostboxItemEvent {
+  POSTBOX_ITEM_CREATED = "POSTBOX_ITEM_CREATED",
+}
+
 export type WebhookType =
   | OverdraftApplicationWebhookEvent
   | CardWebhookEvent
   | TransactionWebhookEvent
   | PersonWebhookEvent
-  | AccountWebhookEvent;
+  | AccountWebhookEvent
+  | PostboxItemEvent;
 
 export enum CardAuthorizationDeclineReason {
   "AUTHENTICATION_REQUIRED" = "AUTHENTICATION_REQUIRED", // 	Failed online authentication. Please try again.
@@ -549,4 +555,33 @@ export enum DeviceActivityType {
 export interface DeviceActivityPayload {
   device_data: string;
   activity_type: DeviceActivityType;
+}
+
+export enum PostboxDocumentType {
+  ACCOUNT_STATEMENT = "ACCOUNT_STATEMENT",
+  BALANCE_CONFIRMATION = "BALANCE_CONFIRMATION",
+  CUSTOMER_INFORMATION = "CUSTOMER_INFORMATION",
+  DUNNING_INFORMATION = "DUNNING_INFORMATION",
+  LOAN_SCHEDULE = "LOAN_SCHEDULE",
+  SECURITIES_INVOICE = "SECURITIES_INVOICE",
+  SECURITIES_EVENT = "SECURITIES_EVENT",
+  SECURITIES_EVENT_NOTIFICATION = "SECURITIES_EVENT_NOTIFICATION",
+  DEPOT_STATEMENT_MIFID = "DEPOT_STATEMENT_MIFID",
+  EX_POST_COST_INFORMATION = "EX_POST_COST_INFORMATION",
+  DEPOT_STATEMENT = "DEPOT_STATEMENT",
+  ASSETS_ACQUISITION = "ASSETS_ACQUISITION",
+  ASSETS_ACQUISITION_COSTS = "ASSETS_ACQUISITION_COSTS",
+  PROFIT_TAX_STATEMENT = "PROFIT_TAX_STATEMENT",
+  YEARLY_TAX_STATEMENT = "YEARLY_TAX_STATEMENT",
+  TAX_SETTLEMENT_CALCULATION = "TAX_SETTLEMENT_CALCULATION",
+  CREDIT_CARD_STATEMENT = "CREDIT_CARD_STATEMENT",
+  RELATIONSHIP_TERMINATION = "RELATIONSHIP_TERMINATION",
+  CREDIT_CARD_SECCI = "CREDIT_CARD_SECCI",
+  CREDIT_CARD_CONTRACT = "CREDIT_CARD_CONTRACT",
+  CREDIT_CARD_CONTRACT_SIGNED = "CREDIT_CARD_CONTRACT_SIGNED",
+}
+
+export enum PostboxOwnerType {
+  PERSON = "Person",
+  BUSINESS = "Business",
 }

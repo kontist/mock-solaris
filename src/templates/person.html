@@ -152,6 +152,59 @@
         </form>
       </div>
     </div>
+    <!-- Postbox -->
+    <div class="panel panel-default">
+      <div class="panel-heading"><h4>Create Postbox item</h4></div>
+      <div class="panel-body">
+        <form method="POST" action="/__BACKOFFICE__/createPostboxItem/{{ person.id }}">
+          <div class="form-group">
+            <label for="ownerType">Owner type</label>
+            <select name="ownerType" class="form-control" required>
+              <option {% if person.customer_vetting_status === "Person" %}selected {% endif %} value="Person">Person</option>
+              <option {% if person.customer_vetting_status === "Business" %}selected {% endif %} value="Business">Business</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="name">Document name</label>
+            <input class="form-control" type="text" name="name" placeholder="Document name" autocomplete="off" required />
+          </div>
+          <div class="form-group">
+            <label for="description">Document description</label>
+            <input class="form-control" type="text" name="description" placeholder="Document description" autocomplete="off" required />
+          </div>
+          <div class="form-group">
+            <label for="documentType">Document type</label>
+            <select name="documentType" class="form-control" required>
+              <option {% if person.customer_vetting_status === "ACCOUNT_STATEMENT" %}selected {% endif %} value="ACCOUNT_STATEMENT">ACCOUNT_STATEMENT</option>
+              <option {% if person.customer_vetting_status === "BALANCE_CONFIRMATION" %}selected {% endif %} value="BALANCE_CONFIRMATION">BALANCE_CONFIRMATION</option>
+              <option {% if person.customer_vetting_status === "CUSTOMER_INFORMATION" %}selected {% endif %} value="CUSTOMER_INFORMATION">CUSTOMER_INFORMATION</option>
+              <option {% if person.customer_vetting_status === "DUNNING_INFORMATION" %}selected {% endif %} value="DUNNING_INFORMATION">DUNNING_INFORMATION</option>
+              <option {% if person.customer_vetting_status === "LOAN_SCHEDULE" %}selected {% endif %} value="LOAN_SCHEDULE">LOAN_SCHEDULE</option>
+              <option {% if person.customer_vetting_status === "SECURITIES_INVOICE" %}selected {% endif %} value="SECURITIES_INVOICE">SECURITIES_INVOICE</option>
+              <option {% if person.customer_vetting_status === "SECURITIES_EVENT" %}selected {% endif %} value="SECURITIES_EVENT">SECURITIES_EVENT</option>
+              <option {% if person.customer_vetting_status === "SECURITIES_EVENT_NOTIFICATION" %}selected {% endif %} value="SECURITIES_EVENT_NOTIFICATION">SECURITIES_EVENT_NOTIFICATION</option>
+              <option {% if person.customer_vetting_status === "DEPOT_STATEMENT_MIFID" %}selected {% endif %} value="DEPOT_STATEMENT_MIFID">DEPOT_STATEMENT_MIFID</option>
+              <option {% if person.customer_vetting_status === "EX_POST_COST_INFORMATION" %}selected {% endif %} value="EX_POST_COST_INFORMATION">EX_POST_COST_INFORMATION</option>
+              <option {% if person.customer_vetting_status === "DEPOT_STATEMENT" %}selected {% endif %} value="DEPOT_STATEMENT">DEPOT_STATEMENT</option>
+              <option {% if person.customer_vetting_status === "ASSETS_ACQUISITION" %}selected {% endif %} value="ASSETS_ACQUISITION">ASSETS_ACQUISITION</option>
+              <option {% if person.customer_vetting_status === "ASSETS_ACQUISITION_COSTS" %}selected {% endif %} value="ASSETS_ACQUISITION_COSTS">ASSETS_ACQUISITION_COSTS</option>
+              <option {% if person.customer_vetting_status === "PROFIT_TAX_STATEMENT" %}selected {% endif %} value="PROFIT_TAX_STATEMENT">PROFIT_TAX_STATEMENT</option>
+              <option {% if person.customer_vetting_status === "YEARLY_TAX_STATEMENT" %}selected {% endif %} value="YEARLY_TAX_STATEMENT">YEARLY_TAX_STATEMENT</option>
+              <option {% if person.customer_vetting_status === "TAX_SETTLEMENT_CALCULATION" %}selected {% endif %} value="TAX_SETTLEMENT_CALCULATION">TAX_SETTLEMENT_CALCULATION</option>
+              <option {% if person.customer_vetting_status === "CREDIT_CARD_STATEMENT" %}selected {% endif %} value="CREDIT_CARD_STATEMENT">CREDIT_CARD_STATEMENT</option>
+              <option {% if person.customer_vetting_status === "RELATIONSHIP_TERMINATION" %}selected {% endif %} value="RELATIONSHIP_TERMINATION">RELATIONSHIP_TERMINATION</option>
+              <option {% if person.customer_vetting_status === "CREDIT_CARD_SECCI" %}selected {% endif %} value="CREDIT_CARD_SECCI">CREDIT_CARD_SECCI</option>
+              <option {% if person.customer_vetting_status === "CREDIT_CARD_CONTRACT" %}selected {% endif %} value="CREDIT_CARD_CONTRACT">CREDIT_CARD_CONTRACT</option>
+              <option {% if person.customer_vetting_status === "CREDIT_CARD_CONTRACT_SIGNED" %}selected {% endif %} value="CREDIT_CARD_CONTRACT_SIGNED">CREDIT_CARD_CONTRACT_SIGNED</option>
+            </select>
+          </div>
+          <br>
+          <button type="submit" class="btn btn-primary btn-block">
+            Save
+          </button>
+        </form>
+      </div>
+    </div>
   </div>
   <div class="col-md-6">
 
@@ -802,11 +855,11 @@
     <p>In input field below you can provide Backend API URL. This allows to use different webhook URLs when user data changes in mock server.</p>
     <form method="POST" action="/__BACKOFFICE__/updateOrigin/{{ person.id }}" class="form-inline">
       <label for="origin">Backend API URL</label>
-      <input 
-        type="text" 
-        class="form-control" 
-        name="origin" 
-        id="origin" 
+      <input
+        type="text"
+        class="form-control"
+        name="origin"
+        id="origin"
         placeholder="Provide Backend API base url"
         value="{{ origin }}"
         style="min-width: 300px;"

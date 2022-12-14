@@ -28,6 +28,7 @@ import * as middlewares from "./helpers/middlewares";
 import * as overdraftAPI from "./routes/overdraft";
 import * as termsAPI from "./routes/termsAndConditions";
 import * as psd2API from "./routes/psd2";
+import * as postboxItemAPI from "./routes/postbox";
 
 import { migrate } from "./db";
 
@@ -679,6 +680,12 @@ app.post(
 app.post(
   "/__BACKOFFICE__/issueInterestAccruedBooking/:person_id",
   safeRequestHandler(backofficeAPI.issueInterestAccruedBookingHandler)
+);
+
+// BACKOFFICE - POSTBOX ITEM
+app.post(
+  "/__BACKOFFICE__/createPostboxItem/:person_id",
+  safeRequestHandler(postboxItemAPI.createPostboxItemRequestHandler)
 );
 
 // WEBHOOKS

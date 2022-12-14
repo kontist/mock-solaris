@@ -1,0 +1,81 @@
+import uuid from "node-uuid";
+import moment from "moment";
+
+import * as log from "../logger";
+import { getPerson, savePerson } from "../db";
+import { triggerWebhook } from "../helpers/webhooks";
+import {
+  MockPerson,
+  PostboxItemEvent,
+  PostboxOwnerType,
+  PostboxDocumentType,
+} from "../helpers/types";
+
+const POSTBOX_ITEM_EXAMPLE = {
+  id: "d347d967ae8c4d58b93e6698b386cae9pbxi",
+  belongs_to: "3e0b990bb0f49eb1a43904e78461c0cbcper",
+  owner_type: PostboxOwnerType.PERSON,
+  created_at: "2022-01-04T13:45:05Z",
+  document_date: "2021-06-30",
+  document_type: PostboxDocumentType.BALANCE_CONFIRMATION,
+  name: "Item's name",
+  description: "Description",
+  customer_notification: true,
+  customer_confirmation: false,
+  document_size: 1667317,
+  document_content_type: "application/pdf",
+};
+
+export const createPostboxItem = async ({
+  personId,
+  name,
+  description,
+  documentType,
+  ownerType,
+}) => {
+  const person = await getPerson(personId);
+
+  const today = moment().format("YYYY-MM-DD");
+
+  if (!person.postboxItems) {
+    person.postboxItems = [];
+  }
+
+  const postboxItem = {
+    ...POSTBOX_ITEM_EXAMPLE,
+    id: uuid.v4(),
+    belongs_to: personId,
+    owner_type: ownerType,
+    created_at: today,
+    document_type: documentType,
+    name,
+    description,
+  };
+
+  person.postboxItems.push(postboxItem);
+
+  await savePerson(person);
+  return { person, postboxItem };
+};
+
+export const createPostboxItemRequestHandler = async (req, res) => {
+  const { person_id: personId } = req.params;
+
+  log.info("createPostboxItemRequestHandler()", {
+    reqBody: req.body,
+    reqParams: req.params,
+  });
+
+  const { person, postboxItem } = await createPostboxItem({
+    personId,
+    ...req.body,
+  });
+
+  await triggerWebhook({
+    type: PostboxItemEvent.POSTBOX_ITEM_CREATED,
+    payload: postboxItem,
+    personId: person.id,
+  });
+
+  res.redirect("back");
+};
