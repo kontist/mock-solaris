@@ -521,7 +521,7 @@ router.patch(
 router.post(
   "/persons/:person_id/device_activities",
   middlewares.withPerson,
-  safeRequestHandler(deviceMonitoringAPI.createDeviceConsent)
+  safeRequestHandler(deviceMonitoringAPI.createUserActivity)
 );
 
 // TERMS AND CONDITIONS
