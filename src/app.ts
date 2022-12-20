@@ -19,6 +19,7 @@ import * as mobileNumberAPI from "./routes/mobileNumber";
 import * as changeRequestAPI from "./routes/changeRequest";
 import * as returnNotificationsAPI from "./routes/sepaDirectDebitReturns";
 import * as seizuresAPI from "./routes/seizures";
+import * as deviceMonitoringAPI from "./routes/deviceMonitoring";
 import * as timedOrdersAPI from "./routes/timedOrders";
 import * as batchTransfersAPI from "./routes/batchTransfers";
 import * as cardsAPI from "./routes/cards";
@@ -502,6 +503,25 @@ router.post(
 router.get(
   "/persons/:person_id/seizures",
   safeRequestHandler(seizuresAPI.getSeizuresRequestHandler)
+);
+
+// DEVICE MONITORING
+router.post(
+  "/persons/:person_id/device_consents",
+  middlewares.withPerson,
+  safeRequestHandler(deviceMonitoringAPI.createDeviceConsent)
+);
+
+router.patch(
+  "/persons/:person_id/device_consents/:device_consent_id",
+  middlewares.withPerson,
+  safeRequestHandler(deviceMonitoringAPI.updateDeviceConsent)
+);
+
+router.post(
+  "/persons/:person_id/device_activities",
+  middlewares.withPerson,
+  safeRequestHandler(deviceMonitoringAPI.createDeviceConsent)
 );
 
 // TERMS AND CONDITIONS
