@@ -1,12 +1,12 @@
 {
   "name": "@kontist/mock-solaris",
-  "version": "1.0.60",
+  "version": "1.0.61",
   "lockfileVersion": 2,
   "requires": true,
   "packages": {
     "": {
       "name": "@kontist/mock-solaris",
-      "version": "1.0.60",
+      "version": "1.0.61",
       "license": "Apache-2.0",
       "dependencies": {
         "bluebird": "^3.4.7",
