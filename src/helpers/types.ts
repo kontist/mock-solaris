@@ -521,3 +521,32 @@ export type Overdraft = {
   created_at: string;
   account_id: string;
 };
+
+export enum DeviceConsentEventType {
+  APPROVED = "APPROVED",
+  REJECTED = "REJECTED",
+}
+
+export interface DeviceConsentPayload {
+  event_type: DeviceConsentEventType;
+  confirmed_at: string;
+}
+
+export interface DeviceConsent {
+  id: string;
+  person_id: string;
+  event_type: DeviceConsentEventType;
+  confirmed_at: string;
+  created_at: string;
+}
+
+export enum DeviceActivityType {
+  APP_START = "APP_START",
+  PASSWORD_RESET = "PASSWORD_RESET",
+  CONSENT_PROVIDED = "CONSENT_PROVIDED",
+}
+
+export interface DeviceActivityPayload {
+  device_data: string;
+  activity_type: DeviceActivityType;
+}

@@ -1,10 +1,15 @@
 import _ from "lodash";
 import Promise from "bluebird";
+import uuid from "node-uuid";
+import moment from "moment";
 
 import * as log from "./logger";
 import { calculateOverdraftInterest } from "./helpers/overdraft";
 import {
   CustomerVettingStatus,
+  DeviceActivityPayload,
+  DeviceConsent,
+  DeviceConsentPayload,
   MockPerson,
   RiskClarificationStatus,
   ScreeningProgress,
@@ -491,6 +496,94 @@ export const setPersonOrigin = async (personId: string, origin?: string) => {
     `${process.env.MOCKSOLARIS_REDIS_PREFIX}:person-origin:${personId}`,
     origin || ""
   );
+};
+
+export const createDeviceConsent = async (
+  personId: string,
+  deviceConsent: DeviceConsentPayload
+): Promise<DeviceConsent> => {
+  const consent = {
+    id: uuid.v4().replace(/-/g, ""),
+    person_id: personId,
+    event_type: deviceConsent.event_type,
+    confirmed_at: deviceConsent.confirmed_at,
+    created_at: moment().toISOString(),
+  };
+
+  await redisClient.lpushAsync(
+    `${process.env.MOCKSOLARIS_REDIS_PREFIX}:DeviceConsents:${personId}`,
+    JSON.stringify(consent)
+  );
+
+  return consent;
+};
+
+export const getDeviceConsents = async (
+  personId: string
+): Promise<DeviceConsent[]> => {
+  return (
+    await redisClient.lrangeAsync(
+      `${process.env.MOCKSOLARIS_REDIS_PREFIX}:DeviceConsents:${personId}`,
+      0,
+      -1
+    )
+  ).map((entry) => JSON.parse(entry));
+};
+
+export const updateDeviceConsent = async (
+  personId: string,
+  deviceConsentId: string,
+  deviceConsent: DeviceConsentPayload
+): Promise<DeviceConsent> => {
+  const consents = await getDeviceConsents(personId);
+  const index = consents.findIndex((c) => c.id === deviceConsentId);
+
+  if (index < -1) {
+    throw new Error("consent not found");
+  }
+
+  const consent = {
+    ...consents[index],
+    ...deviceConsent,
+  };
+
+  await redisClient.lsetAsync(
+    `${process.env.MOCKSOLARIS_REDIS_PREFIX}:DeviceConsents:${personId}`,
+    index,
+    JSON.stringify(consent)
+  );
+
+  return consent;
+};
+
+export const createDeviceActivity = async (
+  personId: string,
+  deviceActivity: DeviceActivityPayload
+): Promise<void> => {
+  const activity = {
+    id: uuid.v4().replace(/-/g, ""),
+    person_id: personId,
+    activity_type: deviceActivity.activity_type,
+    device_data: deviceActivity.device_data,
+    created_at: moment().toISOString(),
+  };
+
+  await redisClient.lpushAsync(
+    `${process.env.MOCKSOLARIS_REDIS_PREFIX}:DeviceActivities:${personId}`,
+    JSON.stringify(activity)
+  );
+
+  return activity;
+};
+
+export const getDeviceActivities = async (personId: string) => {
+  return (
+    await redisClient.lrangeAsync(
+      `${process.env.MOCKSOLARIS_REDIS_PREFIX}:DeviceActivities:${personId}`,
+      0,
+      -1
+    )
+  ).map((entry) => JSON.parse(entry));
 };
 
 export const getPersonOrigin = async (
