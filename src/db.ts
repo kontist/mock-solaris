@@ -29,7 +29,9 @@ if (process.env.MOCKSOLARIS_REDIS_SERVER) {
   redis = Promise.promisifyAll(require("redis-mock"));
 }
 
-const redisClient = redis.createClient(process.env.MOCKSOLARIS_REDIS_SERVER);
+const redisClient = redis.createClient(
+  process.env.MOCKSOLARIS_REDIS_SERVER ?? ""
+);
 
 redisClient.on("error", (err) => {
   log.error("Error " + err);
@@ -65,8 +67,7 @@ export const migrate = async () => {
         "identify-mock691f4e49fc43b913bd8ede668e187e9a-1509032370615": {
           id: "identify-mock691f4e49fc43b913bd8ede668e187e9a-1509032370615",
           reference: null,
-          url:
-            "https://go.test.idnow.de/kontist/identifications/identify-mock691f4e49fc43b913bd8ede668e187e9a-1509032370615",
+          url: "https://go.test.idnow.de/kontist/identifications/identify-mock691f4e49fc43b913bd8ede668e187e9a-1509032370615",
           status: "successful",
           completed_at: null,
           method: "idnow",
