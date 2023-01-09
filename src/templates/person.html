@@ -160,8 +160,8 @@
           <div class="form-group">
             <label for="ownerType">Owner type</label>
             <select name="ownerType" class="form-control" required>
-              <option {% if person.customer_vetting_status === "Person" %}selected {% endif %} value="Person">Person</option>
-              <option {% if person.customer_vetting_status === "Business" %}selected {% endif %} value="Business">Business</option>
+              <option value="Person">Person</option>
+              <option value="Business">Business</option>
             </select>
           </div>
           <div class="form-group">
@@ -175,27 +175,27 @@
           <div class="form-group">
             <label for="documentType">Document type</label>
             <select name="documentType" class="form-control" required>
-              <option {% if person.customer_vetting_status === "ACCOUNT_STATEMENT" %}selected {% endif %} value="ACCOUNT_STATEMENT">ACCOUNT_STATEMENT</option>
-              <option {% if person.customer_vetting_status === "BALANCE_CONFIRMATION" %}selected {% endif %} value="BALANCE_CONFIRMATION">BALANCE_CONFIRMATION</option>
-              <option {% if person.customer_vetting_status === "CUSTOMER_INFORMATION" %}selected {% endif %} value="CUSTOMER_INFORMATION">CUSTOMER_INFORMATION</option>
-              <option {% if person.customer_vetting_status === "DUNNING_INFORMATION" %}selected {% endif %} value="DUNNING_INFORMATION">DUNNING_INFORMATION</option>
-              <option {% if person.customer_vetting_status === "LOAN_SCHEDULE" %}selected {% endif %} value="LOAN_SCHEDULE">LOAN_SCHEDULE</option>
-              <option {% if person.customer_vetting_status === "SECURITIES_INVOICE" %}selected {% endif %} value="SECURITIES_INVOICE">SECURITIES_INVOICE</option>
-              <option {% if person.customer_vetting_status === "SECURITIES_EVENT" %}selected {% endif %} value="SECURITIES_EVENT">SECURITIES_EVENT</option>
-              <option {% if person.customer_vetting_status === "SECURITIES_EVENT_NOTIFICATION" %}selected {% endif %} value="SECURITIES_EVENT_NOTIFICATION">SECURITIES_EVENT_NOTIFICATION</option>
-              <option {% if person.customer_vetting_status === "DEPOT_STATEMENT_MIFID" %}selected {% endif %} value="DEPOT_STATEMENT_MIFID">DEPOT_STATEMENT_MIFID</option>
-              <option {% if person.customer_vetting_status === "EX_POST_COST_INFORMATION" %}selected {% endif %} value="EX_POST_COST_INFORMATION">EX_POST_COST_INFORMATION</option>
-              <option {% if person.customer_vetting_status === "DEPOT_STATEMENT" %}selected {% endif %} value="DEPOT_STATEMENT">DEPOT_STATEMENT</option>
-              <option {% if person.customer_vetting_status === "ASSETS_ACQUISITION" %}selected {% endif %} value="ASSETS_ACQUISITION">ASSETS_ACQUISITION</option>
-              <option {% if person.customer_vetting_status === "ASSETS_ACQUISITION_COSTS" %}selected {% endif %} value="ASSETS_ACQUISITION_COSTS">ASSETS_ACQUISITION_COSTS</option>
-              <option {% if person.customer_vetting_status === "PROFIT_TAX_STATEMENT" %}selected {% endif %} value="PROFIT_TAX_STATEMENT">PROFIT_TAX_STATEMENT</option>
-              <option {% if person.customer_vetting_status === "YEARLY_TAX_STATEMENT" %}selected {% endif %} value="YEARLY_TAX_STATEMENT">YEARLY_TAX_STATEMENT</option>
-              <option {% if person.customer_vetting_status === "TAX_SETTLEMENT_CALCULATION" %}selected {% endif %} value="TAX_SETTLEMENT_CALCULATION">TAX_SETTLEMENT_CALCULATION</option>
-              <option {% if person.customer_vetting_status === "CREDIT_CARD_STATEMENT" %}selected {% endif %} value="CREDIT_CARD_STATEMENT">CREDIT_CARD_STATEMENT</option>
-              <option {% if person.customer_vetting_status === "RELATIONSHIP_TERMINATION" %}selected {% endif %} value="RELATIONSHIP_TERMINATION">RELATIONSHIP_TERMINATION</option>
-              <option {% if person.customer_vetting_status === "CREDIT_CARD_SECCI" %}selected {% endif %} value="CREDIT_CARD_SECCI">CREDIT_CARD_SECCI</option>
-              <option {% if person.customer_vetting_status === "CREDIT_CARD_CONTRACT" %}selected {% endif %} value="CREDIT_CARD_CONTRACT">CREDIT_CARD_CONTRACT</option>
-              <option {% if person.customer_vetting_status === "CREDIT_CARD_CONTRACT_SIGNED" %}selected {% endif %} value="CREDIT_CARD_CONTRACT_SIGNED">CREDIT_CARD_CONTRACT_SIGNED</option>
+              <option value="ACCOUNT_STATEMENT">ACCOUNT_STATEMENT</option>
+              <option value="BALANCE_CONFIRMATION">BALANCE_CONFIRMATION</option>
+              <option value="CUSTOMER_INFORMATION">CUSTOMER_INFORMATION</option>
+              <option value="DUNNING_INFORMATION">DUNNING_INFORMATION</option>
+              <option value="LOAN_SCHEDULE">LOAN_SCHEDULE</option>
+              <option value="SECURITIES_INVOICE">SECURITIES_INVOICE</option>
+              <option value="SECURITIES_EVENT">SECURITIES_EVENT</option>
+              <option value="SECURITIES_EVENT_NOTIFICATION">SECURITIES_EVENT_NOTIFICATION</option>
+              <option value="DEPOT_STATEMENT_MIFID">DEPOT_STATEMENT_MIFID</option>
+              <option value="EX_POST_COST_INFORMATION">EX_POST_COST_INFORMATION</option>
+              <option value="DEPOT_STATEMENT">DEPOT_STATEMENT</option>
+              <option value="ASSETS_ACQUISITION">ASSETS_ACQUISITION</option>
+              <option value="ASSETS_ACQUISITION_COSTS">ASSETS_ACQUISITION_COSTS</option>
+              <option value="PROFIT_TAX_STATEMENT">PROFIT_TAX_STATEMENT</option>
+              <option value="YEARLY_TAX_STATEMENT">YEARLY_TAX_STATEMENT</option>
+              <option value="TAX_SETTLEMENT_CALCULATION">TAX_SETTLEMENT_CALCULATION</option>
+              <option value="CREDIT_CARD_STATEMENT">CREDIT_CARD_STATEMENT</option>
+              <option value="RELATIONSHIP_TERMINATION">RELATIONSHIP_TERMINATION</option>
+              <option value="CREDIT_CARD_SECCI">CREDIT_CARD_SECCI</option>
+              <option value="CREDIT_CARD_CONTRACT">CREDIT_CARD_CONTRACT</option>
+              <option value="CREDIT_CARD_CONTRACT_SIGNED">CREDIT_CARD_CONTRACT_SIGNED</option>
             </select>
           </div>
           <br>
