@@ -1,5 +1,6 @@
 import uuid from "node-uuid";
 import moment from "moment";
+import path from "path";
 
 import * as log from "../logger";
 import { getPerson, savePerson } from "../db";
@@ -10,6 +11,7 @@ import {
   PostboxOwnerType,
   PostboxDocumentType,
 } from "../helpers/types";
+import assert from "assert";
 
 const POSTBOX_ITEM_EXAMPLE = {
   id: "d347d967ae8c4d58b93e6698b386cae9pbxi",
@@ -78,4 +80,22 @@ export const createPostboxItemRequestHandler = async (req, res) => {
   });
 
   res.redirect("back");
+};
+
+export const listPostboxItems = async (req, res) => {
+  const personId = req.params.person_id;
+  assert(personId, "person ID not found");
+
+  log.info(`listPostboxItems() get list of postbox items for ${personId}`);
+
+  const person = await getPerson(personId);
+  res.status(200).send(person.postboxItems);
+};
+
+export const downloadPostboxItem = async (req, res) => {
+  log.info(
+    `downloadPostboxItem() download postbox items ${req.params.postbox_item_id}`
+  );
+
+  res.download(path.join(__dirname, "../assets/sample.pdf"));
 };

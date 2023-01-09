@@ -9,7 +9,7 @@
   "license": "Apache-2.0",
   "scripts": {
     "clean:dist": "rm -rf dist && mkdir -p dist/src",
-    "copy:assets": "cp -r src/templates dist/src",
+    "copy:assets": "cp -r src/templates dist/src && cp -r src/assets dist/src",
     "build": "npm run clean:dist && npm run copy:assets && tsc",
     "build:hot": "npm run clean:dist && npm run copy:assets && tsc --watch",
     "build:docker": "docker build -f Dockerfile.dev -t mocksolaris .",

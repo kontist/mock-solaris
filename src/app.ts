@@ -531,6 +531,17 @@ router.post(
   safeRequestHandler(termsAPI.createTermsAndConditionsEvent)
 );
 
+// POSTBOX ITEM
+router.get(
+  "/persons/:person_id/postbox/items",
+  safeRequestHandler(postboxItemAPI.listPostboxItems)
+);
+
+router.get(
+  "/postbox/items/:postbox_item_id/document",
+  safeRequestHandler(postboxItemAPI.downloadPostboxItem)
+);
+
 // E2E
 if (process.env.NODE_ENV === "e2e") {
   router.patch(
