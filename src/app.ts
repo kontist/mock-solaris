@@ -538,6 +538,11 @@ router.get(
 );
 
 router.get(
+  "/postbox/items/:postbox_item_id",
+  safeRequestHandler(postboxItemAPI.getPostboxItem)
+);
+
+router.get(
   "/postbox/items/:postbox_item_id/document",
   safeRequestHandler(postboxItemAPI.downloadPostboxItem)
 );

@@ -3,7 +3,7 @@ import moment from "moment";
 import path from "path";
 
 import * as log from "../logger";
-import { getPerson, savePerson } from "../db";
+import { getAllPersons, getPerson, savePerson } from "../db";
 import { triggerWebhook } from "../helpers/webhooks";
 import {
   MockPerson,
@@ -96,10 +96,45 @@ export const listPostboxItems = async (req, res) => {
   res.status(200).send(person.postboxItems || []);
 };
 
+const getPostboxItemById = async (postboxItemId: string) => {
+  const persons = await getAllPersons();
+  const allItems = [].concat(
+    ...persons.map(({ postboxItems }) => postboxItems || [])
+  );
+  return allItems.find(({ id }) => id === postboxItemId);
+};
+
+export const getPostboxItem = async (req, res) => {
+  const postboxItemId = req.params.postbox_item_id;
+
+  if (!postboxItemId) {
+    res.status(404).send("Not found");
+    return;
+  }
+
+  log.info(`getPostboxItem() get postbox item ${postboxItemId}`);
+
+  const postboxItem = await getPostboxItemById(postboxItemId);
+
+  if (!postboxItem) {
+    res.status(404).send("Not found");
+    return;
+  }
+
+  res.status(200).send(postboxItem);
+};
+
 export const downloadPostboxItem = async (req, res) => {
   const postboxItemId = req.params.postbox_item_id;
 
   if (!postboxItemId) {
+    res.status(404).send("Not found");
+    return;
+  }
+
+  const postboxItem = await getPostboxItemById(postboxItemId);
+
+  if (!postboxItem) {
     res.status(404).send("Not found");
     return;
   }
