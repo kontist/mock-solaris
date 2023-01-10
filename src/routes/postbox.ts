@@ -84,18 +84,27 @@ export const createPostboxItemRequestHandler = async (req, res) => {
 
 export const listPostboxItems = async (req, res) => {
   const personId = req.params.person_id;
-  assert(personId, "person ID not found");
+
+  if (!personId) {
+    res.status(404).send("Not found");
+    return;
+  }
 
   log.info(`listPostboxItems() get list of postbox items for ${personId}`);
 
   const person = await getPerson(personId);
-  res.status(200).send(person.postboxItems);
+  res.status(200).send(person.postboxItems || []);
 };
 
 export const downloadPostboxItem = async (req, res) => {
-  log.info(
-    `downloadPostboxItem() download postbox items ${req.params.postbox_item_id}`
-  );
+  const postboxItemId = req.params.postbox_item_id;
+
+  if (!postboxItemId) {
+    res.status(404).send("Not found");
+    return;
+  }
+
+  log.info(`downloadPostboxItem() download postbox items ${postboxItemId}`);
 
   res.download(path.join(__dirname, "../assets/sample.pdf"));
 };
