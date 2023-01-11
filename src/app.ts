@@ -28,6 +28,7 @@ import * as middlewares from "./helpers/middlewares";
 import * as overdraftAPI from "./routes/overdraft";
 import * as termsAPI from "./routes/termsAndConditions";
 import * as psd2API from "./routes/psd2";
+import * as postboxItemAPI from "./routes/postbox";
 
 import { migrate } from "./db";
 
@@ -530,6 +531,22 @@ router.post(
   safeRequestHandler(termsAPI.createTermsAndConditionsEvent)
 );
 
+// POSTBOX ITEM
+router.get(
+  "/persons/:person_id/postbox/items",
+  safeRequestHandler(postboxItemAPI.listPostboxItems)
+);
+
+router.get(
+  "/postbox/items/:postbox_item_id",
+  safeRequestHandler(postboxItemAPI.getPostboxItem)
+);
+
+router.get(
+  "/postbox/items/:postbox_item_id/document",
+  safeRequestHandler(postboxItemAPI.downloadPostboxItem)
+);
+
 // E2E
 if (process.env.NODE_ENV === "e2e") {
   router.patch(
@@ -679,6 +696,12 @@ app.post(
 app.post(
   "/__BACKOFFICE__/issueInterestAccruedBooking/:person_id",
   safeRequestHandler(backofficeAPI.issueInterestAccruedBookingHandler)
+);
+
+// BACKOFFICE - POSTBOX ITEM
+app.post(
+  "/__BACKOFFICE__/createPostboxItem/:person_id",
+  safeRequestHandler(postboxItemAPI.createPostboxItemRequestHandler)
 );
 
 // WEBHOOKS

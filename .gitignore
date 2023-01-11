@@ -12,3 +12,4 @@ coverage/
 .dist
 .vscode
 dist
+yarn.lock
