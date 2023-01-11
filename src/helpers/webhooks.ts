@@ -2,7 +2,7 @@ import uuid from "node-uuid";
 import fetch, { Response } from "node-fetch";
 
 import * as log from "../logger";
-import { WebhookType } from "../helpers/types";
+import { PostboxItemEvent, WebhookType } from "../helpers/types";
 import { getPersonOrigin, getWebhookByType, setPersonOrigin } from "../db";
 import { generateSolarisWebhookSignature } from "./solarisWebhookSignature";
 import {
@@ -76,6 +76,8 @@ const WEBHOOK_SECRETS = {
     process.env.SOLARIS_ACCOUNT_CLOSURE_WEBHOOK_SECRET,
   [AccountWebhookEvent.ACCOUNT_LIMIT_CHANGE]:
     process.env.SOLARIS_ACCOUNT_LIMIT_CHANGE_WEBHOOK_SECRET,
+  [PostboxItemEvent.POSTBOX_ITEM_CREATED]:
+    process.env.SOLARIS_POSTBOX_ITEM_CREATED_WEBHOOK_SECRET,
 };
 
 export const getWebhookUrl = (url: string, origin?: string) => {
