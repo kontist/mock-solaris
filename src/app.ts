@@ -298,6 +298,12 @@ router.put(
 );
 
 router.get(
+  "/cards/:card_id/pin_keys/latest",
+  cardsAPI.cardMiddleware,
+  safeRequestHandler(cardsAPI.getCardLatestPINKeyHandler)
+);
+
+router.get(
   "/accounts/:account_id/reservations",
   safeRequestHandler(accountsAPI.showAccountReservations)
 );

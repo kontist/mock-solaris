@@ -735,4 +735,20 @@ export const getVirtualCardDetails = async (
   }
 };
 
+const CARD_LATEST_PIN_KEY = {
+  kid: "0dce6f4d-b5d0-4c7b-a7d8-cfe231a1f385",
+  kty: "RSA",
+  use: "enc",
+  alg: "RS256",
+  n: "ielfymjYSKEeeai7pFBhJrr0aR-B5_T0snVgQSm8K-SsFv3MFofkeWxWT3PCBId8kovdI-gfKabCyhuQDaYbXP1opyEkB9-gyG4zqmWoW9ddmWo-wxaW08KiruNl09IjWJR0w93tM0i8Pn2qpCSM3h0CdgfO9-VjLn1BpYFKjuJ1apZQ3TG1YYIfGSymghUl0JWLu0s5J2BrvEz91E0K4aF-VY4oSnlrTilq3FrCOgF8IopUvqJWIsz-hKagNAP1K4AXoSVX7Kc4MxUcZEIlkeMKj05YF3zoFhOzfQCa5kcYdPFNlEOpuZwuMidYw8LNBFdvV4VeKYUXZrvaW-SKUQ",
+  e: "AQAB",
+};
+
+export const getCardLatestPINKeyHandler = async (
+  req: RequestExtendedWithCard,
+  res: express.Response
+) => {
+  res.send(CARD_LATEST_PIN_KEY);
+};
+
 /* eslint-enable @typescript-eslint/camelcase */
