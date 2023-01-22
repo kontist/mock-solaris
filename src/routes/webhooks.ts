@@ -1,6 +1,6 @@
 import uuid from "node-uuid";
 
-import { getWebhooks, saveWebhook } from "../db";
+import { getWebhooks, saveWebhook, deleteWebhook } from "../db";
 
 import * as log from "../logger";
 
@@ -45,4 +45,14 @@ export const createWebhookHandler = async (req, res) => {
   } else {
     res.status(400).send("Webhook already exists");
   }
+};
+
+export const deleteWebhookHandler = async (req, res) => {
+  const { webhookType } = req.params;
+
+  log.info("deleteWebhook", { webhookType });
+
+  await deleteWebhook(webhookType);
+
+  res.status(204).send();
 };

@@ -416,6 +416,12 @@ export const saveWebhook = (webhook) => {
   );
 };
 
+export const deleteWebhook = (webhookType: string) => {
+  return redisClient.delAsync(
+    `${process.env.MOCKSOLARIS_REDIS_PREFIX}:webhook:${webhookType}`
+  );
+};
+
 export const flushDb = () => {
   return redisClient.flushdbAsync();
 };
