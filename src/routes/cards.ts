@@ -20,6 +20,8 @@ import {
 import * as cardHelpers from "../helpers/cards";
 import getFraudWatchdog from "../helpers/fraudWatchdog";
 
+const keyStore = jose.JWK.createKeyStore();
+
 type RequestExtendedWithCard = express.Request & {
   card: Card;
   cardDetails: CardDetails;
@@ -290,27 +292,29 @@ export const cardMiddleware = async (req, res, next) => {
   next();
 };
 
-export const cardStatusMiddleware = (states: CardStatus[]) => async (
-  req: RequestExtendedWithCard,
-  res: express.Response,
-  next: express.NextFunction
-) => {
-  if (!states.includes(req.card.status)) {
-    // this is custom error, couldn't test it with Solaris sandbox and production
-    res.status(HttpStatusCodes.BAD_REQUEST).send({
-      errors: [
-        {
-          id: uuid.v4(),
-          status: HttpStatusCodes.BAD_REQUEST,
-          detail: `card in invalid state.`,
-        },
-      ],
-    });
-    return;
-  }
+export const cardStatusMiddleware =
+  (states: CardStatus[]) =>
+  async (
+    req: RequestExtendedWithCard,
+    res: express.Response,
+    next: express.NextFunction
+  ) => {
+    if (!states.includes(req.card.status)) {
+      // this is custom error, couldn't test it with Solaris sandbox and production
+      res.status(HttpStatusCodes.BAD_REQUEST).send({
+        errors: [
+          {
+            id: uuid.v4(),
+            status: HttpStatusCodes.BAD_REQUEST,
+            detail: `card in invalid state.`,
+          },
+        ],
+      });
+      return;
+    }
 
-  next();
-};
+    next();
+  };
 
 export const getCardPresentLimitsHandler = async (
   req: RequestExtendedWithCard,
@@ -735,20 +739,44 @@ export const getVirtualCardDetails = async (
   }
 };
 
-const CARD_LATEST_PIN_KEY = {
-  kid: "0dce6f4d-b5d0-4c7b-a7d8-cfe231a1f385",
-  kty: "RSA",
-  use: "enc",
-  alg: "RS256",
-  n: "ielfymjYSKEeeai7pFBhJrr0aR-B5_T0snVgQSm8K-SsFv3MFofkeWxWT3PCBId8kovdI-gfKabCyhuQDaYbXP1opyEkB9-gyG4zqmWoW9ddmWo-wxaW08KiruNl09IjWJR0w93tM0i8Pn2qpCSM3h0CdgfO9-VjLn1BpYFKjuJ1apZQ3TG1YYIfGSymghUl0JWLu0s5J2BrvEz91E0K4aF-VY4oSnlrTilq3FrCOgF8IopUvqJWIsz-hKagNAP1K4AXoSVX7Kc4MxUcZEIlkeMKj05YF3zoFhOzfQCa5kcYdPFNlEOpuZwuMidYw8LNBFdvV4VeKYUXZrvaW-SKUQ",
-  e: "AQAB",
-};
-
 export const getCardLatestPINKeyHandler = async (
   req: RequestExtendedWithCard,
   res: express.Response
 ) => {
-  res.send(CARD_LATEST_PIN_KEY);
+  const key = await keyStore.generate("RSA", 2048, {
+    kid: uuid.v4(),
+    alg: "RSA-OAEP-256",
+    use: "enc",
+  });
+  res.send(key.toJSON());
+};
+
+export const createCardPINUpdateRequestHandler = async (
+  req: RequestExtendedWithCard,
+  res: express.Response
+) => {
+  const decryptedData = await jose.JWE.createDecrypt(keyStore).decrypt(
+    req.body.encrypted_pin
+  );
+  const { pin } = JSON.parse(decryptedData.payload.toString());
+
+  const pinValidationErrors = cardHelpers.validatePIN(pin || "");
+  if (pinValidationErrors.length) {
+    res.status(HttpStatusCodes.BAD_REQUEST).send({
+      errors: pinValidationErrors,
+    });
+    return;
+  }
+
+  const person = await db.getPerson(req.card.person_id);
+  person.account.cards = person.account.cards.map(({ card }) =>
+    card.id === req.card.id
+      ? { ...card, cardDetails: { ...card.cardDetails, pin } }
+      : card
+  );
+  await db.savePerson(person);
+
+  res.send({});
 };
 
 /* eslint-enable @typescript-eslint/camelcase */

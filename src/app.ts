@@ -303,6 +303,12 @@ router.get(
   safeRequestHandler(cardsAPI.getCardLatestPINKeyHandler)
 );
 
+router.post(
+  "/cards/:card_id/pin_update_requests",
+  cardsAPI.cardMiddleware,
+  safeRequestHandler(cardsAPI.createCardPINUpdateRequestHandler)
+);
+
 router.get(
   "/accounts/:account_id/reservations",
   safeRequestHandler(accountsAPI.showAccountReservations)
