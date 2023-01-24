@@ -256,10 +256,7 @@ export const activateCardHandler = async (
   res: express.Response
 ) => {
   try {
-    const updatedCard = await cardHelpers.activateCard(
-      req.card,
-      req.body.verification_token
-    );
+    const updatedCard = await cardHelpers.activateCard(req.card);
     res.status(HttpStatusCodes.CREATED).send(updatedCard);
   } catch (err) {
     handleCardActivationError(err, req.card, res);
@@ -290,27 +287,29 @@ export const cardMiddleware = async (req, res, next) => {
   next();
 };
 
-export const cardStatusMiddleware = (states: CardStatus[]) => async (
-  req: RequestExtendedWithCard,
-  res: express.Response,
-  next: express.NextFunction
-) => {
-  if (!states.includes(req.card.status)) {
-    // this is custom error, couldn't test it with Solaris sandbox and production
-    res.status(HttpStatusCodes.BAD_REQUEST).send({
-      errors: [
-        {
-          id: uuid.v4(),
-          status: HttpStatusCodes.BAD_REQUEST,
-          detail: `card in invalid state.`,
-        },
-      ],
-    });
-    return;
-  }
+export const cardStatusMiddleware =
+  (states: CardStatus[]) =>
+  async (
+    req: RequestExtendedWithCard,
+    res: express.Response,
+    next: express.NextFunction
+  ) => {
+    if (!states.includes(req.card.status)) {
+      // this is custom error, couldn't test it with Solaris sandbox and production
+      res.status(HttpStatusCodes.BAD_REQUEST).send({
+        errors: [
+          {
+            id: uuid.v4(),
+            status: HttpStatusCodes.BAD_REQUEST,
+            detail: `card in invalid state.`,
+          },
+        ],
+      });
+      return;
+    }
 
-  next();
-};
+    next();
+  };
 
 export const getCardPresentLimitsHandler = async (
   req: RequestExtendedWithCard,
