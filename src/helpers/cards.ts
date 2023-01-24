@@ -496,10 +496,6 @@ const triggerProvisioningTokenUpdate = async (
 };
 
 export const activateCard = async (cardForActivation: Card): Promise<Card> => {
-  if (cardForActivation.type === CardType.VIRTUAL_VISA_FREELANCE_DEBIT) {
-    return cardForActivation;
-  }
-
   if (
     ![CardStatus.INACTIVE, CardStatus.ACTIVE].includes(cardForActivation.status)
   ) {
