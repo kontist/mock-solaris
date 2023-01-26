@@ -21,6 +21,12 @@ import * as cardHelpers from "../helpers/cards";
 import getFraudWatchdog from "../helpers/fraudWatchdog";
 
 const keyStore = jose.JWK.createKeyStore();
+const changePinKeyId = uuid.v4();
+keyStore.generate("RSA", 2048, {
+  kid: changePinKeyId,
+  alg: "RSA-OAEP-256",
+  use: "enc",
+});
 
 type RequestExtendedWithCard = express.Request & {
   card: Card;
@@ -743,11 +749,7 @@ export const getCardLatestPINKeyHandler = async (
   req: RequestExtendedWithCard,
   res: express.Response
 ) => {
-  const key = await keyStore.generate("RSA", 2048, {
-    kid: uuid.v4(),
-    alg: "RSA-OAEP-256",
-    use: "enc",
-  });
+  const key = keyStore.get(changePinKeyId);
   res.send(key.toJSON());
 };
 
@@ -769,11 +771,10 @@ export const createCardPINUpdateRequestHandler = async (
   }
 
   const person = await db.getPerson(req.card.person_id);
-  person.account.cards = person.account.cards.map(({ card }) =>
-    card.id === req.card.id
-      ? { ...card, cardDetails: { ...card.cardDetails, pin } }
-      : card
+  const cardIndex = person.account.cards.findIndex(
+    ({ card }) => card.id === req.card.id
   );
+  person.account.cards[cardIndex].cardDetails.pin = pin;
   await db.savePerson(person);
 
   res.send({});
