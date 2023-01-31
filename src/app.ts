@@ -727,6 +727,11 @@ router.post(
   checkRequestHostHeader,
   safeRequestHandler(webhooksAPI.createWebhookHandler)
 );
+router.delete(
+  "/webhooks/:webhookType",
+  checkRequestHostHeader,
+  safeRequestHandler(webhooksAPI.deleteWebhookHandler)
+);
 
 // HEALTH CHECK
 app.get("/health", (req, res) => {

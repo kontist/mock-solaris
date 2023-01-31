@@ -176,11 +176,6 @@ export const validatePersonData = async (
 export const getMaskedCardNumber = (cardNumber: string): string =>
   `${cardNumber.slice(0, 4)}********${cardNumber.slice(-4)}`;
 
-export const createCardToken = (): string =>
-  _.times(12, () => _.random(35).toString(36))
-    .join("")
-    .toUpperCase();
-
 const getDefaultCardNotPresentLimits = () => ({
   daily: {
     max_amount_cents: DEFAULT_CARD_NOT_PRESENT_DAILY_MAX_AMOUNT_IN_CENTS,
@@ -204,7 +199,6 @@ const getDefaultCardPresentLimits = () => ({
 });
 
 const getDefaultCardDetails = () => ({
-  token: createCardToken(),
   cardPresentLimits: getDefaultCardPresentLimits(),
   cardNotPresentLimits: getDefaultCardNotPresentLimits(),
   cvv: Math.random().toString().substr(-3),
@@ -457,12 +451,8 @@ const triggerProvisioningTokenCreation = async (
   }
 
   // Extract unnecessary data to save the token's relevant information from last payload.
-  const {
-    event_type,
-    message_reason,
-    wallet_type,
-    ...newProvisioningToken
-  } = webhookCalls[webhookCalls.length - 1];
+  const { event_type, message_reason, wallet_type, ...newProvisioningToken } =
+    webhookCalls[webhookCalls.length - 1];
 
   return newProvisioningToken;
 };
@@ -505,15 +495,10 @@ const triggerProvisioningTokenUpdate = async (
   return newProvisioningToken;
 };
 
-export const activateCard = async (
-  cardForActivation: Card,
-  verificationToken: string
-): Promise<Card> => {
-  if (cardForActivation.type === CardType.VIRTUAL_VISA_FREELANCE_DEBIT) {
-    return cardForActivation;
-  }
-
-  if (cardForActivation.status !== CardStatus.INACTIVE) {
+export const activateCard = async (cardForActivation: Card): Promise<Card> => {
+  if (
+    ![CardStatus.INACTIVE, CardStatus.ACTIVE].includes(cardForActivation.status)
+  ) {
     throw new Error(CardErrorCodes.CARD_ACTIVATION_INVALID_STATUS);
   }
 
@@ -521,18 +506,6 @@ export const activateCard = async (
   const cardIndex = person.account.cards.findIndex(
     ({ card }) => card.id === cardForActivation.id
   );
-
-  if (verificationToken.length > 6) {
-    throw new Error(CardErrorCodes.VERIFICATION_TOKEN_TOO_LONG);
-  }
-
-  const isValidToken =
-    person.account.cards[cardIndex].cardDetails.token.substr(0, 6) ===
-    verificationToken;
-
-  if (!isValidToken) {
-    throw new Error(CardErrorCodes.INVALID_VERIFICATION_TOKEN);
-  }
 
   cardForActivation.status = CardStatus.ACTIVE;
   person.account.cards[cardIndex].card = cardForActivation;
@@ -634,9 +607,8 @@ export const enableGooglePay = async (card: Card): Promise<string> => {
   const cardIndex = person.account.cards.findIndex(
     (cardData) => cardData.card.id === card.id
   );
-  person.account.cards[
-    cardIndex
-  ].cardDetails.walletPayload = SOLARIS_HARDCODED_WALLET_PAYLOAD;
+  person.account.cards[cardIndex].cardDetails.walletPayload =
+    SOLARIS_HARDCODED_WALLET_PAYLOAD;
   await db.savePerson(person);
   return SOLARIS_HARDCODED_WALLET_PAYLOAD;
 };

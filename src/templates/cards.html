@@ -53,10 +53,6 @@
               <td>{{ cardData.card.id }}</td>
             </tr>
             <tr>
-              <td>token</td>
-              <td><span style="color: red;">{{ cardData.cardDetails.token.slice(0, 6) }}</span>{{ cardData.cardDetails.token.slice(6) }}</td>
-            </tr>
-            <tr>
               <td>New Provisioning Token</td>
               <td>
                 <form class="form-inline autosubmitonchange" method="POST" action="/__BACKOFFICE__/{{ person.id }}/{{ cardData.card.id }}/createProvisioningToken">

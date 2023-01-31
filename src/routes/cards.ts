@@ -264,10 +264,7 @@ export const activateCardHandler = async (
   res: express.Response
 ) => {
   try {
-    const updatedCard = await cardHelpers.activateCard(
-      req.card,
-      req.body.verification_token
-    );
+    const updatedCard = await cardHelpers.activateCard(req.card);
     res.status(HttpStatusCodes.CREATED).send(updatedCard);
   } catch (err) {
     handleCardActivationError(err, req.card, res);

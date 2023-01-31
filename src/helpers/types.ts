@@ -91,7 +91,6 @@ export type CardDetails = {
   pin: string;
   reference: string;
   cardNumber: string;
-  token: string;
   cardPresentLimits: CardLimits;
   cardNotPresentLimits: CardLimits;
   cvv: string;
