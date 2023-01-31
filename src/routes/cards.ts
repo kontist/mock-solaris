@@ -20,6 +20,14 @@ import {
 import * as cardHelpers from "../helpers/cards";
 import getFraudWatchdog from "../helpers/fraudWatchdog";
 
+const keyStore = jose.JWK.createKeyStore();
+const changePinKeyId = uuid.v4();
+keyStore.generate("RSA", 2048, {
+  kid: changePinKeyId,
+  alg: "RSA-OAEP-256",
+  use: "enc",
+});
+
 type RequestExtendedWithCard = express.Request & {
   card: Card;
   cardDetails: CardDetails;
@@ -732,6 +740,41 @@ export const getVirtualCardDetails = async (
     log.error("An error occurred when fetching virtual card details", err);
     res.status(500).send(err);
   }
+};
+
+export const getCardLatestPINKeyHandler = async (
+  req: RequestExtendedWithCard,
+  res: express.Response
+) => {
+  const key = keyStore.get(changePinKeyId);
+  res.send(key.toJSON());
+};
+
+export const createCardPINUpdateRequestHandler = async (
+  req: RequestExtendedWithCard,
+  res: express.Response
+) => {
+  const decryptedData = await jose.JWE.createDecrypt(keyStore).decrypt(
+    req.body.encrypted_pin
+  );
+  const { pin } = JSON.parse(decryptedData.payload.toString());
+
+  const pinValidationErrors = cardHelpers.validatePIN(pin || "");
+  if (pinValidationErrors.length) {
+    res.status(HttpStatusCodes.BAD_REQUEST).send({
+      errors: pinValidationErrors,
+    });
+    return;
+  }
+
+  const person = await db.getPerson(req.card.person_id);
+  const cardIndex = person.account.cards.findIndex(
+    ({ card }) => card.id === req.card.id
+  );
+  person.account.cards[cardIndex].cardDetails.pin = pin;
+  await db.savePerson(person);
+
+  res.send({});
 };
 
 /* eslint-enable @typescript-eslint/camelcase */
