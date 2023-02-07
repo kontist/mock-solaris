@@ -37,7 +37,7 @@ export const createDeviceConsent = async (
 
   const consent = await db.createDeviceConsent(person.id, deviceConsent);
 
-  res.status(201).send([consent]);
+  res.status(201).send(consent);
 };
 
 export const updateDeviceConsent = async (
