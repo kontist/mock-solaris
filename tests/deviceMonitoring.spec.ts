@@ -67,7 +67,7 @@ describe("device monitoring", () => {
       expect(consent.event_type).to.equal(req.body.event_type);
       expect(consent.confirmed_at).to.equal(req.body.confirmed_at);
       expect(res.status.getCall(0).args[0]).to.equal(201);
-      expect(res.send.getCall(0).args[0].length).to.equal(1);
+      expect(res.send.getCall(0).args[0]).to.deep.equal(consent);
     });
   });
 
@@ -94,7 +94,7 @@ describe("device monitoring", () => {
       expect(activity.device_data).to.equal(req.body.device_data);
       expect(activity.activity_type).to.equal(req.body.activity_type);
       expect(res.status.getCall(0).args[0]).to.equal(201);
-      expect(res.send.getCall(0).args[0].length).to.equal(1);
+      expect(res.send.getCall(0).args[0]).to.deep.equal(activity);
     });
   });
 });
