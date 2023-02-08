@@ -37,7 +37,7 @@ export const createDeviceConsent = async (
 
   const consent = await db.createDeviceConsent(person.id, deviceConsent);
 
-  res.status(201).send([consent]);
+  res.status(201).send(consent);
 };
 
 export const updateDeviceConsent = async (
@@ -61,7 +61,7 @@ export const updateDeviceConsent = async (
     deviceConsent
   );
 
-  res.status(201).send([consent]);
+  res.status(201).send(consent);
 };
 
 export const createUserActivity = async (
@@ -80,5 +80,5 @@ export const createUserActivity = async (
 
   const activity = await db.createDeviceActivity(person.id, deviceActivity);
 
-  res.status(201).send([activity]);
+  res.status(201).send(activity);
 };
