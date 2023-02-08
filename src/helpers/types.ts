@@ -80,6 +80,7 @@ export type Card = {
   person_id: string;
   account_id: string;
   business_id: string | null;
+  new_card_ordered: boolean;
   representation: {
     line_1: string;
     formatted_expiration_date: string;

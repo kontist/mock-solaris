@@ -234,6 +234,7 @@ export const createCard = (
     expiration_date: expirationDate.format("YYYY-MM-DD"),
     person_id: person.id,
     account_id: person.account.id,
+    new_card_ordered: true,
     business_id: businessId,
     representation: {
       line_1: cardHolder,
@@ -266,7 +267,8 @@ export const replaceCard = (
       ...card.representation,
       line_1: cardData.line_1 || card.representation.line_1,
     },
-    status: CardStatus.PROCESSING,
+    status: CardStatus.ACTIVE,
+    new_card_ordered: true,
   };
 
   const newCardDetails = {
@@ -508,6 +510,7 @@ export const activateCard = async (cardForActivation: Card): Promise<Card> => {
   );
 
   cardForActivation.status = CardStatus.ACTIVE;
+  cardForActivation.new_card_ordered = false;
   person.account.cards[cardIndex].card = cardForActivation;
   await db.savePerson(person);
   await triggerWebhook({
