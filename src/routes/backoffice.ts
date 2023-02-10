@@ -16,6 +16,8 @@ import {
   saveTaxIdentifications,
   getPersonOrigin,
   setPersonOrigin,
+  getDeviceConsents,
+  getDeviceActivities,
 } from "../db";
 import {
   createSepaDirectDebitReturn,
@@ -213,19 +215,26 @@ export const getPersonHandler = async (req, res) => {
     });
   }
 
+  const jsonResponse = shouldReturnJSON(req);
+  const id = person.id;
+
   const [
     mobileNumber,
     taxIdentifications,
     devices,
     origin,
+    deviceMonitoringActivities,
+    deviceMonitoringConsents,
   ] = await Promise.all([
-    getMobileNumber(person.id),
-    getTaxIdentifications(person.id),
-    getDevicesByPersonId(person.id),
-    getPersonOrigin(person.id),
+    getMobileNumber(id),
+    getTaxIdentifications(id),
+    getDevicesByPersonId(id),
+    getPersonOrigin(id),
+    !jsonResponse && getDeviceActivities(id),
+    !jsonResponse && getDeviceConsents(id),
   ]);
 
-  if (shouldReturnJSON(req)) {
+  if (jsonResponse) {
     res.send(person);
   } else {
     res.render("person", {
@@ -236,6 +245,8 @@ export const getPersonHandler = async (req, res) => {
       identifications: person.identifications,
       SEIZURE_STATUSES,
       origin,
+      deviceMonitoringActivities,
+      deviceMonitoringConsents,
     });
   }
 };

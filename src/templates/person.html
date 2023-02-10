@@ -832,6 +832,68 @@
   {% endif %}
 </div>
 
+<div class="panel panel-default">
+  <div id="deviceMonitoringConsents" class="panel-heading">
+    Device monitoring consents
+  </div>
+
+  {% if deviceMonitoringConsents.length > 0 %}
+    <table class="table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Event Type</th>
+        <th>Confirmed at</th>
+        <th>Created at</th>
+      </tr>
+    </thead>
+    {% for consent in deviceMonitoringConsents %}
+      <tr>
+        <td>{{ consent.id }}</td>
+        <td>{{ consent.event_type }}</td>
+        <td>{{ consent.confirmed_at }}</td>
+        <td>{{ consent.created_at }}</td>
+      </tr>
+    {% endfor %}
+    </table>
+  {% else %}
+    <div class="panel-body">
+      <i>No device monitoring consents</i>
+    </div>
+  {% endif %}
+</div>
+
+<div class="panel panel-default">
+  <div id="deviceMonitoringActivities" class="panel-heading">
+    Device monitoring activities
+  </div>
+
+  {% if deviceMonitoringActivities.length > 0 %}
+    <table class="table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Activity Type</th>
+        <th>Device data</th>
+        <th>Created at</th>
+      </tr>
+    </thead>
+    {% for activity in deviceMonitoringActivities %}
+      <tr>
+        <td>{{ activity.id }}</td>
+        <td>{{ activity.activity_type }}</td>
+        <td>{{ activity.device_data }}</td>
+        <td>{{ activity.created_at }}</td>
+      </tr>
+    {% endfor %}
+    </table>
+  {% else %}
+    <div class="panel-body">
+      <i>No device monitoring activities</i>
+    </div>
+  {% endif %}
+</div>
+
 <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
   <div class="panel panel-default">
     <div class="panel-heading" role="tab" id="headingOne">
