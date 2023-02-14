@@ -7,6 +7,7 @@ import * as db from "../db";
 import { triggerWebhook } from "./webhooks";
 import {
   Card,
+  CardData,
   CardDetails,
   CardStatus,
   CardType,
@@ -14,6 +15,8 @@ import {
   CreateCardData,
   CardLimits,
   CardLimitType,
+  Scope,
+  Origin,
   SolarisAPIErrorData,
   CardWebhookEvent,
   ChangeRequestStatus,
@@ -210,7 +213,7 @@ const getDefaultCardDetails = () => ({
 export const createCard = (
   cardData: CreateCardData,
   person: MockPerson
-): { card: Card; cardDetails: CardDetails } => {
+): CardData => {
   const {
     pin,
     type,
@@ -253,6 +256,7 @@ export const createCard = (
   return {
     card,
     cardDetails,
+    controls: [],
   };
 };
 
@@ -761,6 +765,49 @@ export const updateCardSettings = async (
   await db.savePerson(person);
 
   return settings;
+};
+
+export const createCardSpendingLimit = async (req, res) => {
+  const { scope_id: cardId, limit, idempotency_key: idempotencyKey } = req.body;
+  const cardData = await db.getCardData(cardId);
+
+  if (!cardData) {
+    return res.status(HttpStatusCodes.NOT_FOUND).send({
+      errors: [
+        {
+          id: uuid.v4(),
+          status: HttpStatusCodes.NOT_FOUND,
+          code: "model_not_found",
+          title: "Model Not Found",
+          detail: `Couldn't find 'Solaris::CardAccount' for id '${cardId}'.`,
+        },
+      ],
+    });
+  }
+
+  const cardControl = cardData.controls.find(
+    (control) => control.idempotency_key === idempotencyKey
+  );
+
+  if (cardControl) {
+    return res.status("208").send(cardControl);
+  }
+
+  const person = await db.getPerson(cardData.card.person_id);
+  const cardIndex = person.account.cards.findIndex(
+    ({ card }) => card.id === cardId
+  );
+
+  person.account.cards[cardIndex].controls.push({
+    id: uuid.v4(),
+    scope: Scope.CARD,
+    scope_id: cardId,
+    origin: Origin.SOLARISBANK,
+    idempotency_key: idempotencyKey,
+    limit,
+  });
+
+  await db.savePerson(person);
 };
 
 /* eslint-enable @typescript-eslint/camelcase */

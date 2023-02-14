@@ -333,6 +333,14 @@ export const getCardNotPresentLimitsHandler = async (
   res.status(HttpStatusCodes.OK).send(req.cardDetails.cardNotPresentLimits);
 };
 
+export const createCardSpendingLimitsHandler = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  const limits = await cardHelpers.createCardSpendingLimit(req, res);
+  res.status(HttpStatusCodes.CREATED).send(limits);
+};
+
 const handleSetCardLimitValidationError = (validationError, res) => {
   res.status(HttpStatusCodes.BAD_REQUEST).send({
     errors: [

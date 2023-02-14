@@ -309,6 +309,11 @@ router.post(
   safeRequestHandler(cardsAPI.createCardPINUpdateRequestHandler)
 );
 
+router.post(
+  "/card_controls/spending_limits",
+  safeRequestHandler(cardsAPI.createCardSpendingLimitsHandler)
+);
+
 router.get(
   "/accounts/:account_id/reservations",
   safeRequestHandler(accountsAPI.showAccountReservations)
