@@ -345,10 +345,25 @@ export const deleteCardSpendingLimitsHandler = async (
   req: express.Request,
   res: express.Response
 ) => {
-  const {id} = req.params;
+  const { id } = req.params;
 
   await cardHelpers.deleteCardSpendingLimit(id);
   res.sendStatus(HttpStatusCodes.NO_CONTENT);
+};
+
+export const indexCardSpendingLimitsHandler = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  const {
+    filter: { scope, scope_id: scopeId },
+  } = req.query as any;
+
+  const spendingLimits = await cardHelpers.indexCardSpendingLimit(
+    scope,
+    scopeId
+  );
+  res.status(HttpStatusCodes.OK).send(spendingLimits);
 };
 
 const handleSetCardLimitValidationError = (validationError, res) => {

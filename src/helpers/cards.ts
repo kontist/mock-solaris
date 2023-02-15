@@ -813,11 +813,18 @@ export const createCardSpendingLimit = async (req, res) => {
 export const deleteCardSpendingLimit = async (id: string) => {
   const person = await db.getPersonBySpendingLimitId(id);
 
-  person.account.cards = person.account.cards.map(card =>
-    card.controls.filter(control => control.id !== id)
+  person.account.cards = person.account.cards.map((card) =>
+    card.controls.filter((control) => control.id !== id)
   );
 
   await db.savePerson(person);
+};
+
+export const indexCardSpendingLimit = async (scope: Scope, scopeId: string) => {
+  if (scope !== Scope.CARD) return [];
+
+  const cardData = await db.getCardData(scopeId);
+  return cardData.controls;
 };
 
 /* eslint-enable @typescript-eslint/camelcase */

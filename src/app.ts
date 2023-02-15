@@ -320,6 +320,11 @@ router.post(
 );
 
 router.get(
+  "/card_controls/spending_limits",
+  safeRequestHandler(cardsAPI.indexCardSpendingLimitsHandler)
+);
+
+router.get(
   "/accounts/:account_id/reservations",
   safeRequestHandler(accountsAPI.showAccountReservations)
 );
