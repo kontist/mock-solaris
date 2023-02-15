@@ -810,4 +810,14 @@ export const createCardSpendingLimit = async (req, res) => {
   await db.savePerson(person);
 };
 
+export const deleteCardSpendingLimit = async (id: string) => {
+  const person = await db.getPersonBySpendingLimitId(id);
+
+  person.account.cards = person.account.cards.map(card =>
+    card.controls.filter(control => control.id !== id)
+  );
+
+  await db.savePerson(person);
+};
+
 /* eslint-enable @typescript-eslint/camelcase */

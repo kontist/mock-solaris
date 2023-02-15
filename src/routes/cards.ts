@@ -341,6 +341,16 @@ export const createCardSpendingLimitsHandler = async (
   res.status(HttpStatusCodes.CREATED).send(limits);
 };
 
+export const deleteCardSpendingLimitsHandler = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  const {id} = req.params;
+
+  await cardHelpers.deleteCardSpendingLimit(id);
+  res.sendStatus(HttpStatusCodes.NO_CONTENT);
+};
+
 const handleSetCardLimitValidationError = (validationError, res) => {
   res.status(HttpStatusCodes.BAD_REQUEST).send({
     errors: [

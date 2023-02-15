@@ -309,6 +309,11 @@ router.post(
   safeRequestHandler(cardsAPI.createCardPINUpdateRequestHandler)
 );
 
+router.delete(
+  "/card_controls/spending_limits/:id",
+  safeRequestHandler(cardsAPI.deleteCardSpendingLimitsHandler)
+);
+
 router.post(
   "/card_controls/spending_limits",
   safeRequestHandler(cardsAPI.createCardSpendingLimitsHandler)
