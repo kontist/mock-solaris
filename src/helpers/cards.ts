@@ -27,6 +27,7 @@ import {
   ProvisioningTokenEventType,
   ProvisioningTokenMessageReason,
   ProvisioningTokenStatusChangePayload,
+  CardSpendingLimitControl,
 } from "./types";
 
 const CARD_HOLDER_MAX_LENGTH = 21;
@@ -767,7 +768,10 @@ export const updateCardSettings = async (
   return settings;
 };
 
-export const createCardSpendingLimit = async (req, res) => {
+export const createCardSpendingLimit = async (
+  req,
+  res
+): Promise<CardSpendingLimitControl> => {
   const { scope_id: cardId, limit, idempotency_key: idempotencyKey } = req.body;
   const cardData = await db.getCardData(cardId);
 
@@ -798,19 +802,23 @@ export const createCardSpendingLimit = async (req, res) => {
     ({ card }) => card.id === cardId
   );
 
-  person.account.cards[cardIndex].controls.push({
+  const limitControl = {
     id: uuid.v4(),
     scope: Scope.CARD,
     scope_id: cardId,
     origin: Origin.SOLARISBANK,
     idempotency_key: idempotencyKey,
     limit,
-  });
+  };
+
+  person.account.cards[cardIndex].controls.push(limitControl);
 
   await db.savePerson(person);
+
+  return limitControl;
 };
 
-export const deleteCardSpendingLimit = async (id: string) => {
+export const deleteCardSpendingLimit = async (id: string): Promise<void> => {
   const person = await db.getPersonBySpendingLimitId(id);
 
   person.account.cards = person.account.cards.map((card) =>
@@ -820,7 +828,10 @@ export const deleteCardSpendingLimit = async (id: string) => {
   await db.savePerson(person);
 };
 
-export const indexCardSpendingLimit = async (scope: Scope, scopeId: string) => {
+export const indexCardSpendingLimit = async (
+  scope: Scope,
+  scopeId: string
+): Promise<CardSpendingLimitControl[]> => {
   if (scope !== Scope.CARD) return [];
 
   const cardData = await db.getCardData(scopeId);

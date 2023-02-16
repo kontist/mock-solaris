@@ -114,7 +114,7 @@ export enum Origin {
   SOLARISBANK = "SOLARISBANK",
 }
 
-export type CardSpendingLimitControls = {
+export type CardSpendingLimitControl = {
   id: string;
   scope: Scope;
   scope_id: string;
@@ -127,7 +127,7 @@ export type CardData = {
   card: Card;
   cardDetails: CardDetails;
   provisioningToken?: ProvisioningTokenStatusChangePayload;
-  controls: CardSpendingLimitControls[];
+  controls: CardSpendingLimitControl[];
 };
 
 export type MockAccount = {
