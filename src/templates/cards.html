@@ -99,15 +99,9 @@
               </td>
             </tr>
             <tr {% if cardData.card.type === "VIRTUAL_VISA_FREELANCE_DEBIT"%} style="opacity: 0.4;" {% endif %}>
-              <td>card present limits</td>
+              <td>card limits</td>
               <td>
-                <pre>{{ JSON.stringify(cardData.cardDetails.cardPresentLimits, null, 2) }}</pre>
-              </td>
-            </tr>
-            <tr>
-              <td>card not present limits</td>
-              <td>
-                <pre>{{ JSON.stringify(cardData.cardDetails.cardNotPresentLimits, null, 2) }}</pre>
+                <pre>{{ JSON.stringify(cardData.controls, null, 2) }}</pre>
               </td>
             </tr>
             <tr>

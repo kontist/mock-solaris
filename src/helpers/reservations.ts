@@ -341,7 +341,7 @@ const DEFAULT_CARD_LIMITS = {
 };
 
 const getCardLimits = (
-  cardControls: CardSpendingLimitControl[],
+  cardControls: CardSpendingLimitControl[] = [],
   period: CardSpendingLimitPeriod,
   dimension: DimensionType
 ) => ({
