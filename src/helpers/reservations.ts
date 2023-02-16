@@ -18,7 +18,7 @@ import {
   Reservation,
   CardWebhookEvent,
   CardAuthorizationDeclineReason,
-  CardDetails,
+  CardData,
   MockPerson,
   BookingType,
   POSEntryMode,
@@ -26,6 +26,9 @@ import {
   CardTransaction,
   CardAuthorizationDeclinedStatus,
   FraudCase,
+  DimensionType,
+  CardSpendingLimitPeriod,
+  CardSpendingLimitControl,
 } from "./types";
 import getFraudWatchdog from "./fraudWatchdog";
 import { proceedWithSCAChallenge } from "./scaChallenge";
@@ -249,13 +252,11 @@ const computeCardUsage = (person: MockPerson) => {
     isBetween(entry, startOfToday, endOfToday)
   );
 
-  const filterByCardNotPresent = (reservation) =>
-    JSON.parse(reservation.meta_info).cards.pos_entry_mode ===
-    POSEntryMode.CARD_NOT_PRESENT;
+  const filterByATM = reservation =>
+    JSON.parse(reservation.meta_info).cards.type === TransactionType.CASH_ATM;
 
-  const filterByCardPresent = (reservation) =>
-    JSON.parse(reservation.meta_info).cards.pos_entry_mode !==
-    POSEntryMode.CARD_NOT_PRESENT;
+  const filterByPurchase = reservation =>
+    JSON.parse(reservation.meta_info).cards.type === TransactionType.PURCHASE;
 
   const sumAmount = (total: number, entry: Booking | Reservation) => {
     return total + entry.amount.value;
@@ -265,13 +266,14 @@ const computeCardUsage = (person: MockPerson) => {
     isBetween(entry, startOfToday, endOfToday)
   );
 
-  const todayCardNotPresent = [...todayReservations, ...todayBookings].filter(
-    filterByCardNotPresent
+  const todayATMTransactions = [...todayReservations, ...todayBookings].filter(
+    filterByATM
   );
 
-  const todayCardPresent = [...todayReservations, ...todayBookings].filter(
-    filterByCardPresent
-  );
+  const todayPurchaseTransactions = [
+    ...todayReservations,
+    ...todayBookings,
+  ].filter(filterByPurchase);
 
   const thisMonthReservations = cardReservations.filter((entry) =>
     isBetween(entry, startOfMonth, endOfMonth)
@@ -281,167 +283,128 @@ const computeCardUsage = (person: MockPerson) => {
     isBetween(entry, startOfMonth, endOfMonth)
   );
 
-  const thisMonthCardNotPresent = [
+  const thisMonthATMTransactions = [
     ...thisMonthReservations,
     ...thisMonthBookings,
-  ].filter(filterByCardNotPresent);
+  ].filter(filterByATM);
 
-  const thisMonthCardPresent = [
+  const thisMonthPurchaseTransactions = [
     ...thisMonthReservations,
     ...thisMonthBookings,
-  ].filter(filterByCardPresent);
+  ].filter(filterByPurchase);
 
   return {
-    cardPresent: {
+    ATM: {
       daily: {
-        transactions: todayCardPresent.length,
-        amount: todayCardPresent.reduce(sumAmount, 0),
+        transactions: todayATMTransactions.length,
+        amount: todayATMTransactions.reduce(sumAmount, 0),
       },
       monthly: {
-        transactions: thisMonthCardPresent.length,
-        amount: thisMonthCardPresent.reduce(sumAmount, 0),
+        transactions: thisMonthATMTransactions.length,
+        amount: thisMonthATMTransactions.reduce(sumAmount, 0),
       },
     },
-    cardNotPresent: {
+    PURCHASE: {
       daily: {
-        transactions: todayCardNotPresent.length,
-        amount: todayCardNotPresent.reduce(sumAmount, 0),
+        transactions: todayPurchaseTransactions.length,
+        amount: todayPurchaseTransactions.reduce(sumAmount, 0),
       },
       monthly: {
-        transactions: thisMonthCardNotPresent.length,
-        amount: thisMonthCardNotPresent.reduce(sumAmount, 0),
+        transactions: thisMonthPurchaseTransactions.length,
+        amount: thisMonthPurchaseTransactions.reduce(sumAmount, 0),
       },
     },
   };
 };
 
+const DEFAULT_CARD_LIMITS = {
+  [DimensionType.ATM_WITHDRAWAL]: {
+    [CardSpendingLimitPeriod.DAILY]: {
+      amount: 100000,
+      count: 10,
+    },
+    [CardSpendingLimitPeriod.MONTHLY]: {
+      amount: 300000,
+      count: 50,
+    },
+  },
+  [DimensionType.PURCHASE]: {
+    [CardSpendingLimitPeriod.DAILY]: {
+      amount: 1000000,
+      count: 20,
+    },
+    [CardSpendingLimitPeriod.MONTHLY]: {
+      amount: 2000000,
+      count: 200,
+    },
+  },
+};
+
+const getCardLimits = (
+  cardControls: CardSpendingLimitControl[],
+  period: CardSpendingLimitPeriod,
+  dimension: DimensionType
+) => ({
+  amount:
+    cardControls.find(
+      ({limit}) =>
+        limit.dimension.includes(dimension) &&
+        limit.amount &&
+        limit.period === period
+    ) || DEFAULT_CARD_LIMITS[dimension][period].amount,
+  count:
+    cardControls.find(
+      ({limit}) =>
+        limit.dimension.includes(dimension) &&
+        limit.count &&
+        limit.period === period
+    ) || DEFAULT_CARD_LIMITS[dimension][period].count,
+});
+
 export const validateCardLimits = async (
   currentCardUsage,
-  cardDetails: CardDetails,
-  cardAuthorizationDeclined: CardTransaction,
-  person: MockPerson
+  cardData: CardData
 ) => {
-  const isCardNotPresentAuthorization =
-    cardAuthorizationDeclined.pos_entry_mode === POSEntryMode.CARD_NOT_PRESENT;
+  const {amount: dailyATMLimitAmount, count: dailyATMLimitCount} =
+    getCardLimits(
+      cardData.controls,
+      CardSpendingLimitPeriod.DAILY,
+      DimensionType.ATM_WITHDRAWAL
+    );
 
-  if (isCardNotPresentAuthorization) {
-    const dailyLimitAfterAuthorization =
-      currentCardUsage.cardNotPresent.daily.amount;
-    const monthlyLimitAfterAuthorization =
-      currentCardUsage.cardNotPresent.monthly.amount;
+  const {amount: monthlyATMLimitAmount, count: monthlyATMLimitCount} =
+    getCardLimits(
+      cardData.controls,
+      CardSpendingLimitPeriod.MONTHLY,
+      DimensionType.ATM_WITHDRAWAL
+    );
 
-    if (
-      dailyLimitAfterAuthorization >
-      cardDetails.cardNotPresentLimits.daily.max_amount_cents
-    ) {
-      await triggerCardDeclinedWebhook(
-        cardAuthorizationDeclined,
-        CardAuthorizationDeclineReason.CARD_NOT_PRESENT_AMOUNT_LIMIT_REACHED_DAILY,
-        person
-      );
-      throw new Error(
-        `Daily card_not_present amount limit exceeded (${dailyLimitAfterAuthorization} > ${cardDetails.cardNotPresentLimits.daily.max_amount_cents})`
-      );
-    }
+  const {amount: dailyPurchaseLimitAmount, count: dailyPurchaseLimitCount} =
+    getCardLimits(
+      cardData.controls,
+      CardSpendingLimitPeriod.DAILY,
+      DimensionType.PURCHASE
+    );
 
-    if (
-      currentCardUsage.cardNotPresent.daily.transactions >
-      cardDetails.cardNotPresentLimits.daily.max_transactions
-    ) {
-      await triggerCardDeclinedWebhook(
-        cardAuthorizationDeclined,
-        CardAuthorizationDeclineReason.CARD_NOT_PRESENT_USE_LIMIT_REACHED_DAILY,
-        person
-      );
-      throw new Error(
-        "Daily card_not_present transaction number limit exceeded"
-      );
-    }
+  const {amount: monthlyPurchaseLimitAmount, count: monthlyPurchaseLimitCount} =
+    getCardLimits(
+      cardData.controls,
+      CardSpendingLimitPeriod.MONTHLY,
+      DimensionType.PURCHASE
+    );
 
-    if (
-      monthlyLimitAfterAuthorization >
-      cardDetails.cardNotPresentLimits.monthly.max_amount_cents
-    ) {
-      await triggerCardDeclinedWebhook(
-        cardAuthorizationDeclined,
-        CardAuthorizationDeclineReason.CARD_NOT_PRESENT_AMOUNT_LIMIT_REACHED_MONTHLY,
-        person
-      );
-      throw new Error(
-        `Monthly card_not_present amount limit exceeded (${monthlyLimitAfterAuthorization} > ${cardDetails.cardNotPresentLimits.monthly.max_amount_cents})`
-      );
-    }
-
-    if (
-      currentCardUsage.cardNotPresent.monthly.transactions >
-      cardDetails.cardNotPresentLimits.monthly.max_transactions
-    ) {
-      await triggerCardDeclinedWebhook(
-        cardAuthorizationDeclined,
-        CardAuthorizationDeclineReason.CARD_NOT_PRESENT_USE_LIMIT_REACHED_MONTHLY,
-        person
-      );
-      throw new Error(
-        "Monthly card_not_present transaction number limit exceeded"
-      );
-    }
-  } else {
-    const dailyLimitAfterAuthorization =
-      currentCardUsage.cardPresent.daily.amount;
-    const monthlyLimitAfterAuthorization =
-      currentCardUsage.cardPresent.monthly.amount;
-
-    if (
-      dailyLimitAfterAuthorization >
-      cardDetails.cardPresentLimits.daily.max_amount_cents
-    ) {
-      await triggerCardDeclinedWebhook(
-        cardAuthorizationDeclined,
-        CardAuthorizationDeclineReason.CARD_PRESENT_AMOUNT_LIMIT_REACHED_DAILY,
-        person
-      );
-      throw new Error(
-        `Daily card_present amount limit exceeded (${dailyLimitAfterAuthorization} > ${cardDetails.cardPresentLimits.daily.max_amount_cents})`
-      );
-    }
-
-    if (
-      currentCardUsage.cardPresent.daily.transactions >
-      cardDetails.cardPresentLimits.daily.max_transactions
-    ) {
-      await triggerCardDeclinedWebhook(
-        cardAuthorizationDeclined,
-        CardAuthorizationDeclineReason.CARD_PRESENT_USE_LIMIT_REACHED_DAILY,
-        person
-      );
-      throw new Error("Daily card_present transaction number limit exceeded");
-    }
-
-    if (
-      monthlyLimitAfterAuthorization >
-      cardDetails.cardPresentLimits.monthly.max_amount_cents
-    ) {
-      await triggerCardDeclinedWebhook(
-        cardAuthorizationDeclined,
-        CardAuthorizationDeclineReason.CARD_PRESENT_AMOUNT_LIMIT_REACHED_MONTHLY,
-        person
-      );
-      throw new Error(
-        `Monthly card_present amount limit exceeded (${monthlyLimitAfterAuthorization} > ${cardDetails.cardPresentLimits.monthly.max_amount_cents})`
-      );
-    }
-
-    if (
-      currentCardUsage.cardPresent.monthly.transactions >
-      cardDetails.cardPresentLimits.monthly.max_transactions
-    ) {
-      await triggerCardDeclinedWebhook(
-        cardAuthorizationDeclined,
-        CardAuthorizationDeclineReason.CARD_PRESENT_USE_LIMIT_REACHED_MONTHLY,
-        person
-      );
-      throw new Error("Monthly card_present transaction number limit exceeded");
-    }
+  if (
+    currentCardUsage.ATM.daily.amount > dailyATMLimitAmount ||
+    currentCardUsage.ATM.daily.count > dailyATMLimitCount ||
+    currentCardUsage.ATM.monthly.amount > monthlyATMLimitAmount ||
+    currentCardUsage.ATM.monthly.count > monthlyATMLimitCount ||
+    currentCardUsage.PURCHASE.daily.amount > dailyPurchaseLimitAmount ||
+    currentCardUsage.PURCHASE.daily.count > dailyPurchaseLimitCount ||
+    currentCardUsage.PURCHASE.monthly.amount > monthlyPurchaseLimitAmount ||
+    currentCardUsage.PURCHASE.monthly.count > monthlyPurchaseLimitCount
+  ) {
+    // triggerCardDeclinedWebhook
+    throw new Error(`Card limit exceeded`);
   }
 };
 
@@ -556,12 +519,7 @@ export const createReservation = async ({
   person.account.reservations.push(reservation);
 
   const currentCardUsages = computeCardUsage(person);
-  await validateCardLimits(
-    currentCardUsages,
-    cardData.cardDetails,
-    cardAuthorizationDeclined,
-    person
-  );
+  await validateCardLimits(currentCardUsages, cardData);
 
   await db.savePerson(person);
 

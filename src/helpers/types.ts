@@ -217,9 +217,14 @@ export enum CardSpendingLimitPeriod {
   MONTHLY = "MONTHLY",
 }
 
+export enum DimensionType {
+  PURCHASE = "PURCHASE",
+  ATM_WITHDRAWAL = "ATM_WITHDRAWAL",
+}
+
 export type CardSpendingLimit = {
   type: CardSpendingLimitType;
-  dimension: TransactionType[];
+  dimension: DimensionType[];
   period: CardSpendingLimitPeriod;
   amount?: number;
   count?: number;
