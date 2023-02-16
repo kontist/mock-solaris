@@ -777,4 +777,25 @@ export const createCardPINUpdateRequestHandler = async (
   res.send({});
 };
 
+export const changeCardPINWithChangeRequestHandler = async (
+  req: RequestExtendedWithCard,
+  res: express.Response
+) => {
+  const decryptedData = await jose.JWE.createDecrypt(keyStore).decrypt(
+    req.body.encrypted_pin
+  );
+  const { pin } = JSON.parse(decryptedData.payload.toString());
+
+  const pinValidationErrors = cardHelpers.validatePIN(pin || "");
+  if (pinValidationErrors.length) {
+    res.status(HttpStatusCodes.BAD_REQUEST).send({
+      errors: pinValidationErrors,
+    });
+    return;
+  }
+
+  const changeRequestResponse = await cardHelpers.changePIN(req.card, pin);
+  res.status(HttpStatusCodes.ACCEPTED).send(changeRequestResponse);
+};
+
 /* eslint-enable @typescript-eslint/camelcase */
