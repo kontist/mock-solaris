@@ -789,9 +789,10 @@ export const createCardSpendingLimit = async (
     });
   }
 
-  const cardControl = cardData.controls.find(
-    (control) => control.idempotency_key === idempotencyKey
-  );
+  const cardControl =
+    cardData.controls?.find(
+      control => control.idempotency_key === idempotencyKey
+    ) || [];
 
   if (cardControl) {
     return res.status("208").send(cardControl);
@@ -811,7 +812,11 @@ export const createCardSpendingLimit = async (
     limit,
   };
 
-  person.account.cards[cardIndex].controls.push(limitControl);
+  if (!person.account.cards[cardIndex].controls) {
+    person.account.cards[cardIndex].controls = [limitControl];
+  } else {
+    person.account.cards[cardIndex].controls.push(limitControl);
+  }
 
   await db.savePerson(person);
 
@@ -821,8 +826,8 @@ export const createCardSpendingLimit = async (
 export const deleteCardSpendingLimit = async (id: string): Promise<void> => {
   const person = await db.getPersonBySpendingLimitId(id);
 
-  person.account.cards = person.account.cards.map((card) =>
-    card.controls.filter((control) => control.id !== id)
+  person.account.cards = person.account.cards.map(card =>
+    card.controls.filter(control => control.id !== id)
   );
 
   await db.savePerson(person);
