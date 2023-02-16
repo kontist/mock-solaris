@@ -791,7 +791,7 @@ export const createCardSpendingLimit = async (
 
   const cardControl =
     cardData.controls?.find(
-      control => control.idempotency_key === idempotencyKey
+      (control) => control.idempotency_key === idempotencyKey
     ) || [];
 
   if (cardControl) {
@@ -826,8 +826,8 @@ export const createCardSpendingLimit = async (
 export const deleteCardSpendingLimit = async (id: string): Promise<void> => {
   const person = await db.getPersonBySpendingLimitId(id);
 
-  person.account.cards = person.account.cards.map(card =>
-    card.controls.filter(control => control.id !== id)
+  person.account.cards = person.account.cards.map((card) =>
+    card.controls.filter((control) => control.id !== id)
   );
 
   await db.savePerson(person);

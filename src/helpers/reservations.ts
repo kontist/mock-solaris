@@ -252,10 +252,10 @@ const computeCardUsage = (person: MockPerson) => {
     isBetween(entry, startOfToday, endOfToday)
   );
 
-  const filterByATM = reservation =>
+  const filterByATM = (reservation) =>
     JSON.parse(reservation.meta_info).cards.type === TransactionType.CASH_ATM;
 
-  const filterByPurchase = reservation =>
+  const filterByPurchase = (reservation) =>
     JSON.parse(reservation.meta_info).cards.type === TransactionType.PURCHASE;
 
   const sumAmount = (total: number, entry: Booking | Reservation) => {
@@ -347,14 +347,14 @@ const getCardLimits = (
 ) => ({
   amount:
     cardControls.find(
-      ({limit}) =>
+      ({ limit }) =>
         limit.dimension.includes(dimension) &&
         limit.amount &&
         limit.period === period
     ) || DEFAULT_CARD_LIMITS[dimension][period].amount,
   count:
     cardControls.find(
-      ({limit}) =>
+      ({ limit }) =>
         limit.dimension.includes(dimension) &&
         limit.count &&
         limit.period === period
@@ -365,33 +365,35 @@ export const validateCardLimits = async (
   currentCardUsage,
   cardData: CardData
 ) => {
-  const {amount: dailyATMLimitAmount, count: dailyATMLimitCount} =
+  const { amount: dailyATMLimitAmount, count: dailyATMLimitCount } =
     getCardLimits(
       cardData.controls,
       CardSpendingLimitPeriod.DAILY,
       DimensionType.ATM_WITHDRAWAL
     );
 
-  const {amount: monthlyATMLimitAmount, count: monthlyATMLimitCount} =
+  const { amount: monthlyATMLimitAmount, count: monthlyATMLimitCount } =
     getCardLimits(
       cardData.controls,
       CardSpendingLimitPeriod.MONTHLY,
       DimensionType.ATM_WITHDRAWAL
     );
 
-  const {amount: dailyPurchaseLimitAmount, count: dailyPurchaseLimitCount} =
+  const { amount: dailyPurchaseLimitAmount, count: dailyPurchaseLimitCount } =
     getCardLimits(
       cardData.controls,
       CardSpendingLimitPeriod.DAILY,
       DimensionType.PURCHASE
     );
 
-  const {amount: monthlyPurchaseLimitAmount, count: monthlyPurchaseLimitCount} =
-    getCardLimits(
-      cardData.controls,
-      CardSpendingLimitPeriod.MONTHLY,
-      DimensionType.PURCHASE
-    );
+  const {
+    amount: monthlyPurchaseLimitAmount,
+    count: monthlyPurchaseLimitCount,
+  } = getCardLimits(
+    cardData.controls,
+    CardSpendingLimitPeriod.MONTHLY,
+    DimensionType.PURCHASE
+  );
 
   if (
     currentCardUsage.ATM.daily.amount > dailyATMLimitAmount ||
