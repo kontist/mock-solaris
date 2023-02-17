@@ -7,7 +7,6 @@ import * as db from "../db";
 import { triggerWebhook } from "./webhooks";
 import {
   Card,
-  CardData,
   CardDetails,
   CardStatus,
   CardType,
@@ -214,7 +213,7 @@ const getDefaultCardDetails = () => ({
 export const createCard = (
   cardData: CreateCardData,
   person: MockPerson
-): CardData => {
+): { card: Card; cardDetails: CardDetails } => {
   const {
     pin,
     type,
@@ -257,7 +256,6 @@ export const createCard = (
   return {
     card,
     cardDetails,
-    controls: [],
   };
 };
 
@@ -789,10 +787,9 @@ export const createCardSpendingLimit = async (
     });
   }
 
-  const cardControl =
-    cardData.controls?.find(
-      (control) => control.idempotency_key === idempotencyKey
-    ) || [];
+  const cardControl = cardData.controls?.find(
+    (control) => control.idempotency_key === idempotencyKey
+  );
 
   if (cardControl) {
     return res.status("208").send(cardControl);
@@ -824,11 +821,15 @@ export const createCardSpendingLimit = async (
 };
 
 export const deleteCardSpendingLimit = async (id: string): Promise<void> => {
-  const person = await db.getPersonBySpendingLimitId(id);
+  const { person, cardData } = await db.getPersonBySpendingLimitId(id);
 
-  person.account.cards = person.account.cards.map((card) =>
-    card.controls.filter((control) => control.id !== id)
+  const cardIndex = person.account.cards.findIndex(
+    ({ card }) => card.id === cardData.card.id
   );
+
+  person.account.cards[cardIndex].controls = person.account.cards[
+    cardIndex
+  ].controls.filter((control) => control.id !== id);
 
   await db.savePerson(person);
 };
@@ -840,7 +841,8 @@ export const indexCardSpendingLimit = async (
   if (scope !== Scope.CARD) return [];
 
   const cardData = await db.getCardData(scopeId);
-  return cardData.controls;
+
+  return cardData.controls || [];
 };
 
 /* eslint-enable @typescript-eslint/camelcase */

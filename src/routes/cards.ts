@@ -136,7 +136,7 @@ export const createCardHandler = async (
 
     card.representation.line_1 = card.representation.line_1.replace(/\//g, " ");
     person.account.cards = person.account.cards || [];
-    person.account.cards.push({ card, cardDetails });
+    person.account.cards.push({ card, cardDetails, controls: [] });
 
     await db.saveCardReference(cardDetails.reference);
     await db.savePerson(person);

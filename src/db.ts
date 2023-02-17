@@ -491,7 +491,7 @@ export const getPersonBySpendingLimitId = async (id) => {
     .value()
     .find(({ controls }) => controls.find((control) => control.id === id));
 
-  return getPerson(cardData.card.person_id);
+  return { person: await getPerson(cardData.card.person_id), cardData };
 };
 
 export const getPersonByFraudCaseId = async (
