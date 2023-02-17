@@ -9,7 +9,7 @@ import { triggerBookingsWebhook } from "../routes/backoffice";
 import {
   TransactionType,
   FxRate,
-  CardAuthorizationDeclineReason,
+  CardAuthorizationDeclineV2Type,
   POSEntryMode,
 } from "./types";
 
@@ -20,6 +20,7 @@ export const createCreditPresentment = async ({
   currency,
   type,
   recipient,
+  declineReason,
 }: {
   personId: string;
   cardId: string;
@@ -27,7 +28,7 @@ export const createCreditPresentment = async ({
   currency: string;
   type: TransactionType;
   recipient: string;
-  declineReason?: CardAuthorizationDeclineReason;
+  declineReason?: CardAuthorizationDeclineV2Type;
 }) => {
   const person = await db.getPerson(personId);
   const cardData = person.account.cards.find(({ card }) => card.id === cardId);
