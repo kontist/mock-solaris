@@ -770,7 +770,14 @@ export const createCardSpendingLimit = async (
   req,
   res
 ): Promise<CardSpendingLimitControl> => {
-  const { scope_id: cardId, limit, idempotency_key: idempotencyKey } = req.body;
+  const {
+    scope,
+    scope_id: cardId,
+    limit,
+    idempotency_key: idempotencyKey,
+  } = req.body;
+  if (scope !== Scope.CARD) return null;
+
   const cardData = await db.getCardData(cardId);
 
   if (!cardData) {
