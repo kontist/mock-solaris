@@ -482,6 +482,18 @@ export const getCardData = async (cardId) => {
   return cardData;
 };
 
+export const getPersonBySpendingLimitId = async (id) => {
+  const persons = await getAllPersons();
+
+  const cardData = _(persons)
+    .map((person) => _.get(person, "account.cards", []))
+    .flatten()
+    .value()
+    .find(({ controls }) => controls.find((control) => control.id === id));
+
+  return { person: await getPerson(cardData.card.person_id), cardData };
+};
+
 export const getPersonByFraudCaseId = async (
   fraudCaseId
 ): Promise<MockPerson> => {

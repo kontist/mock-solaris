@@ -136,7 +136,7 @@ export const createCardHandler = async (
 
     card.representation.line_1 = card.representation.line_1.replace(/\//g, " ");
     person.account.cards = person.account.cards || [];
-    person.account.cards.push({ card, cardDetails });
+    person.account.cards.push({ card, cardDetails, controls: [] });
 
     await db.saveCardReference(cardDetails.reference);
     await db.savePerson(person);
@@ -331,6 +331,39 @@ export const getCardNotPresentLimitsHandler = async (
   res: express.Response
 ) => {
   res.status(HttpStatusCodes.OK).send(req.cardDetails.cardNotPresentLimits);
+};
+
+export const createCardSpendingLimitsHandler = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  const limits = await cardHelpers.createCardSpendingLimit(req, res);
+  res.status(HttpStatusCodes.CREATED).send(limits);
+};
+
+export const deleteCardSpendingLimitsHandler = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  const { id } = req.params;
+
+  await cardHelpers.deleteCardSpendingLimit(id);
+  res.sendStatus(HttpStatusCodes.NO_CONTENT);
+};
+
+export const indexCardSpendingLimitsHandler = async (
+  req: express.Request,
+  res: express.Response
+) => {
+  const {
+    filter: { scope, scope_id: scopeId },
+  } = req.query as any;
+
+  const spendingLimits = await cardHelpers.indexCardSpendingLimit(
+    scope,
+    scopeId
+  );
+  res.status(HttpStatusCodes.OK).send(spendingLimits);
 };
 
 const handleSetCardLimitValidationError = (validationError, res) => {

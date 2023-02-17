@@ -14,6 +14,8 @@ import {
   CreateCardData,
   CardLimits,
   CardLimitType,
+  Scope,
+  Origin,
   SolarisAPIErrorData,
   CardWebhookEvent,
   ChangeRequestStatus,
@@ -24,6 +26,7 @@ import {
   ProvisioningTokenEventType,
   ProvisioningTokenMessageReason,
   ProvisioningTokenStatusChangePayload,
+  CardSpendingLimitControl,
 } from "./types";
 
 const CARD_HOLDER_MAX_LENGTH = 21;
@@ -761,6 +764,92 @@ export const updateCardSettings = async (
   await db.savePerson(person);
 
   return settings;
+};
+
+export const createCardSpendingLimit = async (
+  req,
+  res
+): Promise<CardSpendingLimitControl> => {
+  const {
+    scope,
+    scope_id: cardId,
+    limit,
+    idempotency_key: idempotencyKey,
+  } = req.body;
+  if (scope !== Scope.CARD) return null;
+
+  const cardData = await db.getCardData(cardId);
+
+  if (!cardData) {
+    return res.status(HttpStatusCodes.NOT_FOUND).send({
+      errors: [
+        {
+          id: uuid.v4(),
+          status: HttpStatusCodes.NOT_FOUND,
+          code: "model_not_found",
+          title: "Model Not Found",
+          detail: `Couldn't find 'Solaris::CardAccount' for id '${cardId}'.`,
+        },
+      ],
+    });
+  }
+
+  const cardControl = cardData.controls?.find(
+    (control) => control.idempotency_key === idempotencyKey
+  );
+
+  if (cardControl) {
+    return res.status("208").send(cardControl);
+  }
+
+  const person = await db.getPerson(cardData.card.person_id);
+  const cardIndex = person.account.cards.findIndex(
+    ({ card }) => card.id === cardId
+  );
+
+  const limitControl = {
+    id: uuid.v4(),
+    scope: Scope.CARD,
+    scope_id: cardId,
+    origin: Origin.SOLARISBANK,
+    idempotency_key: idempotencyKey,
+    limit,
+  };
+
+  if (!person.account.cards[cardIndex].controls) {
+    person.account.cards[cardIndex].controls = [limitControl];
+  } else {
+    person.account.cards[cardIndex].controls.push(limitControl);
+  }
+
+  await db.savePerson(person);
+
+  return limitControl;
+};
+
+export const deleteCardSpendingLimit = async (id: string): Promise<void> => {
+  const { person, cardData } = await db.getPersonBySpendingLimitId(id);
+
+  const cardIndex = person.account.cards.findIndex(
+    ({ card }) => card.id === cardData.card.id
+  );
+
+  person.account.cards[cardIndex].controls = person.account.cards[
+    cardIndex
+  ].controls.filter((control) => control.id !== id);
+
+  await db.savePerson(person);
+};
+
+export const indexCardSpendingLimit = async (
+  scope: Scope,
+  scopeId: string
+): Promise<CardSpendingLimitControl[]> => {
+  if (scope !== Scope.CARD) return [];
+
+  const cardData = await db.getCardData(scopeId);
+
+  return cardData.controls || [];
 };
 
 /* eslint-enable @typescript-eslint/camelcase */

@@ -106,13 +106,33 @@ export type AccountSnapshot = {
   account_id: string;
 };
 
+export enum Scope {
+  CARD = "CARD",
+}
+
+export enum Origin {
+  SOLARISBANK = "SOLARISBANK",
+}
+
+export type CardSpendingLimitControl = {
+  id: string;
+  scope: Scope;
+  scope_id: string;
+  origin: Origin;
+  idempotency_key: string;
+  limit: CardSpendingLimit;
+};
+
+export type CardData = {
+  card: Card;
+  cardDetails: CardDetails;
+  provisioningToken?: ProvisioningTokenStatusChangePayload;
+  controls: CardSpendingLimitControl[];
+};
+
 export type MockAccount = {
   id: string;
-  cards: {
-    card: Card;
-    cardDetails: CardDetails;
-    provisioningToken?: ProvisioningTokenStatusChangePayload;
-  }[];
+  cards: CardData[];
   reservations: Reservation[];
   fraudReservations: Reservation[];
   pendingReservation: Reservation;
@@ -186,6 +206,28 @@ export type CreateCardData = {
   business_id?: string;
   reference: string;
   line_1: string;
+};
+
+export enum CardSpendingLimitType {
+  TRANSACTION_TYPE = "TRANSACTION_TYPE",
+}
+
+export enum CardSpendingLimitPeriod {
+  DAILY = "DAILY",
+  MONTHLY = "MONTHLY",
+}
+
+export enum DimensionType {
+  PURCHASE = "PURCHASE",
+  ATM_WITHDRAWAL = "ATM_WITHDRAWAL",
+}
+
+export type CardSpendingLimit = {
+  type: CardSpendingLimitType;
+  dimension: DimensionType[];
+  period: CardSpendingLimitPeriod;
+  amount?: number;
+  count?: number;
 };
 
 export type ReplaceCardData = {
