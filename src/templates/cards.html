@@ -181,34 +181,24 @@
             <label class="col-form-label" for="declineReason">Decline reason</label>
             <select class="form-control" name="declineReason">
               <option disabled selected value> -- SELECT DECLINE REASON IF NEEDED -- </option>
+              <option value="3DS_FAILED">3DS_FAILED</option>
               <option value="AUTHENTICATION_REQUIRED">AUTHENTICATION_REQUIRED</option>
               <option value="CARD_BLOCKED">CARD_BLOCKED</option>
-              <option value="ACCOUNT_CLOSED">ACCOUNT_CLOSED</option>
-              <option value="ACCOUNT_LIMIT_REACHED">ACCOUNT_LIMIT_REACHED</option>
-              <option value="EXPIRY_DATE_INVALID">EXPIRY_DATE_INVALID</option>
+              <option value="CARD_EXPIRED">CARD_EXPIRED</option>
               <option value="CARD_INACTIVE">CARD_INACTIVE</option>
-              <option value="CARD_NOT_PRESENT_AMOUNT_LIMIT_REACHED_DAILY">CARD_NOT_PRESENT_AMOUNT_LIMIT_REACHED_DAILY</option>
-              <option value="CARD_NOT_PRESENT_AMOUNT_LIMIT_REACHED_MONTHLY">CARD_NOT_PRESENT_AMOUNT_LIMIT_REACHED_MONTHLY</option>
-              <option value="CARD_NOT_PRESENT_USE_LIMIT_REACHED_DAILY">CARD_NOT_PRESENT_USE_LIMIT_REACHED_DAILY</option>
-              <option value="CARD_NOT_PRESENT_USE_LIMIT_REACHED_MONTHLY">CARD_NOT_PRESENT_USE_LIMIT_REACHED_MONTHLY</option>
-              <option value="CARD_PRESENT_AMOUNT_LIMIT_REACHED_DAILY">CARD_PRESENT_AMOUNT_LIMIT_REACHED_DAILY</option>
-              <option value="CARD_PRESENT_AMOUNT_LIMIT_REACHED_MONTHLY">CARD_PRESENT_AMOUNT_LIMIT_REACHED_MONTHLY</option>
-              <option value="CARD_PRESENT_USE_LIMIT_REACHED_DAILY">CARD_PRESENT_USE_LIMIT_REACHED_DAILY</option>
-              <option value="CARD_PRESENT_USE_LIMIT_REACHED_MONTHLY">CARD_PRESENT_USE_LIMIT_REACHED_MONTHLY</option>
-              <option value="CASH_ADVANCE_AMOUNT_LIMIT_REACHED_DAILY">CASH_ADVANCE_AMOUNT_LIMIT_REACHED_DAILY</option>
-              <option value="CASH_ADVANCE_AMOUNT_LIMIT_REACHED_MONTHLY">CASH_ADVANCE_AMOUNT_LIMIT_REACHED_MONTHLY</option>
-              <option value="TERMINAL_ERROR">TERMINAL_ERROR</option>
-              <option value="CVV_INCORRECT">CVV_INCORRECT</option>
-              <option value="DUPLICATE_TRANSACTION">DUPLICATE_TRANSACTION</option>
-              <option value="PIN_INCORRECT">PIN_INCORRECT</option>
-              <option value="INSUFFICIENT_FUNDS">INSUFFICIENT_FUNDS</option>
-              <option value="CONTACT_BANK">CONTACT_BANK</option>
-              <option value="INVALID_PIN_BLOCKED">INVALID_PIN_BLOCKED</option>
+              <option value="CARD_LOST">CARD_LOST</option>
+              <option value="CARD_STOLEN">CARD_STOLEN</option>
+              <option value="EXPIRY_DATE_INVALID">EXPIRY_DATE_INVALID</option>
               <option value="FRAUD_SUSPECTED">FRAUD_SUSPECTED</option>
-              <option value="PIN_ENTRY_TIMEOUT">PIN_ENTRY_TIMEOUT</option>
-              <option value="RETRY_WITH_CHIP_AND_PIN">RETRY_WITH_CHIP_AND_PIN</option>
-              <option value="3DS_FAILED">3DS_FAILED</option>
-              <option value="RANDOM_STUFF">RANDOM_STUFF</option>
+              <option value="INSUFFICIENT_FUNDS">INSUFFICIENT_FUNDS</option>
+              <option value="INVALID_CARD_DETAILS">INVALID_CARD_DETAILS</option>
+              <option value="INVALID_PIN_BLOCKED">INVALID_PIN_BLOCKED</option>
+              <option value="LIST_CONTROL">LIST_CONTROL</option>
+              <option value="PIN_INCORRECT">PIN_INCORRECT</option>
+              <option value="SCA_REQUIRED">SCA_REQUIRED</option>
+              <option value="SPENDING_LIMIT">SPENDING_LIMIT</option>
+              <option value="UNKNOWN">UNKNOWN</option>
+              <option value="UNSUPPORTED_FUNCTION">UNSUPPORTED_FUNCTION</option>
             </select>
           </div>
 

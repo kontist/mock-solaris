@@ -295,7 +295,7 @@ export enum CardWebhookEvent {
   "CARD_AUTHORIZATION" = "CARD_AUTHORIZATION", // 	An authorization was created on the account using the card
   "CARD_FRAUD_CASE_PENDING" = "CARD_FRAUD_CASE_PENDING", // 	A fraud case was recorded, that needs customers immediate respond
   "CARD_FRAUD_CASE_TIMEOUT" = "CARD_FRAUD_CASE_TIMEOUT", // 	The recorded fraud case didn't received response from the customer
-  "CARD_AUTHORIZATION_DECLINE" = "CARD_AUTHORIZATION_DECLINE", // 	The transaction was declined.
+  "CARD_AUTHORIZATION_DECLINE_V2" = "CARD_AUTHORIZATION_DECLINE_V2", // A customer's card transaction was declined
   "CARD_AUTHORIZATION_RESOLUTION" = "CARD_AUTHORIZATION_RESOLUTION", // 	The reservation was cancelled, expired or booked. No push notification for the customer is required for this webhook.
   "CARD_LIFECYCLE_EVENT" = "CARD_LIFECYCLE_EVENT", // The status of the card is changed.
   "CARD_TOKEN_LIFECYCLE" = "CARD_TOKEN_LIFECYCLE", // Push provisioning token is created or updated.
@@ -318,36 +318,32 @@ export type WebhookType =
   | AccountWebhookEvent
   | PostboxItemEvent;
 
-export enum CardAuthorizationDeclineReason {
-  "AUTHENTICATION_REQUIRED" = "AUTHENTICATION_REQUIRED", // 	Failed online authentication. Please try again.
-  "CARD_BLOCKED" = "CARD_BLOCKED", // 	Something went wrong. Contact us for further details.
-  "ACCOUNT_CLOSED" = "ACCOUNT_CLOSED", // 	Something went wrong. Contact us for further details.
-  "ACCOUNT_LIMIT_REACHED" = "ACCOUNT_LIMIT_REACHED", // 	Account limit reached. Please contact us for further details.
-  "EXPIRY_DATE_INVALID" = "EXPIRY_DATE_INVALID", // 	Incorrect card details provided. Please try again.
-  "CARD_INACTIVE" = "CARD_INACTIVE", // 	Card not active. Please activate your card and try again.
-  "CARD_NOT_PRESENT_AMOUNT_LIMIT_REACHED_DAILY" = "CARD_NOT_PRESENT_AMOUNT_LIMIT_REACHED_DAILY", // 	Daily card limit exceeded. Please review the card limits and try again.
-  "CARD_NOT_PRESENT_AMOUNT_LIMIT_REACHED_MONTHLY" = "CARD_NOT_PRESENT_AMOUNT_LIMIT_REACHED_MONTHLY", // 	Monthly card limit exceeded. Please review the card limits and try again.
-  "CARD_NOT_PRESENT_USE_LIMIT_REACHED_DAILY" = "CARD_NOT_PRESENT_USE_LIMIT_REACHED_DAILY", // 	Daily card limit exceeded. Please review the card limits and try again.
-  "CARD_NOT_PRESENT_USE_LIMIT_REACHED_MONTHLY" = "CARD_NOT_PRESENT_USE_LIMIT_REACHED_MONTHLY", // 	Monthly card limit exceeded. Please review the card limits and try again.
-  "CARD_PRESENT_AMOUNT_LIMIT_REACHED_DAILY" = "CARD_PRESENT_AMOUNT_LIMIT_REACHED_DAILY", // 	Daily card limit exceeded. Please review the card limits and try again.
-  "CARD_PRESENT_AMOUNT_LIMIT_REACHED_MONTHLY" = "CARD_PRESENT_AMOUNT_LIMIT_REACHED_MONTHLY", // 	Monthly card limit exceeded. Please review the card limits and try again.
-  "CARD_PRESENT_USE_LIMIT_REACHED_DAILY" = "CARD_PRESENT_USE_LIMIT_REACHED_DAILY", // 	Daily card limit exceeded. Please review the card limits and try again.
-  "CARD_PRESENT_USE_LIMIT_REACHED_MONTHLY" = "CARD_PRESENT_USE_LIMIT_REACHED_MONTHLY", // 	Monthly card limit exceeded. Please review the card limits and try again.
-  "CASH_ADVANCE_AMOUNT_LIMIT_REACHED_DAILY" = "CASH_ADVANCE_AMOUNT_LIMIT_REACHED_DAILY", // 	Daily limit for Cash withdrawals has been reached. Contact us for further details.
-  "CASH_ADVANCE_AMOUNT_LIMIT_REACHED_MONTHLY" = "CASH_ADVANCE_AMOUNT_LIMIT_REACHED_MONTHLY", // 	Monthly limit for Cash withdrawals has been reached. Contact us for further details.
-  "TERMINAL_ERROR" = "TERMINAL_ERROR", // 	There was an issue with the merchant terminal. Please try again.
-  "CVV_INCORRECT" = "CVV_INCORRECT", // 	Incorrect card details provided. Please try again.
-  "DUPLICATE_TRASACTION" = "DUPLICATE_TRASACTION", // 	There was an issue with the merchant terminal. Please try again.
-  "DUPLICATE_TRANSACTION" = "DUPLICATE_TRANSACTION", // 	There was an issue with the merchant terminal. Please try again.
-  "PIN_INCORRECT" = "PIN_INCORRECT", // 	Incorrect PIN entered. Please try again.
-  "INSUFFICIENT_FUNDS" = "INSUFFICIENT_FUNDS", // 	Balance is too low. Top up your account and try again.
-  "CONTACT_BANK" = "CONTACT_BANK", // 	Something went wrong. Contact us for further details.
-  "INVALID_PIN_BLOCKED" = "INVALID_PIN_BLOCKED", // 	Card is blocked due to incorrect PIN attempts. Please reset the PIN and try again.
-  "FRAUD_SUSPECTED" = "FRAUD_SUSPECTED", // 	Something went wrong. Contact us for further details.
-  "PIN_ENTRY_TIMEOUT" = "PIN_ENTRY_TIMEOUT", // 	There was an issue with the merchant terminal. Please try again.
-  "RETRY_WITH_CHIP_AND_PIN" = "RETRY_WITH_CHIP_AND_PIN", // 	We encountered a problem while trying to approve your transaction. Please try again inserting the card in the merchant terminal.
+export enum CardAuthorizationDeclineV2Type {
   "3DS_FAILED" = "3DS_FAILED", // We could not approve your transaction because the merchant did not provide correct authentication information. Please try again.
+  "AUTHENTICATION_REQUIRED" = "AUTHENTICATION_REQUIRED", // Failed online authentication. Please try again.
+  "CARD_BLOCKED" = "CARD_BLOCKED", // Something went wrong. Contact us for further details.
+  "CARD_EXPIRED" = "CARD_EXPIRED", // This card has expired. Please use your replacement card. If you have not yet received one, then please contact customer support.
+  "CARD_INACTIVE" = "CARD_INACTIVE", // Card not active. Please activate your card and try again.
+  "CARD_LOST" = "CARD_LOST", // The card was reported as lost. If you have not received a replacement card, please contact customer support.
+  "CARD_STOLEN" = "CARD_STOLEN", // The card was reported as stolen. If you have not received a replacement card, please contact customer support.
+  "EXPIRY_DATE_INVALID" = "EXPIRY_DATE_INVALID", // Incorrect card details provided. Please try again.
+  "FRAUD_SUSPECTED" = "FRAUD_SUSPECTED", // Something went wrong. Contact us for further details.
+  "INSUFFICIENT_FUNDS" = "INSUFFICIENT_FUNDS", // Balance is too low. Top up your account and try again.
+  "INVALID_CARD_DETAILS" = "INVALID_CARD_DETAILS", // Invalid card details were provided. Please double-check your card details and ensure that your card is not blocked and try again.
+  "INVALID_PIN_BLOCKED" = "INVALID_PIN_BLOCKED", // Card is blocked due to incorrect PIN attempts. Please reset the PIN and try again.
+  "LIST_CONTROL" = "LIST_CONTROL", // Spending control violated. Please review the set controls and try again.
+  "PIN_INCORRECT" = "PIN_INCORRECT", // Incorrect PIN entered. Please try again.
+  "SCA_REQUIRED" = "SCA_REQUIRED", // Authentication is required for this transaction.
+  "SPENDING_LIMIT" = "SPENDING_LIMIT", // Spending limit exceeded. Please review the set limits and try again.
+  "UNKNOWN" = "UNKNOWN", // The payment was declined for an unclear reason. Please try to make a purchase at a different merchant. If payment still fails, then please order a replacement card.
+  "UNSUPPORTED_FUNCTION" = "UNSUPPORTED_FUNCTION", // The operation attempted with your card is not supported.
 }
+
+export type CardAuthorizationDeclineV2Reason = {
+  type: CardAuthorizationDeclineV2Type;
+  id: string;
+  message: string;
+};
 
 type Amount = {
   value: number;
