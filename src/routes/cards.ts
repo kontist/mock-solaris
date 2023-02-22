@@ -14,11 +14,13 @@ import {
   CardLimitType,
   CardStatus,
   CaseResolution,
+  ChangeRequestStatus,
   MockChangeRequest,
 } from "../helpers/types";
 
 import * as cardHelpers from "../helpers/cards";
 import getFraudWatchdog from "../helpers/fraudWatchdog";
+import crypto from "crypto";
 
 const keyStore = jose.JWK.createKeyStore();
 const changePinKeyId = uuid.v4();
@@ -640,11 +642,6 @@ export const pushProvisioningHandler = async (
       ? ["client_wallet_account_id", "client_device_id", "client_app_id"]
       : ["nonce", "nonce_signature", "certificates"];
 
-  const handler =
-    walletType === "google"
-      ? cardHelpers.enableGooglePay
-      : cardHelpers.enableApplePay;
-
   const errors = requiredFields
     .filter((fieldName) => !_.get(req.body, fieldName))
     .map((fieldName) => ({
@@ -666,9 +663,35 @@ export const pushProvisioningHandler = async (
     return;
   }
 
-  res
-    .status(HttpStatusCodes.CREATED)
-    .send({ wallet_payload: await handler(card) });
+  const person = await db.getPerson(card.person_id);
+  if (
+    person?.changeRequest?.method ===
+      cardHelpers.CHANGE_REQUEST_PUSH_PROVISIONING &&
+    person?.changeRequest.isConfirmed
+  ) {
+    const handler =
+      walletType === "google"
+        ? cardHelpers.enableGooglePay
+        : cardHelpers.enableApplePay;
+    delete person.changeRequest;
+    await db.savePerson(person);
+    return res
+      .status(HttpStatusCodes.CREATED)
+      .send({ wallet_payload: await handler(card) });
+  } else {
+    person.changeRequest = {
+      id: crypto.randomBytes(16).toString("hex"),
+      method: cardHelpers.CHANGE_REQUEST_PUSH_PROVISIONING,
+      createdAt: new Date().toISOString(),
+    };
+    await db.savePerson(person);
+    return res.status(HttpStatusCodes.OK).send({
+      id: person.changeRequest.id,
+      status: ChangeRequestStatus.AUTHORIZATION_REQUIRED,
+      updated_at: new Date().toISOString(),
+      url: `:env/v1/change_requests/${person.changeRequest.id}/authorize`,
+    });
+  }
 };
 
 export const getVirtualCardDetails = async (

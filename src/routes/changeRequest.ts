@@ -29,7 +29,10 @@ import {
   BATCH_TRANSFER_CREATE_METHOD,
   confirmBatchTransfer,
 } from "./batchTransfers";
-import { CHANGE_REQUEST_CHANGE_CARD_PIN } from "../helpers/cards";
+import {
+  CHANGE_REQUEST_CHANGE_CARD_PIN,
+  CHANGE_REQUEST_PUSH_PROVISIONING,
+} from "../helpers/cards";
 import { confirmChangeCardPINHandler } from "./cards";
 import {
   PersonWebhookEvent,
@@ -129,9 +132,9 @@ export const authorizeChangeRequest = async (req, res) => {
 export const confirmChangeRequest = async (req, res) => {
   const { change_request_id: changeRequestId } = req.params;
   const { person_id: personId, tan, device_id: deviceId, signature } = req.body;
-  const person = (personId
-    ? await getPerson(personId)
-    : await getPersonByDeviceId(deviceId)) as MockPerson;
+  const person = (
+    personId ? await getPerson(personId) : await getPersonByDeviceId(deviceId)
+  ) as MockPerson;
 
   if (deviceId && !signature) {
     return res.status(403).send({ message: "Missing signature" });
@@ -185,27 +188,34 @@ export const confirmChangeRequest = async (req, res) => {
       response.response_body = await removeMobileNumberConfirmChangeRequest(
         person
       );
+      delete person.changeRequest;
       break;
     case STANDING_ORDER_CREATE_METHOD:
       response.response_body = await confirmStandingOrderCreation(
         person,
         changeRequestId
       );
+      delete person.changeRequest;
       break;
     case STANDING_ORDER_UPDATE_METHOD:
       response.response_body = await confirmStandingOrderUpdate(person);
+      delete person.changeRequest;
       break;
     case STANDING_ORDER_CANCEL_METHOD:
       response.response_body = await confirmStandingOrderCancelation(person);
+      delete person.changeRequest;
       break;
     case PERSON_UPDATE:
       _.merge(person, person.changeRequest.delta);
       response.response_body = person;
+      delete person.changeRequest;
       break;
     case TIN_UPDATE:
       response.response_body = await tinProcessChangeRequest(person);
+      delete person.changeRequest;
       break;
     case TIMED_ORDER_CREATE:
+      delete person.changeRequest;
       // TODO: FIX response.response_body = await confirmTimedOrder(person);
       break;
     case BATCH_TRANSFER_CREATE_METHOD:
@@ -213,8 +223,10 @@ export const confirmChangeRequest = async (req, res) => {
         person,
         changeRequestId
       );
+      delete person.changeRequest;
       break;
     case CHANGE_REQUEST_CHANGE_CARD_PIN:
+      delete person.changeRequest;
       return confirmChangeCardPINHandler(req, res);
     case CARD_TRANSACTION_CONFIRM_METHOD:
       if (
@@ -226,8 +238,11 @@ export const confirmChangeRequest = async (req, res) => {
       ) {
         await declineCardTransaction(person);
       }
+      delete person.changeRequest;
       break;
-
+    case CHANGE_REQUEST_PUSH_PROVISIONING:
+      person.changeRequest.isConfirmed = true;
+      break;
     default:
       status = 404;
       response = {
@@ -243,10 +258,8 @@ export const confirmChangeRequest = async (req, res) => {
       };
       break;
   }
-
-  const shouldTriggerWebhook = person.changeRequest.method === PERSON_UPDATE;
-  delete person.changeRequest;
   await savePerson(person);
+  const shouldTriggerWebhook = person.changeRequest.method === PERSON_UPDATE;
 
   if (shouldTriggerWebhook) {
     await triggerWebhook({
