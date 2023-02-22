@@ -157,7 +157,7 @@ export type MockChangeRequest = {
   method?: string;
   createdAt: string;
   delta?: Record<string, unknown>;
-  isConfirmed: boolean;
+  isConfirmed?: boolean;
 };
 
 export interface StandingOrder {
