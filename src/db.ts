@@ -489,7 +489,7 @@ export const getPersonBySpendingLimitId = async (id) => {
     .map((person) => _.get(person, "account.cards", []))
     .flatten()
     .value()
-    .find(({ controls }) => controls.find((control) => control.id === id));
+    .find(({ controls }) => controls?.find((control) => control.id === id));
 
   return { person: await getPerson(cardData.card.person_id), cardData };
 };

@@ -849,7 +849,7 @@ export const indexCardSpendingLimit = async (
 
   const cardData = await db.getCardData(scopeId);
 
-  return cardData.controls || [];
+  return cardData?.controls || [];
 };
 
 /* eslint-enable @typescript-eslint/camelcase */
