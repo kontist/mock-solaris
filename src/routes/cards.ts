@@ -623,7 +623,7 @@ export const pushProvisioningHandler = async (
   const { wallet_type: walletType } = req.params;
 
   if (!["google", "apple_encrypted"].includes(walletType)) {
-    res.status(HttpStatusCodes.BAD_REQUEST).send({
+    return res.status(HttpStatusCodes.BAD_REQUEST).send({
       errors: [
         {
           id: uuid.v4(),
@@ -634,7 +634,6 @@ export const pushProvisioningHandler = async (
         },
       ],
     });
-    return;
   }
 
   const requiredFields =
@@ -657,10 +656,9 @@ export const pushProvisioningHandler = async (
     }));
 
   if (errors.length) {
-    res.status(errors[0].status).send({
+    return res.status(errors[0].status).send({
       errors,
     });
-    return;
   }
 
   const person = await db.getPerson(card.person_id);
