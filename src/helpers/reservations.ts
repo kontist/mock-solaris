@@ -259,10 +259,12 @@ const computeCardUsage = (person: MockPerson) => {
   );
 
   const filterByATM = (reservation) =>
-    JSON.parse(reservation.meta_info).cards.type === TransactionType.CASH_ATM;
+    JSON.parse(reservation.meta_info).cards.transaction_type ===
+    TransactionType.CASH_ATM;
 
   const filterByPurchase = (reservation) =>
-    JSON.parse(reservation.meta_info).cards.type === TransactionType.PURCHASE;
+    JSON.parse(reservation.meta_info).cards.transaction_type ===
+    TransactionType.PURCHASE;
 
   const sumAmount = (total: number, entry: Booking | Reservation) => {
     return total + entry.amount.value;
