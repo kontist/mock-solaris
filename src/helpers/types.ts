@@ -92,8 +92,6 @@ export type CardDetails = {
   pin: string;
   reference: string;
   cardNumber: string;
-  cardPresentLimits: CardLimits;
-  cardNotPresentLimits: CardLimits;
   cvv: string;
   settings: CardSettings;
 };
@@ -239,16 +237,6 @@ type CardLimit = {
   max_amount_cents: number;
   max_transactions: number;
 };
-
-export type CardLimits = {
-  daily: CardLimit;
-  monthly: CardLimit;
-};
-
-export enum CardLimitType {
-  PRESENT = "PRESENT",
-  NOT_PRESENT = "NOT_PRESENT",
-}
 
 export enum CaseResolution {
   PENDING = "PENDING",

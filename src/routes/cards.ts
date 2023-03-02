@@ -11,7 +11,6 @@ import * as log from "../logger";
 import {
   Card,
   CardDetails,
-  CardLimitType,
   CardStatus,
   CaseResolution,
   MockChangeRequest,
@@ -319,20 +318,6 @@ export const cardStatusMiddleware =
     next();
   };
 
-export const getCardPresentLimitsHandler = async (
-  req: RequestExtendedWithCard,
-  res: express.Response
-) => {
-  res.status(HttpStatusCodes.OK).send(req.cardDetails.cardPresentLimits);
-};
-
-export const getCardNotPresentLimitsHandler = async (
-  req: RequestExtendedWithCard,
-  res: express.Response
-) => {
-  res.status(HttpStatusCodes.OK).send(req.cardDetails.cardNotPresentLimits);
-};
-
 export const createCardSpendingLimitsHandler = async (
   req: express.Request,
   res: express.Response
@@ -364,69 +349,6 @@ export const indexCardSpendingLimitsHandler = async (
     scopeId
   );
   res.status(HttpStatusCodes.OK).send(spendingLimits);
-};
-
-const handleSetCardLimitValidationError = (validationError, res) => {
-  res.status(HttpStatusCodes.BAD_REQUEST).send({
-    errors: [
-      {
-        id: uuid.v4(),
-        status: HttpStatusCodes.BAD_REQUEST,
-        code: "invalid_model",
-        title: "Validation Error",
-        detail: validationError,
-        source: {
-          field: "limit",
-          message: validationError.replace(/^limit/, ""),
-        },
-      },
-    ],
-  });
-};
-
-export const setCardPresentLimitsHandler = async (
-  req: RequestExtendedWithCard,
-  res: express.Response
-) => {
-  const validationError = cardHelpers.validateCardLimits(
-    req.body,
-    CardLimitType.PRESENT
-  );
-
-  if (validationError) {
-    handleSetCardLimitValidationError(validationError, res);
-    return;
-  }
-
-  const updatedLimits = await cardHelpers.updateCardLimits(
-    req.card,
-    CardLimitType.PRESENT,
-    req.body
-  );
-  res.status(HttpStatusCodes.CREATED).send(updatedLimits);
-};
-
-export const setCardNotPresentLimitsHandler = async (
-  req: RequestExtendedWithCard,
-  res: express.Response
-) => {
-  const validationError = cardHelpers.validateCardLimits(
-    req.body,
-    CardLimitType.NOT_PRESENT
-  );
-
-  if (validationError) {
-    handleSetCardLimitValidationError(validationError, res);
-    return;
-  }
-
-  const updatedLimits = await cardHelpers.updateCardLimits(
-    req.card,
-    CardLimitType.NOT_PRESENT,
-    req.body
-  );
-
-  res.status(HttpStatusCodes.CREATED).send(updatedLimits);
 };
 
 export const confirmFraudHandler = async (
