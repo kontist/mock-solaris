@@ -307,12 +307,6 @@ router.post(
   safeRequestHandler(cardsAPI.changePINCardHandler)
 );
 
-router.patch(
-  "/cards/:card_id/settings",
-  cardsAPI.cardMiddleware,
-  safeRequestHandler(cardsAPI.changeCardSettingsHandler)
-);
-
 router.post(
   "/cards/:card_id/close",
   cardsAPI.cardMiddleware,

@@ -490,13 +490,6 @@ export const createReservation = async ({
     throw new Error("Your card is not in active status");
   }
 
-  if (
-    [POSEntryMode.CONTACTLESS, POSEntryMode.PHONE].includes(posEntryMode) &&
-    !cardData.cardDetails.settings.contactless_enabled
-  ) {
-    throw new Error(`Card has contactless transactions disabled`);
-  }
-
   if (person.account.available_balance.value < parseInt(amount, 10)) {
     await triggerCardAuthorizationDeclineV2Webhook(
       cardAuthorizationDeclined,

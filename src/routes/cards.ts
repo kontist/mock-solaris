@@ -510,19 +510,6 @@ export const confirmChangeCardPINHandler = async (
   res.status(confirmResponse.response_code).send(confirmResponse);
 };
 
-export const changeCardSettingsHandler = async (
-  req: RequestExtendedWithCard,
-  res: express.Response
-) => {
-  const person = await db.getPerson(req.card.person_id);
-  const updatedSettings = await cardHelpers.updateCardSettings(
-    req.card.id,
-    person,
-    req.body
-  );
-  res.send(updatedSettings);
-};
-
 export const closeCardHandler = async (
   req: RequestExtendedWithCard,
   res: express.Response

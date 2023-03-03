@@ -91,13 +91,6 @@
               <td>PIN</td>
               <td>{{ cardData.cardDetails.pin || "NOT SET" }}</td>
             </tr>
-            <tr>
-              <td>contactless</td>
-              <td>
-                {% if cardData.cardDetails.settings.contactless_enabled %}👍{% endif %}
-                {% if !cardData.cardDetails.settings.contactless_enabled %}👎{% endif %}
-              </td>
-            </tr>
             <tr {% if cardData.card.type === "VIRTUAL_VISA_FREELANCE_DEBIT"%} style="opacity: 0.4;" {% endif %}>
               <td>card limits</td>
               <td>
