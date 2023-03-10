@@ -25,8 +25,8 @@ export const createPerson = async (req, res) => {
     statements: [],
     queuedBookings: [],
     createdAt: format(createdAt),
-    amlFollowUpDate: format(createdAt.add(2, "year")),
-    amlConfirmedOn: format(createdAt),
+    aml_confirmed_on: format(createdAt),
+    aml_follow_up_date: format(createdAt.add(2, "year")),
   };
 
   const result = await savePerson(person).then(() => {
