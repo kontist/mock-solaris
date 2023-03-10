@@ -208,6 +208,10 @@ export const updatePerson = async (req, res) => {
   editable.contact_address = _.pick(data.contact_address, editableFields);
   editable.tax_information = _.pick(data.tax_information, editableFields);
 
+  if (data.aml_confirmed_on) {
+    data.aml_follow_up_date = moment(data.aml_confirmed_on).add(2, "year");
+  }
+
   if (isChangeRequestRequired(editable, person)) {
     return createChangeRequest(req, res, person, PERSON_UPDATE, data);
   }
