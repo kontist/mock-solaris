@@ -44,6 +44,7 @@ import {
   confirmCardTransaction,
   declineCardTransaction,
 } from "../helpers/scaChallenge";
+import { SEPA_TRANSFER_METHOD } from "./transactions";
 
 const MAX_CHANGE_REQUEST_AGE_IN_MINUTES = 5;
 
@@ -129,9 +130,9 @@ export const authorizeChangeRequest = async (req, res) => {
 export const confirmChangeRequest = async (req, res) => {
   const { change_request_id: changeRequestId } = req.params;
   const { person_id: personId, tan, device_id: deviceId, signature } = req.body;
-  const person = (personId
-    ? await getPerson(personId)
-    : await getPersonByDeviceId(deviceId)) as MockPerson;
+  const person = (
+    personId ? await getPerson(personId) : await getPersonByDeviceId(deviceId)
+  ) as MockPerson;
 
   if (deviceId && !signature) {
     return res.status(403).send({ message: "Missing signature" });
@@ -179,8 +180,12 @@ export const confirmChangeRequest = async (req, res) => {
   let response: any = {
     status: ChangeRequestStatus.COMPLETED,
     response_code: status,
+    id: changeRequestId,
   };
   switch (person.changeRequest.method) {
+    case SEPA_TRANSFER_METHOD:
+      response.response_body = person.changeRequest.transfer;
+      break;
     case MOBILE_NUMBER_CHANGE_METHOD:
       response.response_body = await removeMobileNumberConfirmChangeRequest(
         person

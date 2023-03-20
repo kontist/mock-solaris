@@ -8,7 +8,7 @@ import {
   findPersonByAccountIBAN,
   getTechnicalUserPerson,
 } from "../db";
-import { BookingType } from "../helpers/types";
+import { BookingType, ChangeRequestStatus } from "../helpers/types";
 
 const SOLARIS_CARDS_ACCOUNT = {
   NAME: "Visa_Solarisbank",
@@ -105,6 +105,8 @@ export const createSepaDirectDebit = async (req, res) => {
   });
 };
 
+export const SEPA_TRANSFER_METHOD = "SEPA_TRANSFER_METHOD";
+
 export const createSepaCreditTransfer = async (req, res) => {
   const { person_id: personId } = req.params;
   const transfer = req.body;
@@ -130,14 +132,35 @@ export const createSepaCreditTransfer = async (req, res) => {
     });
   }
 
-  const queuedBooking = creteBookingFromSepaCreditTransfer(transfer);
-  person.queuedBookings.push(queuedBooking);
+  const booking = creteBookingFromSepaCreditTransfer(transfer);
+
+  if (transfer.change_request_enabled) {
+    // create change request
+    person.changeRequest = {
+      transfer: {
+        id: booking.id,
+        ...serializeTransfer(booking),
+      },
+      id: uuid.v4(),
+      status: ChangeRequestStatus.AUTHORIZATION_REQUIRED,
+      method: SEPA_TRANSFER_METHOD,
+    };
+  }
+
+  person.queuedBookings.push(booking);
 
   await savePerson(person);
 
-  log.debug("booking pushed to list of pending transfers", { queuedBooking });
+  log.debug("booking pushed to list of pending transfers", { booking });
 
-  res.status(200).send(serializeTransfer(queuedBooking));
+  if (transfer.change_request_enabled) {
+    res.status(202).send({
+      id: person.changeRequest.id,
+      status: ChangeRequestStatus.AUTHORIZATION_REQUIRED,
+    });
+  } else {
+    res.status(200).send(serializeTransfer(booking));
+  }
 };
 
 export const authorizeTransaction = async (req, res) => {
