@@ -183,9 +183,26 @@ export const confirmChangeRequest = async (req, res) => {
     id: changeRequestId,
   };
   switch (person.changeRequest.method) {
-    case SEPA_TRANSFER_METHOD:
+    case SEPA_TRANSFER_METHOD: {
+      const today = moment().format("YYYY-MM-DD");
+      const transfer = person.queuedBookings?.find(
+        (queuedBooking) => queuedBooking.id === person.changeRequest.transfer.id
+      );
+
+      // update transfer status to accepted so it can affect user balance
+      Object.assign(transfer, {
+        transaction_id: transfer.id,
+        booking_date: today,
+        valuta_date: today,
+        name: `bank-mock-transaction-${Math.random()}`,
+        status: "accepted",
+      });
+
       response.response_body = person.changeRequest.transfer;
+
       break;
+    }
+
     case MOBILE_NUMBER_CHANGE_METHOD:
       response.response_body = await removeMobileNumberConfirmChangeRequest(
         person
