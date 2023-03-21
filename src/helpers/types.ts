@@ -155,6 +155,7 @@ export type MockChangeRequest = {
   method?: string;
   createdAt: string;
   delta?: Record<string, unknown>;
+  transfer?: Record<string, any>;
 };
 
 export interface StandingOrder {
