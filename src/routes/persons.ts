@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import _ from "lodash";
 import uuid from "node-uuid";
+import moment, { Moment } from "moment";
 
 import { getPerson, getAllPersons, savePerson, setPersonOrigin } from "../db";
 
@@ -8,10 +9,13 @@ import { createChangeRequest } from "./changeRequest";
 import { triggerWebhook } from "../helpers/webhooks";
 import { MockPerson, PersonWebhookEvent } from "../helpers/types";
 
+const format = (date: Moment): string => date.format("YYYY-MM-DD");
+
 export const createPerson = async (req, res) => {
   const personId =
     "mock" +
     crypto.createHash("md5").update(JSON.stringify(req.body)).digest("hex");
+  const createdAt = moment();
 
   const person = {
     ...req.body,
@@ -20,7 +24,9 @@ export const createPerson = async (req, res) => {
     transactions: [],
     statements: [],
     queuedBookings: [],
-    createdAt: new Date().toISOString(),
+    createdAt: format(createdAt),
+    aml_confirmed_on: format(createdAt),
+    aml_follow_up_date: format(createdAt.add(2, "year")),
   };
 
   const result = await savePerson(person).then(() => {
@@ -88,17 +94,17 @@ export const PERSON_UPDATE = "Patch/Persons/person_id";
  * Checks if the model has setted previously a value given in the input.
  * This is useful to check is a Solaris entity may be updated or not checking the full entity
  * or the desired part of the entity.
- * i.e isTanRequired(mydata, person) or isTanRequired(mydata, person.address)
+ * i.e isChangeRequestRequired(mydata, person) or isChangeRequestRequired(mydata, person.address)
  * @param {$Request} req
  * @param {$Response} res
  */
-const isTanRequired = (input, model) => {
+const isChangeRequestRequired = (input, model) => {
   let flag = false;
 
   if (input && model) {
     Object.keys(input).forEach((key) => {
       if (typeof input[key] === "object" && model[key]) {
-        flag = flag || isTanRequired(input[key], model[key]);
+        flag = flag || isChangeRequestRequired(input[key], model[key]);
       } else if (model[key]) {
         flag = true;
       }
@@ -144,6 +150,8 @@ export const updatePerson = async (req, res) => {
     "terms_conditions_signed_at",
     "own_economic_interest_signed_at",
     "business_trading_name",
+    "aml_follow_up_date",
+    "aml_confirmed_on",
   ];
 
   const editableFields = [
@@ -170,6 +178,7 @@ export const updatePerson = async (req, res) => {
     "industry_key",
     "terms_conditions_signed_at",
     "business_trading_name",
+    "aml_confirmed_on",
   ];
 
   const {
@@ -199,7 +208,11 @@ export const updatePerson = async (req, res) => {
   editable.contact_address = _.pick(data.contact_address, editableFields);
   editable.tax_information = _.pick(data.tax_information, editableFields);
 
-  if (isTanRequired(editable, person)) {
+  if (data.aml_confirmed_on) {
+    data.aml_follow_up_date = moment(data.aml_confirmed_on).add(2, "year");
+  }
+
+  if (isChangeRequestRequired(editable, person)) {
     return createChangeRequest(req, res, person, PERSON_UPDATE, data);
   }
 
