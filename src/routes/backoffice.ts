@@ -18,6 +18,7 @@ import {
   setPersonOrigin,
   getDeviceConsents,
   getDeviceActivities,
+  getWebhooks,
 } from "../db";
 import {
   createSepaDirectDebitReturn,
@@ -198,6 +199,11 @@ export const findIdentificationByEmail = (email, method) => {
 export const listPersons = async (req, res) => {
   const persons = await getAllPersons();
   res.render("persons", { persons });
+};
+
+export const listWebhooks = async (req, res) => {
+  const webhooks = await getWebhooks();
+  res.json(webhooks);
 };
 
 export const listPersonsCards = async (req, res) => {
