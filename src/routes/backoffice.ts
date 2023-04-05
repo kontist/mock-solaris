@@ -512,11 +512,6 @@ export const processQueuedBooking = async (
     booking = generateBookingFromStandingOrder(booking);
   }
 
-  const allPersons = await getAllPersons();
-  const receiver = allPersons
-    .filter((dbPerson) => dbPerson.account)
-    .find((dbPerson) => dbPerson.account.iban === booking.recipient_iban);
-
   const isDirectDebit = [
     BookingType.DIRECT_DEBIT,
     BookingType.SEPA_DIRECT_DEBIT,
@@ -562,15 +557,6 @@ export const processQueuedBooking = async (
       directDebitReturn
     );
     await saveSepaDirectDebitReturn(sepaDirectDebitReturn);
-  }
-
-  if (receiver) {
-    const receiverPerson = await getPerson(receiver.id);
-    receiverPerson.transactions.push(booking);
-    if (directDebitReturn) {
-      receiverPerson.transactions.push(directDebitReturn);
-    }
-    await savePerson(receiverPerson);
   }
 
   await savePerson(person);
