@@ -85,6 +85,7 @@ app.use(log.getExpressLogger());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(errorHandler);
+app.set("json spaces", 2);
 app.use("/v1", router);
 app.post("/oauth/token", oauthAPI.generateToken);
 
@@ -544,6 +545,12 @@ if (process.env.NODE_ENV === "e2e") {
 
 // BACKOFFICE
 app.get("/__BACKOFFICE__", safeRequestHandler(backofficeAPI.listPersons));
+
+app.get(
+  "/__BACKOFFICE__/webhooks",
+  safeRequestHandler(backofficeAPI.listWebhooks)
+);
+
 app.post(
   "/__BACKOFFICE__/setIdentificationState/:email",
   safeRequestHandler(backofficeAPI.setIdentificationState)
