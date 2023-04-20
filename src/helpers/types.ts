@@ -93,7 +93,6 @@ export type CardDetails = {
   reference: string;
   cardNumber: string;
   cvv: string;
-  settings: CardSettings;
 };
 
 export type AccountSnapshot = {
@@ -422,10 +421,6 @@ export enum ChangeRequestStatus {
   COMPLETED = "COMPLETED",
   FAILED = "FAILED",
 }
-
-export type CardSettings = {
-  contactless_enabled: boolean;
-};
 
 export type CardTransaction = {
   card_id: string;
