@@ -7,8 +7,10 @@ import {
   savePerson,
   findPersonByAccountIBAN,
   getTechnicalUserPerson,
+  saveSepaDirectDebitReturn,
 } from "../db";
 import { BookingType, ChangeRequestStatus } from "../helpers/types";
+import { createSepaDirectDebitReturn } from "../helpers/sepaDirectDebitReturn";
 
 const SOLARIS_CARDS_ACCOUNT = {
   NAME: "Visa_Solarisbank",
@@ -45,7 +47,7 @@ export const createSepaDirectDebit = async (req, res) => {
   const technicalPerson = await getTechnicalUserPerson();
 
   const id = uuid.v4();
-  const queuedBooking = {
+  const booking = {
     amount: {
       ...amount,
       value: amount.value,
@@ -70,8 +72,14 @@ export const createSepaDirectDebit = async (req, res) => {
     recipient_name: mandate.debtor_name,
   };
 
-  person.queuedBookings.push(queuedBooking);
-  technicalPerson.transactions.push(queuedBooking);
+  person.transactions.push({
+    ...booking,
+    amount: {
+      ...booking.amount,
+      value: -Math.abs(booking.amount.value),
+    },
+  });
+  technicalPerson.transactions.push(booking);
 
   person.account.balance.value -= Math.abs(amount.value);
   person.account.available_balance = person.account.available_balance || {};
@@ -84,12 +92,17 @@ export const createSepaDirectDebit = async (req, res) => {
 
   if (person.account.balance.value < 0) {
     const directDebitReturn = {
-      ...queuedBooking,
+      ...booking,
       booking_type: BookingType.SEPA_DIRECT_DEBIT_RETURN,
       transaction_id: null,
-      return_transaction_id: queuedBooking.transaction_id,
+      return_transaction_id: booking.transaction_id,
     };
-    person.queuedBookings.push(directDebitReturn);
+    person.transactions.push(directDebitReturn);
+    const sepaDirectDebitReturn = createSepaDirectDebitReturn(
+      person,
+      directDebitReturn
+    );
+    await saveSepaDirectDebitReturn(sepaDirectDebitReturn);
     technicalPerson.transactions.push(directDebitReturn);
   }
 
@@ -97,10 +110,10 @@ export const createSepaDirectDebit = async (req, res) => {
   await savePerson(technicalPerson);
 
   res.status(200).send({
-    ...queuedBooking,
+    ...booking,
     amount: {
-      ...queuedBooking.amount,
-      value: Math.abs(queuedBooking.amount.value),
+      ...booking.amount,
+      value: Math.abs(booking.amount.value),
     },
   });
 };
