@@ -11,6 +11,7 @@ import {
 } from "../db";
 import { BookingType, ChangeRequestStatus } from "../helpers/types";
 import { createSepaDirectDebitReturn } from "../helpers/sepaDirectDebitReturn";
+import {triggerBookingsWebhook} from "./backoffice";
 
 const SOLARIS_CARDS_ACCOUNT = {
   NAME: "Visa_Solarisbank",
@@ -108,6 +109,8 @@ export const createSepaDirectDebit = async (req, res) => {
 
   await savePerson(person);
   await savePerson(technicalPerson);
+
+  await triggerBookingsWebhook(person);
 
   res.status(200).send({
     ...booking,
