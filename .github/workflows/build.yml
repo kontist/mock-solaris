@@ -11,6 +11,6 @@ jobs:
         with:
           node-version: 18
       - run: npm ci
-      - run: npm start:mockredis
+      - run: npm run start:mockredis
       - run: npm test
       - run: npm run build
