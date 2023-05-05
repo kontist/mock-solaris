@@ -197,7 +197,7 @@ export const findIdentificationByEmail = (email, method) => {
 };
 
 export const listPersons = async (req, res) => {
-  const persons = await getAllPersons();
+  const persons = await getAllPersons(true);
   res.render("persons", { persons });
 };
 
@@ -445,12 +445,6 @@ export const setIdentificationState = async (req, res) => {
   );
 
   res.redirect(`/__BACKOFFICE__/person/${person.id}#identifications`);
-};
-
-export const displayBackofficeOverview = (req, res) => {
-  getAllPersons().then((persons) => {
-    res.render("overview", { persons });
-  });
 };
 
 export const processQueuedBookingHandler = async (req, res) => {
