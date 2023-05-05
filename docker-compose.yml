@@ -4,6 +4,8 @@ services:
     build: ./
     ports:
       - "2091:2091"
+    depends_on:
+      - mocks-redis
     command: ["npm", "run", "start:hot"]
     volumes:
       - type: bind

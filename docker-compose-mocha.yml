@@ -4,7 +4,9 @@ services:
     build: ./
     ports:
       - "2091:2091"
-    command: "npm run test:docker"
+    depends_on:
+      - mocks-redis
+    command: ["npm", "run", "test:docker"]
   mocks-redis:
     image: redis:alpine
     command: redis-server --appendonly yes --requirepass mockserverredispassword
