@@ -319,8 +319,7 @@ export const getAllPersons = async (
         return p1.createdAt > p2.createdAt ? -1 : 1;
       })
     : persons;
-  persons = persons.map((person) => augmentPerson(person));
-  return persons;
+  return persons.map((person) => augmentPerson(person));
 };
 
 const augmentPerson = (person: MockPerson): MockPerson => {
