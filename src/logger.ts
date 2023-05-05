@@ -119,16 +119,16 @@ export function getExpressLogger() {
 
 export const getLogger = (
   prefix: string,
-  format = (prefix: string) => `[${prefix}]`
+  format = (_prefix: string) => `[${_prefix}]`
 ): Partial<Logger> => {
   const prefixMessage = format(prefix);
-  return Object.values(LogLevel).reduce((result, level) => {
-    result[level] = (...args: any[]) =>
-      module.exports[level](prefixMessage, ...args);
+  return Object.values(LogLevel).reduce((result, _level) => {
+    result[_level] = (...args: any[]) =>
+      module.exports[_level](prefixMessage, ...args);
     return result;
   }, {});
 };
 
-export function setLogLevel(level?: LogLevel) {
-  logger.level = level;
+export function setLogLevel(_level?: LogLevel) {
+  logger.level = _level;
 }
