@@ -21,8 +21,6 @@ if (process.env.MOCKSOLARIS_REDIS_SERVER) {
   log.info(`using redis server at ${process.env.MOCKSOLARIS_REDIS_SERVER}`);
   // tslint:disable-next-line: no-var-requires no-implicit-dependencies
   redis = require("redis");
-  Promise.promisifyAll(redis.RedisClient.prototype);
-  Promise.promisifyAll(redis.Multi.prototype);
 } else {
   log.info("using memory for not very persistent persistence");
   // tslint:disable-next-line: no-var-requires
