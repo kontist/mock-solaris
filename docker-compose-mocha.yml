@@ -2,7 +2,7 @@ version: "3.9"
 services:
   mock-solaris:
     build:
-      context: ./
+      context: .
       dockerfile: DockerfileMocha
     ports:
       - "2091:2091"
@@ -10,10 +10,13 @@ services:
     volumes:
       - type: bind
         source: ./dist
-        target: /opt/mockSolaris/dist/
+        target: /opt/mockSolaris/dist
       - type: bind
         source: ./src/templates
-        target: /opt/mockSolaris/dist/src/templates/
+        target: /opt/mockSolaris/dist/src/templates
+      - type: bind
+        source: ./src/assets
+        target: /opt/mockSolaris/dist/src/assets
   mocks-redis:
     image: redis:alpine
     command: redis-server --appendonly yes --requirepass mockserverredispassword
