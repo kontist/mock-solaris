@@ -302,25 +302,25 @@ export const saveBooking = (accountId, booking) => {
     .then(savePerson);
 };
 
-export const getAllPersons = (): Promise<MockPerson[]> => {
-  return redisClient
-    .keysAsync(`${process.env.MOCKSOLARIS_REDIS_PREFIX}:person:*`)
-    .then((keys) => {
-      if (keys.length < 1) {
-        return [];
-      }
-      return redisClient.mgetAsync(keys);
-    })
-    .then((values) => values.map(jsonToPerson))
-    .then((values) =>
-      values.sort((p1, p2) => {
+export const getAllPersons = async (
+  sort: boolean = false
+): Promise<MockPerson[]> => {
+  const keys = await redisClient.keysAsync(
+    `${process.env.MOCKSOLARIS_REDIS_PREFIX}:person:*`
+  );
+  if (keys.length < 1) return [];
+  const values = await redisClient.mgetAsync(keys);
+  let persons = values.map(jsonToPerson);
+  persons = sort
+    ? persons.sort((p1, p2) => {
         if (!p1.createdAt && p2.createdAt) return 1;
         if (p1.createdAt && !p2.createdAt) return -1;
         if (!p1.createdAt && !p2.createdAt) return 0;
         return p1.createdAt > p2.createdAt ? -1 : 1;
       })
-    )
-    .then((results) => results.map((person) => augmentPerson(person)));
+    : persons;
+  persons = persons.map((person) => augmentPerson(person));
+  return persons;
 };
 
 const augmentPerson = (person: MockPerson): MockPerson => {
