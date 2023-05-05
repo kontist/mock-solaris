@@ -304,15 +304,12 @@ export const saveBooking = (accountId, booking) => {
 export const getAllPersons = async (
   sort: boolean = false
 ): Promise<MockPerson[]> => {
-  let persons = [];
-  log.warning(`${JSON.stringify(redisClient)}`);
-  for await (const key of redisClient.scanIterator({
-    MATCH: `${process.env.MOCKSOLARIS_REDIS_PREFIX}:person:*`,
-  })) {
-    const value = await redisClient.get(key);
-    const person = jsonToPerson(value);
-    persons.push(person);
-  }
+  const keys = await redisClient.keys(
+    `${process.env.MOCKSOLARIS_REDIS_PREFIX}:person:*`
+  );
+  if (keys.length < 1) return [];
+  const values = await redisClient.mGet(keys);
+  let persons = values.map(jsonToPerson);
   persons = sort
     ? persons.sort((p1, p2) => {
         if (!p1.createdAt && p2.createdAt) return 1;
