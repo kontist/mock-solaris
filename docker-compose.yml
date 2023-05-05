@@ -12,6 +12,9 @@ services:
       - type: bind
         source: ./src/templates
         target: /opt/mockSolaris/dist/src/templates/
+      - type: bind
+        source: ./src/assets
+        target: /opt/mockSolaris/dist/src/assets/
   mocks-redis:
     image: redis:alpine
     command: redis-server --appendonly yes --requirepass mockserverredispassword
