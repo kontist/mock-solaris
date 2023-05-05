@@ -2,6 +2,7 @@ import _ from "lodash";
 import Promise from "bluebird";
 import uuid from "node-uuid";
 import moment from "moment";
+import type { RedisClientType } from "redis";
 
 import * as log from "./logger";
 import { calculateOverdraftInterest } from "./helpers/overdraft";
@@ -27,7 +28,7 @@ if (process.env.MOCKSOLARIS_REDIS_SERVER) {
   redis = Promise.promisifyAll(require("redis-mock"));
 }
 
-const redisClient = redis.createClient(
+const redisClient: RedisClientType = redis.createClient(
   process.env.MOCKSOLARIS_REDIS_SERVER ?? ""
 );
 
@@ -153,7 +154,7 @@ const jsonToPerson = (value) => {
 
 export const getPerson = async (personId: string): Promise<MockPerson> => {
   const person = await redisClient
-    .getAsync(`${process.env.MOCKSOLARIS_REDIS_PREFIX}:person:${personId}`)
+    .get(`${process.env.MOCKSOLARIS_REDIS_PREFIX}:person:${personId}`)
     .then(jsonToPerson);
   return augmentPerson(person);
 };
@@ -205,7 +206,7 @@ export const savePerson = async (person, skipInterest = false) => {
     person.timedOrders = person.timedOrders || [];
   }
 
-  const response = await redisClient.setAsync(
+  const response = await redisClient.set(
     `${process.env.MOCKSOLARIS_REDIS_PREFIX}:person:${person.id}`,
     JSON.stringify(person, undefined, 2)
   );
@@ -215,50 +216,50 @@ export const savePerson = async (person, skipInterest = false) => {
 
 export const getTaxIdentifications = async (personId) =>
   JSON.parse(
-    (await redisClient.getAsync(
+    (await redisClient.get(
       `${process.env.MOCKSOLARIS_REDIS_PREFIX}:taxIdentifications:${personId}`
     )) || "[]"
   );
 
 export const saveTaxIdentifications = async (personId, data) =>
-  redisClient.setAsync(
+  redisClient.set(
     `${process.env.MOCKSOLARIS_REDIS_PREFIX}:taxIdentifications:${personId}`,
     JSON.stringify(data, undefined, 2)
   );
 
 export const getMobileNumber = async (personId) =>
   JSON.parse(
-    await redisClient.getAsync(
+    await redisClient.get(
       `${process.env.MOCKSOLARIS_REDIS_PREFIX}:mobileNumber:${personId}`
     )
   );
 
 export const saveMobileNumber = async (personId, data) =>
-  redisClient.setAsync(
+  redisClient.set(
     `${process.env.MOCKSOLARIS_REDIS_PREFIX}:mobileNumber:${personId}`,
     JSON.stringify(data, undefined, 2)
   );
 
 export const deleteMobileNumber = async (personId) =>
-  redisClient.delAsync(
+  redisClient.del(
     `${process.env.MOCKSOLARIS_REDIS_PREFIX}:mobileNumber:${personId}`
   );
 
 export const getDevice = async (deviceId) =>
   JSON.parse(
-    await redisClient.getAsync(
+    await redisClient.get(
       `${process.env.MOCKSOLARIS_REDIS_PREFIX}:device:${deviceId}`
     )
   );
 
 export const getAllDevices = () =>
   redisClient
-    .keysAsync(`${process.env.MOCKSOLARIS_REDIS_PREFIX}:device:*`)
+    .keys(`${process.env.MOCKSOLARIS_REDIS_PREFIX}:device:*`)
     .then((keys) => {
       if (keys.length < 1) {
         return [];
       }
-      return redisClient.mgetAsync(keys);
+      return redisClient.mGet(keys);
     })
     .then((values) => values.map((value) => JSON.parse(value)));
 
@@ -268,25 +269,25 @@ export const getDevicesByPersonId = (personId) =>
   );
 
 export const saveDevice = async (device) =>
-  redisClient.setAsync(
+  redisClient.set(
     `${process.env.MOCKSOLARIS_REDIS_PREFIX}:device:${device.id}`,
     JSON.stringify(device, undefined, 2)
   );
 
 export const getDeviceChallenge = async (challengeId) =>
   JSON.parse(
-    await redisClient.getAsync(
+    await redisClient.get(
       `${process.env.MOCKSOLARIS_REDIS_PREFIX}:deviceChallenge:${challengeId}`
     )
   );
 
 export const deleteDeviceChallenge = async (challengeId) =>
-  redisClient.delAsync(
+  redisClient.del(
     `${process.env.MOCKSOLARIS_REDIS_PREFIX}:deviceChallenge:${challengeId}`
   );
 
 export const saveDeviceChallenge = async (challenge) =>
-  redisClient.setAsync(
+  redisClient.set(
     `${process.env.MOCKSOLARIS_REDIS_PREFIX}:deviceChallenge:${challenge.id}`,
     JSON.stringify(challenge, undefined, 2)
   );
@@ -303,12 +304,15 @@ export const saveBooking = (accountId, booking) => {
 export const getAllPersons = async (
   sort: boolean = false
 ): Promise<MockPerson[]> => {
-  const keys = await redisClient.keysAsync(
-    `${process.env.MOCKSOLARIS_REDIS_PREFIX}:person:*`
-  );
-  if (keys.length < 1) return [];
-  const values = await redisClient.mgetAsync(keys);
-  let persons = values.map(jsonToPerson);
+  let persons = [];
+  log.warning(`${JSON.stringify(redisClient)}`);
+  for await (const key of redisClient.scanIterator({
+    MATCH: `${process.env.MOCKSOLARIS_REDIS_PREFIX}:person:*`,
+  })) {
+    const value = await redisClient.get(key);
+    const person = jsonToPerson(value);
+    persons.push(person);
+  }
   persons = sort
     ? persons.sort((p1, p2) => {
         if (!p1.createdAt && p2.createdAt) return 1;
@@ -366,14 +370,14 @@ export const findPersonByAccountIBAN = (iban) =>
 
 export const getWebhooks = async () => {
   const webhooks = await redisClient
-    .keysAsync(`${process.env.MOCKSOLARIS_REDIS_PREFIX}:webhook:*`)
+    .keys(`${process.env.MOCKSOLARIS_REDIS_PREFIX}:webhook:*`)
     .then((keys) => {
       if (keys.length < 1) {
         return [];
       }
-      return redisClient.mgetAsync(keys);
+      return redisClient.mGet(keys);
     })
-    .then((values) => values.map(JSON.parse));
+    .then((values) => values.map((value) => JSON.parse(value)));
 
   return webhooks;
 };
@@ -383,7 +387,7 @@ export const getWebhookByType = async (type) =>
 
 export const getSepaDirectDebitReturns = async () => {
   const sepaDirectDebitReturns = JSON.parse(
-    (await redisClient.getAsync(
+    (await redisClient.get(
       `${process.env.MOCKSOLARIS_REDIS_PREFIX}:sepa_direct_debit_returns`
     )) || "[]"
   );
@@ -400,27 +404,27 @@ export const saveSepaDirectDebitReturn = async (sepaDirectDebitReturn) => {
     sepaDirectDebitReturn
   );
 
-  await redisClient.setAsync(
+  await redisClient.set(
     `${process.env.MOCKSOLARIS_REDIS_PREFIX}:sepa_direct_debit_returns`,
     JSON.stringify(sepaDirectDebitReturns)
   );
 };
 
 export const saveWebhook = (webhook) => {
-  return redisClient.setAsync(
+  return redisClient.set(
     `${process.env.MOCKSOLARIS_REDIS_PREFIX}:webhook:${webhook.event_type}`,
     JSON.stringify(webhook, undefined, 2)
   );
 };
 
 export const deleteWebhook = (webhookType: string) => {
-  return redisClient.delAsync(
+  return redisClient.del(
     `${process.env.MOCKSOLARIS_REDIS_PREFIX}:webhook:${webhookType}`
   );
 };
 
 export const flushDb = () => {
-  return redisClient.flushdbAsync();
+  return redisClient.flushDb();
 };
 
 const fillMissingCurrencyForLegacyBooking = (booking) => ({
@@ -442,7 +446,7 @@ export const getSmsToken = async (personId: string) => {
 
 export const getCardReferences = async () =>
   JSON.parse(
-    (await redisClient.getAsync(
+    (await redisClient.get(
       `${process.env.MOCKSOLARIS_REDIS_PREFIX}:cardReferences`
     )) || "[]"
   );
@@ -459,7 +463,7 @@ export const saveCardReference = async (cardRef) => {
 
   const cardReferences = await getCardReferences();
   cardReferences.push(cardRef);
-  await redisClient.setAsync(
+  await redisClient.set(
     `${process.env.MOCKSOLARIS_REDIS_PREFIX}:cardReferences`,
     JSON.stringify(cardReferences)
   );
@@ -508,7 +512,7 @@ export const getPersonByDeviceId = async (deviceId) => {
 };
 
 export const setPersonOrigin = async (personId: string, origin?: string) => {
-  await redisClient.setAsync(
+  await redisClient.set(
     `${process.env.MOCKSOLARIS_REDIS_PREFIX}:person-origin:${personId}`,
     origin || ""
   );
@@ -526,7 +530,7 @@ export const createDeviceConsent = async (
     created_at: moment().toISOString(),
   };
 
-  await redisClient.lpushAsync(
+  await redisClient.lPush(
     `${process.env.MOCKSOLARIS_REDIS_PREFIX}:DeviceConsents:${personId}`,
     JSON.stringify(consent)
   );
@@ -538,7 +542,7 @@ export const getDeviceConsents = async (
   personId: string
 ): Promise<DeviceConsent[]> => {
   return (
-    await redisClient.lrangeAsync(
+    await redisClient.lRange(
       `${process.env.MOCKSOLARIS_REDIS_PREFIX}:DeviceConsents:${personId}`,
       0,
       -1
@@ -563,7 +567,7 @@ export const updateDeviceConsent = async (
     ...deviceConsent,
   };
 
-  await redisClient.lsetAsync(
+  await redisClient.lSet(
     `${process.env.MOCKSOLARIS_REDIS_PREFIX}:DeviceConsents:${personId}`,
     index,
     JSON.stringify(consent)
@@ -584,7 +588,7 @@ export const createDeviceActivity = async (
     created_at: moment().toISOString(),
   };
 
-  await redisClient.lpushAsync(
+  await redisClient.lPush(
     `${process.env.MOCKSOLARIS_REDIS_PREFIX}:DeviceActivities:${personId}`,
     JSON.stringify(activity)
   );
@@ -594,7 +598,7 @@ export const createDeviceActivity = async (
 
 export const getDeviceActivities = async (personId: string) => {
   return (
-    await redisClient.lrangeAsync(
+    await redisClient.lRange(
       `${process.env.MOCKSOLARIS_REDIS_PREFIX}:DeviceActivities:${personId}`,
       0,
       -1
@@ -605,7 +609,7 @@ export const getDeviceActivities = async (personId: string) => {
 export const getPersonOrigin = async (
   personId: string
 ): Promise<string | null> => {
-  return redisClient.getAsync(
+  return redisClient.get(
     `${process.env.MOCKSOLARIS_REDIS_PREFIX}:person-origin:${personId}`
   );
 };
