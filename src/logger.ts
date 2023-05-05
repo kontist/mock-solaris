@@ -1,12 +1,15 @@
+import pino from "pino";
 import util from "util";
-import winston from "winston";
-import expressWinston from "express-winston";
-import { Loggly } from "winston-loggly-bulk";
-import * as Transport from "winston-transport";
-
-const { LOGGLY_KEY } = process.env;
-const consoleLogger = new winston.transports.Console();
-let loggly: Loggly;
+import pinoHttp from "pino-http";
+import { NextFunction, Request, Response } from "express";
+export interface Logger {
+  info(msg: string, ...args: any[]): void;
+  warning(msg: string, ...args: any[]): void;
+  debug(msg: string, ...args: any[]): void;
+  error(msg: string, ...args: any[]): void;
+  getExpressLogger(): any;
+  setLogLevel(level?: string): void;
+}
 
 export enum LogLevel {
   DEBUG = "debug",
@@ -16,72 +19,116 @@ export enum LogLevel {
   FATAL = "fatal",
 }
 
-const isTest = process.env.NODE_ENV === "test";
-const level = isTest ? LogLevel.FATAL : LogLevel.INFO;
+const level = LogLevel.INFO;
 
-const logger = winston.createLogger({
-  silent: isTest,
-  level,
-  levels: {
-    [LogLevel.DEBUG]: 4,
-    [LogLevel.INFO]: 3,
-    [LogLevel.WARNING]: 2,
-    [LogLevel.ERROR]: 1,
-    [LogLevel.FATAL]: 0,
-  },
-});
+let transport:
+  | pino.TransportSingleOptions
+  | pino.TransportMultiOptions
+  | pino.TransportPipelineOptions;
 
-logger.add(
-  new winston.transports.Console({
-    format: winston.format.simple(),
-  })
-);
-
-if (LOGGLY_KEY) {
-  loggly = new Loggly({
-    format: winston.format.simple(),
-    token: LOGGLY_KEY,
+if (process.env.LOGGLY_KEY) {
+  const logglyParams = {
+    token: process.env.LOGGLY_KEY,
     subdomain: "kontist",
     tags: ["mockSolaris"],
-    json: true,
-  });
-  logger.add(loggly);
+  };
+  transport = {
+    targets: [
+      { target: "pino/file", options: {}, level },
+      { target: "./loggly.js", options: logglyParams, level },
+    ],
+  };
 }
 
-export const getExpressLogger = () => {
-  const transports: Transport[] = [consoleLogger];
-  if (loggly) {
-    transports.push(loggly);
-  }
-
-  return expressWinston.logger({
-    winstonInstance: logger,
-    transports,
-    meta: false,
-    msg:
-      "HTTP {{req.method}} {{req.url}} {{res.statusCode}} {{res.responseTime}}ms",
-    expressFormat: false,
-    ignoreRoute: (req) => req.url === "/health",
-  });
-};
+export const logger = pino({
+  level,
+  base: null,
+  transport,
+  timestamp: () => `,"timestamp":"${new Date().toISOString()}"`,
+});
 
 type LogArguments = any[];
+
+const formatLogArgs = (args: LogArguments) => {
+  return util.format(...args);
+};
+
 export function info(...args: LogArguments) {
-  logger.info(util.format(args));
+  logger.info(formatLogArgs(args));
 }
 
 export function warning(...args: LogArguments) {
-  logger.warning(util.format(args));
+  logger.warn(formatLogArgs(args));
 }
 
 export function debug(...args: LogArguments) {
-  logger.debug(util.format(args));
+  logger.debug(formatLogArgs(args));
 }
 
 export function error(...args: LogArguments) {
-  logger.error(util.format(args));
+  logger.error(formatLogArgs(args));
 }
 
-export const setLogLevel = (logLevel: string) => {
-  logger.level = logLevel;
+export function getExpressLogger() {
+  const loggerMiddleware = pinoHttp(
+    {
+      logger,
+      customLogLevel: (req, res, err) => {
+        if (res.statusCode >= 400 && res.statusCode < 500) {
+          return "warn";
+        } else if (res.statusCode >= 500 || err) {
+          return "error";
+        }
+        return "info";
+      },
+      autoLogging: {
+        ignore: (req) => ["/api/health", "/api/status"].includes(req.url),
+      },
+      customSuccessMessage: (req, res) => {
+        return `HTTP ${req.method} ${req.url} ${res.statusCode}`;
+      },
+      customErrorMessage: (req, res, err) => {
+        return `HTTP ${req.method} ${req.url} ${res.statusCode} - Error: ${err.name} ${err.message} ${err.stack}`;
+      },
+      serializers: {
+        err: pino.stdSerializers.err,
+        req: (req) => ({
+          method: req.method,
+          url: req.url,
+        }),
+        res: (res) => ({
+          statusCode: res.statusCode,
+          responseTime: res.responseTime,
+        }),
+      },
+    },
+    null
+  );
+
+  return (req: Request, res: Response, next: NextFunction) => {
+    loggerMiddleware(req, res, () => {
+      res.on("finish", () => {
+        if (req.url !== "/api/health") {
+          loggerMiddleware(req, res);
+        }
+      });
+      next();
+    });
+  };
+}
+
+export const getLogger = (
+  prefix: string,
+  format = (prefix: string) => `[${prefix}]`
+): Partial<Logger> => {
+  const prefixMessage = format(prefix);
+  return Object.values(LogLevel).reduce((result, level) => {
+    result[level] = (...args: any[]) =>
+      module.exports[level](prefixMessage, ...args);
+    return result;
+  }, {});
 };
+
+export function setLogLevel(level?: LogLevel) {
+  logger.level = level;
+}
