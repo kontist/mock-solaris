@@ -546,7 +546,7 @@ app.get(
 );
 
 app.post(
-  "/__BACKOFFICE__/setIdentificationState/:email",
+  "/__BACKOFFICE__/setIdentificationState/:id",
   safeRequestHandler(backofficeAPI.setIdentificationState)
 );
 app.post(
