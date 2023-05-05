@@ -2,7 +2,7 @@ import _ from "lodash";
 import Promise from "bluebird";
 import uuid from "node-uuid";
 import moment from "moment";
-import type { RedisClientType } from "redis";
+import { createClient, RedisClientType } from "redis";
 
 import * as log from "./logger";
 import { calculateOverdraftInterest } from "./helpers/overdraft";
@@ -16,21 +16,26 @@ import {
   ScreeningProgress,
 } from "./helpers/types";
 
-let redis;
+const clientConfig = process.env.MOCKSOLARIS_REDIS_SERVER
+  ? {
+      url: process.env.MOCKSOLARIS_REDIS_SERVER ?? "",
+    }
+  : {
+      url: "redis://mocks-redis:6379",
+      password: "mockserverredispassword",
+    };
+const redisClient: RedisClientType = createClient(clientConfig);
 
-if (process.env.MOCKSOLARIS_REDIS_SERVER) {
-  log.info(`using redis server at ${process.env.MOCKSOLARIS_REDIS_SERVER}`);
-  // tslint:disable-next-line: no-var-requires no-implicit-dependencies
-  redis = require("redis");
-} else {
-  log.info("using memory for not very persistent persistence");
-  // tslint:disable-next-line: no-var-requires
-  redis = Promise.promisifyAll(require("redis-mock"));
-}
-
-const redisClient: RedisClientType = redis.createClient(
-  process.env.MOCKSOLARIS_REDIS_SERVER ?? ""
-);
+redisClient
+  .connect()
+  .then(() => {
+    log.info("Redis connection is successful");
+  })
+  .catch((err) => {
+    {
+      log.error(err);
+    }
+  });
 
 redisClient.on("error", (err) => {
   log.error("Error " + err);
@@ -252,16 +257,15 @@ export const getDevice = async (deviceId) =>
     )
   );
 
-export const getAllDevices = () =>
-  redisClient
-    .keys(`${process.env.MOCKSOLARIS_REDIS_PREFIX}:device:*`)
-    .then((keys) => {
-      if (keys.length < 1) {
-        return [];
-      }
-      return redisClient.mGet(keys);
-    })
-    .then((values) => values.map((value) => JSON.parse(value)));
+export const getAllDevices = async () => {
+  const devices = [];
+  const pattern = `${process.env.MOCKSOLARIS_REDIS_PREFIX}:device:*`;
+  for await (const key of redisClient.scanIterator({ MATCH: pattern })) {
+    const value = await redisClient.get(key);
+    devices.push(JSON.parse(value));
+  }
+  return devices;
+};
 
 export const getDevicesByPersonId = (personId) =>
   getAllDevices().then((devices) =>
@@ -304,12 +308,25 @@ export const saveBooking = (accountId, booking) => {
 export const getAllPersons = async (
   sort: boolean = false
 ): Promise<MockPerson[]> => {
-  const keys = await redisClient.keys(
-    `${process.env.MOCKSOLARIS_REDIS_PREFIX}:person:*`
-  );
-  if (keys.length < 1) return [];
-  const values = await redisClient.mGet(keys);
-  let persons = values.map(jsonToPerson);
+  let persons = [];
+  let cursor = 0;
+  const batchSize = 1;
+  const pattern = `${process.env.MOCKSOLARIS_REDIS_PREFIX}:person:*`;
+  do {
+    const scanResult = await redisClient.scan(cursor, {
+      MATCH: pattern,
+      COUNT: batchSize,
+    });
+    cursor = scanResult?.cursor;
+    if (scanResult?.keys?.length) {
+      await Promise.all(
+        scanResult?.keys.map(async (key) => {
+          const value = await redisClient.get(key);
+          persons.push(jsonToPerson(value));
+        })
+      );
+    }
+  } while (cursor !== 0);
   persons = sort
     ? persons.sort((p1, p2) => {
         if (!p1.createdAt && p2.createdAt) return 1;
@@ -366,17 +383,25 @@ export const findPersonByAccountIBAN = (iban) =>
   findPersonByAccountField((person) => person.account.iban === iban);
 
 export const getWebhooks = async () => {
-  const webhooks = await redisClient
-    .keys(`${process.env.MOCKSOLARIS_REDIS_PREFIX}:webhook:*`)
-    .then((keys) => {
-      if (keys.length < 1) {
-        return [];
-      }
-      return redisClient.mGet(keys);
-    })
-    .then((values) => values.map((value) => JSON.parse(value)));
-
-  return webhooks;
+  let cursor = 0;
+  const batchSize = 1;
+  const webHooks = [];
+  do {
+    const scanResult = await redisClient.scan(cursor, {
+      MATCH: `${process.env.MOCKSOLARIS_REDIS_PREFIX}:webhook:*`,
+      COUNT: batchSize,
+    });
+    cursor = scanResult?.cursor;
+    if (scanResult?.keys?.length) {
+      await Promise.all(
+        scanResult?.keys.map(async (key) => {
+          const value = await redisClient.get(key);
+          webHooks.push(JSON.parse(value));
+        })
+      );
+    }
+  } while (cursor !== 0);
+  return webHooks;
 };
 
 export const getWebhookByType = async (type) =>
@@ -420,7 +445,7 @@ export const deleteWebhook = (webhookType: string) => {
   );
 };
 
-export const flushDb = () => {
+export const flushDb = async () => {
   return redisClient.flushDb();
 };
 

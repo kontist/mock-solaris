@@ -1,0 +1,22 @@
+version: "3.9"
+services:
+  mock-solaris:
+    build:
+      context: ./
+      dockerfile: DockerfileMocha
+    ports:
+      - "2091:2091"
+    command: "npm run lint && mocha --recursive '/opt/mockSolaris/dist/tests/**/*.spec.js'"
+    volumes:
+      - type: bind
+        source: ./dist
+        target: /opt/mockSolaris/dist/
+      - type: bind
+        source: ./src/templates
+        target: /opt/mockSolaris/dist/src/templates/
+  mocks-redis:
+    image: redis:alpine
+    command: redis-server --appendonly yes --requirepass mockserverredispassword
+    user: redis
+    ports:
+      - "8364:6379"

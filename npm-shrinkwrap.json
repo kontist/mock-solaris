@@ -22,7 +22,6 @@
         "node-jose": "^2.1.1",
         "node-uuid": "^1.4.7",
         "redis": "^4.6.6",
-        "redis-mock": "^0.56.3",
         "swig": "^1.4.2",
         "validate-steuerid": "1.0.4",
         "winston": "^3.8.2",
@@ -4003,14 +4002,6 @@
         "@redis/json": "1.0.4",
         "@redis/search": "1.1.2",
         "@redis/time-series": "1.0.4"
-      }
-    },
-    "node_modules/redis-mock": {
-      "version": "0.56.3",
-      "resolved": "https://registry.npmjs.org/redis-mock/-/redis-mock-0.56.3.tgz",
-      "integrity": "sha512-ynaJhqk0Qf3Qajnwvy4aOjS4Mdf9IBkELWtjd+NYhpiqu4QCNq6Vf3Q7c++XRPGiKiwRj9HWr0crcwy7EiPjYQ==",
-      "engines": {
-        "node": ">=6"
       }
     },
     "node_modules/release-zalgo": {
@@ -8227,11 +8218,6 @@
         "@redis/search": "1.1.2",
         "@redis/time-series": "1.0.4"
       }
-    },
-    "redis-mock": {
-      "version": "0.56.3",
-      "resolved": "https://registry.npmjs.org/redis-mock/-/redis-mock-0.56.3.tgz",
-      "integrity": "sha512-ynaJhqk0Qf3Qajnwvy4aOjS4Mdf9IBkELWtjd+NYhpiqu4QCNq6Vf3Q7c++XRPGiKiwRj9HWr0crcwy7EiPjYQ=="
     },
     "release-zalgo": {
       "version": "1.0.0",
