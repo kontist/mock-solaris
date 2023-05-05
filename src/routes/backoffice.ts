@@ -398,25 +398,15 @@ export const setScreening = async (req, res) => {
 
 export const setIdentificationState = async (req, res) => {
   const { status, skipSettingScreeningValues } = req.body;
-
-  log.info("setIdentificationState body", req.body);
-  log.info("setIdentificationState params", req.params);
-
   const { method = "idnow" } = req.query;
-
-  const identification = await findIdentificationByEmail(
-    req.params.email,
-    method
-  );
+  const person = await getPerson(req.params.id);
+  const identification = person.identifications[req.params.identificationId];
 
   if (!identification) {
     return res.status(404).send("Couldnt find identification");
   }
 
-  const person = await getPerson(identification.person_id);
   identification.status = status;
-  person.identifications[identification.id] = identification;
-
   // screening will not always be accepted.
   if (
     !(skipSettingScreeningValues === "true") &&
