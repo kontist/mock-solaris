@@ -8,13 +8,9 @@ import {
   DeviceConsentEventType,
 } from "../src/helpers/types";
 
-describe("device monitoring", async () => {
-  before(async () => {
-    await db.flushDb();
-  });
-  after(async () => {
-    await db.flushDb();
-  });
+describe("device monitoring", () => {
+  before(db.flushDb);
+  after(db.flushDb);
 
   let deviceConsentId: string;
   const personId = "1234";

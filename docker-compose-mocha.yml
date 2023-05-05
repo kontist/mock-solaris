@@ -6,7 +6,7 @@ services:
       dockerfile: DockerfileMocha
     ports:
       - "2091:2091"
-    command: "npm run lint && mocha --recursive '/opt/mockSolaris/dist/tests/**/*.spec.js'"
+    command: "npm run test:docker"
     volumes:
       - type: bind
         source: ./dist

@@ -19,6 +19,7 @@
     "start:docker": "docker compose up",
     "start:docker:test": "docker compose -f docker-compose-mocha.yml up --build",
     "debug": "node --nolazy --inspect=0.0.0.0:9559 dist/src/server.js",
+    "test:docker": "npm run lint && mocha --recursive '/opt/mockSolaris/dist/tests/**/*.spec.js'",
     "test": "export MOCKSOLARIS_REDIS_SERVER=redis://localhost:8364 && npm run lint && npm run build && mocha --recursive 'dist/tests/**/*.spec.js'",
     "coverage": "nyc npm run test",
     "lint": "tslint --project ."

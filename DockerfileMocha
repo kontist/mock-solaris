@@ -12,6 +12,7 @@ COPY --chown=node:node src ./src
 COPY --chown=node:node tests ./tests
 
 RUN npm run build
+RUN rm -R src && rm -R tests
 
 # Run as Non-root
 USER node
