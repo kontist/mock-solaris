@@ -134,7 +134,7 @@ export const createAccountRequestHandler = async (req, res) => {
     ...DEFAULT_ACCOUNT,
     id: accountId,
     iban,
-    type: "CHECKING_BUSINESS",
+    type: "CHECKING_SOLE_PROPRIETOR",
     person_id: personId,
     balance: {
       value: 0, // new accounts have no money
