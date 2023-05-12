@@ -399,8 +399,9 @@ export const setScreening = async (req, res) => {
 export const setIdentificationState = async (req, res) => {
   const { status, skipSettingScreeningValues } = req.body;
   const { method = "idnow" } = req.query;
-  const person = await getPerson(req.params.id);
-  const identification = person.identifications[req.params.identificationId];
+  const { personId, identificationId } = req.params;
+  const person = await getPerson(personId);
+  const identification = person.identifications[identificationId];
 
   if (!identification) {
     return res.status(404).send("Couldnt find identification");
