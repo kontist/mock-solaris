@@ -11,6 +11,10 @@ import { MockPerson, PersonWebhookEvent } from "../helpers/types";
 
 const format = (date: Moment): string => date.format("YYYY-MM-DD");
 
+/**
+ * Creates a person
+ * Note: Creating multiple users with the same req.body is going to create one user
+ */
 export const createPerson = async (req, res) => {
   const personId =
     "mock" +
