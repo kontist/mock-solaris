@@ -359,18 +359,6 @@ const augmentPerson = (person: MockPerson): MockPerson => {
   return augmented;
 };
 
-export const getAllIdentifications = () => {
-  return getPersons().then((persons) => {
-    return _.flattenDeep(
-      persons.map((person) => {
-        const identification: any = Object.values(person.identifications || {});
-        identification.person = person;
-        return identification;
-      })
-    );
-  });
-};
-
 export const findPersonByAccountField = async (findBy) => {
   const persons = await getPersons();
   return persons.filter((person) => person.account).find(findBy);

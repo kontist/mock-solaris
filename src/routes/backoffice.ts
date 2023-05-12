@@ -6,7 +6,6 @@ import {
   getPerson,
   savePerson,
   getPersons,
-  getAllIdentifications,
   getTaxIdentifications,
   getMobileNumber,
   saveMobileNumber,
@@ -180,20 +179,6 @@ const filterAndSortIdentifications = (identifications, method) => {
   }
 
   return idents;
-};
-
-export const findIdentificationByEmail = (email, method) => {
-  return getAllIdentifications().then((identifications) => {
-    const userIdentifications = identifications.filter(
-      (identification) => identification.email === email
-    );
-    const latestIdentification = filterAndSortIdentifications(
-      userIdentifications,
-      method
-    )[0];
-    log.info("latestIdentification", latestIdentification);
-    return latestIdentification;
-  });
 };
 
 export const listPersons = async (req, res) => {
