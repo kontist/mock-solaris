@@ -305,15 +305,30 @@ export const saveBooking = (accountId, booking) => {
     .then(savePerson);
 };
 
-export const getAllPersons = async (
-  sort: boolean = false
+/**
+ *
+ * @param sort
+ * @param callbackFn
+ */
+export const getPersons = async (
+  {
+    sort,
+    callbackFn,
+  }: {
+    sort?: boolean;
+    callbackFn?: (person: MockPerson) => Promise<boolean>;
+  } = { sort: false, callbackFn: () => true }
 ): Promise<MockPerson[]> => {
   let persons = [];
   for await (const key of redisClient.scanIterator({
     MATCH: `${process.env.MOCKSOLARIS_REDIS_PREFIX}:person:*`,
   })) {
     const value = await redisClient.get(key);
-    persons.push(jsonToPerson(value));
+    const person = jsonToPerson(value);
+    const shouldSelectPerson = await callbackFn(person);
+    if (shouldSelectPerson) {
+      persons.push(person);
+    }
   }
   persons = sort
     ? persons.sort((p1, p2) => {
@@ -344,7 +359,7 @@ const augmentPerson = (person: MockPerson): MockPerson => {
 };
 
 export const getAllIdentifications = () => {
-  return getAllPersons().then((persons) => {
+  return getPersons().then((persons) => {
     return _.flattenDeep(
       persons.map((person) => {
         const identification: any = Object.values(person.identifications || {});
@@ -356,7 +371,7 @@ export const getAllIdentifications = () => {
 };
 
 export const findPersonByAccountField = async (findBy) => {
-  const persons = await getAllPersons();
+  const persons = await getPersons();
   return persons.filter((person) => person.account).find(findBy);
 };
 
@@ -471,7 +486,7 @@ export const saveCardReference = async (cardRef) => {
 };
 
 export const getCardData = async (cardId) => {
-  const persons = await getAllPersons();
+  const persons = await getPersons();
 
   const cardData = _(persons)
     .map((person) => _.get(person, "account.cards", []))
@@ -483,7 +498,7 @@ export const getCardData = async (cardId) => {
 };
 
 export const getPersonBySpendingLimitId = async (id) => {
-  const persons = await getAllPersons();
+  const persons = await getPersons();
 
   const cardData = _(persons)
     .map((person) => _.get(person, "account.cards", []))
@@ -497,7 +512,7 @@ export const getPersonBySpendingLimitId = async (id) => {
 export const getPersonByFraudCaseId = async (
   fraudCaseId
 ): Promise<MockPerson> => {
-  const persons = await getAllPersons();
+  const persons = await getPersons();
   return persons.find(
     (p) => p.fraudCases.find((c) => c.id === fraudCaseId) !== undefined
   );

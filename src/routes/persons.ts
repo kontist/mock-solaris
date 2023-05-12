@@ -3,7 +3,7 @@ import _ from "lodash";
 import uuid from "node-uuid";
 import moment, { Moment } from "moment";
 
-import { getPerson, getAllPersons, savePerson, setPersonOrigin } from "../db";
+import { getPerson, getPersons, savePerson, setPersonOrigin } from "../db";
 
 import { createChangeRequest } from "./changeRequest";
 import { triggerWebhook } from "../helpers/webhooks";
@@ -84,7 +84,7 @@ export const showPerson = async (req, res) => {
 export const showPersons = async (req, res) => {
   const { page: { size = 10, number = 1 } = {} } = req.query;
 
-  const persons = ((await getAllPersons(true)) || []).slice(
+  const persons = ((await getPersons({ sort: true })) || []).slice(
     (number - 1) * size,
     size * number
   );

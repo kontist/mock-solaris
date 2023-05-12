@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import { mockReq, mockRes } from "sinon-express-mock";
-import { getAllPersons, flushDb } from "../src/db";
+import { getPersons, flushDb } from "../src/db";
 import { createPerson } from "../src/routes/persons";
 
 describe("getAllPersons()", async () => {
@@ -19,7 +19,7 @@ describe("getAllPersons()", async () => {
       const res = mockRes();
       await createPerson(req, res);
     }
-    const persons = await getAllPersons();
+    const persons = await getPersons();
     expect(persons.length).to.equal(numPersons);
   });
 });

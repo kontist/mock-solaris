@@ -38,7 +38,7 @@ export class FraudWatchdog {
   }
 
   private async _loadFraudCases() {
-    const persons = await db.getAllPersons();
+    const persons = await db.getPersons();
     for (const p of persons) {
       if (p.fraudCases.length === 0) {
         continue;

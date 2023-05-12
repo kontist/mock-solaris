@@ -22,7 +22,7 @@ export default {
   logger,
   flushDb: db.flushDb,
   getPerson: db.getPerson,
-  getAllPersons: db.getAllPersons,
+  getAllPersons: db.getPersons,
   savePerson: db.savePerson,
   migrate: db.migrate,
   findPersonByAccountId: db.findPersonByAccountId,

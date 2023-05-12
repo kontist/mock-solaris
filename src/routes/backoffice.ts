@@ -5,7 +5,7 @@ import HttpStatusCodes from "http-status";
 import {
   getPerson,
   savePerson,
-  getAllPersons,
+  getPersons,
   getAllIdentifications,
   getTaxIdentifications,
   getMobileNumber,
@@ -95,7 +95,7 @@ export const addAccountSeizureProtectionHandler = async (req, res) => {
     protectedAmountExpiringDate,
   } = req.body;
 
-  const persons = await getAllPersons();
+  const persons = await getPersons();
   const person = persons.find((item) => item.email === email);
 
   if (!person?.account) return null;
@@ -134,7 +134,7 @@ export const addAccountSeizureProtectionHandler = async (req, res) => {
 export const deleteAccountSeizureProtectionHandler = async (req, res) => {
   const { email } = req.params;
 
-  const persons = await getAllPersons();
+  const persons = await getPersons();
   const person = persons.find((item) => item.email === email);
 
   if (!person?.account) return null;
@@ -197,7 +197,7 @@ export const findIdentificationByEmail = (email, method) => {
 };
 
 export const listPersons = async (req, res) => {
-  const persons = await getAllPersons(true);
+  const persons = await getPersons({ sort: true });
   res.render("persons", { persons });
 };
 
@@ -377,7 +377,7 @@ export const setScreening = async (req, res) => {
     customer_vetting_status,
   } = req.body;
 
-  const person = (await getAllPersons()).find(
+  const person = (await getPersons()).find(
     (item) => item.email === req.params.email
   );
   log.info(`setScreening person:`, person);
