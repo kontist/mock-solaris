@@ -683,7 +683,7 @@
       <td class="{{ identification.method }}"></td>
       <td>{{ identification.reference }}</td>
       <td>
-        <form class="form-inline autosubmitonchange" method="POST" action="/__BACKOFFICE__/setIdentificationState/{{ person.id }}?method={{ identification.method }}">
+        <form class="form-inline autosubmitonchange" method="POST" action="/__BACKOFFICE__/setIdentificationState/{{ person.id }}/{{ identification.id }}?method={{ identification.method }}">
           <input type="hidden" name="skipSettingScreeningValues" value="true" />
           <select name="status">
               <option {% if identification.status === "pending" %}selected {% endif %}value="pending">pending</option>

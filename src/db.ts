@@ -116,7 +116,7 @@ export const migrate = async () => {
         id: process.env.SOLARIS_KONTIST_ACCOUNT_ID,
         iban: "DE58110101002263909949",
         bic: process.env.SOLARIS_BIC,
-        type: "CHECKING_BUSINESS",
+        type: "CHECKING_SOLE_PROPRIETOR",
         person_id: "mockpersonkontistgmbh",
         balance: {
           value: 100,
@@ -132,7 +132,7 @@ export const migrate = async () => {
         id: process.env.SOLARIS_KONTIST_BILLING_ACCOUNT_ID,
         iban: "DE58110101002263909949",
         bic: process.env.SOLARIS_BIC,
-        type: "CHECKING_BUSINESS",
+        type: "CHECKING_SOLE_PROPRIETOR",
         person_id: "mockpersonkontistgmbh",
         balance: {
           value: 100,
