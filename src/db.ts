@@ -147,7 +147,7 @@ export const migrate = async () => {
   }
 };
 
-const jsonToPerson = (value) => {
+const jsonToPerson = (value: string) => {
   if (!value) {
     throw new Error("did not find person");
   }
@@ -309,24 +309,12 @@ export const getAllPersons = async (
   sort: boolean = false
 ): Promise<MockPerson[]> => {
   let persons = [];
-  let cursor = 0;
-  const batchSize = 1;
-  const pattern = `${process.env.MOCKSOLARIS_REDIS_PREFIX}:person:*`;
-  do {
-    const scanResult = await redisClient.scan(cursor, {
-      MATCH: pattern,
-      COUNT: batchSize,
-    });
-    cursor = scanResult?.cursor;
-    if (scanResult?.keys?.length) {
-      await Promise.all(
-        scanResult?.keys.map(async (key) => {
-          const value = await redisClient.get(key);
-          persons.push(jsonToPerson(value));
-        })
-      );
-    }
-  } while (cursor !== 0);
+  for await (const key of redisClient.scanIterator({
+    MATCH: `${process.env.MOCKSOLARIS_REDIS_PREFIX}:person:*`,
+  })) {
+    const value = await redisClient.get(key);
+    persons.push(jsonToPerson(value));
+  }
   persons = sort
     ? persons.sort((p1, p2) => {
         if (!p1.createdAt && p2.createdAt) return 1;
@@ -383,24 +371,13 @@ export const findPersonByAccountIBAN = (iban) =>
   findPersonByAccountField((person) => person.account.iban === iban);
 
 export const getWebhooks = async () => {
-  let cursor = 0;
-  const batchSize = 1;
   const webHooks = [];
-  do {
-    const scanResult = await redisClient.scan(cursor, {
-      MATCH: `${process.env.MOCKSOLARIS_REDIS_PREFIX}:webhook:*`,
-      COUNT: batchSize,
-    });
-    cursor = scanResult?.cursor;
-    if (scanResult?.keys?.length) {
-      await Promise.all(
-        scanResult?.keys.map(async (key) => {
-          const value = await redisClient.get(key);
-          webHooks.push(JSON.parse(value));
-        })
-      );
-    }
-  } while (cursor !== 0);
+  for await (const key of redisClient.scanIterator({
+    MATCH: `${process.env.MOCKSOLARIS_REDIS_PREFIX}:webhook:*`,
+  })) {
+    const value = await redisClient.get(key);
+    webHooks.push(JSON.parse(value));
+  }
   return webHooks;
 };
 
