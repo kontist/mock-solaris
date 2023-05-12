@@ -306,7 +306,8 @@ export const saveBooking = (accountId, booking) => {
 };
 
 /**
- *
+ * Finds persons. When callbackFn is not supplied, loads all persons.
+ * Note: Avoid using this function without a callbackFn
  * @param sort
  * @param callbackFn
  */
