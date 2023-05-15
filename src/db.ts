@@ -375,20 +375,14 @@ const augmentPerson = (person: MockPerson): MockPerson => {
   return augmented;
 };
 
-export const findPersonByAccountField = async (findBy) => {
-  const persons = await getPersons();
-  return persons.filter((person) => person.account).find(findBy);
-};
-
-export const findPersonByAccountId = (accountId) =>
-  findPersonByAccountField(
-    (person) =>
+export const findPersonByAccountId: (
+  accountId: string
+) => Promise<MockPerson> = (accountId) =>
+  getPersons({
+    callbackFn: (person) =>
       person.account.id === accountId ||
-      (person.billing_account || {}).id === accountId
-  );
-
-export const findPersonByAccountIBAN = (iban) =>
-  findPersonByAccountField((person) => person.account.iban === iban);
+      (person.billing_account || {}).id === accountId,
+  })[0];
 
 export const getWebhooks = async () => {
   const webHooks = [];
