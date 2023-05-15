@@ -5,13 +5,13 @@ import * as log from "../logger";
 import {
   getPerson,
   savePerson,
-  findPersonByAccountIBAN,
   getTechnicalUserPerson,
   saveSepaDirectDebitReturn,
+  getPersons,
 } from "../db";
 import { BookingType, ChangeRequestStatus } from "../helpers/types";
 import { createSepaDirectDebitReturn } from "../helpers/sepaDirectDebitReturn";
-import {triggerBookingsWebhook} from "./backoffice";
+import { triggerBookingsWebhook } from "./backoffice";
 
 const SOLARIS_CARDS_ACCOUNT = {
   NAME: "Visa_Solarisbank",
@@ -43,8 +43,9 @@ export const createSepaDirectDebit = async (req, res) => {
   });
 
   const { debtor_iban: iban } = mandate;
-
-  const person = await findPersonByAccountIBAN(iban);
+  const person = await getPersons({
+    callbackFn: (item) => item.account.iban === iban,
+  });
   const technicalPerson = await getTechnicalUserPerson();
 
   const id = uuid.v4();
