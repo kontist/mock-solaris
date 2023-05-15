@@ -144,6 +144,10 @@ export type MockAccount = {
   available_balance?: Amount;
 };
 
+export type BillingAccount = {
+  id: string;
+};
+
 export type MockChangeRequest = {
   cardId?: string;
   pin?: string;
@@ -177,6 +181,7 @@ export type MockPerson = {
   queuedBookings?: Record<string, unknown>[];
   seizure?: Record<string, unknown>;
   postboxItems?: Record<string, unknown>[];
+  billing_account: BillingAccount;
 };
 
 export type FraudCase = {
