@@ -7,6 +7,8 @@ import { createClient, RedisClientType } from "redis";
 import * as log from "./logger";
 import { calculateOverdraftInterest } from "./helpers/overdraft";
 import {
+  Card,
+  CardData,
   CustomerVettingStatus,
   DeviceActivityPayload,
   DeviceConsent,
@@ -484,16 +486,16 @@ export const saveCardReference = async (cardRef) => {
   return true;
 };
 
-export const getCardData = async (cardId) => {
-  const persons = await getPersons();
-
-  const cardData = _(persons)
-    .map((person) => _.get(person, "account.cards", []))
-    .flatten()
-    .value()
-    .find((cd) => cd.card.id === cardId);
-
-  return cardData;
+export const getCardData = async (cardId: string): Promise<Card> => {
+  const personWhoOwnsTheCard = await findPerson((person) => {
+    const cardFound = (person?.account?.cards || []).find(
+      (cardData) => cardData.card.id === cardId
+    );
+    return !!cardFound;
+  });
+  return personWhoOwnsTheCard?.account?.cards.find(
+    (card: CardData) => card.card.id === cardId
+  );
 };
 
 export const getPersonBySpendingLimitId = async (id) => {
