@@ -342,6 +342,22 @@ export const getPersons = async (
   return persons.map((person) => augmentPerson(person));
 };
 
+export const findPerson = async (
+  callbackFn: (person: MockPerson) => boolean
+): Promise<MockPerson | null> => {
+  for await (const key of redisClient.scanIterator({
+    MATCH: `${process.env.MOCKSOLARIS_REDIS_PREFIX}:person:*`,
+  })) {
+    const value = await redisClient.get(key);
+    const person = jsonToPerson(value);
+    const shouldSelectPerson = await callbackFn(person);
+    if (shouldSelectPerson) {
+      return augmentPerson(person);
+    }
+  }
+  return null;
+};
+
 const augmentPerson = (person: MockPerson): MockPerson => {
   const augmented = _.cloneDeep(person);
   augmented.fraudCases = augmented.fraudCases || [];
