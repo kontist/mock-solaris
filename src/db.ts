@@ -513,10 +513,11 @@ export const getPersonBySpendingLimitId = async (id) => {
 export const getPersonByFraudCaseId = async (
   fraudCaseId
 ): Promise<MockPerson> => {
-  const persons = await getPersons();
-  return persons.find(
-    (p) => p.fraudCases.find((c) => c.id === fraudCaseId) !== undefined
-  );
+  return getPersons({
+    sort: false,
+    callbackFn: (p) =>
+      p.fraudCases.find((c) => c.id === fraudCaseId) !== undefined,
+  });
 };
 
 export const getCard = async (cardId) => (await getCardData(cardId)).card;
