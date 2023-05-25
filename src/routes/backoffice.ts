@@ -133,8 +133,7 @@ export const addAccountSeizureProtectionHandler = async (req, res) => {
 export const deleteAccountSeizureProtectionHandler = async (req, res) => {
   const { email } = req.params;
 
-  const persons = await getPersons();
-  const person = persons.find((item) => item.email === email);
+  const person = await findPerson((p) => p.email === email);
 
   if (!person?.account) return null;
 
