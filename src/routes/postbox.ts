@@ -98,9 +98,9 @@ export const listPostboxItems = async (req, res) => {
 
 const getPostboxItemById = async (postboxItemId: string) => {
   const person = await findPerson(
-    (p) => !!p?.postboxItems ?? [].find((pb) => pb.id === postboxItemId)
+    (p) => !!(p?.postboxItems ?? []).find((pb) => pb.id === postboxItemId)
   );
-  return person?.postboxItems ?? [].find((pb) => pb.id === postboxItemId);
+  return (person?.postboxItems ?? []).find((pb) => pb.id === postboxItemId);
 };
 
 export const getPostboxItem = async (req, res) => {
