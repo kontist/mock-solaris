@@ -489,12 +489,12 @@ export const saveCardReference = async (cardRef) => {
 export const getCardData = async (cardId: string): Promise<Card> => {
   const personWhoOwnsTheCard = await findPerson((person) => {
     const cardFound = (person?.account?.cards || []).find(
-      (cardData) => cardData.card.id === cardId
+      (cardData) => cardData?.card?.id === cardId
     );
     return !!cardFound;
   });
   return personWhoOwnsTheCard?.account?.cards.find(
-    (card: CardData) => card.card.id === cardId
+    (card: CardData) => card?.card?.id === cardId
   );
 };
 

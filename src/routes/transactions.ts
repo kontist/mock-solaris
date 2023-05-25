@@ -44,7 +44,7 @@ export const createSepaDirectDebit = async (req, res) => {
 
   const { debtor_iban: iban } = mandate;
   const person = await getPersons({
-    callbackFn: (item) => item.account.iban === iban,
+    callbackFn: (item) => item?.account?.iban === iban,
   });
   const technicalPerson = await getTechnicalUserPerson();
 
