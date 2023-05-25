@@ -173,6 +173,7 @@ export interface StandingOrder {
 
 export type MockPerson = {
   id: string;
+  email: string;
   fraudCases?: FraudCase[];
   account?: MockAccount;
   transactions: Booking[];

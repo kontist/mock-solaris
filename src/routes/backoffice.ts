@@ -18,6 +18,7 @@ import {
   getDeviceConsents,
   getDeviceActivities,
   getWebhooks,
+  findPerson,
 } from "../db";
 import {
   createSepaDirectDebitReturn,
@@ -94,8 +95,7 @@ export const addAccountSeizureProtectionHandler = async (req, res) => {
     protectedAmountExpiringDate,
   } = req.body;
 
-  const persons = await getPersons();
-  const person = persons.find((item) => item.email === email);
+  const person = await findPerson((p) => p.email === email);
 
   if (!person?.account) return null;
 
