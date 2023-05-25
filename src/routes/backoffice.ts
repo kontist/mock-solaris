@@ -361,9 +361,8 @@ export const setScreening = async (req, res) => {
     customer_vetting_status,
   } = req.body;
 
-  const person = (await getPersons()).find(
-    (item) => item.email === req.params.email
-  );
+  const person = await findPerson((p) => p.email === req.params.email);
+
   log.info(`setScreening person:`, person);
 
   person.screening_progress = screening_progress;
