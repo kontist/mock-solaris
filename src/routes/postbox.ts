@@ -3,7 +3,7 @@ import moment from "moment";
 import path from "path";
 
 import * as log from "../logger";
-import { getPersons, getPerson, savePerson } from "../db";
+import { getPerson, savePerson, findPerson } from "../db";
 import { triggerWebhook } from "../helpers/webhooks";
 import {
   MockPerson,
@@ -97,11 +97,10 @@ export const listPostboxItems = async (req, res) => {
 };
 
 const getPostboxItemById = async (postboxItemId: string) => {
-  const persons = await getPersons();
-  const allItems = [].concat(
-    ...persons.map(({ postboxItems }) => postboxItems || [])
+  const person = await findPerson(
+    (p) => !!p?.postboxItems ?? [].find((pb) => pb.id === postboxItemId)
   );
-  return allItems.find(({ id }) => id === postboxItemId);
+  return person?.postboxItems ?? [].find((pb) => pb.id === postboxItemId);
 };
 
 export const getPostboxItem = async (req, res) => {
