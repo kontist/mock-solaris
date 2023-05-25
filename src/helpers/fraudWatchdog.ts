@@ -38,15 +38,12 @@ export class FraudWatchdog {
   }
 
   private async _loadFraudCases() {
-    const persons = await db.getPersons();
-    for (const p of persons) {
-      if (p.fraudCases.length === 0) {
-        continue;
-      }
-      for (const c of p.fraudCases) {
-        this.watch(c);
-      }
-    }
+    const persons = await db.getPersons({
+      sort: false,
+      callbackFn: (p) => !!p.fraudCases.length,
+    });
+    if (persons?.length) return;
+    persons.forEach((p) => p.fraudCases.forEach((fc) => this.watch(fc)));
   }
 
   public processFraudCases = async () => {
