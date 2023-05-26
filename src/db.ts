@@ -381,7 +381,7 @@ export const findPersonByAccountId: (
   accountId: string
 ) => Promise<MockPerson> = (accountId) =>
   findPerson(
-    (p) => p.account.id === accountId || p.billing_account?.id === accountId
+    (p) => p.account?.id === accountId || p.billing_account?.id === accountId
   );
 
 export const getWebhooks = async () => {
