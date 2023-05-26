@@ -40,7 +40,7 @@ export class FraudWatchdog {
   private async _loadFraudCases() {
     const persons = await db.getPersons({
       sort: false,
-      callbackFn: (p) => !!p.fraudCases.length,
+      callbackFn: (p) => !!p.fraudCases?.length,
     });
     if (persons?.length) return;
     persons.forEach((p) => p.fraudCases.forEach((fc) => this.watch(fc)));
