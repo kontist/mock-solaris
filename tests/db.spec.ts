@@ -20,7 +20,7 @@ import {
   mockFraudCase,
   mockPostboxItem,
 } from "./mockData";
-import { getPostboxItem, getPostboxItemById } from "../src/routes/postbox";
+import { getPostboxItemById } from "../src/routes/postbox";
 
 describe("getPersons()", async () => {
   const headers = { origin: "Kontist HQ" };
