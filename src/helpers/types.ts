@@ -171,6 +171,10 @@ export interface StandingOrder {
   reoccurrence?: string;
 }
 
+export type PostboxItem = {
+  id: string;
+};
+
 export type MockPerson = {
   id: string;
   email: string;
@@ -181,7 +185,7 @@ export type MockPerson = {
   origin?: string;
   queuedBookings?: Record<string, unknown>[];
   seizure?: Record<string, unknown>;
-  postboxItems?: Record<string, unknown>[];
+  postboxItems?: PostboxItem[];
   billing_account?: BillingAccount;
   identifications?: Record<string, unknown>;
 };
@@ -193,7 +197,7 @@ export type MockCreatePerson = {
   changeRequest?: MockChangeRequest;
   origin?: string;
   seizure?: Record<string, unknown>;
-  postboxItems?: Record<string, unknown>[];
+  postboxItems?: PostboxItem[];
   billing_account?: BillingAccount;
 };
 
@@ -351,7 +355,7 @@ export type CardAuthorizationDeclineV2Reason = {
   message: string;
 };
 
-type Amount = {
+export type Amount = {
   value: number;
   unit: string;
   currency: string;
