@@ -485,12 +485,9 @@ export const saveCardReference = async (cardRef) => {
 };
 
 export const getCardData = async (cardId: string): Promise<Card> => {
-  const personWhoOwnsTheCard = await findPerson((person) => {
-    const cardFound = (person?.account?.cards || []).find(
-      (cardData) => cardData?.card?.id === cardId
-    );
-    return !!cardFound;
-  });
+  const personWhoOwnsTheCard = await findPerson(
+    (p) => !!(p?.account?.cards || []).find((cd) => cd?.card?.id === cardId)
+  );
   return personWhoOwnsTheCard?.account?.cards.find(
     (card: CardData) => card?.card?.id === cardId
   );
