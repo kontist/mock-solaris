@@ -130,7 +130,7 @@ describe("getPersons()", async () => {
       const res = mockRes();
       await createPerson(req, res);
       const cardData = await getCardData("N/A");
-      expect(cardData).to.be.null;
+      expect(cardData).not.to.be.ok;
     });
 
     it("getPersonByFraudCaseId() returns person by fraud case id if fraud case exists", async () => {
@@ -183,8 +183,9 @@ describe("getPersons()", async () => {
       const req = mockReq({ body, headers });
       const res = mockRes();
       await createPerson(req, res);
-      const person = await getPersonBySpendingLimitId("N/A");
-      expect(person).to.be.null;
+      const response = await getPersonBySpendingLimitId("N/A");
+      expect(response.person).not.to.be.ok;
+      expect(response.cardData).not.to.be.ok;
     });
 
     it("getPostboxItemById() returns postbox items by id if postbox item is found", async () => {
