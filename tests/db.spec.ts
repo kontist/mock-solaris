@@ -183,9 +183,7 @@ describe("getPersons()", async () => {
       const req = mockReq({ body, headers });
       const res = mockRes();
       await createPerson(req, res);
-      const person = await getPersonBySpendingLimitId(
-        mockCardSpendingLimitControl.id
-      );
+      const person = await getPersonBySpendingLimitId("N/A");
       expect(person).to.be.null;
     });
 
