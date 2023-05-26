@@ -57,7 +57,7 @@ describe("getPersons()", async () => {
     expect(person).to.be.ok;
   });
 
-  it("findPerson() returns NULL if the person is not found", async () => {
+  it("findPerson() returns null if the person is not found", async () => {
     const email = `person@person.com`;
     const req = mockReq({
       body: {
@@ -120,7 +120,7 @@ describe("getPersons()", async () => {
     expect(cardData).to.be.ok;
   });
 
-  it("getCardData() returns card data if card data is not set", async () => {
+  it("getCardData() returns falsy value if card data is not set", async () => {
     const body: MockCreatePerson = {
       ...mockCreatePerson,
       account: mockAccount,
