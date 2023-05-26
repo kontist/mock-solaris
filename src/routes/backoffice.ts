@@ -5,7 +5,7 @@ import HttpStatusCodes from "http-status";
 import {
   getPerson,
   savePerson,
-  getPersons,
+  findPersons,
   getTaxIdentifications,
   getMobileNumber,
   saveMobileNumber,
@@ -165,7 +165,7 @@ export const provisioningTokenHandler = async (req, res) => {
 };
 
 export const listPersons = async (req, res) => {
-  const persons = await getPersons({ sort: true });
+  const persons = await findPersons({ sort: true });
   res.render("persons", { persons });
 };
 

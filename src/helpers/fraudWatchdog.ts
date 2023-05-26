@@ -38,7 +38,7 @@ export class FraudWatchdog {
   }
 
   private async _loadFraudCases() {
-    const persons = await db.getPersons({
+    const persons = await db.findPersons({
       sort: false,
       callbackFn: (p) => !!p.fraudCases?.length,
     });

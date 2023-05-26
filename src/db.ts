@@ -313,7 +313,7 @@ export const saveBooking = (accountId, booking) => {
  * @param sort
  * @param callbackFn
  */
-export const getPersons = async (
+export const findPersons = async (
   {
     sort,
     callbackFn,
