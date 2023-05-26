@@ -54,7 +54,7 @@ describe("getPersons()", async () => {
     const res = mockRes();
     await createPerson(req, res);
     const person = await findPerson((p) => p.email === email);
-    expect(person).not.to.be(null);
+    expect(person).to.be.ok;
   });
 
   it("findPerson() returns NULL if the person is not found", async () => {
@@ -68,7 +68,7 @@ describe("getPersons()", async () => {
     const res = mockRes();
     await createPerson(req, res);
     const person = await findPerson((p) => p.email === `notTheSame${email}`);
-    expect(person).to.be(null);
+    expect(person).to.be.null;
   });
 
   describe("findPersonByAccountId()", async () => {
@@ -78,7 +78,7 @@ describe("getPersons()", async () => {
       const res = mockRes();
       await createPerson(req, res);
       const person = await findPersonByAccountId(body.account.id);
-      expect(person).not.to.be(null);
+      expect(person).to.be.ok;
     });
 
     it("findPersonByAccountId finds person by account id if billing_account is set", async () => {
@@ -88,7 +88,7 @@ describe("getPersons()", async () => {
       const resBillingAccount = mockRes();
       await createPerson(reqBillingAccount, resBillingAccount);
       const person = await findPersonByAccountId(body.billing_account.id);
-      expect(person).not.to.be(null);
+      expect(person).to.be.ok;
     });
 
     it("findPersonByAccountId doesn't throw and returns null if no users have an account with the specified account id", async () => {
@@ -101,7 +101,7 @@ describe("getPersons()", async () => {
       const resNoProp = mockRes();
       await createPerson(reqNoProp, resNoProp);
       const person = await findPersonByAccountId("N/A");
-      expect(person).to.be(null);
+      expect(person).to.be.null;
     });
 
     it("getCardData() returns card data if card data is set", async () => {
@@ -115,7 +115,7 @@ describe("getPersons()", async () => {
       const res = mockRes();
       await createPerson(req, res);
       const cardData = await getCardData(mockCard.card.id);
-      expect(cardData).not.to.be(null);
+      expect(cardData).to.be.ok;
     });
 
     it("getCardData() returns card data if card data is not set", async () => {
@@ -127,7 +127,7 @@ describe("getPersons()", async () => {
       const res = mockRes();
       await createPerson(req, res);
       const cardData = await getCardData(mockCard.card.id);
-      expect(cardData).to.be(null);
+      expect(cardData).to.be.null;
     });
 
     it("getPersonByFraudCaseId() returns person by fraud case id if fraud case exists", async () => {
@@ -140,7 +140,7 @@ describe("getPersons()", async () => {
       const res = mockRes();
       await createPerson(req, res);
       const person = await getPersonByFraudCaseId(mockFraudCase.id);
-      expect(person).not.to.be(null);
+      expect(person).to.be.ok;
     });
 
     it("getPersonByFraudCaseId() returns null if fraud case doesn't exist", async () => {
@@ -152,7 +152,7 @@ describe("getPersons()", async () => {
       const res = mockRes();
       await createPerson(req, res);
       const person = await getPersonByFraudCaseId(mockFraudCase.id);
-      expect(person).to.be(null);
+      expect(person).to.be.null;
     });
 
     it("getPersonBySpendingLimitId() returns person if spending limit is applied", async () => {
@@ -169,7 +169,7 @@ describe("getPersons()", async () => {
       const person = await getPersonBySpendingLimitId(
         mockCardSpendingLimitControl.id
       );
-      expect(person).not.to.be(null);
+      expect(person).to.be.ok;
     });
 
     it("getPersonBySpendingLimitId() returns null if spending limit is not applied", async () => {
@@ -183,7 +183,7 @@ describe("getPersons()", async () => {
       const person = await getPersonBySpendingLimitId(
         mockCardSpendingLimitControl.id
       );
-      expect(person).to.be(null);
+      expect(person).to.be.null;
     });
 
     it("getPostboxItemById() returns postbox items by id if postbox item is found", async () => {
@@ -196,7 +196,7 @@ describe("getPersons()", async () => {
       const res = mockRes();
       await createPerson(req, res);
       const person = await getPostboxItemById(mockPostboxItem.id);
-      expect(person).not.to.be(null);
+      expect(person).to.be.ok;
     });
 
     it("getPostboxItemById() doesn't throw and returns null if postbox item is not found", async () => {
@@ -209,7 +209,7 @@ describe("getPersons()", async () => {
       const res = mockRes();
       await createPerson(req, res);
       const postboxItem = await getPostboxItemById(mockPostboxItem.id);
-      expect(postboxItem).to.be(null);
+      expect(postboxItem).to.be.null;
     });
   });
 });
