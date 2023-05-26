@@ -255,11 +255,6 @@ export type ReplaceCardData = {
   line_1?: string;
 };
 
-type CardLimit = {
-  max_amount_cents: number;
-  max_transactions: number;
-};
-
 export enum CaseResolution {
   PENDING = "PENDING",
   CONFIRMED = "CONFIRMED",
