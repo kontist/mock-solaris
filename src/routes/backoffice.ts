@@ -164,22 +164,6 @@ export const provisioningTokenHandler = async (req, res) => {
   res.redirect("back");
 };
 
-const filterAndSortIdentifications = (identifications, method) => {
-  const idents = identifications
-    .filter((identification) => identification.identificationLinkCreatedAt)
-    .sort(
-      (id1, id2) =>
-        new Date(id2.identificationLinkCreatedAt).getTime() -
-        new Date(id1.identificationLinkCreatedAt).getTime()
-    );
-
-  if (method) {
-    return idents.filter((identification) => identification.method === method);
-  }
-
-  return idents;
-};
-
 export const listPersons = async (req, res) => {
   const persons = await getPersons({ sort: true });
   res.render("persons", { persons });
@@ -453,7 +437,7 @@ const generateBookingFromStandingOrder = (standingOrder) => {
 
 /**
  * Processes either a normal booking or a Standing Order.
- * @param {string} personIdOrEmail
+ * @param {string} personId
  * @param {number} id Booking ID
  * @param {Boolean} isStandingOrder (Optional) True if is of type standing order.
  */
