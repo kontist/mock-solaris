@@ -18,6 +18,11 @@ import {
   Scope,
 } from "../src/helpers/types";
 
+/**
+ * Values satisfy the requirements of types created on this project and not the actual Solaris requirements.
+ * Values are to be updated as we add more tests.
+ */
+
 export const mockReservation: Reservation = {
   id: "reservation1",
   amount: { currency: "EUR", unit: "cents", value: 10000 },
