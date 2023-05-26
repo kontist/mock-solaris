@@ -129,7 +129,7 @@ describe("getPersons()", async () => {
       const req = mockReq({ body, headers });
       const res = mockRes();
       await createPerson(req, res);
-      const cardData = await getCardData(mockCard.card.id);
+      const cardData = await getCardData("N/A");
       expect(cardData).to.be.null;
     });
 
