@@ -496,18 +496,14 @@ export const getCardData = async (cardId: string): Promise<Card> => {
   );
 };
 
-// TODO: Add test
 export const getPersonBySpendingLimitId = async (id) => {
-  // look at persons's account.cards, cards is an array it has a prop called controls its an array too, check control.id
   const person = await findPerson((p) => {
-    return !!p.account.cards.find(
-      (c) => !!c.controls.find((co) => co.id === id)
+    return !!(p.account?.cards ?? []).find(
+      (c) => !!(c.controls ?? []).find((co) => co.id === id)
     );
   });
-
-  // cards which have controls which have the id specified
-  const cardData = person.account.cards.map(
-    (c) => !!c.controls.find((co) => co.id === id)
+  const cardData = (person?.account?.cards ?? []).find(
+    (c) => !!(c.controls ?? []).find((co) => co.id === id)
   );
   return { person, cardData };
 };
