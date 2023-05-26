@@ -210,7 +210,7 @@ describe("getPersons()", async () => {
       const res = mockRes();
       await createPerson(req, res);
       const postboxItem = await getPostboxItemById(mockPostboxItem.id);
-      expect(postboxItem).to.be.null;
+      expect(postboxItem).to.be.undefined;
     });
   });
 });
