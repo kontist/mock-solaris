@@ -182,7 +182,19 @@ export type MockPerson = {
   queuedBookings?: Record<string, unknown>[];
   seizure?: Record<string, unknown>;
   postboxItems?: Record<string, unknown>[];
-  billing_account: BillingAccount;
+  billing_account?: BillingAccount;
+  identifications?: Record<string, unknown>;
+};
+
+export type MockCreatePerson = {
+  email: string;
+  fraudCases?: FraudCase[];
+  account?: MockAccount;
+  changeRequest?: MockChangeRequest;
+  origin?: string;
+  seizure?: Record<string, unknown>;
+  postboxItems?: Record<string, unknown>[];
+  billing_account?: BillingAccount;
 };
 
 export type FraudCase = {
