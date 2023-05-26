@@ -514,13 +514,8 @@ export const getPersonBySpendingLimitId = async (id) => {
 
 export const getPersonByFraudCaseId = async (
   fraudCaseId
-): Promise<MockPerson> => {
-  return getPersons({
-    sort: false,
-    callbackFn: (p) =>
-      p.fraudCases.find((c) => c.id === fraudCaseId) !== undefined,
-  });
-};
+): Promise<MockPerson> =>
+  findPerson((p) => !!(p.fraudCases ?? []).find((c) => c.id === fraudCaseId));
 
 export const getCard = async (cardId) => (await getCardData(cardId)).card;
 
