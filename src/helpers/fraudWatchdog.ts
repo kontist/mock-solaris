@@ -42,8 +42,9 @@ export class FraudWatchdog {
       sort: false,
       callbackFn: (p) => !!p.fraudCases?.length,
     });
-    if (persons?.length) return;
-    persons.forEach((p) => p.fraudCases.forEach((fc) => this.watch(fc)));
+    (persons ?? []).forEach((p) =>
+      p.fraudCases.forEach((fc) => this.watch(fc))
+    );
   }
 
   public processFraudCases = async () => {
