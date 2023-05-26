@@ -7,7 +7,7 @@ describe("getPersons()", async () => {
   before(flushDb);
   after(flushDb);
 
-  it(`getAllPersons() returns all persons`, async () => {
+  it(`getPersons() returns all persons`, async () => {
     const numPersons = 5;
     for (let i = 1; i <= numPersons; i++) {
       const req = mockReq({
