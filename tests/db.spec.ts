@@ -137,8 +137,8 @@ describe("getPersons()", async () => {
       const body: MockCreatePerson = {
         ...mockCreatePerson,
         account: mockAccount,
+        fraudCases: [mockFraudCase],
       };
-      body.fraudCases.push(mockFraudCase);
       const req = mockReq({ body, headers });
       const res = mockRes();
       await createPerson(req, res);
