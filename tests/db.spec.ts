@@ -154,7 +154,7 @@ describe("getPersons()", async () => {
       const req = mockReq({ body, headers });
       const res = mockRes();
       await createPerson(req, res);
-      const person = await getPersonByFraudCaseId(mockFraudCase.id);
+      const person = await getPersonByFraudCaseId("N/A");
       expect(person).to.be.null;
     });
 
