@@ -6,12 +6,10 @@ import * as log from "../logger";
 import { getPerson, savePerson, findPerson } from "../db";
 import { triggerWebhook } from "../helpers/webhooks";
 import {
-  MockPerson,
   PostboxItemEvent,
   PostboxOwnerType,
   PostboxDocumentType,
 } from "../helpers/types";
-import assert from "assert";
 
 const POSTBOX_ITEM_EXAMPLE = {
   id: "d347d967ae8c4d58b93e6698b386cae9pbxi",
