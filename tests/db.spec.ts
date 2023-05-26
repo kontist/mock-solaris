@@ -10,7 +10,7 @@ import {
   getPersonBySpendingLimitId,
 } from "../src/db";
 import { createPerson } from "../src/routes/persons";
-import { MockAccount, MockCreatePerson } from "../src/helpers/types";
+import { MockCreatePerson } from "../src/helpers/types";
 
 import {
   mockAccount,
