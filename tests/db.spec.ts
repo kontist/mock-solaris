@@ -10,7 +10,7 @@ import {
   getPersonBySpendingLimitId,
 } from "../src/db";
 import { createPerson } from "../src/routes/persons";
-import { MockCreatePerson } from "../src/helpers/types";
+import { MockAccount, MockCreatePerson } from "../src/helpers/types";
 
 import {
   mockAccount,
@@ -82,8 +82,11 @@ describe("getPersons()", async () => {
     });
 
     it("findPersonByAccountId finds person by account id if billing_account is set", async () => {
-      const body = { ...mockCreatePerson, account: mockAccount };
-      body.billing_account.id = "billingAccount1";
+      const body: MockCreatePerson = {
+        ...mockCreatePerson,
+        account: mockAccount,
+        billing_account: { id: "billingAccount1" },
+      };
       const reqBillingAccount = mockReq({ body, headers });
       const resBillingAccount = mockRes();
       await createPerson(reqBillingAccount, resBillingAccount);
