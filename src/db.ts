@@ -380,11 +380,9 @@ const augmentPerson = (person: MockPerson): MockPerson => {
 export const findPersonByAccountId: (
   accountId: string
 ) => Promise<MockPerson> = (accountId) =>
-  getPersons({
-    callbackFn: (person) =>
-      person.account.id === accountId ||
-      (person.billing_account || {}).id === accountId,
-  })[0];
+  findPerson(
+    (p) => p.account.id === accountId || p.billing_account?.id === accountId
+  );
 
 export const getWebhooks = async () => {
   const webHooks = [];
