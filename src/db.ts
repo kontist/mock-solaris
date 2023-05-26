@@ -20,9 +20,10 @@ import {
 
 const clientConfig = process.env.MOCKSOLARIS_REDIS_SERVER
   ? {
-      url: process.env.MOCKSOLARIS_REDIS_SERVER ?? "",
+      url: process.env.MOCKSOLARIS_REDIS_SERVER ?? "", // You can pass password with the URL: redis://:pwd@localhost:port/
     }
   : {
+      // Used in dockerized scenarios, where MOCKSOLARIS_REDIS_SERVER is not set
       url: "redis://mocks-redis:6379",
       password: "mockserverredispassword",
     };
@@ -309,7 +310,9 @@ export const saveBooking = (accountId, booking) => {
 
 /**
  * Finds persons. When callbackFn is not supplied, loads all persons.
- * Note: Avoid using this function without a callbackFn
+ * Notes:
+ *  Avoid using this function without a callbackFn
+ *  If you need to find one person, you can use findPerson() instead
  * @param sort
  * @param callbackFn
  */
