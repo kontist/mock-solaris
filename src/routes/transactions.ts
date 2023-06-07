@@ -11,7 +11,7 @@ import {
 } from "../db";
 import { BookingType, ChangeRequestStatus } from "../helpers/types";
 import { createSepaDirectDebitReturn } from "../helpers/sepaDirectDebitReturn";
-import {triggerBookingsWebhook} from "./backoffice";
+import { triggerBookingsWebhook } from "./backoffice";
 
 const SOLARIS_CARDS_ACCOUNT = {
   NAME: "Visa_Solarisbank",
@@ -342,4 +342,14 @@ export const creteBookingFromReservation = (person, reservation, incoming?) => {
     valuta_date: moment().format("YYYY-MM-DD"),
     meta_info: metaInfo,
   };
+};
+
+export const directDebitRefund = (req, res) => {
+  log.info("refund confirmed", {
+    personId: req.params.person_id,
+    accountId: req.params.account_id,
+    bookingId: req.body.booking_id,
+  });
+
+  res.status(200).send("OK");
 };
