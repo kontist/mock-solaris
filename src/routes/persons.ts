@@ -13,14 +13,11 @@ const format = (date: Moment): string => date.format("YYYY-MM-DD");
 
 /**
  * Creates a person
- * Note: Creating multiple users with the same req.body is going to create one user
  * @deprecated Expected to be removed by 11.09.2023
  * @see {@link https://docs.solarisgroup.com/api-reference/onboarding/account-creation/#tag/Person-accounts/paths/~1v1~1persons~1{person_id}~1accounts/post}
  */
 export const createPerson = async (req, res) => {
-  const personId =
-    "mock" +
-    crypto.createHash("md5").update(JSON.stringify(req.body)).digest("hex");
+  const personId = `mock${uuid.v4()}`;
   const createdAt = moment();
 
   const person = {
