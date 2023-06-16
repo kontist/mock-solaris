@@ -171,10 +171,11 @@ describe("getPersons()", async () => {
     const person = await getPersonBySpendingLimitId(
       mockCardSpendingLimitControl.id
     );
-    expect(person).to.be.ok;
+    expect(person.person).to.be.ok;
+    expect(person.cardData).to.be.ok;
   });
 
-  it("getPersonBySpendingLimitId() returns null if spending limit is not applied", async () => {
+  it("getPersonBySpendingLimitId() returns falsy values if spending limit is not applied", async () => {
     const body: MockCreatePerson = {
       ...mockCreatePerson,
       account: { ...mockAccount, cards: [{ ...mockCard, controls: [] }] },
