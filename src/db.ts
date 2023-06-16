@@ -35,9 +35,7 @@ redisClient
     log.info("Redis connection is successful");
   })
   .catch((err) => {
-    {
-      log.error(err);
-    }
+    log.error(err);
   });
 
 redisClient.on("error", (err) => {
