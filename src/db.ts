@@ -329,7 +329,7 @@ export const findPersons = async (
   })) {
     const value = await redisClient.get(key);
     const person = jsonToPerson(value);
-    const shouldSelectPerson = await callbackFn(person);
+    const shouldSelectPerson = !!callbackFn ? await callbackFn(person) : true;
     if (shouldSelectPerson) {
       persons.push(person);
     }
@@ -346,7 +346,7 @@ export const findPersons = async (
 };
 
 export const findPerson = async (
-  callbackFn: (person: MockPerson) => boolean
+  callbackFn: (person: MockPerson) => Promise<boolean>
 ): Promise<MockPerson | null> => {
   for await (const key of redisClient.scanIterator({
     MATCH: `${process.env.MOCKSOLARIS_REDIS_PREFIX}:person:*`,
