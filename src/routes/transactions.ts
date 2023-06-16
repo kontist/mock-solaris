@@ -342,3 +342,32 @@ export const creteBookingFromReservation = (person, reservation, incoming?) => {
     meta_info: metaInfo,
   };
 };
+
+export const directDebitRefund = (req, res) => {
+  log.info("refund confirmed", {
+    personId: req.params.person_id,
+    accountId: req.params.account_id,
+    bookingId: req.body.booking_id,
+  });
+
+  // https://docs.solarisgroup.com/api-reference/digital-banking/sepa-transfers/#tag/SEPA-Direct-Debit-Returns
+  return res.status(201).send({
+    id: "257eb92c4656691fd02d3de1fa88b9f5csdr",
+    creditor_iban: "DE32110101001000000029",
+    creditor_name: "Peter Mustermann",
+    creditor_identifier: "DE98ZZZ09999999999",
+    mandate_reference: "SOBKTEST",
+    amount: {
+      value: 1000,
+      unit: "cents",
+      currency: "EUR",
+    },
+    end_to_end_id: "DD-12-28.05.2018",
+    sepa_return_code: "MD01",
+    description: "string",
+    recorded_at: new Date().toISOString(),
+    customer_id: req.params.person_id,
+    customer_type: "Person",
+    account_id: req.params.account_id,
+  });
+};

@@ -529,6 +529,12 @@ router.get(
   safeRequestHandler(postboxItemAPI.downloadPostboxItem)
 );
 
+// SEPA DIRECT DEBIT REFUND
+router.post(
+  "/persons/:person_id/accounts/:account_id/sepa_direct_debit_returns",
+  safeRequestHandler(transactionsAPI.directDebitRefund)
+);
+
 // E2E
 if (process.env.NODE_ENV === "e2e") {
   router.patch(
