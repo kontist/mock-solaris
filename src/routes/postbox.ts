@@ -9,6 +9,7 @@ import {
   PostboxItemEvent,
   PostboxOwnerType,
   PostboxDocumentType,
+  PostboxItem,
 } from "../helpers/types";
 
 const POSTBOX_ITEM_EXAMPLE = {
@@ -94,7 +95,9 @@ export const listPostboxItems = async (req, res) => {
   res.status(200).send(person.postboxItems || []);
 };
 
-export const getPostboxItemById = async (postboxItemId: string) => {
+export const getPostboxItemById = async (
+  postboxItemId: string
+): Promise<PostboxItem | undefined> => {
   const person = await findPerson(
     (p) => !!(p.postboxItems ?? []).some((pb) => pb.id === postboxItemId)
   );
