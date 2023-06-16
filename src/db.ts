@@ -496,12 +496,12 @@ export const getCardData = async (cardId: string): Promise<Card> => {
 
 export const getPersonBySpendingLimitId = async (id) => {
   const person = await findPerson((p) => {
-    return !!(p.account?.cards ?? []).find(
-      (c) => !!(c.controls ?? []).find((co) => co.id === id)
+    return (p.account?.cards ?? []).some(
+      (c) => !!(c.controls ?? []).some((co) => co.id === id)
     );
   });
-  const cardData = (person?.account?.cards ?? []).find(
-    (c) => !!(c.controls ?? []).find((co) => co.id === id)
+  const cardData = (person?.account?.cards ?? []).find((c) =>
+    (c.controls ?? []).some((co) => co.id === id)
   );
   return { person, cardData };
 };
@@ -509,7 +509,7 @@ export const getPersonBySpendingLimitId = async (id) => {
 export const getPersonByFraudCaseId = async (
   fraudCaseId
 ): Promise<MockPerson> =>
-  findPerson((p) => !!(p.fraudCases ?? []).find((c) => c.id === fraudCaseId));
+  findPerson((p) => !!(p.fraudCases ?? []).some((c) => c.id === fraudCaseId));
 
 export const getCard = async (cardId) => (await getCardData(cardId)).card;
 
