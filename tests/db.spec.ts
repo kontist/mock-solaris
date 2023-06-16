@@ -201,7 +201,7 @@ describe("getPersons()", async () => {
     expect(person).to.be.ok;
   });
 
-  it("getPostboxItemById() doesn't throw and returns null if postbox item is not found", async () => {
+  it("getPostboxItemById() doesn't throw and returns undefined if postbox item is not found", async () => {
     const body: MockCreatePerson = {
       ...mockCreatePerson,
       account: mockAccount,
