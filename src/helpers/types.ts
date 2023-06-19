@@ -144,6 +144,10 @@ export type MockAccount = {
   available_balance?: Amount;
 };
 
+export type BillingAccount = {
+  id: string;
+};
+
 export type MockChangeRequest = {
   cardId?: string;
   pin?: string;
@@ -167,8 +171,13 @@ export interface StandingOrder {
   reoccurrence?: string;
 }
 
+export type PostboxItem = {
+  id: string;
+};
+
 export type MockPerson = {
   id: string;
+  email: string;
   fraudCases?: FraudCase[];
   account?: MockAccount;
   transactions: Booking[];
@@ -176,7 +185,20 @@ export type MockPerson = {
   origin?: string;
   queuedBookings?: Record<string, unknown>[];
   seizure?: Record<string, unknown>;
-  postboxItems?: Record<string, unknown>[];
+  postboxItems?: PostboxItem[];
+  billing_account?: BillingAccount;
+  identifications?: Record<string, unknown>;
+};
+
+export type MockCreatePerson = {
+  email: string;
+  fraudCases?: FraudCase[];
+  account?: MockAccount;
+  changeRequest?: MockChangeRequest;
+  origin?: string;
+  seizure?: Record<string, unknown>;
+  postboxItems?: PostboxItem[];
+  billing_account?: BillingAccount;
 };
 
 export type FraudCase = {
@@ -231,11 +253,6 @@ export type CardSpendingLimit = {
 export type ReplaceCardData = {
   pin?: string;
   line_1?: string;
-};
-
-type CardLimit = {
-  max_amount_cents: number;
-  max_transactions: number;
 };
 
 export enum CaseResolution {
@@ -333,7 +350,7 @@ export type CardAuthorizationDeclineV2Reason = {
   message: string;
 };
 
-type Amount = {
+export type Amount = {
   value: number;
   unit: string;
   currency: string;

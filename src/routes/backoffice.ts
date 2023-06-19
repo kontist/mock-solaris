@@ -5,8 +5,7 @@ import HttpStatusCodes from "http-status";
 import {
   getPerson,
   savePerson,
-  getAllPersons,
-  getAllIdentifications,
+  findPersons,
   getTaxIdentifications,
   getMobileNumber,
   saveMobileNumber,
@@ -19,6 +18,7 @@ import {
   getDeviceConsents,
   getDeviceActivities,
   getWebhooks,
+  findPerson,
 } from "../db";
 import {
   createSepaDirectDebitReturn,
@@ -95,8 +95,7 @@ export const addAccountSeizureProtectionHandler = async (req, res) => {
     protectedAmountExpiringDate,
   } = req.body;
 
-  const persons = await getAllPersons();
-  const person = persons.find((item) => item.email === email);
+  const person = await findPerson((p) => p.email === email);
 
   if (!person?.account) return null;
 
@@ -134,8 +133,7 @@ export const addAccountSeizureProtectionHandler = async (req, res) => {
 export const deleteAccountSeizureProtectionHandler = async (req, res) => {
   const { email } = req.params;
 
-  const persons = await getAllPersons();
-  const person = persons.find((item) => item.email === email);
+  const person = await findPerson((p) => p.email === email);
 
   if (!person?.account) return null;
 
@@ -166,38 +164,8 @@ export const provisioningTokenHandler = async (req, res) => {
   res.redirect("back");
 };
 
-const filterAndSortIdentifications = (identifications, method) => {
-  const idents = identifications
-    .filter((identification) => identification.identificationLinkCreatedAt)
-    .sort(
-      (id1, id2) =>
-        new Date(id2.identificationLinkCreatedAt).getTime() -
-        new Date(id1.identificationLinkCreatedAt).getTime()
-    );
-
-  if (method) {
-    return idents.filter((identification) => identification.method === method);
-  }
-
-  return idents;
-};
-
-export const findIdentificationByEmail = (email, method) => {
-  return getAllIdentifications().then((identifications) => {
-    const userIdentifications = identifications.filter(
-      (identification) => identification.email === email
-    );
-    const latestIdentification = filterAndSortIdentifications(
-      userIdentifications,
-      method
-    )[0];
-    log.info("latestIdentification", latestIdentification);
-    return latestIdentification;
-  });
-};
-
 export const listPersons = async (req, res) => {
-  const persons = await getAllPersons(true);
+  const persons = await findPersons({ sort: true });
   res.render("persons", { persons });
 };
 
@@ -377,9 +345,8 @@ export const setScreening = async (req, res) => {
     customer_vetting_status,
   } = req.body;
 
-  const person = (await getAllPersons()).find(
-    (item) => item.email === req.params.email
-  );
+  const person = await findPerson((p) => p.email === req.params.email);
+
   log.info(`setScreening person:`, person);
 
   person.screening_progress = screening_progress;
@@ -470,7 +437,7 @@ const generateBookingFromStandingOrder = (standingOrder) => {
 
 /**
  * Processes either a normal booking or a Standing Order.
- * @param {string} personIdOrEmail
+ * @param {string} personId
  * @param {number} id Booking ID
  * @param {Boolean} isStandingOrder (Optional) True if is of type standing order.
  */

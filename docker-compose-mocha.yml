@@ -1,0 +1,15 @@
+version: "3.9"
+services:
+  mock-solaris:
+    build: ./
+    ports:
+      - "2091:2091"
+    depends_on:
+      - mocks-redis
+    command: ["npm", "run", "test:docker"]
+  mocks-redis:
+    image: redis:alpine
+    command: redis-server --appendonly yes --requirepass mockserverredispassword
+    user: redis
+    ports:
+      - "8364:6379"

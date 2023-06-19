@@ -5,9 +5,9 @@ import * as log from "../logger";
 import {
   getPerson,
   savePerson,
-  findPersonByAccountIBAN,
   getTechnicalUserPerson,
   saveSepaDirectDebitReturn,
+  findPerson,
 } from "../db";
 import { BookingType, ChangeRequestStatus } from "../helpers/types";
 import { createSepaDirectDebitReturn } from "../helpers/sepaDirectDebitReturn";
@@ -43,8 +43,7 @@ export const createSepaDirectDebit = async (req, res) => {
   });
 
   const { debtor_iban: iban } = mandate;
-
-  const person = await findPersonByAccountIBAN(iban);
+  const person = await findPerson((p) => p.account?.iban === iban);
   const technicalPerson = await getTechnicalUserPerson();
 
   const id = uuid.v4();
