@@ -103,10 +103,8 @@ export const showBankStatementBookings = async (req, res) => {
   const {
     page: { size, number },
   } = req.query;
-  const {
-    account_id: accountId,
-    bank_statement_id: bankStatementId,
-  } = req.params;
+  const { account_id: accountId, bank_statement_id: bankStatementId } =
+    req.params;
 
   const person = await db.findPersonByAccountId(accountId);
 

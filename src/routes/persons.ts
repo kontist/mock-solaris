@@ -70,6 +70,7 @@ export const showPerson = async (req, res) => {
     }
 
     return res.status(500).send({
+      stack: err.stack,
       errors: [
         {
           id: "0a5ec2ea-6772-11e9-a656-02420a868404",

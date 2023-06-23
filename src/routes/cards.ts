@@ -80,6 +80,7 @@ export const replaceCardHandler = async (
     log.error("(replaceCardHandler) Error occurred", err);
 
     res.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send({
+      stack: err.stack,
       errors: [
         {
           id: uuid.v4(),
@@ -150,6 +151,7 @@ export const createCardHandler = async (
     log.error("(createCardHandler) Error occurred", err);
 
     res.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send({
+      stack: err.stack,
       errors: [
         {
           id: uuid.v4(),
