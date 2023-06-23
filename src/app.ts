@@ -36,6 +36,7 @@ import { oauthTokenAuthenticationMiddleware } from "./helpers/oauth";
 import { safeRequestHandler } from "./helpers/safeRequestHandler";
 import { shouldReturnJSON } from "./helpers";
 import { CardStatus } from "./helpers/types";
+
 const app = express();
 
 function logResponseBody(req, res, next) {
@@ -92,10 +93,11 @@ app.post("/oauth/token", oauthAPI.generateToken);
 function errorHandler(err, req, res, next) {
   log.error(err);
 
+  // We return stack because debugging becomes difficult when mocksolaris is used without loggging
   if (shouldReturnJSON(req)) {
-    res.status(500).send({ err: err.message });
+    res.status(500).send({ err: err.message, stack: err.stack });
   } else {
-    res.status(500).render("error", { error: err });
+    res.status(500).render("error", { error: err, stack: err.stack });
   }
 }
 
