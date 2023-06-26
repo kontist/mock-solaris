@@ -17,7 +17,7 @@ const format = (date: Moment): string => date.format("YYYY-MM-DD");
  * @see {@link https://docs.solarisgroup.com/api-reference/onboarding/account-creation/#tag/Person-accounts/paths/~1v1~1persons~1{person_id}~1accounts/post}
  */
 export const createPerson = async (req, res) => {
-  const personId = `mock${uuid.v4()}`;
+  const personId = uuid.v4(); // Do not exceed 36 characters
   const createdAt = moment();
 
   const person = {
