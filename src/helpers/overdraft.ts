@@ -20,7 +20,7 @@ export const INTEREST_ACCRUAL_RATE = 0.11;
 export const OVERDRAFT_RATE = 0.03;
 
 export const OVERDRAFT_LIMIT = {
-  value: 50000,
+  value: 30000,
   unit: "cents",
   currency: "EUR",
 };
