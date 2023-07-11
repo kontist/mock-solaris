@@ -44,7 +44,10 @@ import {
   confirmCardTransaction,
   declineCardTransaction,
 } from "../helpers/scaChallenge";
-import { SEPA_TRANSFER_METHOD } from "./transactions";
+import {
+  DIRECT_DEBIT_REFUND_METHOD,
+  SEPA_TRANSFER_METHOD,
+} from "./transactions";
 
 const MAX_CHANGE_REQUEST_AGE_IN_MINUTES = 5;
 
@@ -100,7 +103,11 @@ export const authorizeChangeRequest = async (req, res) => {
   };
 
   if (personId && deliveryMethod === DeliveryMethod.MOBILE_NUMBER) {
-    if (changeRequestMethod === MOBILE_NUMBER_CHANGE_METHOD) {
+    if (
+      [MOBILE_NUMBER_CHANGE_METHOD, DIRECT_DEBIT_REFUND_METHOD].includes(
+        changeRequestMethod
+      )
+    ) {
       const existingMobileNumber = await getMobileNumber(personId);
       if (!existingMobileNumber) {
         return res.status(404).send({
@@ -238,6 +245,27 @@ export const confirmChangeRequest = async (req, res) => {
       break;
     case CHANGE_REQUEST_CHANGE_CARD_PIN:
       return confirmChangeCardPINHandler(req, res);
+    case DIRECT_DEBIT_REFUND_METHOD:
+      response.response_body = {
+        id: "257eb92c4656691fd02d3de1fa88b9f5csdr",
+        creditor_iban: "DE32110101001000000029",
+        creditor_name: "Peter Mustermann",
+        creditor_identifier: "DE98ZZZ09999999999",
+        mandate_reference: "SOBKTEST",
+        amount: {
+          value: 1000,
+          unit: "cents",
+          currency: "EUR",
+        },
+        end_to_end_id: "DD-12-28.05.2018",
+        sepa_return_code: "MD01",
+        description: "string",
+        recorded_at: new Date().toISOString(),
+        customer_id: personId,
+        customer_type: "Person",
+        account_id: person.account.id,
+      };
+      break;
     case CARD_TRANSACTION_CONFIRM_METHOD:
       if (
         changeRequestId === person.changeRequest.authenticateChangeRequestId
