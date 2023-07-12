@@ -13,6 +13,8 @@ import { BookingType, ChangeRequestStatus } from "../helpers/types";
 import { createSepaDirectDebitReturn } from "../helpers/sepaDirectDebitReturn";
 import { triggerBookingsWebhook } from "./backoffice";
 
+export const DIRECT_DEBIT_REFUND_METHOD = "direct_debit_refund";
+
 const SOLARIS_CARDS_ACCOUNT = {
   NAME: "Visa_Solarisbank",
   IBAN: "DE95110101000018501000",
@@ -343,31 +345,26 @@ export const creteBookingFromReservation = (person, reservation, incoming?) => {
   };
 };
 
-export const directDebitRefund = (req, res) => {
-  log.info("refund confirmed", {
+export const directDebitRefund = async (req, res) => {
+  log.info("Refund initialized", {
     personId: req.params.person_id,
     accountId: req.params.account_id,
     bookingId: req.body.booking_id,
   });
 
-  // https://docs.solarisgroup.com/api-reference/digital-banking/sepa-transfers/#tag/SEPA-Direct-Debit-Returns
-  return res.status(201).send({
-    id: "257eb92c4656691fd02d3de1fa88b9f5csdr",
-    creditor_iban: "DE32110101001000000029",
-    creditor_name: "Peter Mustermann",
-    creditor_identifier: "DE98ZZZ09999999999",
-    mandate_reference: "SOBKTEST",
-    amount: {
-      value: 1000,
-      unit: "cents",
-      currency: "EUR",
-    },
-    end_to_end_id: "DD-12-28.05.2018",
-    sepa_return_code: "MD01",
-    description: "string",
-    recorded_at: new Date().toISOString(),
-    customer_id: req.params.person_id,
-    customer_type: "Person",
-    account_id: req.params.account_id,
+  const person = await getPerson(req.params.person_id);
+
+  person.changeRequest = {
+    id: uuid.v4(),
+    method: DIRECT_DEBIT_REFUND_METHOD,
+  };
+
+  await savePerson(person);
+
+  res.send({
+    id: person.changeRequest.id,
+    status: "AUTHORIZATION_REQUIRED",
+    updated_at: new Date().toISOString(),
+    url: `:env/v1/change_requests/${person.changeRequest.id}/authorize`,
   });
 };

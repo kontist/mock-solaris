@@ -44,7 +44,10 @@ import {
   confirmCardTransaction,
   declineCardTransaction,
 } from "../helpers/scaChallenge";
-import { SEPA_TRANSFER_METHOD } from "./transactions";
+import {
+  DIRECT_DEBIT_REFUND_METHOD,
+  SEPA_TRANSFER_METHOD,
+} from "./transactions";
 
 const MAX_CHANGE_REQUEST_AGE_IN_MINUTES = 5;
 
@@ -100,7 +103,11 @@ export const authorizeChangeRequest = async (req, res) => {
   };
 
   if (personId && deliveryMethod === DeliveryMethod.MOBILE_NUMBER) {
-    if (changeRequestMethod === MOBILE_NUMBER_CHANGE_METHOD) {
+    if (
+      [MOBILE_NUMBER_CHANGE_METHOD, DIRECT_DEBIT_REFUND_METHOD].includes(
+        changeRequestMethod
+      )
+    ) {
       const existingMobileNumber = await getMobileNumber(personId);
       if (!existingMobileNumber) {
         return res.status(404).send({
@@ -238,6 +245,31 @@ export const confirmChangeRequest = async (req, res) => {
       break;
     case CHANGE_REQUEST_CHANGE_CARD_PIN:
       return confirmChangeCardPINHandler(req, res);
+    case DIRECT_DEBIT_REFUND_METHOD:
+      response.response_body = {
+        id: "074ff24d187a014f42d5694b13e9cf1fctrx",
+        status: "accepted",
+        reference: "8880a72c-2675-482d-8d88-70a02c608592",
+        amount: {
+          value: 1000,
+          unit: "cents",
+          currency: "EUR",
+        },
+        description: "string",
+        collection_date: "2021-02-11T00:00:00.000Z",
+        mandate: {
+          reference: "dsf2r3raedfs3fsf342fctrx",
+          creditor_identifier: "DE98ZZZ09999999999",
+          scheme: "string",
+          sequence_type: "string",
+          signature_date: "2017-10-02T16:12:41Z",
+          debtor_name: "Hans Mustermann",
+          debtor_iban: "DE29300400000180478000",
+          debtor_bic: "COBADEFFXXX",
+        },
+        end_to_end_id: "END2ENDREJ",
+      };
+      break;
     case CARD_TRANSACTION_CONFIRM_METHOD:
       if (
         changeRequestId === person.changeRequest.authenticateChangeRequestId

@@ -136,6 +136,16 @@ router.get(
   "/mfa/devices/:id",
   safeRequestHandler(deviceBindingAPI.getDeviceInfo)
 );
+
+router.get(
+  "/mfa/devices/:id/keys",
+  safeRequestHandler(deviceBindingAPI.listDeviceKeys)
+);
+router.post(
+  "/mfa/devices/:id/keys",
+  safeRequestHandler(deviceBindingAPI.addDeviceKey)
+);
+
 router.put(
   "/mfa/challenges/signatures/:id",
   safeRequestHandler(deviceBindingAPI.verifyDevice)
