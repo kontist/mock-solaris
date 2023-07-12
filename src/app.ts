@@ -132,6 +132,7 @@ router.post(
 
 // DEVICE BINDING
 router.post("/mfa/devices", safeRequestHandler(deviceBindingAPI.createDevice));
+router.get("/mfa/devices", safeRequestHandler(deviceBindingAPI.getDevices));
 router.get(
   "/mfa/devices/:id",
   safeRequestHandler(deviceBindingAPI.getDeviceInfo)
