@@ -104,4 +104,36 @@ describe("Device Binding", () => {
       expect(res.send.lastCall.args[0].length).to.eq(2);
     });
   });
+
+  describe("getDevices", () => {
+    const req = {
+      query: {
+        person_id: "person-id",
+      },
+    };
+
+    it("should return 404 if person is not found", async () => {
+      await deviceBinding.getDevices(req, res);
+
+      expect(res.status.firstCall.args[0]).to.equal(404);
+    });
+
+    it("should return 200 and list of devices if person is found", async () => {
+      await db.savePerson({
+        id: "person-id",
+        name: "person-name",
+      });
+
+      await db.saveDevice({
+        id: "device-id",
+        person_id: "person-id",
+        name: "device-name",
+      });
+
+      await deviceBinding.getDevices(req, res);
+
+      expect(res.status.firstCall.args[0]).to.equal(200);
+      expect(res.send.firstCall.args[0].length).to.equal(1);
+    });
+  });
 });

@@ -6,6 +6,8 @@ import {
   saveDeviceChallenge,
   getDeviceChallenge,
   deleteDeviceChallenge,
+  getDevicesByPersonId,
+  getPerson,
 } from "../db";
 
 const CHALLENGE_TTL_IN_MILLISECOND = 5 * 60 * 1000;
@@ -304,4 +306,28 @@ export const addDeviceKey = async (req, res) => {
   await saveDevice(device);
 
   res.status(201).send({ id: keyId });
+};
+
+export const getDevices = async (req, res) => {
+  const { person_id: personId } = req.query;
+
+  try {
+    await getPerson(personId);
+  } catch (err) {
+    return res.status(404).send({
+      errors: [
+        {
+          id: uuid.v4(),
+          status: 404,
+          code: "not_found",
+          title: "Not Found",
+          detail: `person "${personId}" not found`,
+        },
+      ],
+    });
+  }
+
+  const devices = await getDevicesByPersonId(personId);
+
+  res.status(200).send(devices);
 };
