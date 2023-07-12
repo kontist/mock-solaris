@@ -247,23 +247,27 @@ export const confirmChangeRequest = async (req, res) => {
       return confirmChangeCardPINHandler(req, res);
     case DIRECT_DEBIT_REFUND_METHOD:
       response.response_body = {
-        id: "257eb92c4656691fd02d3de1fa88b9f5csdr",
-        creditor_iban: "DE32110101001000000029",
-        creditor_name: "Peter Mustermann",
-        creditor_identifier: "DE98ZZZ09999999999",
-        mandate_reference: "SOBKTEST",
+        id: "074ff24d187a014f42d5694b13e9cf1fctrx",
+        status: "accepted",
+        reference: "8880a72c-2675-482d-8d88-70a02c608592",
         amount: {
           value: 1000,
           unit: "cents",
           currency: "EUR",
         },
-        end_to_end_id: "DD-12-28.05.2018",
-        sepa_return_code: "MD01",
         description: "string",
-        recorded_at: new Date().toISOString(),
-        customer_id: personId,
-        customer_type: "Person",
-        account_id: person.account.id,
+        collection_date: "2021-02-11T00:00:00.000Z",
+        mandate: {
+          reference: "dsf2r3raedfs3fsf342fctrx",
+          creditor_identifier: "DE98ZZZ09999999999",
+          scheme: "string",
+          sequence_type: "string",
+          signature_date: "2017-10-02T16:12:41Z",
+          debtor_name: "Hans Mustermann",
+          debtor_iban: "DE29300400000180478000",
+          debtor_bic: "COBADEFFXXX",
+        },
+        end_to_end_id: "END2ENDREJ",
       };
       break;
     case CARD_TRANSACTION_CONFIRM_METHOD:
