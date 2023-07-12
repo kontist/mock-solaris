@@ -249,7 +249,7 @@ export const listDeviceKeys = async (req, res) => {
     },
   ];
 
-  res.send(deviceKeys);
+  res.status(200).send(deviceKeys);
 };
 
 export const addDeviceKey = async (req, res) => {
@@ -303,5 +303,5 @@ export const addDeviceKey = async (req, res) => {
 
   await saveDevice(device);
 
-  res.send({ id: keyId });
+  res.status(201).send({ id: keyId });
 };
