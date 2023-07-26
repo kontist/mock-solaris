@@ -356,7 +356,7 @@ export const confirmFraudHandler = async (
   res: express.Response
 ) => {
   const { fraud_case_id: fraudCaseId } = req.params;
-  getFraudWatchdog().confirmFraud(fraudCaseId);
+  await getFraudWatchdog().confirmFraud(fraudCaseId);
   const response = {
     id: fraudCaseId,
     resolution: CaseResolution.CONFIRMED,
@@ -369,7 +369,7 @@ export const whitelistCardHandler = async (
   res: express.Response
 ) => {
   const { fraud_case_id: fraudCaseId } = req.params;
-  getFraudWatchdog().whitelistCard(fraudCaseId);
+  await getFraudWatchdog().whitelistCard(fraudCaseId);
   const response = {
     id: fraudCaseId,
     resolution: CaseResolution.WHITELISTED,
