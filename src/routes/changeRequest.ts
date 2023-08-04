@@ -237,10 +237,9 @@ export const confirmChangeRequest = async (req, res) => {
       break;
     case TIMED_ORDER_CREATE:
       const { timedOrder } = person.changeRequest;
-      timedOrder.status = TimedOrderStatus.SCHEDULED;
       const order = person.timedOrders.find(({ id }) => id === timedOrder.id);
       order.status = TimedOrderStatus.SCHEDULED;
-      response.response_body = person.changeRequest.timedOrder;
+      response.response_body = order;
       break;
     case BATCH_TRANSFER_CREATE_METHOD:
       response.response_body = await confirmBatchTransfer(
