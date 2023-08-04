@@ -148,6 +148,36 @@ export type BillingAccount = {
   id: string;
 };
 
+export enum TimedOrderStatus {
+  CREATED = "CREATED",
+  AUTHORIZATION_REQUIRED = "AUTHORIZATION_REQUIRED",
+  CONFIRMATION_REQUIRED = "CONFIRMATION_REQUIRED",
+  EXECUTED = "EXECUTED",
+  FAILED = "FAILED",
+  SCHEDULED = "SCHEDULED",
+  CANCELED = "CANCELED",
+}
+
+export type TimedOrder = {
+  id: string;
+  execute_at: string;
+  executed_at: string | null;
+  status: string;
+  scheduled_transaction: {
+    id: string;
+    status: TimedOrderStatus;
+    reference: string;
+    description: string;
+    recipient_iban: string;
+    recipient_name: string;
+    recipient_bic: string;
+    end_to_end_id: string;
+    batch_id: string | null;
+    created_at: string;
+    amount: Amount;
+  };
+};
+
 export type MockChangeRequest = {
   cardId?: string;
   pin?: string;
@@ -159,6 +189,7 @@ export type MockChangeRequest = {
   createdAt: string;
   delta?: Record<string, unknown>;
   transfer?: Record<string, any>;
+  timedOrder?: TimedOrder;
 };
 
 export interface StandingOrder {
@@ -188,6 +219,7 @@ export type MockPerson = {
   postboxItems?: PostboxItem[];
   billing_account?: BillingAccount;
   identifications?: Record<string, unknown>;
+  timedOrders?: TimedOrder[];
 };
 
 export type MockCreatePerson = {
