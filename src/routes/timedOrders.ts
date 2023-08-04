@@ -164,7 +164,7 @@ export const createTimedOrder = async (req, res) => {
       method: TIMED_ORDER_CREATE,
       id: crypto.randomBytes(16).toString("hex"),
       createdAt: new Date().toISOString(),
-      timedOrder: timedOrder,
+      timedOrder,
     };
 
     response = {

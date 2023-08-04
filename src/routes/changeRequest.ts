@@ -238,9 +238,7 @@ export const confirmChangeRequest = async (req, res) => {
     case TIMED_ORDER_CREATE:
       const { timedOrder } = person.changeRequest;
       timedOrder.status = TimedOrderStatus.SCHEDULED;
-      const order = person.timedOrders.find(
-        (order) => order.id === timedOrder.id
-      );
+      const order = person.timedOrders.find(({ id }) => id === timedOrder.id);
       order.status = TimedOrderStatus.SCHEDULED;
       response.response_body = person.changeRequest.timedOrder;
       break;
