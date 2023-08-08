@@ -1,6 +1,7 @@
 import uuid from "node-uuid";
 import HttpStatusCodes from "http-status";
 import moment from "moment";
+import crypto from "crypto";
 import * as express from "express";
 
 import { getPerson, savePerson } from "../db";
@@ -119,6 +120,7 @@ export const createTimedOrder = async (req, res) => {
   const person = await getPerson(personId);
 
   const {
+    change_request_enabled: changeRequestEnabled,
     execute_at: executeAt,
     transaction: {
       recipient_name: recipientName,
@@ -154,9 +156,31 @@ export const createTimedOrder = async (req, res) => {
 
   const timedOrder = generateTimedOrder(body);
   person.timedOrders.push(timedOrder);
-  await savePerson(person);
 
-  res.status(HttpStatusCodes.CREATED).send(timedOrder);
+  let response = timedOrder;
+
+  if (changeRequestEnabled) {
+    person.changeRequest = {
+      method: TIMED_ORDER_CREATE,
+      id: crypto.randomBytes(16).toString("hex"),
+      createdAt: new Date().toISOString(),
+      timedOrder,
+    };
+
+    response = {
+      id: person.changeRequest.id,
+      status: "AUTHORIZATION_REQUIRED",
+      updated_at: person.changeRequest.createdAt,
+      url: ":env/v1/change_requests/:id/authorize",
+    } as any;
+  }
+
+  await savePerson(person);
+  const responseStatus = changeRequestEnabled
+    ? HttpStatusCodes.ACCEPTED
+    : HttpStatusCodes.CREATED;
+
+  res.status(responseStatus).send(response);
 };
 
 export const authorizeTimedOrder = async (req, res) => {

@@ -37,6 +37,7 @@ import {
   AuthorizeChangeRequestResponse,
   ChangeRequestStatus,
   MockPerson,
+  TimedOrderStatus,
 } from "../helpers/types";
 import { triggerWebhook } from "../helpers/webhooks";
 import {
@@ -235,7 +236,10 @@ export const confirmChangeRequest = async (req, res) => {
       response.response_body = await tinProcessChangeRequest(person);
       break;
     case TIMED_ORDER_CREATE:
-      // TODO: FIX response.response_body = await confirmTimedOrder(person);
+      const { timedOrder } = person.changeRequest;
+      const order = person.timedOrders.find(({ id }) => id === timedOrder.id);
+      order.status = TimedOrderStatus.SCHEDULED;
+      response.response_body = order;
       break;
     case BATCH_TRANSFER_CREATE_METHOD:
       response.response_body = await confirmBatchTransfer(
