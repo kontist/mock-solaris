@@ -13,6 +13,11 @@ You need two terminal sessions:
 3. `npm run start:docker` (2nd terminal session)
 4. Enjoy. You may now access the backoffice at [http://localhost:2091/\_\_BACKOFFICE\_\_/](http://localhost:2091/__BACKOFFICE__/).
 
+### Running tests
+
+1. `npm run start:mockredis` Starts mock redis instance
+2. `npm run test` Runs tests
+
 ### Example request
 
 ```

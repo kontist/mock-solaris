@@ -132,10 +132,21 @@ router.post(
 
 // DEVICE BINDING
 router.post("/mfa/devices", safeRequestHandler(deviceBindingAPI.createDevice));
+router.get("/mfa/devices", safeRequestHandler(deviceBindingAPI.getDevices));
 router.get(
   "/mfa/devices/:id",
   safeRequestHandler(deviceBindingAPI.getDeviceInfo)
 );
+
+router.get(
+  "/mfa/devices/:id/keys",
+  safeRequestHandler(deviceBindingAPI.listDeviceKeys)
+);
+router.post(
+  "/mfa/devices/:id/keys",
+  safeRequestHandler(deviceBindingAPI.addDeviceKey)
+);
+
 router.put(
   "/mfa/challenges/signatures/:id",
   safeRequestHandler(deviceBindingAPI.verifyDevice)
@@ -529,6 +540,12 @@ router.get(
   safeRequestHandler(postboxItemAPI.downloadPostboxItem)
 );
 
+// SEPA DIRECT DEBIT REFUND
+router.post(
+  "/persons/:person_id/accounts/:account_id/sepa_direct_debit_returns",
+  safeRequestHandler(transactionsAPI.directDebitRefund)
+);
+
 // E2E
 if (process.env.NODE_ENV === "e2e") {
   router.patch(
@@ -546,7 +563,7 @@ app.get(
 );
 
 app.post(
-  "/__BACKOFFICE__/setIdentificationState/:email",
+  "/__BACKOFFICE__/setIdentificationState/:personId/:identificationId",
   safeRequestHandler(backofficeAPI.setIdentificationState)
 );
 app.post(

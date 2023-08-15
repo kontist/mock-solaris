@@ -3,7 +3,7 @@ import _ from "lodash";
 import uuid from "node-uuid";
 import moment, { Moment } from "moment";
 
-import { getPerson, getAllPersons, savePerson, setPersonOrigin } from "../db";
+import { getPerson, findPersons, savePerson, setPersonOrigin } from "../db";
 
 import { createChangeRequest } from "./changeRequest";
 import { triggerWebhook } from "../helpers/webhooks";
@@ -11,10 +11,13 @@ import { MockPerson, PersonWebhookEvent } from "../helpers/types";
 
 const format = (date: Moment): string => date.format("YYYY-MM-DD");
 
+/**
+ * Creates a person
+ * @deprecated Expected to be removed by 11.09.2023
+ * @see {@link https://docs.solarisgroup.com/api-reference/onboarding/account-creation/#tag/Person-accounts/paths/~1v1~1persons~1{person_id}~1accounts/post}
+ */
 export const createPerson = async (req, res) => {
-  const personId =
-    "mock" +
-    crypto.createHash("md5").update(JSON.stringify(req.body)).digest("hex");
+  const personId = uuid.v4(); // Do not exceed 36 characters
   const createdAt = moment();
 
   const person = {
@@ -80,7 +83,7 @@ export const showPerson = async (req, res) => {
 export const showPersons = async (req, res) => {
   const { page: { size = 10, number = 1 } = {} } = req.query;
 
-  const persons = ((await getAllPersons()) || []).slice(
+  const persons = ((await findPersons({ sort: true })) || []).slice(
     (number - 1) * size,
     size * number
   );

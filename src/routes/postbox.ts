@@ -3,15 +3,14 @@ import moment from "moment";
 import path from "path";
 
 import * as log from "../logger";
-import { getAllPersons, getPerson, savePerson } from "../db";
+import { getPerson, savePerson, findPerson } from "../db";
 import { triggerWebhook } from "../helpers/webhooks";
 import {
-  MockPerson,
   PostboxItemEvent,
   PostboxOwnerType,
   PostboxDocumentType,
+  PostboxItem,
 } from "../helpers/types";
-import assert from "assert";
 
 const POSTBOX_ITEM_EXAMPLE = {
   id: "d347d967ae8c4d58b93e6698b386cae9pbxi",
@@ -96,12 +95,13 @@ export const listPostboxItems = async (req, res) => {
   res.status(200).send(person.postboxItems || []);
 };
 
-const getPostboxItemById = async (postboxItemId: string) => {
-  const persons = await getAllPersons();
-  const allItems = [].concat(
-    ...persons.map(({ postboxItems }) => postboxItems || [])
+export const getPostboxItemById = async (
+  postboxItemId: string
+): Promise<PostboxItem | undefined> => {
+  const person = await findPerson(
+    (p) => !!(p.postboxItems ?? []).some((pb) => pb.id === postboxItemId)
   );
-  return allItems.find(({ id }) => id === postboxItemId);
+  return (person?.postboxItems ?? []).find((pb) => pb.id === postboxItemId);
 };
 
 export const getPostboxItem = async (req, res) => {

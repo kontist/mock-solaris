@@ -5,8 +5,7 @@ import HttpStatusCodes from "http-status";
 import {
   getPerson,
   savePerson,
-  getAllPersons,
-  getAllIdentifications,
+  findPersons,
   getTaxIdentifications,
   getMobileNumber,
   saveMobileNumber,
@@ -19,6 +18,7 @@ import {
   getDeviceConsents,
   getDeviceActivities,
   getWebhooks,
+  findPerson,
 } from "../db";
 import {
   createSepaDirectDebitReturn,
@@ -95,8 +95,7 @@ export const addAccountSeizureProtectionHandler = async (req, res) => {
     protectedAmountExpiringDate,
   } = req.body;
 
-  const persons = await getAllPersons();
-  const person = persons.find((item) => item.email === email);
+  const person = await findPerson((p) => p.email === email);
 
   if (!person?.account) return null;
 
@@ -134,8 +133,7 @@ export const addAccountSeizureProtectionHandler = async (req, res) => {
 export const deleteAccountSeizureProtectionHandler = async (req, res) => {
   const { email } = req.params;
 
-  const persons = await getAllPersons();
-  const person = persons.find((item) => item.email === email);
+  const person = await findPerson((p) => p.email === email);
 
   if (!person?.account) return null;
 
@@ -166,38 +164,8 @@ export const provisioningTokenHandler = async (req, res) => {
   res.redirect("back");
 };
 
-const filterAndSortIdentifications = (identifications, method) => {
-  const idents = identifications
-    .filter((identification) => identification.identificationLinkCreatedAt)
-    .sort(
-      (id1, id2) =>
-        new Date(id2.identificationLinkCreatedAt).getTime() -
-        new Date(id1.identificationLinkCreatedAt).getTime()
-    );
-
-  if (method) {
-    return idents.filter((identification) => identification.method === method);
-  }
-
-  return idents;
-};
-
-export const findIdentificationByEmail = (email, method) => {
-  return getAllIdentifications().then((identifications) => {
-    const userIdentifications = identifications.filter(
-      (identification) => identification.email === email
-    );
-    const latestIdentification = filterAndSortIdentifications(
-      userIdentifications,
-      method
-    )[0];
-    log.info("latestIdentification", latestIdentification);
-    return latestIdentification;
-  });
-};
-
 export const listPersons = async (req, res) => {
-  const persons = await getAllPersons();
+  const persons = await findPersons({ sort: true });
   res.render("persons", { persons });
 };
 
@@ -377,9 +345,8 @@ export const setScreening = async (req, res) => {
     customer_vetting_status,
   } = req.body;
 
-  const person = (await getAllPersons()).find(
-    (item) => item.email === req.params.email
-  );
+  const person = await findPerson((p) => p.email === req.params.email);
+
   log.info(`setScreening person:`, person);
 
   person.screening_progress = screening_progress;
@@ -398,25 +365,16 @@ export const setScreening = async (req, res) => {
 
 export const setIdentificationState = async (req, res) => {
   const { status, skipSettingScreeningValues } = req.body;
-
-  log.info("setIdentificationState body", req.body);
-  log.info("setIdentificationState params", req.params);
-
   const { method = "idnow" } = req.query;
-
-  const identification = await findIdentificationByEmail(
-    req.params.email,
-    method
-  );
+  const { personId, identificationId } = req.params;
+  const person = await getPerson(personId);
+  const identification = person.identifications[identificationId];
 
   if (!identification) {
     return res.status(404).send("Couldnt find identification");
   }
 
-  const person = await getPerson(identification.person_id);
   identification.status = status;
-  person.identifications[identification.id] = identification;
-
   // screening will not always be accepted.
   if (
     !(skipSettingScreeningValues === "true") &&
@@ -457,12 +415,6 @@ export const setIdentificationState = async (req, res) => {
   res.redirect(`/__BACKOFFICE__/person/${person.id}#identifications`);
 };
 
-export const displayBackofficeOverview = (req, res) => {
-  getAllPersons().then((persons) => {
-    res.render("overview", { persons });
-  });
-};
-
 export const processQueuedBookingHandler = async (req, res) => {
   const { personId, id } = req.params;
 
@@ -485,7 +437,7 @@ const generateBookingFromStandingOrder = (standingOrder) => {
 
 /**
  * Processes either a normal booking or a Standing Order.
- * @param {string} personIdOrEmail
+ * @param {string} personId
  * @param {number} id Booking ID
  * @param {Boolean} isStandingOrder (Optional) True if is of type standing order.
  */

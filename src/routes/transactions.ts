@@ -5,13 +5,15 @@ import * as log from "../logger";
 import {
   getPerson,
   savePerson,
-  findPersonByAccountIBAN,
   getTechnicalUserPerson,
   saveSepaDirectDebitReturn,
+  findPerson,
 } from "../db";
 import { BookingType, ChangeRequestStatus } from "../helpers/types";
 import { createSepaDirectDebitReturn } from "../helpers/sepaDirectDebitReturn";
-import {triggerBookingsWebhook} from "./backoffice";
+import { triggerBookingsWebhook } from "./backoffice";
+
+export const DIRECT_DEBIT_REFUND_METHOD = "direct_debit_refund";
 
 const SOLARIS_CARDS_ACCOUNT = {
   NAME: "Visa_Solarisbank",
@@ -43,8 +45,7 @@ export const createSepaDirectDebit = async (req, res) => {
   });
 
   const { debtor_iban: iban } = mandate;
-
-  const person = await findPersonByAccountIBAN(iban);
+  const person = await findPerson((p) => p.account?.iban === iban);
   const technicalPerson = await getTechnicalUserPerson();
 
   const id = uuid.v4();
@@ -342,4 +343,28 @@ export const creteBookingFromReservation = (person, reservation, incoming?) => {
     valuta_date: moment().format("YYYY-MM-DD"),
     meta_info: metaInfo,
   };
+};
+
+export const directDebitRefund = async (req, res) => {
+  log.info("Refund initialized", {
+    personId: req.params.person_id,
+    accountId: req.params.account_id,
+    bookingId: req.body.booking_id,
+  });
+
+  const person = await getPerson(req.params.person_id);
+
+  person.changeRequest = {
+    id: uuid.v4(),
+    method: DIRECT_DEBIT_REFUND_METHOD,
+  };
+
+  await savePerson(person);
+
+  res.send({
+    id: person.changeRequest.id,
+    status: "AUTHORIZATION_REQUIRED",
+    updated_at: new Date().toISOString(),
+    url: `:env/v1/change_requests/${person.changeRequest.id}/authorize`,
+  });
 };
