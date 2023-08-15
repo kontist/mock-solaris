@@ -15,5 +15,5 @@
     "declaration": true,
     "skipLibCheck": true
   },
-  "include": ["**/*.ts"],
+  "include": ["**/*.ts", "src/loggly.js"]
 }
