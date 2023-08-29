@@ -6,7 +6,6 @@ import * as db from "../../src/db";
 import * as personsApi from "../../src/routes/persons";
 import * as changeRequestApi from "../../src/routes/changeRequest";
 import { DeliveryMethod } from "../../src/helpers/types";
-import { saveMobileNumber } from "../../src/db";
 
 describe("Persons", () => {
   describe("updatePerson", () => {
@@ -36,7 +35,7 @@ describe("Persons", () => {
 
         personId = res.send.args[0][0].id;
 
-        await saveMobileNumber(personId, {
+        await db.saveMobileNumber(personId, {
           number: "+491234567890",
           verified: true,
         });
@@ -103,7 +102,7 @@ describe("Persons", () => {
             });
             await changeRequestApi.authorizeChangeRequest(changeReq, res);
 
-            let person = await db.getPerson(personId);
+            const person = await db.getPerson(personId);
             const tan = person.changeRequest.token;
 
             const confirmReq = mockReq({
