@@ -155,6 +155,8 @@ export const updatePerson = async (req, res) => {
     "business_trading_name",
     "aml_follow_up_date",
     "aml_confirmed_on",
+    "nace_code",
+    "website_social_media",
   ];
 
   const editableFields = [
@@ -182,6 +184,8 @@ export const updatePerson = async (req, res) => {
     "terms_conditions_signed_at",
     "business_trading_name",
     "aml_confirmed_on",
+    "nace_code",
+    "website_social_media",
   ];
 
   const {
