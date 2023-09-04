@@ -150,18 +150,23 @@ export const migrate = async () => {
 
 const jsonToPerson = (value: string) => {
   if (!value) {
-    throw new Error("did not find person");
+    throw new Error("Person was not found");
   }
-
   const person = JSON.parse(value);
   person.transactions = person.transactions || [];
   return person;
 };
 
 export const getPerson = async (personId: string): Promise<MockPerson> => {
-  const person = await redisClient
-    .get(`${process.env.MOCKSOLARIS_REDIS_PREFIX}:person:${personId}`)
-    .then(jsonToPerson);
+  const personJSON = await redisClient.get(
+    `${process.env.MOCKSOLARIS_REDIS_PREFIX}:person:${personId}`
+  );
+  if (!personJSON) {
+    throw new Error(
+      `Person who has personID: ${personId} was not found in redis`
+    );
+  }
+  const person = jsonToPerson(personJSON);
   return augmentPerson(person);
 };
 
