@@ -157,6 +157,12 @@ export const updatePerson = async (req, res) => {
     "aml_confirmed_on",
     "nace_code",
     "website_social_media",
+    "expected_monthly_revenue_cents",
+    "business_address_line_1",
+    "business_address_line_2",
+    "business_postal_code",
+    "business_city",
+    "business_country",
   ];
 
   const editableFields = [
@@ -186,6 +192,12 @@ export const updatePerson = async (req, res) => {
     "aml_confirmed_on",
     "nace_code",
     "website_social_media",
+    "expected_monthly_revenue_cents",
+    "business_address_line_1",
+    "business_address_line_2",
+    "business_postal_code",
+    "business_city",
+    "business_country",
   ];
 
   const {
