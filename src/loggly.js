@@ -11,9 +11,19 @@ module.exports = function (options) {
     json: true,
   });
 
+  const levels = {
+    10: "trace",
+    20: "debug",
+    30: "info",
+    40: "warn",
+    50: "error",
+    60: "fatal",
+  };
+
   return build(async function (source) {
     source.on("data", function (obj) {
-      client.log(obj);
+      const level = levels[obj.level];
+      client.log({ ...obj, level });
     });
   });
 };
