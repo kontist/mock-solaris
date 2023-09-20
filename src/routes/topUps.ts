@@ -112,3 +112,17 @@ export const deletePaymentMethod = async (
     payment_method_id: req.params.paymentMethodId,
   });
 };
+
+export const cancelTopUp = async (req: RequestWithPerson, res: Response) => {
+  log.info(`Canceling top up for ${req.person.id}`, req.body);
+
+  await getStripeClient().paymentIntents.cancel(req.params.topUpId, {
+    cancellation_reason: req.body.cancellation_reason,
+  });
+
+  const paymentIntent = await getStripeClient().paymentIntents.retrieve(
+    req.params.topUpId
+  );
+
+  res.send(mapPaymentIntentToTopUp(paymentIntent));
+};

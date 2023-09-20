@@ -755,8 +755,13 @@ router.get(
 router.delete(
   "/persons/:personId/topups/payment_methods/:paymentMethodId",
   middlewares.withPerson,
-  createStripeCustomerIfNotExistsMiddleware,
   safeRequestHandler(topUpsAPI.deletePaymentMethod)
+);
+router.post(
+  "/persons/:personId/accounts/:accountId/topups/:topUpId/cancel",
+  middlewares.withPerson,
+  middlewares.withAccount,
+  safeRequestHandler(topUpsAPI.cancelTopUp)
 );
 
 // HEALTH CHECK
