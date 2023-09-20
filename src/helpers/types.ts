@@ -220,6 +220,9 @@ export type MockPerson = {
   billing_account?: BillingAccount;
   identifications?: Record<string, unknown>;
   timedOrders?: TimedOrder[];
+  stripeCustomerId?: string;
+  first_name: string;
+  last_name: string;
 };
 
 export type MockCreatePerson = {
