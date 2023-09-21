@@ -41,6 +41,7 @@
     "pino-abstract-transport": "^1.0.0",
     "pino-http": "^8.3.3",
     "redis": "^4.6.6",
+    "stripe": "^13.6.0",
     "swig": "^1.4.2",
     "validate-steuerid": "1.0.4"
   },
@@ -51,6 +52,7 @@
     "@types/node": "^18.11.18",
     "@types/node-fetch": "^2.6.2",
     "@types/node-uuid": "^0.0.29",
+    "@types/stripe": "^8.0.417",
     "chai": "^4.3.7",
     "husky": "^4.2.5",
     "mocha": "^10.2.0",
