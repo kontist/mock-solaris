@@ -27,7 +27,7 @@ export const createTopUp = async (req: RequestWithPerson, res: Response) => {
   log.info(`Creating top up for ${req.person.id}`, req.body);
 
   const {
-    amount: { value, currency },
+    amount: { value: amount, currency },
     payment_method_id: paymentMethodId,
   } = req.body;
 
@@ -38,8 +38,8 @@ export const createTopUp = async (req: RequestWithPerson, res: Response) => {
   }
 
   const paymentIntent = await getStripeClient().paymentIntents.create({
-    amount: value,
-    currency: currency,
+    amount,
+    currency,
     customer: req.person.stripeCustomerId,
     automatic_payment_methods: {
       enabled: true,
