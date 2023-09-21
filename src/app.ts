@@ -29,6 +29,7 @@ import * as overdraftAPI from "./routes/overdraft";
 import * as termsAPI from "./routes/termsAndConditions";
 import * as psd2API from "./routes/psd2";
 import * as postboxItemAPI from "./routes/postbox";
+import * as topUpsAPI from "./routes/topUps";
 
 import { migrate } from "./db";
 
@@ -36,6 +37,7 @@ import { oauthTokenAuthenticationMiddleware } from "./helpers/oauth";
 import { safeRequestHandler } from "./helpers/safeRequestHandler";
 import { shouldReturnJSON } from "./helpers";
 import { CardStatus } from "./helpers/types";
+import { createStripeCustomerIfNotExistsMiddleware } from "./helpers/stripe";
 const app = express();
 
 function logResponseBody(req, res, next) {
@@ -90,7 +92,10 @@ app.use("/v1", router);
 app.post("/oauth/token", oauthAPI.generateToken);
 
 function errorHandler(err, req, res, next) {
-  log.error(err);
+  log.error(err, {
+    personId: req.person?.id,
+    ...(req.body || {}),
+  });
 
   if (shouldReturnJSON(req)) {
     res.status(500).send({ err: err.message });
@@ -724,6 +729,39 @@ router.delete(
   "/webhooks/:webhookType",
   checkRequestHostHeader,
   safeRequestHandler(webhooksAPI.deleteWebhookHandler)
+);
+
+// TOP UPS
+router.post(
+  "/persons/:personId/accounts/:accountId/topups",
+  middlewares.withPerson,
+  middlewares.withAccount,
+  createStripeCustomerIfNotExistsMiddleware,
+  safeRequestHandler(topUpsAPI.createTopUp)
+);
+router.get(
+  "/persons/:personId/accounts/:accountId/topups",
+  middlewares.withPerson,
+  middlewares.withAccount,
+  createStripeCustomerIfNotExistsMiddleware,
+  safeRequestHandler(topUpsAPI.listTopUps)
+);
+router.get(
+  "/persons/:personId/topups/payment_methods",
+  middlewares.withPerson,
+  createStripeCustomerIfNotExistsMiddleware,
+  safeRequestHandler(topUpsAPI.listPaymentMethods)
+);
+router.delete(
+  "/persons/:personId/topups/payment_methods/:paymentMethodId",
+  middlewares.withPerson,
+  safeRequestHandler(topUpsAPI.deletePaymentMethod)
+);
+router.post(
+  "/persons/:personId/accounts/:accountId/topups/:topUpId/cancel",
+  middlewares.withPerson,
+  middlewares.withAccount,
+  safeRequestHandler(topUpsAPI.cancelTopUp)
 );
 
 // HEALTH CHECK
