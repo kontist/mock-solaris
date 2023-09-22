@@ -44,7 +44,7 @@ export const createTopUp = async (req: RequestWithPerson, res: Response) => {
     automatic_payment_methods: {
       enabled: true,
     },
-    payment_method: paymentMethodId || null,
+    ...(paymentMethodId ? { payment_method: paymentMethodId } : {}),
   });
 
   res.send(mapPaymentIntentToTopUp(paymentIntent));
