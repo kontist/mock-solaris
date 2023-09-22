@@ -51,7 +51,7 @@ export const checkTopUpForBookingCreation = async (data: {
           purpose: "Top-up",
           senderName: `${person.first_name} ${person.last_name}`,
           endToEndId: paymentIntentId,
-          bookingType: BookingType.SEPA_CREDIT_TRANSFER,
+          bookingType: BookingType.TOP_UP_CARD,
           bookingDate: now,
           valutaDate: now,
         })
