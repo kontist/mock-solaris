@@ -4,6 +4,9 @@ import { mockReq, mockRes } from "sinon-express-mock";
 
 import * as topUps from "../../src/routes/topUps";
 import * as stripeHelpers from "../../src/helpers/stripe";
+import { getStripeClient } from "../../src/helpers/stripe";
+import * as db from "../../src/db";
+import * as backofficeHelpers from "../../src/routes/backoffice";
 
 describe("TopUps", () => {
   let stripeClientStub: sinon.SinonStubbedInstance<any>;
@@ -159,5 +162,140 @@ describe("TopUps", () => {
       expect(res.status.calledWith(404)).to.be.true;
       expect(res.send.calledOnce).to.be.true;
     });
+  });
+});
+
+describe("checkTopUpForBookingCreation", () => {
+  let stripeClientStub: sinon.SinonStub;
+  let dbStub: sinon.SinonStub;
+  let generateBookingStub: sinon.SinonStub;
+  let triggerWebhookStub: sinon.SinonStub;
+  let sandbox: sinon.SinonSandbox;
+  let savePersonStub: sinon.SinonStub;
+  let clock;
+
+  beforeEach(() => {
+    sandbox = sinon.createSandbox();
+    clock = sandbox.useFakeTimers({
+      shouldAdvanceTime: true,
+    });
+    stripeClientStub = sandbox.stub(
+      getStripeClient().paymentIntents,
+      "retrieve"
+    );
+    dbStub = sandbox.stub(db, "getPerson");
+    savePersonStub = sandbox.stub(db, "savePerson");
+    generateBookingStub = sandbox.stub(
+      backofficeHelpers,
+      "generateBookingForPerson"
+    );
+    triggerWebhookStub = sandbox.stub(
+      backofficeHelpers,
+      "triggerBookingsWebhook"
+    );
+  });
+
+  afterEach(() => {
+    sandbox.restore();
+  });
+
+  it("should handle successful payment", async () => {
+    const paymentIntent = {
+      status: "succeeded",
+      id: "some-id",
+    };
+    const person = {
+      id: "person-id",
+      transactions: [],
+    };
+
+    stripeClientStub.resolves(paymentIntent);
+    dbStub.resolves(person);
+
+    setTimeout(() => {
+      clock.tick(4000);
+    }, 10);
+
+    await topUps.checkTopUpForBookingCreation({
+      amount: 100,
+      personId: "person-id",
+      retry: false,
+      paymentIntentId: "some-id",
+    });
+
+    expect(dbStub.calledOnce).to.be.true;
+    expect(generateBookingStub.calledOnce).to.be.true;
+    expect(triggerWebhookStub.calledOnce).to.be.true;
+    expect(savePersonStub.calledOnce).to.be.true;
+  });
+
+  it("should handle unsuccessful payment without retry", async () => {
+    const paymentIntent = {
+      status: "failed",
+      id: "some-id",
+    };
+
+    stripeClientStub.resolves(paymentIntent);
+
+    setTimeout(() => {
+      clock.tick(4000);
+    }, 10);
+
+    await topUps.checkTopUpForBookingCreation({
+      amount: 100,
+      personId: "person-id",
+      retry: false,
+      paymentIntentId: "some-id",
+    });
+
+    expect(dbStub.called).to.be.false;
+    expect(generateBookingStub.called).to.be.false;
+    expect(triggerWebhookStub.called).to.be.false;
+    expect(savePersonStub.calledOnce).to.be.false;
+  });
+
+  it("should handle unsuccessful payment with retry", async () => {
+    const paymentIntent = {
+      status: "failed",
+      id: "some-id",
+    };
+
+    stripeClientStub.resolves(paymentIntent);
+
+    setTimeout(() => {
+      clock.tick(4000);
+    }, 10);
+
+    await topUps.checkTopUpForBookingCreation({
+      amount: 100,
+      personId: "person-id",
+      retry: true,
+      paymentIntentId: "some-id",
+    });
+
+    expect(dbStub.called).to.be.false;
+    expect(generateBookingStub.called).to.be.false;
+    expect(triggerWebhookStub.called).to.be.false;
+    expect(savePersonStub.calledOnce).to.be.false;
+  });
+
+  it("should handle errors gracefully", async () => {
+    stripeClientStub.rejects(new Error("Some error"));
+
+    setTimeout(() => {
+      clock.tick(4000);
+    }, 10);
+
+    await topUps.checkTopUpForBookingCreation({
+      amount: 100,
+      personId: "person-id",
+      retry: false,
+      paymentIntentId: "some-id",
+    });
+
+    expect(dbStub.called).to.be.false;
+    expect(generateBookingStub.called).to.be.false;
+    expect(triggerWebhookStub.called).to.be.false;
+    expect(savePersonStub.calledOnce).to.be.false;
   });
 });

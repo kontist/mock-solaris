@@ -6,11 +6,7 @@ import uuid from "node-uuid";
 import { RequestWithPerson } from "../helpers/middlewares";
 import { getStripeClient } from "../helpers/stripe";
 import { getLogger } from "../logger";
-import {
-  generateBookingForPerson,
-  queueBookingRequestHandler,
-  triggerBookingsWebhook,
-} from "./backoffice";
+import * as backofficeHelpers from "./backoffice";
 import * as db from "../db";
 import { BookingType } from "../helpers/types";
 
@@ -32,7 +28,7 @@ const mapPaymentIntentToTopUp = (
   instruction_id: null,
 });
 
-const checkTopUpForBookingCreation = async (data: {
+export const checkTopUpForBookingCreation = async (data: {
   amount: number;
   personId: string;
   retry: boolean;
@@ -49,7 +45,7 @@ const checkTopUpForBookingCreation = async (data: {
       const person = await db.getPerson(personId);
       const now = new Date().toISOString().split("T")[0];
       person.transactions.push(
-        generateBookingForPerson({
+        backofficeHelpers.generateBookingForPerson({
           person,
           amount,
           purpose: "Top-up",
@@ -61,7 +57,7 @@ const checkTopUpForBookingCreation = async (data: {
         })
       );
       await db.savePerson(person);
-      await triggerBookingsWebhook(person);
+      await backofficeHelpers.triggerBookingsWebhook(person);
       log.info(`TopUp ${paymentIntentId} was successful`, person.id);
     } else {
       if (retry) {
