@@ -747,6 +747,13 @@ router.get(
   safeRequestHandler(topUpsAPI.listTopUps)
 );
 router.get(
+  "/persons/:personId/accounts/:accountId/topups/:topupId",
+  middlewares.withPerson,
+  middlewares.withAccount,
+  createStripeCustomerIfNotExistsMiddleware,
+  safeRequestHandler(topUpsAPI.retrieveTopUp)
+);
+router.get(
   "/persons/:personId/topups/payment_methods",
   middlewares.withPerson,
   createStripeCustomerIfNotExistsMiddleware,
