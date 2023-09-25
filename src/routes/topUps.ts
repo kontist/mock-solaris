@@ -65,13 +65,12 @@ export const checkTopUpForBookingCreation = async (data: {
         return;
       }
 
-      await new Promise((resolve) =>
-        setTimeout(() => {
-          checkTopUpForBookingCreation({
+      await new Promise((resolve, reject) =>
+        setTimeout(async () => {
+          await checkTopUpForBookingCreation({
             ...data,
             retry: true,
-          });
-          resolve(null);
+          }).then(() => resolve(null), reject);
         }, TOP_UP_CHECK_DELAY_IN_MS)
       );
     }
