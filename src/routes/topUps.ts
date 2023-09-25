@@ -6,8 +6,13 @@ import uuid from "node-uuid";
 import { RequestWithPerson } from "../helpers/middlewares";
 import { getStripeClient } from "../helpers/stripe";
 import { getLogger } from "../logger";
+import * as backofficeHelpers from "./backoffice";
+import * as db from "../db";
+import { BookingType } from "../helpers/types";
 
 const log = getLogger("topUps");
+
+const TOP_UP_CHECK_DELAY_IN_MS = 3000;
 
 const mapPaymentIntentToTopUp = (
   paymentIntent: Stripe.Response<Stripe.PaymentIntent>
@@ -22,6 +27,61 @@ const mapPaymentIntentToTopUp = (
   status: paymentIntent.status,
   instruction_id: null,
 });
+
+export const checkTopUpForBookingCreation = async (data: {
+  amount: number;
+  personId: string;
+  retry: boolean;
+  paymentIntentId: string;
+}) => {
+  const { amount, personId, retry, paymentIntentId } = data;
+
+  try {
+    const paymentIntent = await getStripeClient().paymentIntents.retrieve(
+      paymentIntentId
+    );
+
+    if (paymentIntent.status === "succeeded") {
+      const person = await db.getPerson(personId);
+      const now = new Date().toISOString().split("T")[0];
+      person.transactions.push(
+        backofficeHelpers.generateBookingForPerson({
+          person,
+          amount,
+          purpose: "Top-up",
+          senderName: `${person.first_name} ${person.last_name}`,
+          endToEndId: paymentIntentId,
+          bookingType: BookingType.TOP_UP_CARD,
+          bookingDate: now,
+          valutaDate: now,
+        })
+      );
+      await db.savePerson(person);
+      await backofficeHelpers.triggerBookingsWebhook(person);
+      log.info(`TopUp ${paymentIntentId} was successful`, person.id);
+    } else {
+      if (retry) {
+        log.warning(`TopUp ${paymentIntentId} was not successful`);
+        return;
+      }
+
+      await new Promise((resolve, reject) =>
+        setTimeout(async () => {
+          await checkTopUpForBookingCreation({
+            ...data,
+            retry: true,
+          }).then(() => resolve(null), reject);
+        }, TOP_UP_CHECK_DELAY_IN_MS)
+      );
+    }
+  } catch (err) {
+    log.error(
+      `Error while checking top up for booking creation`,
+      err,
+      paymentIntentId
+    );
+  }
+};
 
 export const createTopUp = async (req: RequestWithPerson, res: Response) => {
   log.info(`Creating top up for ${req.person.id}`, req.body);
@@ -48,6 +108,15 @@ export const createTopUp = async (req: RequestWithPerson, res: Response) => {
   });
 
   res.send(mapPaymentIntentToTopUp(paymentIntent));
+
+  setTimeout(() => {
+    checkTopUpForBookingCreation({
+      retry: false,
+      amount,
+      personId: req.person.id,
+      paymentIntentId: paymentIntent.id,
+    });
+  }, TOP_UP_CHECK_DELAY_IN_MS);
 };
 
 export const listTopUps = async (req: RequestWithPerson, res: Response) => {
