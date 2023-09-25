@@ -129,6 +129,16 @@ export const listTopUps = async (req: RequestWithPerson, res: Response) => {
   res.send(paymentIntents.data.map(mapPaymentIntentToTopUp));
 };
 
+export const retrieveTopUp = async (req: RequestWithPerson, res: Response) => {
+  log.info(`Fetching top up for ${req.person.id}`);
+
+  const paymentIntent = await getStripeClient().paymentIntents.retrieve(
+    req.params.topUpId
+  );
+
+  res.send(mapPaymentIntentToTopUp(paymentIntent));
+};
+
 export const listPaymentMethods = async (
   req: RequestWithPerson,
   res: Response
