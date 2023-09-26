@@ -4,7 +4,6 @@ import { mockReq, mockRes } from "sinon-express-mock";
 
 import * as topUps from "../../src/routes/topUps";
 import * as stripeHelpers from "../../src/helpers/stripe";
-import { getStripeClient } from "../../src/helpers/stripe";
 import * as db from "../../src/db";
 import * as backofficeHelpers from "../../src/routes/backoffice";
 
@@ -172,7 +171,7 @@ describe("checkTopUpForBookingCreation", () => {
   let triggerWebhookStub: sinon.SinonStub;
   let sandbox: sinon.SinonSandbox;
   let savePersonStub: sinon.SinonStub;
-  let clock;
+  let clock: sinon.SinonFakeTimers;
 
   beforeEach(() => {
     sandbox = sinon.createSandbox();
@@ -180,7 +179,7 @@ describe("checkTopUpForBookingCreation", () => {
       shouldAdvanceTime: true,
     });
     stripeClientStub = sandbox.stub(
-      getStripeClient().paymentIntents,
+      stripeHelpers.getStripeClient().paymentIntents,
       "retrieve"
     );
     dbStub = sandbox.stub(db, "getPerson");
