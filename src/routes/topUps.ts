@@ -91,32 +91,37 @@ export const createTopUp = async (req: RequestWithPerson, res: Response) => {
     payment_method_id: paymentMethodId,
   } = req.body;
 
-  if (paymentMethodId) {
-    await getStripeClient().paymentMethods.attach(paymentMethodId, {
-      customer: req.person.stripeCustomerId,
-    });
-  }
+  try {
+    if (paymentMethodId) {
+      await getStripeClient().paymentMethods.attach(paymentMethodId, {
+        customer: req.person.stripeCustomerId,
+      });
+    }
 
-  const paymentIntent = await getStripeClient().paymentIntents.create({
-    amount,
-    currency,
-    customer: req.person.stripeCustomerId,
-    automatic_payment_methods: {
-      enabled: true,
-    },
-    ...(paymentMethodId ? { payment_method: paymentMethodId } : {}),
-  });
-
-  res.send(mapPaymentIntentToTopUp(paymentIntent));
-
-  setTimeout(() => {
-    checkTopUpForBookingCreation({
-      retry: false,
+    const paymentIntent = await getStripeClient().paymentIntents.create({
       amount,
-      personId: req.person.id,
-      paymentIntentId: paymentIntent.id,
+      currency,
+      customer: req.person.stripeCustomerId,
+      automatic_payment_methods: {
+        enabled: true,
+      },
+      ...(paymentMethodId ? { payment_method: paymentMethodId } : {}),
     });
-  }, TOP_UP_CHECK_DELAY_IN_MS);
+
+    res.send(mapPaymentIntentToTopUp(paymentIntent));
+
+    setTimeout(() => {
+      checkTopUpForBookingCreation({
+        retry: false,
+        amount,
+        personId: req.person.id,
+        paymentIntentId: paymentIntent.id,
+      });
+    }, TOP_UP_CHECK_DELAY_IN_MS);
+  } catch (err) {
+    log.error(`Error while creating top up`, err, req.person.id, req.body);
+    throw err;
+  }
 };
 
 export const listTopUps = async (req: RequestWithPerson, res: Response) => {
