@@ -19,6 +19,10 @@ const mapTopUpStatus = (status: Stripe.PaymentIntent.Status): TopUpStatus => {
     case "canceled":
       return TopUpStatus.CANCELLED;
     case "processing":
+    case "requires_action":
+    case "requires_capture":
+    case "requires_confirmation":
+    case "requires_payment_method":
       return TopUpStatus.ACCEPTED;
     case "succeeded":
       return TopUpStatus.EXECUTED;
