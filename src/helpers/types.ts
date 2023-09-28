@@ -660,3 +660,11 @@ export enum PostboxOwnerType {
   PERSON = "Person",
   BUSINESS = "Business",
 }
+
+export enum TopUpStatus {
+  ACCEPTED = "ACCEPTED",
+  CONFIRMED = "CONFIRMED",
+  EXECUTED = "EXECUTED",
+  DECLINED = "DECLINED",
+  CANCELLED = "CANCELLED",
+}

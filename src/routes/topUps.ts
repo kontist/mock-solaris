@@ -8,11 +8,24 @@ import { getStripeClient } from "../helpers/stripe";
 import { getLogger } from "../logger";
 import * as backofficeHelpers from "./backoffice";
 import * as db from "../db";
-import { BookingType } from "../helpers/types";
+import { BookingType, TopUpStatus } from "../helpers/types";
 
 const log = getLogger("topUps");
 
 const TOP_UP_CHECK_DELAY_IN_MS = 3000;
+
+const mapTopUpStatus = (status: Stripe.PaymentIntent.Status): TopUpStatus => {
+  switch (status) {
+    case "canceled":
+      return TopUpStatus.CANCELLED;
+    case "processing":
+      return TopUpStatus.ACCEPTED;
+    case "succeeded":
+      return TopUpStatus.EXECUTED;
+    default:
+      return TopUpStatus.DECLINED;
+  }
+};
 
 const mapPaymentIntentToTopUp = (
   paymentIntent: Stripe.Response<Stripe.PaymentIntent>
@@ -24,7 +37,7 @@ const mapPaymentIntentToTopUp = (
   cancellation_reason: null,
   decline_reason: null,
   client_secret: paymentIntent.client_secret,
-  status: paymentIntent.status,
+  status: mapTopUpStatus(paymentIntent.status),
   instruction_id: null,
 });
 
