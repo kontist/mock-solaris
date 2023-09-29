@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/camelcase */
 
-import uuid from "node-uuid";
 import * as db from "../db";
 import moment from "moment";
 
@@ -32,6 +31,7 @@ import {
 } from "./types";
 import getFraudWatchdog from "./fraudWatchdog";
 import { proceedWithSCAChallenge } from "./scaChallenge";
+import generateID from "./id";
 
 const fraudSuspected = (reason: CardAuthorizationDeclineV2Type) =>
   reason === CardAuthorizationDeclineV2Type.FRAUD_SUSPECTED;
@@ -63,7 +63,7 @@ const triggerCardAuthorizationDeclineV2Webhook = async (
     type: CardWebhookEvent.CARD_AUTHORIZATION_DECLINE_V2,
     personId: person.id,
     payload: {
-      id: uuid.v4(),
+      id: generateID(),
       reasons: [
         {
           type,
@@ -81,7 +81,7 @@ export const markReservationAsFraud = async (
   cardId: string,
   person: MockPerson
 ): Promise<FraudCase> => {
-  const id = uuid.v4();
+  const id = generateID();
   const fraudCase = {
     id,
     reservationId: reservation.id,
@@ -132,7 +132,7 @@ export const generateMetaInfo = ({
         fx_rate: FxRate[originalCurrency],
       },
       pos_entry_mode: posEntryMode,
-      trace_id: incoming ? null : uuid.v4(),
+      trace_id: incoming ? null : generateID(),
       transaction_date: moment(date).format("YYYY-MM-DD"),
       transaction_time: incoming ? null : moment(date).toDate(),
       transaction_type: type,
@@ -160,14 +160,14 @@ const mapDataToReservation = ({
   const date = moment().toDate();
 
   return {
-    id: uuid.v4(),
+    id: generateID(),
     amount: {
       value: amount,
       unit: "cents",
       currency: "EUR",
     },
     reservation_type: ReservationType.CARD_AUTHORIZATION,
-    reference: uuid.v4(),
+    reference: generateID(),
     status: ReservationStatus.OPEN,
     meta_info: generateMetaInfo({
       originalAmount,

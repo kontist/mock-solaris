@@ -1,6 +1,5 @@
-import uuid from "node-uuid";
-
 import { getWebhooks, saveWebhook, deleteWebhook } from "../db";
+import generateID from "../helpers/id";
 
 import * as log from "../logger";
 
@@ -32,7 +31,7 @@ const createWebhook = async (newWebhook) => {
 
 export const createWebhookHandler = async (req, res) => {
   const newWebhook = {
-    id: uuid.v4(),
+    id: generateID(),
     ...req.body,
   };
 

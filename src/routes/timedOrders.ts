@@ -1,4 +1,3 @@
-import uuid from "node-uuid";
 import HttpStatusCodes from "http-status";
 import moment from "moment";
 import crypto from "crypto";
@@ -12,6 +11,7 @@ import {
   MockPerson,
   TransactionWebhookEvent,
 } from "../helpers/types";
+import generateID from "../helpers/id";
 
 const SOLARIS_TIMED_ORDER_STATUSES = {
   CREATED: "CREATED",
@@ -191,7 +191,7 @@ export const authorizeTimedOrder = async (req, res) => {
     return res.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send({
       errors: [
         {
-          id: uuid.v4(),
+          id: generateID(),
           status: 500,
           code: "generic_error",
           title: "Generic Error",
@@ -231,7 +231,7 @@ export const confirmTimedOrder = async (
     return res.status(HttpStatusCodes.NOT_FOUND).send({
       errors: [
         {
-          id: uuid.v4(),
+          id: generateID(),
           status: 404,
           code: "model_not_found",
           title: "Model Not Found",
@@ -245,7 +245,7 @@ export const confirmTimedOrder = async (
     return res.status(HttpStatusCodes.FORBIDDEN).send({
       errors: [
         {
-          id: uuid.v4(),
+          id: generateID(),
           status: 403,
           code: "invalid_tan",
           title: "Invalid TAN",
@@ -288,7 +288,7 @@ export const fetchTimedOrder = async (req, res) => {
     res.status(404).send({
       errors: [
         {
-          id: uuid.v4(),
+          id: generateID(),
           status: 404,
           code: "model_not_found",
           title: "Model Not Found",
@@ -329,12 +329,12 @@ export const generateTimedOrder = (data) => {
   } = data;
 
   const template = {
-    id: uuid.v4(),
+    id: generateID(),
     execute_at: executeAt,
     executed_at: null,
     status: SOLARIS_TIMED_ORDER_STATUSES.AUTHORIZATION_REQUIRED,
     scheduled_transaction: {
-      id: uuid.v4(),
+      id: generateID(),
       status: "scheduled",
       reference,
       description,

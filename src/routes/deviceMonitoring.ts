@@ -1,4 +1,3 @@
-import uuid from "node-uuid";
 import moment from "moment";
 
 import {
@@ -10,10 +9,11 @@ import {
 import * as db from "../db";
 import { Response } from "express";
 import { RequestWithPerson } from "../helpers/middlewares";
+import generateID from "../helpers/id";
 
 const sendValidationError = (res: Response) => {
   res.status(400).send({
-    id: uuid.v4(),
+    id: generateID(),
     status: 400,
     code: "validation_error",
     title: "Validation Error",

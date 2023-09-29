@@ -1,6 +1,4 @@
-import crypto from "crypto";
 import _ from "lodash";
-import uuid from "node-uuid";
 import moment, { Moment } from "moment";
 
 import { getPerson, findPersons, savePerson, setPersonOrigin } from "../db";
@@ -8,6 +6,7 @@ import { getPerson, findPersons, savePerson, setPersonOrigin } from "../db";
 import { createChangeRequest } from "./changeRequest";
 import { triggerWebhook } from "../helpers/webhooks";
 import { MockPerson, PersonWebhookEvent } from "../helpers/types";
+import generateID from "../helpers/id";
 
 const format = (date: Moment): string => date.format("YYYY-MM-DD");
 
@@ -17,7 +16,7 @@ const format = (date: Moment): string => date.format("YYYY-MM-DD");
  * @see {@link https://docs.solarisgroup.com/api-reference/onboarding/account-creation/#tag/Person-accounts/paths/~1v1~1persons~1{person_id}~1accounts/post}
  */
 export const createPerson = async (req, res) => {
-  const personId = uuid.v4(); // Do not exceed 36 characters
+  const personId = generateID(); // Do not exceed 36 characters
   const createdAt = moment();
 
   const person = {
@@ -258,7 +257,7 @@ export const createCreditRecord = async (req, res) => {
 
   if (source !== "solarisBank") {
     return res.status(400).send({
-      id: uuid.v4(),
+      id: generateID(),
       status: 400,
       code: "bad_request",
       title: "Bad Request",
@@ -269,7 +268,7 @@ export const createCreditRecord = async (req, res) => {
       },
     });
   }
-  const creditRecordId = uuid.v4();
+  const creditRecordId = generateID();
   person.creditRecordId = creditRecordId;
   await savePerson(person);
 

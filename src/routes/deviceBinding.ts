@@ -1,4 +1,3 @@
-import uuid from "node-uuid";
 import {
   getMobileNumber,
   saveDevice,
@@ -9,6 +8,7 @@ import {
   getDevicesByPersonId,
   getPerson,
 } from "../db";
+import generateID from "../helpers/id";
 
 const CHALLENGE_TTL_IN_MILLISECOND = 5 * 60 * 1000;
 
@@ -27,7 +27,7 @@ export const createDevice = async (req, res) => {
     res.status(400).send({
       errors: [
         {
-          id: uuid.v4(),
+          id: generateID(),
           status: 400,
           code: "validation_error",
           title: "Validation Error",
@@ -42,7 +42,7 @@ export const createDevice = async (req, res) => {
     return;
   }
 
-  const deviceId = uuid.v4();
+  const deviceId = generateID();
   const device = {
     id: deviceId,
     person_id,
@@ -75,7 +75,7 @@ export const verifyDevice = async (req, res) => {
     res.status(404).send({
       errors: [
         {
-          id: uuid.v4(),
+          id: generateID(),
           status: 404,
           code: "not_found",
           title: "Not Found",
@@ -90,7 +90,7 @@ export const verifyDevice = async (req, res) => {
     res.status(400).send({
       errors: [
         {
-          id: uuid.v4(),
+          id: generateID(),
           status: 400,
           code: "validation_error",
           title: "Validation Error",
@@ -122,7 +122,7 @@ export const getDeviceInfo = async (req, res) => {
     res.status(404).send({
       errors: [
         {
-          id: uuid.v4(),
+          id: generateID(),
           status: 404,
           code: "not_found",
           title: "Not Found",
@@ -150,7 +150,7 @@ export const createDeviceChallenge = async (req, res) => {
     res.status(400).send({
       errors: [
         {
-          id: uuid.v4(),
+          id: generateID(),
           status: 400,
           code: "validation_error",
           title: "Validation Error",
@@ -166,9 +166,9 @@ export const createDeviceChallenge = async (req, res) => {
   }
 
   const deviceChallenge = {
-    id: uuid.v4(),
+    id: generateID(),
     type: "device",
-    string_to_sign: uuid.v4(),
+    string_to_sign: generateID(),
     ...newChallengeDates(),
   };
 
@@ -187,7 +187,7 @@ export const verifyDeviceChallenge = async (req, res) => {
     res.status(404).send({
       errors: [
         {
-          id: uuid.v4(),
+          id: generateID(),
           status: 404,
           code: "not_found",
           title: "Not Found",
@@ -202,7 +202,7 @@ export const verifyDeviceChallenge = async (req, res) => {
     res.status(400).send({
       errors: [
         {
-          id: uuid.v4(),
+          id: generateID(),
           status: 400,
           code: "validation_error",
           title: "Validation Error",
@@ -231,7 +231,7 @@ export const listDeviceKeys = async (req, res) => {
     res.status(404).send({
       errors: [
         {
-          id: uuid.v4(),
+          id: generateID(),
           status: 404,
           code: "not_found",
           title: "Not Found",
@@ -247,7 +247,7 @@ export const listDeviceKeys = async (req, res) => {
       person_id: device.person_id,
       device_id: deviceId,
       name: device.name,
-      keys: [{ key_id: uuid.v4(), key_purpose: "unrestricted" }],
+      keys: [{ key_id: generateID(), key_purpose: "unrestricted" }],
     },
   ];
 
@@ -272,7 +272,7 @@ export const addDeviceKey = async (req, res) => {
     res.status(404).send({
       errors: [
         {
-          id: uuid.v4(),
+          id: generateID(),
           status: 404,
           code: "not_found",
           title: "Not Found",
@@ -288,11 +288,11 @@ export const addDeviceKey = async (req, res) => {
       person_id: device.person_id,
       device_id: deviceId,
       name: device.name,
-      keys: [{ key_id: uuid.v4(), key_purpose: "unrestricted" }],
+      keys: [{ key_id: generateID(), key_purpose: "unrestricted" }],
     },
   ];
 
-  const keyId = uuid.v4();
+  const keyId = generateID();
 
   deviceKeys.push({
     person_id: device.person_id,
@@ -317,7 +317,7 @@ export const getDevices = async (req, res) => {
     return res.status(404).send({
       errors: [
         {
-          id: uuid.v4(),
+          id: generateID(),
           status: 404,
           code: "not_found",
           title: "Not Found",

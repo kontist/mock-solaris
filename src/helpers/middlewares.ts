@@ -1,8 +1,8 @@
-import uuid from "node-uuid";
 import * as express from "express";
 import HttpStatusCodes from "http-status";
 import { getPerson } from "../db";
 import { MockPerson } from "./types";
+import generateID from "./id";
 
 export type RequestWithPerson = express.Request & { person?: MockPerson };
 
@@ -23,7 +23,7 @@ export const withPerson = async (
     res.status(HttpStatusCodes.NOT_FOUND).send({
       errors: [
         {
-          id: uuid.v4(),
+          id: generateID(),
           status: 404,
           code: "model_not_found",
           title: "Model Not Found",
@@ -57,7 +57,7 @@ export const withAccount = async (
   res.status(HttpStatusCodes.NOT_FOUND).send({
     errors: [
       {
-        id: uuid.v4(),
+        id: generateID(),
         status: 404,
         code: "model_not_found",
         title: "Model Not Found",

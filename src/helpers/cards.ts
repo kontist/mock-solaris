@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/camelcase */
 import _ from "lodash";
-import uuid from "node-uuid";
 import moment from "moment";
 import HttpStatusCodes from "http-status";
 import * as db from "../db";
@@ -25,6 +24,7 @@ import {
   ProvisioningTokenStatusChangePayload,
   CardSpendingLimitControl,
 } from "./types";
+import generateID from "./id";
 
 const CARD_HOLDER_MAX_LENGTH = 21;
 const CARD_HOLDER_ALLOWED_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 -/.";
@@ -50,7 +50,7 @@ export const validateCardData = async (
 
   if (!CardType[cardData.type]) {
     errors.push({
-      id: uuid.v4(),
+      id: generateID(),
       status: 400,
       code: "validation_error",
       title: "Validation Error",
@@ -66,7 +66,7 @@ export const validateCardData = async (
 
   if (!cardHolder) {
     errors.push({
-      id: uuid.v4(),
+      id: generateID(),
       status: 400,
       code: "validation_error",
       title: "Validation Error",
@@ -78,7 +78,7 @@ export const validateCardData = async (
     });
   } else if (cardHolder.length > CARD_HOLDER_MAX_LENGTH) {
     errors.push({
-      id: uuid.v4(),
+      id: generateID(),
       status: 400,
       code: "validation_error",
       title: "Validation Error",
@@ -97,7 +97,7 @@ export const validateCardData = async (
 
     if (!hasValidChars || !firstName || !lastName || rest.length > 0) {
       errors.push({
-        id: uuid.v4(),
+        id: generateID(),
         status: 400,
         code: "validation_error",
         title: "Validation Error",
@@ -114,7 +114,7 @@ export const validateCardData = async (
     // check reference uniqueness
     if (await db.hasCardReference(cardDetails.reference)) {
       errors.push({
-        id: uuid.v4(),
+        id: generateID(),
         status: 400,
         code: "validation_error",
         title: "Validation Error",
@@ -139,7 +139,7 @@ export const validatePersonData = async (
   const hasValidMobileNumber = mobileNumber && mobileNumber.verified;
   if (!hasValidMobileNumber) {
     errors.push({
-      id: uuid.v4(),
+      id: generateID(),
       status: 400,
       code: "validation_error",
       title: "Validation Error",
@@ -173,7 +173,7 @@ export const createCard = (
     line_1: cardHolder,
   } = cardData;
 
-  const id = uuid.v4().replace(/-/g, "");
+  const id = generateID().replace(/-/g, "");
   const expirationDate = moment().add(3, "years");
   const cardNumber = Math.random()
     .toString()
@@ -363,8 +363,8 @@ const triggerProvisioningTokenCreation = async (
 
   const baseData: ProvisioningTokenStatusChangePayload = {
     card_id: cardId,
-    token_reference_id: uuid.v4(),
-    client_wallet_account_id: walletId || uuid.v4(),
+    token_reference_id: generateID(),
+    client_wallet_account_id: walletId || generateID(),
     wallet_type: WALLET_TYPE,
     event_type: ProvisioningTokenEventType.TOKEN_STATUS_UPDATED,
   };
@@ -541,7 +541,7 @@ export const validatePIN = (pin: string) => {
   if (isSequence(pin)) {
     errors.push([
       {
-        id: uuid.v4(),
+        id: generateID(),
         status: 400,
         code: "validation_error",
         title: "Validation Error",
@@ -557,7 +557,7 @@ export const validatePIN = (pin: string) => {
   if (!hasAtLeast3UniqueDigits(pin)) {
     errors.push([
       {
-        id: uuid.v4(),
+        id: generateID(),
         status: 400,
         code: "validation_error",
         title: "Validation Error",
@@ -575,7 +575,7 @@ export const validatePIN = (pin: string) => {
 
 export const changePIN = async (card: Card, pin: string) => {
   const person = await db.getPerson(card.person_id);
-  const changeRequestId = uuid.v4();
+  const changeRequestId = generateID();
   person.changeRequest = {
     pin,
     changeRequestId,
@@ -632,7 +632,7 @@ export const createCardSpendingLimit = async (
     return res.status(HttpStatusCodes.NOT_FOUND).send({
       errors: [
         {
-          id: uuid.v4(),
+          id: generateID(),
           status: HttpStatusCodes.NOT_FOUND,
           code: "model_not_found",
           title: "Model Not Found",
@@ -656,7 +656,7 @@ export const createCardSpendingLimit = async (
   );
 
   const limitControl = {
-    id: uuid.v4(),
+    id: generateID(),
     scope: Scope.CARD,
     scope_id: cardId,
     origin: Origin.SOLARISBANK,

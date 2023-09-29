@@ -1,7 +1,6 @@
 import crypto from "crypto";
 import assert from "assert";
 import moment from "moment";
-import uuid from "node-uuid";
 import _ from "lodash";
 
 import { getPerson, savePerson } from "../db";
@@ -13,6 +12,7 @@ import {
   StandingOrder,
   TransactionWebhookEvent,
 } from "../helpers/types";
+import generateID from "../helpers/id";
 
 const STANDING_ORDER_PAYMENT_FREQUENCY = {
   MONTHLY: "MONTHLY",
@@ -168,7 +168,7 @@ export const generateStandingOrderForPerson = (standingOrderData) => {
   const amountValue = Math.max(0, Math.min(10000000, amount.value));
 
   return {
-    id: uuid.v4(),
+    id: generateID(),
     reference: personId,
     recipient_name: recipient,
     recipient_iban: iban,

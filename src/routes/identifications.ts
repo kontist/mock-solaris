@@ -1,14 +1,15 @@
-import { getPerson, savePerson } from "../db";
-import * as log from "../logger";
-import uuid from "node-uuid";
 import fetch from "node-fetch";
+
+import { getPerson, savePerson } from "../db";
+import generateID from "../helpers/id";
+import * as log from "../logger";
 
 export const requireIdentification = async (req, res) => {
   const { person_id: personId } = req.params;
 
   const { method } = req.body;
 
-  const identificationId = uuid.v4();
+  const identificationId = generateID();
 
   let person;
   let identification;

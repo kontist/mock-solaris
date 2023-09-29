@@ -1,4 +1,3 @@
-import uuid from "node-uuid";
 import moment from "moment";
 
 import * as log from "../logger";
@@ -6,6 +5,7 @@ import { getPerson, savePerson } from "../db";
 import { triggerWebhook } from "../helpers/webhooks";
 import { updateAccountLockingStatus } from "./backoffice";
 import { MockPerson, PersonWebhookEvent } from "../helpers/types";
+import generateID from "../helpers/id";
 
 export const SEIZURE_STATUSES = {
   ACTIVE: "ACTIVE",
@@ -69,7 +69,7 @@ export const createSeizure = async (personId) => {
   const today = moment().format("YYYY-MM-DD");
   person.seizure = {
     ...SEIZURE_EXAMPLE,
-    id: uuid.v4(),
+    id: generateID(),
     enactment_date: today,
     delivery_date: today,
   };

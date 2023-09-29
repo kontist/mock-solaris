@@ -1,6 +1,5 @@
 import _ from "lodash";
 import moment from "moment";
-import uuid from "node-uuid";
 import HttpStatusCodes from "http-status";
 import {
   getPerson,
@@ -49,6 +48,7 @@ import {
   changeOverdraftApplicationStatus,
   issueInterestAccruedBooking,
 } from "../helpers/overdraft";
+import generateID from "../helpers/id";
 
 const triggerIdentificationWebhook = (payload, personId?: string) =>
   triggerWebhook({
@@ -425,7 +425,7 @@ export const processQueuedBookingHandler = async (req, res) => {
 const generateBookingFromStandingOrder = (standingOrder) => {
   return {
     ...standingOrder,
-    id: uuid.v4(),
+    id: generateID(),
     valuta_date: moment().format("YYYY-MM-DD"),
     booking_date: moment().format("YYYY-MM-DD"),
     booking_type: BookingType.SEPA_CREDIT_TRANSFER,
@@ -551,7 +551,7 @@ export const generateBookingForPerson = (bookingData) => {
   const today = moment().format("YYYY-MM-DD");
 
   return {
-    id: uuid.v4(),
+    id: generateID(),
     amount: { value: parseInt(amount, 10) },
     valuta_date: valutaDate ? moment(valutaDate).format("YYYY-MM-DD") : today,
     description: purpose,
@@ -567,7 +567,7 @@ export const generateBookingForPerson = (bookingData) => {
     sender_name: senderName || "mocksolaris",
     end_to_end_id: endToEndId,
     booking_type: bookingType,
-    transaction_id: transactionId || uuid.v4(),
+    transaction_id: transactionId || generateID(),
     return_transaction_id: null,
     status,
   };

@@ -1,4 +1,3 @@
-import uuid from "node-uuid";
 import fetch, { Response } from "node-fetch";
 
 import * as log from "../logger";
@@ -12,6 +11,7 @@ import {
   TransactionWebhookEvent,
   AccountWebhookEvent,
 } from "./types";
+import generateID from "./id";
 
 class WebhookRequestError extends Error {
   statusCode: number;
@@ -107,7 +107,7 @@ export const triggerWebhook = async ({
   let headers: Record<string, string> = { "Content-Type": "application/json" };
 
   const body = {
-    id: uuid.v4(),
+    id: generateID(),
     ...payload,
   };
 
@@ -122,7 +122,7 @@ export const triggerWebhook = async ({
       "solaris-entity-id": body.id,
       "solaris-webhook-attempt": "1",
       "solaris-webhook-event-type": type,
-      "solaris-webhook-id": uuid.v4(),
+      "solaris-webhook-id": generateID(),
       "solaris-webhook-signature": solarisWebhookSignature,
       "solaris-webhook-subscription-id": "STATIC-SUBSCRIPTION",
       ...extraHeaders,

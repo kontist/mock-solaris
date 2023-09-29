@@ -1,4 +1,3 @@
-import uuid from "node-uuid";
 import moment from "moment";
 import path from "path";
 
@@ -11,6 +10,7 @@ import {
   PostboxDocumentType,
   PostboxItem,
 } from "../helpers/types";
+import generateID from "../helpers/id";
 
 const POSTBOX_ITEM_EXAMPLE = {
   id: "d347d967ae8c4d58b93e6698b386cae9pbxi",
@@ -44,7 +44,7 @@ export const createPostboxItem = async ({
 
   const postboxItem = {
     ...POSTBOX_ITEM_EXAMPLE,
-    id: uuid.v4(),
+    id: generateID(),
     belongs_to: personId,
     owner_type: ownerType,
     created_at: today,

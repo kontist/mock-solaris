@@ -1,4 +1,3 @@
-import uuid from "node-uuid";
 import { getPerson, savePerson } from "../db";
 import { triggerWebhook } from "./webhooks";
 
@@ -15,6 +14,7 @@ import {
   triggerBookingsWebhook,
   generateBookingForPerson,
 } from "../routes/backoffice";
+import generateID from "./id";
 
 export const INTEREST_ACCRUAL_RATE = 0.11;
 export const OVERDRAFT_RATE = 0.03;
@@ -29,7 +29,7 @@ export const generateEntityNotFoundPayload = (
   field: string,
   value: string
 ) => ({
-  id: uuid.v4(),
+  id: generateID(),
   status: 404,
   code: "not_found",
   title: "Not Found",
