@@ -138,6 +138,7 @@ export const fulfillSeizureRequestHandler = async (req, res) => {
   person.seizure.status = SEIZURE_STATUSES.FULFILLED;
 
   await savePerson(person);
+  await triggerPersonSeizureFulfilledWebhook(person, person.seizure);
   await updateAccountLockingStatus(person.id, "NO_BLOCK");
 
   res.redirect("back");
@@ -159,6 +160,18 @@ const triggerPersonSeizureDeletedWebhook = async (
   const payload = getSeizureWebhookPayload(person.id, seizure);
   await triggerWebhook({
     type: PersonWebhookEvent.PERSON_SEIZURE_DELETED,
+    payload,
+    personId: person.id,
+  });
+};
+
+const triggerPersonSeizureFulfilledWebhook = async (
+  person: MockPerson,
+  seizure
+) => {
+  const payload = getSeizureWebhookPayload(person.id, seizure);
+  await triggerWebhook({
+    type: PersonWebhookEvent.PERSON_SEIZURE_FULFILLED,
     payload,
     personId: person.id,
   });
