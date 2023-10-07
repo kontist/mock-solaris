@@ -47,8 +47,8 @@ describe("Backoffice", () => {
     it("should set proper map values in redis", async () => {
       const devices = await db.getDevicesByPersonId(personId);
       expect(devices[0].id).to.equal(deviceId);
-      const person = await db.findPersonByAccountId(accountId);
-      expect(person.id).to.equal(personId);
+      const fetchedPerson = await db.findPersonByAccountId(accountId);
+      expect(fetchedPerson.id).to.equal(personId);
     });
   });
 });
