@@ -50,7 +50,7 @@ export const mockAccount: MockAccount = {
   balance: mockAmount,
   available_balance: mockAmount,
   account_limit: mockAmount,
-  iban: "",
+  iban: "DE12345678901234567890",
   locking_status: "",
   cards: [],
 };

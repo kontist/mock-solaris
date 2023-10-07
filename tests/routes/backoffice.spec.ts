@@ -12,10 +12,12 @@ describe("Backoffice", () => {
     const personId = "person_id";
     const accountId = "account_id";
     const deviceId = "device_id";
+    const iban = "DE1234";
     const person = {
       id: personId,
       account: {
         id: accountId,
+        iban,
       },
     };
     const device = {
@@ -47,8 +49,10 @@ describe("Backoffice", () => {
     it("should set proper map values in redis", async () => {
       const devices = await db.getDevicesByPersonId(personId);
       expect(devices[0].id).to.equal(deviceId);
-      const fetchedPerson = await db.findPersonByAccountId(accountId);
-      expect(fetchedPerson.id).to.equal(personId);
+      const fetchedPersonById = await db.findPersonByAccount({ id: accountId });
+      expect(fetchedPersonById.id).to.equal(personId);
+      const fetchedPersonByIBAN = await db.findPersonByAccount({ iban });
+      expect(fetchedPersonByIBAN.id).to.equal(personId);
     });
   });
 });

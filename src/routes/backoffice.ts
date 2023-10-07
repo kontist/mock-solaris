@@ -20,7 +20,7 @@ import {
   findPerson,
   saveDeviceIdToPersonId,
   _getAllDevices,
-  saveAccountIdToPersonId,
+  saveAccountToPersonId,
 } from "../db";
 import {
   createSepaDirectDebitReturn,
@@ -872,7 +872,7 @@ export const createMaps = async (req, res) => {
     let savedAccounts = 0;
     for (const person of persons) {
       if (person.account?.id) {
-        await saveAccountIdToPersonId(person.account.id, person.id);
+        await saveAccountToPersonId(person.account, person.id);
         savedAccounts++;
       }
     }

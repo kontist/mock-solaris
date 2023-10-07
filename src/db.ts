@@ -12,6 +12,7 @@ import {
   DeviceActivityPayload,
   DeviceConsent,
   DeviceConsentPayload,
+  MockAccount,
   MockPerson,
   RiskClarificationStatus,
   ScreeningProgress,
@@ -312,7 +313,7 @@ export const saveDeviceChallenge = async (challenge) =>
   );
 
 export const saveBooking = (accountId, booking) => {
-  return findPersonByAccountId(accountId)
+  return findPersonByAccount({ id: accountId })
     .then((person) => {
       person.transactions.push(booking);
       return person;
@@ -646,18 +647,28 @@ export const saveDeviceIdToPersonId = async (
   return false;
 };
 
-export const saveAccountIdToPersonId = async (
-  accountId: string,
+export const saveAccountToPersonId = async (
+  account: MockAccount,
   personId: string
 ): Promise<boolean> => {
-  const key = `${process.env.MOCKSOLARIS_REDIS_PREFIX}:account-personId:${accountId}`;
-  return redisClient.set(key, personId);
+  const idKey = `${process.env.MOCKSOLARIS_REDIS_PREFIX}:accountId-personId:${account.id}`;
+  const ibanKey = `${process.env.MOCKSOLARIS_REDIS_PREFIX}:accountIBAN-personId:${account.iban}`;
+  await Promise.all([
+    redisClient.set(idKey, personId),
+    redisClient.set(ibanKey, personId),
+  ]);
 };
 
-export const findPersonByAccountId: (
-  accountId: string
-) => Promise<MockPerson> = async (accountId) => {
-  const key = `${process.env.MOCKSOLARIS_REDIS_PREFIX}:account-personId:${accountId}`;
+export const findPersonByAccount: ({
+  id,
+  iban,
+}: {
+  id?: string;
+  iban?: string;
+}) => Promise<MockPerson> = async ({ id, iban }) => {
+  const key = id
+    ? `${process.env.MOCKSOLARIS_REDIS_PREFIX}:accountId-personId:${id}`
+    : `${process.env.MOCKSOLARIS_REDIS_PREFIX}:accountIBAN-personId:${iban}`;
   const personId = await redisClient.get(key);
   if (!personId) {
     return null;

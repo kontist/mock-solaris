@@ -3,8 +3,8 @@ import _ from "lodash";
 import {
   getPerson,
   savePerson,
-  findPersonByAccountId,
-  saveAccountIdToPersonId,
+  findPersonByAccount,
+  saveAccountToPersonId,
 } from "../db";
 import { IBAN, CountryCode } from "ibankit";
 import generateID from "../helpers/id";
@@ -63,7 +63,7 @@ export const showAccountBookings = async (req, res) => {
   } = req.query;
   const { account_id: accountId } = req.params;
 
-  const person = await findPersonByAccountId(accountId);
+  const person = await findPersonByAccount({ id: accountId });
   const minBookingDate = new Date(min);
   const maxBookingDate = new Date(max);
 
@@ -84,7 +84,7 @@ export const showAccountReservations = async (req, res) => {
   } = req.query;
 
   const { account_id: accountId } = req.params;
-  const person = await findPersonByAccountId(accountId);
+  const person = await findPersonByAccount({ id: accountId });
 
   const reservations = _.get(person.account, "reservations", [])
     .filter((reservation) => reservation.reservation_type === reservationType)
@@ -123,7 +123,7 @@ export const createAccount = async (personId, data) => {
   };
 
   await savePerson(person);
-  await saveAccountIdToPersonId(person.account.id, personId);
+  await saveAccountToPersonId(person.account, personId);
 
   return person.account;
 };
@@ -161,7 +161,7 @@ export const createAccountSnapshot = async (req, res) => {
     body: { account_id: accountId, source },
   } = req;
 
-  const person = await findPersonByAccountId(accountId);
+  const person = await findPersonByAccount({ id: accountId });
 
   if (!person) {
     return res.status(404).send({
@@ -210,7 +210,7 @@ export const createAccountSnapshot = async (req, res) => {
 
 export const showAccountBalance = async (req, res) => {
   const { account_id: accountId } = req.params;
-  const person = await findPersonByAccountId(accountId);
+  const person = await findPersonByAccount({ id: accountId });
   const balance = _.pick(person.account, [
     "balance",
     "available_balance",

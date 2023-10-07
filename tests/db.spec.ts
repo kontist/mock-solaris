@@ -2,7 +2,7 @@ import { expect } from "chai";
 import { mockReq, mockRes } from "sinon-express-mock";
 import {
   findPerson,
-  findPersonByAccountId,
+  findPersonByAccount,
   findPersons,
   flushDb,
   getCardData,
@@ -71,16 +71,25 @@ describe("getPersons()", async () => {
     expect(person).to.be.null;
   });
 
-  it("findPersonByAccountId finds person by account id if account id is set", async () => {
+  it("findPersonByAccount finds person by account id if account id is set", async () => {
     const body = { ...mockCreatePerson, account: mockAccount };
     const req = mockReq({ body, headers });
     const res = mockRes();
     await createPerson(req, res);
-    const person = await findPersonByAccountId(body.account.id);
+    const person = await findPersonByAccount({ id: body.account.id });
     expect(person).to.be.ok;
   });
 
-  it("findPersonByAccountId doesn't throw and returns null if no users have an account with the specified account id", async () => {
+  it("findPersonByAccount finds person by IBAN", async () => {
+    const body = { ...mockCreatePerson, account: mockAccount };
+    const req = mockReq({ body, headers });
+    const res = mockRes();
+    await createPerson(req, res);
+    const person = await findPersonByAccount({ iban: mockAccount.iban });
+    expect(person).to.be.ok;
+  });
+
+  it("findPersonByAccount doesn't throw and returns null if no users have an account with the specified account id", async () => {
     const body: MockCreatePerson = {
       ...mockCreatePerson,
       account: mockAccount,
@@ -89,7 +98,7 @@ describe("getPersons()", async () => {
     const reqNoProp = mockReq({ body, headers });
     const resNoProp = mockRes();
     await createPerson(reqNoProp, resNoProp);
-    const person = await findPersonByAccountId("N/A");
+    const person = await findPersonByAccount({ id: "N/A" });
     expect(person).to.be.null;
   });
 

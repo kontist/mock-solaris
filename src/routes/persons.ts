@@ -6,7 +6,7 @@ import {
   findPersons,
   savePerson,
   setPersonOrigin,
-  saveAccountIdToPersonId,
+  saveAccountToPersonId,
 } from "../db";
 
 import { createChangeRequest } from "./changeRequest";
@@ -45,7 +45,7 @@ export const createPerson = async (req, res) => {
   });
 
   if (person.account?.id) {
-    await saveAccountIdToPersonId(person.account.id, personId);
+    await saveAccountToPersonId(person.account, personId);
   }
 
   if (req.headers.origin) {

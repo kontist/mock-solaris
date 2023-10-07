@@ -250,7 +250,7 @@ export const changeCardStatus = async (
   if (personId) {
     person = await db.getPerson(personId);
   } else if (accountId) {
-    person = await db.findPersonByAccountId(accountId);
+    person = await db.findPersonByAccount({ id: accountId });
   } else {
     throw new Error("You have to provide personId or accountId");
   }
