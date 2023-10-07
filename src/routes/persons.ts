@@ -1,7 +1,13 @@
 import _ from "lodash";
 import moment, { Moment } from "moment";
 
-import { getPerson, findPersons, savePerson, setPersonOrigin } from "../db";
+import {
+  getPerson,
+  findPersons,
+  savePerson,
+  setPersonOrigin,
+  saveAccountIdToPersonId,
+} from "../db";
 
 import { createChangeRequest } from "./changeRequest";
 import { triggerWebhook } from "../helpers/webhooks";
@@ -37,6 +43,10 @@ export const createPerson = async (req, res) => {
       ...req.body,
     });
   });
+
+  if (person.account?.id) {
+    await saveAccountIdToPersonId(person.account.id, personId);
+  }
 
   if (req.headers.origin) {
     await setPersonOrigin(personId, req.headers.origin);

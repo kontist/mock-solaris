@@ -80,19 +80,6 @@ describe("getPersons()", async () => {
     expect(person).to.be.ok;
   });
 
-  it("findPersonByAccountId finds person by account id if billing_account is set", async () => {
-    const body: MockCreatePerson = {
-      ...mockCreatePerson,
-      account: mockAccount,
-      billing_account: { id: "billingAccount1" },
-    };
-    const reqBillingAccount = mockReq({ body, headers });
-    const resBillingAccount = mockRes();
-    await createPerson(reqBillingAccount, resBillingAccount);
-    const person = await findPersonByAccountId(body.billing_account.id);
-    expect(person).to.be.ok;
-  });
-
   it("findPersonByAccountId doesn't throw and returns null if no users have an account with the specified account id", async () => {
     const body: MockCreatePerson = {
       ...mockCreatePerson,

@@ -263,7 +263,8 @@ export const getDevice = async (deviceId) =>
     )
   );
 
-export const getAllDevices = async () => {
+// DEPRECATED
+export const _getAllDevices = async () => {
   const devices = [];
   const pattern = `${process.env.MOCKSOLARIS_REDIS_PREFIX}:device:*`;
   for await (const key of redisClient.scanIterator({ MATCH: pattern })) {
@@ -273,16 +274,24 @@ export const getAllDevices = async () => {
   return devices;
 };
 
-export const getDevicesByPersonId = (personId) =>
-  getAllDevices().then((devices) =>
-    devices.filter((device) => device.person_id === personId)
+export const getDevicesByPersonId = (personId: string) => {
+  const deviceIds = redisClient.lRange(
+    `${process.env.MOCKSOLARIS_REDIS_PREFIX}:person-deviceIds:${personId}`,
+    0,
+    -1
   );
 
-export const saveDevice = async (device) =>
-  redisClient.set(
+  return Promise.map(deviceIds, getDevice);
+};
+
+export const saveDevice = async (device) => {
+  await redisClient.set(
     `${process.env.MOCKSOLARIS_REDIS_PREFIX}:device:${device.id}`,
     JSON.stringify(device, undefined, 2)
   );
+
+  await saveDeviceIdToPersonId(device.person_id, device.id);
+};
 
 export const getDeviceChallenge = async (challengeId) =>
   JSON.parse(
@@ -382,13 +391,6 @@ const augmentPerson = (person: MockPerson): MockPerson => {
   }
   return augmented;
 };
-
-export const findPersonByAccountId: (
-  accountId: string
-) => Promise<MockPerson> = (accountId) =>
-  findPerson(
-    (p) => p.account?.id === accountId || p.billing_account?.id === accountId
-  );
 
 export const getWebhooks = async () => {
   const webHooks = [];
@@ -624,4 +626,37 @@ export const getPersonOrigin = async (
   return redisClient.get(
     `${process.env.MOCKSOLARIS_REDIS_PREFIX}:person-origin:${personId}`
   );
+};
+
+export const saveDeviceIdToPersonId = async (
+  personId: string,
+  deviceId: string
+): Promise<boolean> => {
+  const key = `${process.env.MOCKSOLARIS_REDIS_PREFIX}:person-deviceIds:${personId}`;
+  const deviceIds = await redisClient.lRange(key, 0, -1);
+
+  if (!deviceIds.includes(deviceId)) {
+    await redisClient.lPush(key, deviceId);
+    return true;
+  }
+  return false;
+};
+
+export const saveAccountIdToPersonId = async (
+  accountId: string,
+  personId: string
+): Promise<boolean> => {
+  const key = `${process.env.MOCKSOLARIS_REDIS_PREFIX}:account-personId:${accountId}`;
+  return redisClient.set(key, personId);
+};
+
+export const findPersonByAccountId: (
+  accountId: string
+) => Promise<MockPerson> = async (accountId) => {
+  const key = `${process.env.MOCKSOLARIS_REDIS_PREFIX}:account-personId:${accountId}`;
+  const personId = await redisClient.get(key);
+  if (!personId) {
+    return null;
+  }
+  return getPerson(personId);
 };

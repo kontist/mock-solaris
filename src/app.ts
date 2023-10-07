@@ -771,6 +771,11 @@ router.post(
   safeRequestHandler(topUpsAPI.cancelTopUp)
 );
 
+app.post(
+  "/__BACKOFFICE__/createMaps",
+  safeRequestHandler(backofficeAPI.createMaps)
+);
+
 // HEALTH CHECK
 app.get("/health", (req, res) => {
   res.status(200).send("there is no piwo tracker!");

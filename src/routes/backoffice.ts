@@ -18,6 +18,9 @@ import {
   getDeviceActivities,
   getWebhooks,
   findPerson,
+  saveDeviceIdToPersonId,
+  _getAllDevices,
+  saveAccountIdToPersonId,
 } from "../db";
 import {
   createSepaDirectDebitReturn,
@@ -846,5 +849,44 @@ export const saveTaxIdentificationsHandler = async (req, res) => {
   }
 
   await saveTaxIdentifications(req.params.personId, req.body);
+  res.status(201).send();
+};
+
+export const createMaps = async (req, res) => {
+  const saveDevices = async () => {
+    const devices = await _getAllDevices();
+    log.info(`Found ${devices.length} devices`);
+
+    let savedDevices = 0;
+    for (const device of devices) {
+      savedDevices += await saveDeviceIdToPersonId(device.id, device.person_id);
+    }
+
+    log.info(`Saved ${savedDevices} deviceIds to personIds`);
+  };
+
+  const saveAccounts = async () => {
+    const persons = await findPersons();
+    log.info(`Found ${persons.length} persons`);
+
+    let savedAccounts = 0;
+    for (const person of persons) {
+      if (person.account?.id) {
+        await saveAccountIdToPersonId(person.account.id, person.id);
+        savedAccounts++;
+      }
+    }
+
+    log.info(`Saved ${savedAccounts} accountIds for personIds`);
+  };
+
+  if (req.body.devices) {
+    await saveDevices();
+  }
+
+  if (req.body.accounts) {
+    await saveAccounts();
+  }
+
   res.status(201).send();
 };

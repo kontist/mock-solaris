@@ -1,6 +1,11 @@
 import _ from "lodash";
 
-import { getPerson, savePerson, findPersonByAccountId } from "../db";
+import {
+  getPerson,
+  savePerson,
+  findPersonByAccountId,
+  saveAccountIdToPersonId,
+} from "../db";
 import { IBAN, CountryCode } from "ibankit";
 import generateID from "../helpers/id";
 
@@ -118,6 +123,7 @@ export const createAccount = async (personId, data) => {
   };
 
   await savePerson(person);
+  await saveAccountIdToPersonId(person.account.id, personId);
 
   return person.account;
 };
