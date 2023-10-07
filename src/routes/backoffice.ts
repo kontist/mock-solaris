@@ -21,6 +21,8 @@ import {
   saveDeviceIdToPersonId,
   _getAllDevices,
   saveAccountToPersonId,
+  redisClient,
+  _getPersons,
 } from "../db";
 import {
   createSepaDirectDebitReturn,
@@ -168,7 +170,7 @@ export const provisioningTokenHandler = async (req, res) => {
 };
 
 export const listPersons = async (req, res) => {
-  const persons = await findPersons({ sort: true });
+  const persons = await findPersons({ limit: 100 });
   res.render("persons", { persons });
 };
 
@@ -866,7 +868,7 @@ export const createMaps = async (req, res) => {
   };
 
   const saveAccounts = async () => {
-    const persons = await findPersons();
+    const persons = await _getPersons();
     log.info(`Found ${persons.length} persons`);
 
     let savedAccounts = 0;
@@ -880,12 +882,33 @@ export const createMaps = async (req, res) => {
     log.info(`Saved ${savedAccounts} accountIds for personIds`);
   };
 
+  const sortPersons = async () => {
+    const persons = await _getPersons();
+    log.info(`Found ${persons.length} persons`);
+
+    let sortedPersons = 0;
+    for (const person of persons) {
+      const score = moment(person.createdAt).valueOf();
+      // Use zAdd to add the person to the sorted set
+      const key = `${process.env.MOCKSOLARIS_REDIS_PREFIX}:persons`;
+      const member = { score, value: person.id };
+      await redisClient.zAdd(key, member);
+      sortedPersons++;
+    }
+
+    log.info(`Sorted ${sortedPersons} persons`);
+  };
+
   if (req.body.devices) {
     await saveDevices();
   }
 
   if (req.body.accounts) {
     await saveAccounts();
+  }
+
+  if (req.body.sortPersons) {
+    await sortPersons();
   }
 
   res.status(201).send();

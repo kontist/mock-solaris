@@ -1,5 +1,7 @@
 import { expect } from "chai";
 import { mockReq, mockRes } from "sinon-express-mock";
+import Bluebird from "bluebird";
+
 import {
   findPerson,
   findPersonByAccount,
@@ -37,10 +39,12 @@ describe("getPersons()", async () => {
         headers,
       });
       const res = mockRes();
+      await Bluebird.delay(10);
       await createPerson(req, res);
     }
     const persons = await findPersons();
     expect(persons.length).to.equal(numPersons);
+    expect(persons[0].email).to.equal(`user${numPersons}@kontist.com`);
   });
 
   it("findPerson() returns a person if the person is found", async () => {

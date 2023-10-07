@@ -15,6 +15,7 @@ describe("Backoffice", () => {
     const iban = "DE1234";
     const person = {
       id: personId,
+      createdAt: "2020-01-01",
       account: {
         id: accountId,
         iban,
@@ -36,6 +37,7 @@ describe("Backoffice", () => {
         body: {
           devices: true,
           accounts: true,
+          sortPersons: true,
         },
       });
 

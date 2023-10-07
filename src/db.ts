@@ -28,7 +28,7 @@ const clientConfig = process.env.MOCKSOLARIS_REDIS_SERVER
       url: "redis://mocks-redis:6379",
       password: "mockserverredispassword",
     };
-const redisClient: RedisClientType = createClient(clientConfig);
+export const redisClient: RedisClientType = createClient(clientConfig);
 
 redisClient
   .connect()
@@ -321,42 +321,57 @@ export const saveBooking = (accountId, booking) => {
     .then(savePerson);
 };
 
+export const _getPersons = async () => {
+  const persons = [];
+  const pattern = `${process.env.MOCKSOLARIS_REDIS_PREFIX}:person:*`;
+  for await (const key of redisClient.scanIterator({ MATCH: pattern })) {
+    const value = await redisClient.get(key);
+    persons.push(JSON.parse(value));
+  }
+  return persons;
+};
+
 /**
  * Finds persons. When callbackFn is not supplied, loads all persons.
  * Notes:
  *  Avoid using this function without a callbackFn
  *  If you need to find one person, you can use findPerson() instead
- * @param sort
+ * @param limit
  * @param callbackFn
  */
 export const findPersons = async (
   {
-    sort,
     callbackFn,
+    limit,
   }: {
-    sort?: boolean;
     callbackFn?: (person: MockPerson) => Promise<boolean>;
-  } = { sort: false, callbackFn: () => true }
+    limit?: number;
+  } = { callbackFn: null, limit: 999999 }
 ): Promise<MockPerson[]> => {
-  let persons = [];
-  for await (const key of redisClient.scanIterator({
-    MATCH: `${process.env.MOCKSOLARIS_REDIS_PREFIX}:person:*`,
-  })) {
-    const value = await redisClient.get(key);
+  const persons = [];
+
+  // Use zRange with REV: true to get the most recent persons based on their createdAt timestamp
+  const keys = (await redisClient.sendCommand([
+    "ZREVRANGEBYSCORE",
+    `${process.env.MOCKSOLARIS_REDIS_PREFIX}:persons`,
+    "+inf",
+    "-inf",
+    "LIMIT",
+    "0",
+    String(limit),
+  ])) as string[];
+
+  for (const key of keys) {
+    const value = await redisClient.get(
+      `${process.env.MOCKSOLARIS_REDIS_PREFIX}:person:${key}`
+    );
     const person = jsonToPerson(value);
-    const shouldSelectPerson = !!callbackFn ? await callbackFn(person) : true;
+    const shouldSelectPerson = callbackFn ? await callbackFn(person) : true;
     if (shouldSelectPerson) {
       persons.push(person);
     }
   }
-  persons = sort
-    ? persons.sort((p1, p2) => {
-        if (!p1.createdAt && p2.createdAt) return 1;
-        if (p1.createdAt && !p2.createdAt) return -1;
-        if (!p1.createdAt && !p2.createdAt) return 0;
-        return p1.createdAt > p2.createdAt ? -1 : 1;
-      })
-    : persons;
+
   return persons.map((person) => augmentPerson(person));
 };
 
