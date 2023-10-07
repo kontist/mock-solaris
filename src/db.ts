@@ -403,8 +403,12 @@ export const getWebhooks = async () => {
   return webHooks;
 };
 
-export const getWebhookByType = async (type) =>
-  (await getWebhooks()).find((webhook) => webhook.event_type === type);
+export const getWebhookByType = async (type) => {
+  const value = await redisClient.get(
+    `${process.env.MOCKSOLARIS_REDIS_PREFIX}:webhook:${type}`
+  );
+  return value ? JSON.parse(value) : null;
+};
 
 export const getSepaDirectDebitReturns = async () => {
   const sepaDirectDebitReturns = JSON.parse(
