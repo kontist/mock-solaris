@@ -1,6 +1,5 @@
 import _ from "lodash";
 import Promise from "bluebird";
-import uuid from "node-uuid";
 import moment from "moment";
 import { createClient, RedisClientType } from "redis";
 
@@ -17,6 +16,7 @@ import {
   RiskClarificationStatus,
   ScreeningProgress,
 } from "./helpers/types";
+import generateID from "./helpers/id";
 
 const clientConfig = process.env.MOCKSOLARIS_REDIS_SERVER
   ? {
@@ -535,7 +535,7 @@ export const createDeviceConsent = async (
   deviceConsent: DeviceConsentPayload
 ): Promise<DeviceConsent> => {
   const consent = {
-    id: uuid.v4().replace(/-/g, ""),
+    id: generateID(),
     person_id: personId,
     event_type: deviceConsent.event_type,
     confirmed_at: deviceConsent.confirmed_at,
@@ -593,7 +593,7 @@ export const createDeviceActivity = async (
   deviceActivity: DeviceActivityPayload
 ): Promise<void> => {
   const activity = {
-    id: uuid.v4().replace(/-/g, ""),
+    id: generateID(),
     person_id: personId,
     activity_type: deviceActivity.activity_type,
     device_data: deviceActivity.device_data,

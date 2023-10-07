@@ -1,5 +1,5 @@
-import uuid from "node-uuid";
 import { getPerson } from "../db";
+import generateID from "../helpers/id";
 
 const EVENT_TYPES = ["APPROVED", "REJECTED"];
 
@@ -16,7 +16,7 @@ export const createTermsAndConditionsEvent = async (req, res) => {
 
   if (!documentId) {
     return res.status(400).send({
-      id: uuid.v4(),
+      id: generateID(),
       status: 400,
       code: "validation_error",
       title: "Validation Error",
@@ -30,7 +30,7 @@ export const createTermsAndConditionsEvent = async (req, res) => {
 
   if (!eventTimestamp) {
     return res.status(400).send({
-      id: uuid.v4(),
+      id: generateID(),
       status: 400,
       code: "validation_error",
       title: "Validation Error",
@@ -44,7 +44,7 @@ export const createTermsAndConditionsEvent = async (req, res) => {
 
   if (!productName) {
     return res.status(400).send({
-      id: uuid.v4(),
+      id: generateID(),
       status: 400,
       code: "validation_error",
       title: "Validation Error",
@@ -58,7 +58,7 @@ export const createTermsAndConditionsEvent = async (req, res) => {
 
   if (!EVENT_TYPES.includes(eventType)) {
     return res.status(400).send({
-      id: uuid.v4(),
+      id: generateID(),
       status: 400,
       code: "validation_error",
       title: "Validation Error",
@@ -74,7 +74,7 @@ export const createTermsAndConditionsEvent = async (req, res) => {
 
   if (!person) {
     return res.status(400).send({
-      id: uuid.v4(),
+      id: generateID(),
       status: 400,
       code: "validation_error",
       title: "Validation Error",
@@ -87,7 +87,7 @@ export const createTermsAndConditionsEvent = async (req, res) => {
   }
 
   return res.status(201).send({
-    id: uuid.v4(),
+    id: generateID(),
     ...req.body,
   });
 };

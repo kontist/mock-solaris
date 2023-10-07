@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/camelcase */
 import _ from "lodash";
-import uuid from "node-uuid";
 import jose from "node-jose";
 import * as express from "express";
 import HttpStatusCodes from "http-status";
@@ -18,9 +17,10 @@ import {
 
 import * as cardHelpers from "../helpers/cards";
 import getFraudWatchdog from "../helpers/fraudWatchdog";
+import generateID from "../helpers/id";
 
 const keyStore = jose.JWK.createKeyStore();
-const changePinKeyId = uuid.v4();
+const changePinKeyId = generateID();
 keyStore.generate("RSA", 2048, {
   kid: changePinKeyId,
   alg: "RSA-OAEP-256",
@@ -82,7 +82,7 @@ export const replaceCardHandler = async (
     res.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send({
       errors: [
         {
-          id: uuid.v4(),
+          id: generateID(),
           status: 500,
           code: "generic_error",
           title: "Generic error",
@@ -107,7 +107,7 @@ export const createCardHandler = async (
       res.status(HttpStatusCodes.NOT_FOUND).send({
         errors: [
           {
-            id: uuid.v4(),
+            id: generateID(),
             status: 404,
             code: "model_not_found",
             title: "Model Not Found",
@@ -152,7 +152,7 @@ export const createCardHandler = async (
     res.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send({
       errors: [
         {
-          id: uuid.v4(),
+          id: generateID(),
           status: 500,
           code: "generic_error",
           title: "Generic error",
@@ -174,7 +174,7 @@ export const getAccountCardsHandler = async (
     res.status(HttpStatusCodes.NOT_FOUND).send({
       errors: [
         {
-          id: uuid.v4(),
+          id: generateID(),
           status: 404,
           code: "model_not_found",
           title: "Model Not Found",
@@ -206,7 +206,7 @@ const handleCardActivationError = (
     res.status(HttpStatusCodes.BAD_REQUEST).send({
       errors: [
         {
-          id: uuid.v4(),
+          id: generateID(),
           status: 400,
           code: "invalid_model",
           title: "Validation Error",
@@ -225,7 +225,7 @@ const handleCardActivationError = (
     res.status(HttpStatusCodes.BAD_REQUEST).send({
       errors: [
         {
-          id: uuid.v4(),
+          id: generateID(),
           status: 400,
           code: "invalid_model",
           title: "Validation Error",
@@ -244,7 +244,7 @@ const handleCardActivationError = (
     res.status(HttpStatusCodes.BAD_REQUEST).send({
       errors: [
         {
-          id: uuid.v4(),
+          id: generateID(),
           status: 400,
           code: cardHelpers.CardErrorCodes.INVALID_VERIFICATION_TOKEN,
           title: "Invalid Verification Token",
@@ -278,7 +278,7 @@ export const cardMiddleware = async (req, res, next) => {
     return res.status(HttpStatusCodes.NOT_FOUND).send({
       errors: [
         {
-          id: uuid.v4(),
+          id: generateID(),
           status: HttpStatusCodes.NOT_FOUND,
           code: "model_not_found",
           title: "Model Not Found",
@@ -306,7 +306,7 @@ export const cardStatusMiddleware =
       res.status(HttpStatusCodes.BAD_REQUEST).send({
         errors: [
           {
-            id: uuid.v4(),
+            id: generateID(),
             status: HttpStatusCodes.BAD_REQUEST,
             detail: `card in invalid state.`,
           },
@@ -398,7 +398,7 @@ export const blockCardHandler = async (
     res.status(HttpStatusCodes.BAD_REQUEST).send({
       errors: [
         {
-          id: uuid.v4(),
+          id: generateID(),
           status: 400,
           code: "invalid_status",
           title: "Invalid Status",
@@ -477,7 +477,7 @@ export const confirmChangeCardPINHandler = async (
     res.status(HttpStatusCodes.NOT_FOUND).send({
       errors: [
         {
-          id: uuid.v4(),
+          id: generateID(),
           status: HttpStatusCodes.NOT_FOUND,
           code: "model_not_found",
           title: "Model Not Found",
@@ -492,7 +492,7 @@ export const confirmChangeCardPINHandler = async (
     res.status(HttpStatusCodes.UNPROCESSABLE_ENTITY).send({
       errors: [
         {
-          id: uuid.v4(),
+          id: generateID(),
           status: HttpStatusCodes.UNPROCESSABLE_ENTITY,
           code: "invalid_tan",
           title: "Invalid Tan",
@@ -533,7 +533,7 @@ export const pushProvisioningHandler = async (
     res.status(HttpStatusCodes.BAD_REQUEST).send({
       errors: [
         {
-          id: uuid.v4(),
+          id: generateID(),
           status: HttpStatusCodes.BAD_REQUEST,
           code: "invalid_wallet_type_for_push_provisioning",
           title: "Invalid Wallet Type",
@@ -557,7 +557,7 @@ export const pushProvisioningHandler = async (
   const errors = requiredFields
     .filter((fieldName) => !_.get(req.body, fieldName))
     .map((fieldName) => ({
-      id: uuid.v4(),
+      id: generateID(),
       status: HttpStatusCodes.BAD_REQUEST,
       code: "validation_error",
       title: "Validation Error",
@@ -597,7 +597,7 @@ export const getVirtualCardDetails = async (
     res.status(500).send({
       errors: [
         {
-          id: uuid.v4(),
+          id: generateID(),
           status: 500,
           code: "generic_error",
           title: "Generic Error",
@@ -621,7 +621,7 @@ export const getVirtualCardDetails = async (
   ]
     .filter((fieldName) => !_.get(req.body, fieldName))
     .map((fieldName) => ({
-      id: uuid.v4(),
+      id: generateID(),
       status: 400,
       code: "validation_error",
       title: "Validation Error",
@@ -648,7 +648,7 @@ export const getVirtualCardDetails = async (
     res.status(400).send({
       errors: [
         {
-          id: uuid.v4(),
+          id: generateID(),
           status: 400,
           code: "validation_error",
           title: "Validation Error",

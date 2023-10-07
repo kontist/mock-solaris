@@ -1,5 +1,4 @@
 /* eslint-disable camelcase */
-import uuid from "node-uuid";
 import moment from "moment";
 import * as log from "../logger";
 import {
@@ -12,6 +11,7 @@ import {
 import { BookingType, ChangeRequestStatus } from "../helpers/types";
 import { createSepaDirectDebitReturn } from "../helpers/sepaDirectDebitReturn";
 import { triggerBookingsWebhook } from "./backoffice";
+import generateID from "../helpers/id";
 
 export const DIRECT_DEBIT_REFUND_METHOD = "direct_debit_refund";
 
@@ -48,7 +48,7 @@ export const createSepaDirectDebit = async (req, res) => {
   const person = await findPerson((p) => p.account?.iban === iban);
   const technicalPerson = await getTechnicalUserPerson();
 
-  const id = uuid.v4();
+  const id = generateID();
   const booking = {
     amount: {
       ...amount,
@@ -139,7 +139,7 @@ export const createSepaCreditTransfer = async (req, res) => {
     return res.status(400).send({
       errors: [
         {
-          id: uuid.v4(),
+          id: generateID(),
           status: 400,
           code: "insufficient_funds",
           title: "Insufficient Funds",
@@ -158,7 +158,7 @@ export const createSepaCreditTransfer = async (req, res) => {
         id: booking.id,
         ...serializeTransfer(booking),
       },
-      id: uuid.v4(),
+      id: generateID(),
       status: ChangeRequestStatus.AUTHORIZATION_REQUIRED,
       method: SEPA_TRANSFER_METHOD,
     };
@@ -227,7 +227,7 @@ export const confirmTransaction = async (req, res) => {
     return res.status(404).send({
       errors: [
         {
-          id: uuid.v4(),
+          id: generateID(),
           status: 404,
           code: "model_not_found",
           title: "Model Not Found",
@@ -241,7 +241,7 @@ export const confirmTransaction = async (req, res) => {
     return res.status(403).send({
       errors: [
         {
-          id: uuid.v4(),
+          id: generateID(),
           status: 403,
           code: "invalid_tan",
           title: "Invalid TAN",
@@ -280,7 +280,7 @@ export const creteBookingFromSepaCreditTransfer = ({
   reference,
   status,
 }) => ({
-  id: uuid.v4(),
+  id: generateID(),
   booking_type: BookingType.SEPA_CREDIT_TRANSFER,
   amount: {
     ...amount,
@@ -325,7 +325,7 @@ export const creteBookingFromReservation = (person, reservation, incoming?) => {
     : changeAmountSign(reservation.meta_info);
 
   return {
-    id: uuid.v4(),
+    id: generateID(),
     booking_type: BookingType.CARD_TRANSACTION,
     amount: {
       unit: "cents",
@@ -355,7 +355,7 @@ export const directDebitRefund = async (req, res) => {
   const person = await getPerson(req.params.person_id);
 
   person.changeRequest = {
-    id: uuid.v4(),
+    id: generateID(),
     method: DIRECT_DEBIT_REFUND_METHOD,
   };
 

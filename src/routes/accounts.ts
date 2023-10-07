@@ -1,7 +1,8 @@
 import _ from "lodash";
-import uuid from "node-uuid";
+
 import { getPerson, savePerson, findPersonByAccountId } from "../db";
 import { IBAN, CountryCode } from "ibankit";
+import generateID from "../helpers/id";
 
 const ACCOUNT_SNAPSHOT_SOURCE = "SOLARISBANK";
 
@@ -158,7 +159,7 @@ export const createAccountSnapshot = async (req, res) => {
 
   if (!person) {
     return res.status(404).send({
-      id: uuid.v4(),
+      id: generateID(),
       status: 404,
       code: "not_found",
       title: "Not Found",
@@ -172,7 +173,7 @@ export const createAccountSnapshot = async (req, res) => {
 
   if (source !== ACCOUNT_SNAPSHOT_SOURCE) {
     return res.status(400).send({
-      id: uuid.v4(),
+      id: generateID(),
       status: 400,
       code: "bad_request",
       title: "Bad Request",
@@ -187,7 +188,7 @@ export const createAccountSnapshot = async (req, res) => {
   const snapshot = {
     status: "available",
     provider: ACCOUNT_SNAPSHOT_SOURCE,
-    id: uuid.v4(),
+    id: generateID(),
     iban: person.account.iban,
     account_id: accountId,
   };

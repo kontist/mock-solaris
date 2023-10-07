@@ -1,7 +1,6 @@
 import Stripe from "stripe";
 import type { Response } from "express";
 import HttpStatusCodes from "http-status";
-import uuid from "node-uuid";
 
 import { RequestWithPerson } from "../helpers/middlewares";
 import { getStripeClient } from "../helpers/stripe";
@@ -9,6 +8,7 @@ import { getLogger } from "../logger";
 import * as backofficeHelpers from "./backoffice";
 import * as db from "../db";
 import { BookingType, TopUpStatus } from "../helpers/types";
+import generateID from "../helpers/id";
 
 const log = getLogger("topUps");
 
@@ -196,7 +196,7 @@ export const deletePaymentMethod = async (
     res.status(HttpStatusCodes.NOT_FOUND).send({
       errors: [
         {
-          id: uuid.v4(),
+          id: generateID(),
           status: 404,
           code: "model_not_found",
           title: "Model Not Found",

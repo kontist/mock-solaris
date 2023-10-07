@@ -1,5 +1,4 @@
 import crypto from "crypto";
-import uuid from "node-uuid";
 
 import {
   getPerson,
@@ -9,12 +8,13 @@ import {
 
 import { createChangeRequest } from "./changeRequest";
 import { isSteuerIdValid } from "validate-steuerid";
+import generateID from "../helpers/id";
 
 export const TIN_UPDATE = "Patch/tax-indentifications/id";
 
 const getTaxIdValidationError = (country = "DE") => {
   return {
-    id: uuid.v4(),
+    id: generateID(),
     status: 400,
     code: "invalid_model",
     title: "Invalid Model",
@@ -51,7 +51,7 @@ export const submitTaxIdentification = async (req, res) => {
     return res.status(400).send({
       errors: [
         {
-          id: uuid.v4(),
+          id: generateID(),
           status: 400,
           code: "",
           title: "",
@@ -72,7 +72,7 @@ export const submitTaxIdentification = async (req, res) => {
       return res.status(400).send({
         errors: [
           {
-            id: uuid.v4(),
+            id: generateID(),
             status: 400,
             code: "invalid_model",
             title: "Invalid Model",
@@ -87,7 +87,7 @@ export const submitTaxIdentification = async (req, res) => {
     return res.status(400).send({
       errors: [
         {
-          id: uuid.v4(),
+          id: generateID(),
           status: 400,
           code: "invalid_model",
           title: "Invalid Model",
@@ -114,7 +114,7 @@ export const updateTaxIdentification = async (req, res) => {
     return res.status(404).send({
       errors: [
         {
-          id: uuid.v4(),
+          id: generateID(),
           status: 404,
           code: "model_not_found",
           title: "Model Not Found",
@@ -130,7 +130,7 @@ export const updateTaxIdentification = async (req, res) => {
     return res.status(400).send({
       errors: [
         {
-          id: uuid.v4(),
+          id: generateID(),
           status: 400,
           code: "",
           title: "",
@@ -151,7 +151,7 @@ export const updateTaxIdentification = async (req, res) => {
       return res.status(400).send({
         errors: [
           {
-            id: uuid.v4(),
+            id: generateID(),
             status: 400,
             code: "",
             title: "",

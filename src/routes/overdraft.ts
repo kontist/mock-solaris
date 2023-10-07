@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/camelcase */
-import uuid from "node-uuid";
 import { getPerson, savePerson } from "../db";
+import generateID from "../helpers/id";
 
 import {
   generateEntityNotFoundPayload,
@@ -38,7 +38,7 @@ export const createOverdraftApplication = async (req, res) => {
   }
 
   const overdraftApplication = {
-    id: uuid.v4(),
+    id: generateID(),
     person_id: personId,
     credit_record_id: creditRecordId,
     overdraft_id: null,
@@ -151,7 +151,7 @@ export const createOverdraft = async (req, res) => {
   }
 
   const overdraft = {
-    id: uuid.v4(),
+    id: generateID(),
     status: OverdraftStatus.LIMIT_SET,
     person_id: personId,
     limit: OVERDRAFT_LIMIT,

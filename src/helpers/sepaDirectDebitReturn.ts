@@ -1,15 +1,14 @@
-import uuid from "node-uuid";
-
 import { triggerWebhook } from "../helpers/webhooks";
 import { MockPerson, TransactionWebhookEvent } from "../helpers/types";
+import generateID from "./id";
 
 export const createSepaDirectDebitReturn = (person, directDebitReturn) => {
   return {
-    id: uuid.v4(),
+    id: generateID(),
     creditor_iban: directDebitReturn.recipient_iban,
     creditor_name: directDebitReturn.recipient_name,
     creditor_identifier: `C_${directDebitReturn.recipient_iban}`,
-    mandate_reference: uuid.v4(),
+    mandate_reference: generateID(),
     amount: { ...directDebitReturn.amount },
     end_to_end_id: directDebitReturn.end_to_end_id,
     sepa_return_code: "AC06",

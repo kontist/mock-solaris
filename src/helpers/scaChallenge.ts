@@ -1,8 +1,8 @@
-import uuid from "node-uuid";
 import * as db from "../db";
 import moment from "moment-timezone";
 import { triggerWebhook } from "./webhooks";
 import { CardWebhookEvent, Reservation, MockPerson } from "./types";
+import generateID from "./id";
 
 export const CARD_TRANSACTION_CONFIRM_METHOD = "card_transaction:confirm";
 const BERLIN_TIMEZONE_IDENTIFIER = "Europe/Berlin";
@@ -13,8 +13,8 @@ export const proceedWithSCAChallenge = async (
 ) => {
   const metaData = JSON.parse(reservation.meta_info).cards;
   const changeRequestData = {
-    declineChangeRequestId: uuid.v4(),
-    authenticateChangeRequestId: uuid.v4(),
+    declineChangeRequestId: generateID(),
+    authenticateChangeRequestId: generateID(),
   };
 
   person.account.pendingReservation = reservation;
