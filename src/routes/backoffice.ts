@@ -170,7 +170,8 @@ export const provisioningTokenHandler = async (req, res) => {
 };
 
 export const listPersons = async (req, res) => {
-  const persons = await findPersons({ limit: 100 });
+  const limit = req.query.limit || 100;
+  const persons = await findPersons({ limit });
   res.render("persons", { persons });
 };
 
