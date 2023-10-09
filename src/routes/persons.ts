@@ -14,6 +14,7 @@ import { createChangeRequest } from "./changeRequest";
 import { triggerWebhook } from "../helpers/webhooks";
 import { MockPerson, PersonWebhookEvent } from "../helpers/types";
 import generateID from "../helpers/id";
+import { storePersonInSortedSet } from "../helpers/persons";
 
 const format = (date: Moment): string => date.format("YYYY-MM-DD");
 
@@ -45,11 +46,7 @@ export const createPerson = async (req, res) => {
     });
   });
 
-  // Add the person's createdAt timestamp to a sorted set in Redis
-  const score = createdAt.valueOf();
-  const key = `${process.env.MOCKSOLARIS_REDIS_PREFIX}:persons`;
-  const member = { score, value: person.id };
-  await redisClient.zAdd(key, member);
+  await storePersonInSortedSet(person);
 
   if (person.account?.id) {
     await saveAccountToPersonId(person.account, personId);

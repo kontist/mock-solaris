@@ -54,6 +54,7 @@ import {
   issueInterestAccruedBooking,
 } from "../helpers/overdraft";
 import generateID from "../helpers/id";
+import { storePersonInSortedSet } from "../helpers/persons";
 
 const triggerIdentificationWebhook = (payload, personId?: string) =>
   triggerWebhook({
@@ -889,11 +890,7 @@ export const createMaps = async (req, res) => {
 
     let sortedPersons = 0;
     for (const person of persons) {
-      const score = moment(person.createdAt).valueOf();
-      // Use zAdd to add the person to the sorted set
-      const key = `${process.env.MOCKSOLARIS_REDIS_PREFIX}:persons`;
-      const member = { score, value: person.id };
-      await redisClient.zAdd(key, member);
+      await storePersonInSortedSet(person);
       sortedPersons++;
     }
 
