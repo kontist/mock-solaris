@@ -1,4 +1,5 @@
 import _ from "lodash";
+import HttpStatusCodes from "http-status";
 
 import {
   getPerson,
@@ -8,8 +9,11 @@ import {
 } from "../db";
 import { IBAN, CountryCode } from "ibankit";
 import generateID from "../helpers/id";
+import { getLogger } from "../logger";
 
 const ACCOUNT_SNAPSHOT_SOURCE = "SOLARISBANK";
+
+const log = getLogger("accounts");
 
 const DEFAULT_ACCOUNT = {
   id: "df478cbe801e30550f7cea9340783e6bcacc",
@@ -211,6 +215,22 @@ export const createAccountSnapshot = async (req, res) => {
 export const showAccountBalance = async (req, res) => {
   const { account_id: accountId } = req.params;
   const person = await findPersonByAccount({ id: accountId });
+
+  if (!person) {
+    log.error(`Account not found for id: ${accountId}`);
+    return res.status(HttpStatusCodes.NOT_FOUND).send({
+      errors: [
+        {
+          id: generateID(),
+          status: 404,
+          code: "model_not_found",
+          title: "Model Not Found",
+          detail: `Couldn't find 'Solaris::Account' for id '${accountId}'.`,
+        },
+      ],
+    });
+  }
+
   const balance = _.pick(person.account, [
     "balance",
     "available_balance",
