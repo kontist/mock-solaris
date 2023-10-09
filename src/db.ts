@@ -18,6 +18,7 @@ import {
   ScreeningProgress,
 } from "./helpers/types";
 import generateID from "./helpers/id";
+import { storePersonInSortedSet } from "./helpers/persons";
 
 const clientConfig = process.env.MOCKSOLARIS_REDIS_SERVER
   ? {
@@ -50,10 +51,11 @@ export const migrate = async () => {
   } catch (error) {
     log.warning("kontistGmbHAccount not found, creating");
 
-    await savePerson({
+    const kontistAccountPerson: MockPerson = {
       salutation: "MR",
       first_name: "Kontist",
       last_name: "GmbH",
+      createdAt: new Date("2015-01-01").toISOString(),
       birth_date: "1998-01-01T00:00:00.000Z",
       birth_city: "Copenhagen",
       nationality: "DE",
@@ -101,6 +103,7 @@ export const migrate = async () => {
           amount: {
             value: 100,
             currency: "EUR",
+            unit: "cents",
           },
           valuta_date: "2017-12-24",
           description: "kauf dir was",
@@ -112,6 +115,11 @@ export const migrate = async () => {
           sender_bic: process.env.SOLARIS_BIC,
           sender_iban: "DE00000000002901",
           sender_name: "Alexander Baatz Retirement Fund",
+          creation_date: "2017-12-24",
+          booking_type: "SEPA_CREDIT_TRANSFER",
+          end_to_end_id: "mockendtoendid",
+          transaction_id: "mocktransactionid",
+          meta_info: null,
         },
       ],
       account: {
@@ -122,13 +130,20 @@ export const migrate = async () => {
         person_id: "mockpersonkontistgmbh",
         balance: {
           value: 100,
+          unit: "cents",
+          currency: "EUR",
         },
-        sender_name: "unknown",
         locking_status: "",
         available_balance: {
           value: 100,
+          unit: "cents",
+          currency: "EUR",
         },
         seizure_protection: null,
+        cards: [],
+        reservations: [],
+        fraudReservations: [],
+        pendingReservation: null,
       },
       billing_account: {
         id: process.env.SOLARIS_KONTIST_BILLING_ACCOUNT_ID,
@@ -138,14 +153,24 @@ export const migrate = async () => {
         person_id: "mockpersonkontistgmbh",
         balance: {
           value: 100,
+          unit: "cents",
+          currency: "EUR",
         },
-        sender_name: "unknown",
         locking_status: "",
         available_balance: {
           value: 100,
+          unit: "cents",
+          currency: "EUR",
         },
       },
-    });
+    };
+
+    await savePerson(kontistAccountPerson);
+    await storePersonInSortedSet(kontistAccountPerson);
+    await saveAccountToPersonId(
+      kontistAccountPerson.account,
+      kontistAccountPerson.id
+    );
   }
 };
 

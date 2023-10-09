@@ -142,10 +142,21 @@ export type MockAccount = {
   locking_status: string;
   iban: string;
   available_balance?: Amount;
+  bic: string;
+  type: string;
+  person_id: string;
+  seizure_protection?: Record<string, unknown>;
 };
 
 export type BillingAccount = {
   id: string;
+  iban: string;
+  bic: string;
+  type: string;
+  person_id: string;
+  balance: Amount;
+  available_balance: Amount;
+  locking_status: string;
 };
 
 export enum TimedOrderStatus {
@@ -209,6 +220,7 @@ export type PostboxItem = {
 export type MockPerson = {
   id: string;
   email: string;
+  createdAt: string;
   fraudCases?: FraudCase[];
   account?: MockAccount;
   transactions: Booking[];
@@ -223,6 +235,23 @@ export type MockPerson = {
   stripeCustomerId?: string;
   first_name: string;
   last_name: string;
+  salutation?: string;
+  birth_date?: string;
+  birth_city?: string;
+  nationality?: string;
+  employment_status?: string;
+  birth_country?: string;
+  address?: {
+    line_1: string;
+    postal_code: string;
+    city: string;
+    country: string;
+  };
+  fatca_relevant?: boolean;
+  mobile_number?: string;
+  screening_progress?: ScreeningProgress;
+  risk_classification_status?: RiskClarificationStatus;
+  customer_vetting_status?: CustomerVettingStatus;
 };
 
 export type MockCreatePerson = {
@@ -412,6 +441,7 @@ export type Booking = {
   booking_date: string;
   booking_type: string;
   amount: Amount;
+  name?: string;
   description: string;
   recipient_bic: string;
   recipient_iban: string;

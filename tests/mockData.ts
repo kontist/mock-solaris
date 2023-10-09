@@ -44,6 +44,7 @@ export const mockAmount: Amount = {
 
 export const mockAccount: MockAccount = {
   id: "account1",
+  bic: "SOBKDEBBXXX",
   reservations: [],
   fraudReservations: [],
   pendingReservation: mockReservation,
@@ -53,6 +54,8 @@ export const mockAccount: MockAccount = {
   iban: "DE12345678901234567890",
   locking_status: "",
   cards: [],
+  person_id: "",
+  type: "CHECKING_PERSONAL",
 };
 
 export const mockCreatePerson: MockCreatePerson = {
