@@ -7,7 +7,7 @@ import * as log from "../logger";
 export const createBankStatement = async (req, res) => {
   const { account_id: accountId } = req.params;
 
-  const person = await db.findPersonByAccountId(accountId);
+  const person = await db.findPersonByAccount({ id: accountId });
   const account = person.account;
 
   const { start_date: startDate, end_date: endDate } = req.body;
@@ -103,12 +103,10 @@ export const showBankStatementBookings = async (req, res) => {
   const {
     page: { size, number },
   } = req.query;
-  const {
-    account_id: accountId,
-    bank_statement_id: bankStatementId,
-  } = req.params;
+  const { account_id: accountId, bank_statement_id: bankStatementId } =
+    req.params;
 
-  const person = await db.findPersonByAccountId(accountId);
+  const person = await db.findPersonByAccount({ id: accountId });
 
   if (!bankStatementId) {
     return res.status(404).send({

@@ -1,10 +1,19 @@
 import _ from "lodash";
+import HttpStatusCodes from "http-status";
 
-import { getPerson, savePerson, findPersonByAccountId } from "../db";
+import {
+  getPerson,
+  savePerson,
+  findPersonByAccount,
+  saveAccountToPersonId,
+} from "../db";
 import { IBAN, CountryCode } from "ibankit";
 import generateID from "../helpers/id";
+import { getLogger } from "../logger";
 
 const ACCOUNT_SNAPSHOT_SOURCE = "SOLARISBANK";
+
+const log = getLogger("accounts");
 
 const DEFAULT_ACCOUNT = {
   id: "df478cbe801e30550f7cea9340783e6bcacc",
@@ -58,7 +67,7 @@ export const showAccountBookings = async (req, res) => {
   } = req.query;
   const { account_id: accountId } = req.params;
 
-  const person = await findPersonByAccountId(accountId);
+  const person = await findPersonByAccount({ id: accountId });
   const minBookingDate = new Date(min);
   const maxBookingDate = new Date(max);
 
@@ -79,7 +88,7 @@ export const showAccountReservations = async (req, res) => {
   } = req.query;
 
   const { account_id: accountId } = req.params;
-  const person = await findPersonByAccountId(accountId);
+  const person = await findPersonByAccount({ id: accountId });
 
   const reservations = _.get(person.account, "reservations", [])
     .filter((reservation) => reservation.reservation_type === reservationType)
@@ -118,6 +127,7 @@ export const createAccount = async (personId, data) => {
   };
 
   await savePerson(person);
+  await saveAccountToPersonId(person.account, personId);
 
   return person.account;
 };
@@ -155,7 +165,7 @@ export const createAccountSnapshot = async (req, res) => {
     body: { account_id: accountId, source },
   } = req;
 
-  const person = await findPersonByAccountId(accountId);
+  const person = await findPersonByAccount({ id: accountId });
 
   if (!person) {
     return res.status(404).send({
@@ -204,7 +214,23 @@ export const createAccountSnapshot = async (req, res) => {
 
 export const showAccountBalance = async (req, res) => {
   const { account_id: accountId } = req.params;
-  const person = await findPersonByAccountId(accountId);
+  const person = await findPersonByAccount({ id: accountId });
+
+  if (!person) {
+    log.error(`Account not found for id: ${accountId}`);
+    return res.status(HttpStatusCodes.NOT_FOUND).send({
+      errors: [
+        {
+          id: generateID(),
+          status: 404,
+          code: "model_not_found",
+          title: "Model Not Found",
+          detail: `Couldn't find 'Solaris::Account' for id '${accountId}'.`,
+        },
+      ],
+    });
+  }
+
   const balance = _.pick(person.account, [
     "balance",
     "available_balance",

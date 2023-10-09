@@ -1,7 +1,14 @@
 import _ from "lodash";
 import moment, { Moment } from "moment";
 
-import { getPerson, findPersons, savePerson, setPersonOrigin } from "../db";
+import {
+  getPerson,
+  findPersons,
+  savePerson,
+  setPersonOrigin,
+  saveAccountToPersonId,
+  redisClient,
+} from "../db";
 
 import { createChangeRequest } from "./changeRequest";
 import { triggerWebhook } from "../helpers/webhooks";
@@ -26,7 +33,7 @@ export const createPerson = async (req, res) => {
     transactions: [],
     statements: [],
     queuedBookings: [],
-    createdAt: format(createdAt),
+    createdAt: createdAt.toISOString(),
     aml_confirmed_on: format(createdAt),
     aml_follow_up_date: format(createdAt.add(2, "year")),
   };
@@ -37,6 +44,16 @@ export const createPerson = async (req, res) => {
       ...req.body,
     });
   });
+
+  // Add the person's createdAt timestamp to a sorted set in Redis
+  const score = createdAt.valueOf();
+  const key = `${process.env.MOCKSOLARIS_REDIS_PREFIX}:persons`;
+  const member = { score, value: person.id };
+  await redisClient.zAdd(key, member);
+
+  if (person.account?.id) {
+    await saveAccountToPersonId(person.account, personId);
+  }
 
   if (req.headers.origin) {
     await setPersonOrigin(personId, req.headers.origin);
@@ -82,7 +99,7 @@ export const showPerson = async (req, res) => {
 export const showPersons = async (req, res) => {
   const { page: { size = 10, number = 1 } = {} } = req.query;
 
-  const persons = ((await findPersons({ sort: true })) || []).slice(
+  const persons = ((await findPersons()) || []).slice(
     (number - 1) * size,
     size * number
   );

@@ -37,7 +37,7 @@ export const replaceCardHandler = async (
   res: express.Response
 ) => {
   try {
-    const person = await db.findPersonByAccountId(req.card.account_id);
+    const person = await db.findPersonByAccount({ id: req.card.account_id });
 
     const { card: newCard, cardDetails } = await cardHelpers.replaceCard(
       req.body,
@@ -100,7 +100,7 @@ export const createCardHandler = async (
   const { person_id: personId, account_id: accountId } = req.params;
 
   try {
-    const person = await db.findPersonByAccountId(accountId);
+    const person = await db.findPersonByAccount({ id: accountId });
 
     // no user or account
     if (!person || person.id !== personId) {
@@ -168,7 +168,7 @@ export const getAccountCardsHandler = async (
   res: express.Response
 ) => {
   const { account_id: accountId } = req.params;
-  const person = await db.findPersonByAccountId(accountId);
+  const person = await db.findPersonByAccount({ id: accountId });
 
   if (!person) {
     res.status(HttpStatusCodes.NOT_FOUND).send({

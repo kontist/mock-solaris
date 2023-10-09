@@ -25,7 +25,7 @@ export default {
   getAllPersons: db.findPersons,
   savePerson: db.savePerson,
   migrate: db.migrate,
-  findPersonByAccountId: db.findPersonByAccountId,
+  findPersonByAccount: db.findPersonByAccount,
   saveBooking: db.saveBooking,
   createAccount: account.createAccount,
   updateAccountLockingStatus: backOffice.updateAccountLockingStatus,

@@ -7,6 +7,7 @@ import {
   getTechnicalUserPerson,
   saveSepaDirectDebitReturn,
   findPerson,
+  findPersonByAccount,
 } from "../db";
 import { BookingType, ChangeRequestStatus } from "../helpers/types";
 import { createSepaDirectDebitReturn } from "../helpers/sepaDirectDebitReturn";
@@ -45,8 +46,18 @@ export const createSepaDirectDebit = async (req, res) => {
   });
 
   const { debtor_iban: iban } = mandate;
-  const person = await findPerson((p) => p.account?.iban === iban);
+  const person = await findPersonByAccount({ iban });
   const technicalPerson = await getTechnicalUserPerson();
+
+  if (!person) {
+    log.error("Person not found", { iban });
+    return;
+  }
+
+  if (!technicalPerson) {
+    log.error("Technical person not found");
+    return;
+  }
 
   const id = generateID();
   const booking = {
@@ -74,6 +85,7 @@ export const createSepaDirectDebit = async (req, res) => {
     recipient_name: mandate.debtor_name,
   };
 
+  person.transactions = person.transactions || [];
   person.transactions.push({
     ...booking,
     amount: {
@@ -81,6 +93,7 @@ export const createSepaDirectDebit = async (req, res) => {
       value: -Math.abs(booking.amount.value),
     },
   });
+  technicalPerson.transactions = technicalPerson.transactions || [];
   technicalPerson.transactions.push(booking);
 
   person.account.balance.value -= Math.abs(amount.value);
@@ -110,7 +123,6 @@ export const createSepaDirectDebit = async (req, res) => {
 
   await savePerson(person);
   await savePerson(technicalPerson);
-
   await triggerBookingsWebhook(person);
 
   res.status(200).send({

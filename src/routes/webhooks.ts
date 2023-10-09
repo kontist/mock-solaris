@@ -1,4 +1,9 @@
-import { getWebhooks, saveWebhook, deleteWebhook } from "../db";
+import {
+  getWebhooks,
+  saveWebhook,
+  deleteWebhook,
+  getWebhookByType,
+} from "../db";
 import generateID from "../helpers/id";
 
 import * as log from "../logger";
@@ -12,16 +17,9 @@ export const indexWebhooksHandler = async (req, res) => {
 };
 
 const createWebhook = async (newWebhook) => {
-  const webhooks = await getWebhooks();
+  const webhook = await getWebhookByType(newWebhook.event_type);
 
-  const webhookExists = webhooks.find((webhook) => {
-    return (
-      webhook.url === newWebhook.url &&
-      webhook.event_type === newWebhook.event_type
-    );
-  });
-
-  if (webhookExists) {
+  if (webhook?.url === newWebhook.url) {
     return false;
   }
 
