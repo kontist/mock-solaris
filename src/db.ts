@@ -264,7 +264,7 @@ export const getDevice = async (deviceId) =>
     )
   );
 
-// DEPRECATED
+// @deprecated
 export const _getAllDevices = async () => {
   const devices = [];
   const pattern = `${process.env.MOCKSOLARIS_REDIS_PREFIX}:device:*`;
