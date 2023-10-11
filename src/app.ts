@@ -90,6 +90,7 @@ app.use(errorHandler);
 app.set("json spaces", 2);
 app.use("/v1", router);
 app.post("/oauth/token", oauthAPI.generateToken);
+app.post("/oauth2/token", oauthAPI.generateOAuth2Token);
 
 function errorHandler(err, req, res, next) {
   log.error(err, {
