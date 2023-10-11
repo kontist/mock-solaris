@@ -31,7 +31,7 @@ export const generateToken = async (req: Request, res: Response) => {
     return;
   }
 
-  const expiresIn = getExpiriesAt();
+  const expiresIn = 3599;
   const token = Date.now() + ":" + expiresIn;
 
   res.status(201).send({
@@ -64,7 +64,7 @@ export const generateOAuth2Token = async (req: Request, res: Response) => {
     return;
   }
 
-  const expiresIn = getExpiriesAt();
+  const expiresIn = 3599;
   const token = Date.now() + ":" + expiresIn;
 
   res.status(201).send({
@@ -74,7 +74,3 @@ export const generateOAuth2Token = async (req: Request, res: Response) => {
     access_token: Buffer.from(token).toString("base64").replace(/=/g, ""),
   });
 };
-
-function getExpiriesAt() {
-  return Date.now() + 3599 * 1000;
-}

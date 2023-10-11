@@ -51,9 +51,9 @@ describe("generateOAuth2Token", () => {
       expect(res.status.args[0][0]).to.equal(201);
       expect(res.send.args[0][0]).to.deep.equal({
         token_type: "bearer",
-        expires_in: 1672534799000,
+        expires_in: 3599,
         scope: "partners",
-        access_token: "MTY3MjUzMTIwMDAwMDoxNjcyNTM0Nzk5MDAw",
+        access_token: "MTY3MjUzMTIwMDAwMDozNTk5",
       });
     });
   });
