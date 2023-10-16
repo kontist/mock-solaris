@@ -356,6 +356,8 @@ export const _getPersons = async () => {
   return persons;
 };
 
+const DEFAULT_LIMIT = 999999;
+
 /**
  * Finds persons. When callbackFn is not supplied, loads all persons.
  * Notes:
@@ -371,33 +373,38 @@ export const findPersons = async (
   }: {
     callbackFn?: (person: MockPerson) => Promise<boolean>;
     limit?: number;
-  } = { callbackFn: null, limit: 999999 }
+  } = { callbackFn: null, limit: DEFAULT_LIMIT }
 ): Promise<MockPerson[]> => {
-  const persons = [];
+  try {
+    const persons = [];
 
-  // Use zRange with REV: true to get the most recent persons based on their createdAt timestamp
-  const keys = (await redisClient.sendCommand([
-    "ZREVRANGEBYSCORE",
-    `${process.env.MOCKSOLARIS_REDIS_PREFIX}:persons`,
-    "+inf",
-    "-inf",
-    "LIMIT",
-    "0",
-    String(limit),
-  ])) as string[];
+    // Use zRange with REV: true to get the most recent persons based on their createdAt timestamp
+    const keys = (await redisClient.sendCommand([
+      "ZREVRANGEBYSCORE",
+      `${process.env.MOCKSOLARIS_REDIS_PREFIX}:persons`,
+      "+inf",
+      "-inf",
+      "LIMIT",
+      "0",
+      String(limit || DEFAULT_LIMIT),
+    ])) as string[];
 
-  for (const key of keys) {
-    const value = await redisClient.get(
-      `${process.env.MOCKSOLARIS_REDIS_PREFIX}:person:${key}`
-    );
-    const person = jsonToPerson(value);
-    const shouldSelectPerson = callbackFn ? await callbackFn(person) : true;
-    if (shouldSelectPerson) {
-      persons.push(person);
+    for (const key of keys) {
+      const value = await redisClient.get(
+        `${process.env.MOCKSOLARIS_REDIS_PREFIX}:person:${key}`
+      );
+      const person = jsonToPerson(value);
+      const shouldSelectPerson = callbackFn ? await callbackFn(person) : true;
+      if (shouldSelectPerson) {
+        persons.push(person);
+      }
     }
-  }
 
-  return persons.map((person) => augmentPerson(person));
+    return persons.map((person) => augmentPerson(person));
+  } catch (err) {
+    log.error("findPersons", err);
+    throw err;
+  }
 };
 
 export const findPerson = async (
