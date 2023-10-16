@@ -30,6 +30,7 @@ import * as termsAPI from "./routes/termsAndConditions";
 import * as psd2API from "./routes/psd2";
 import * as postboxItemAPI from "./routes/postbox";
 import * as topUpsAPI from "./routes/topUps";
+import * as instantCreditTransferAPI from "./routes/instantCreditTransfer";
 
 import { migrate } from "./db";
 
@@ -769,6 +770,13 @@ router.post(
   middlewares.withPerson,
   middlewares.withAccount,
   safeRequestHandler(topUpsAPI.cancelTopUp)
+);
+
+// SEPA INSTANT CREDIT TRANSFERS
+
+router.post(
+  "/sepa_instant_reachability/:iban",
+  safeRequestHandler(instantCreditTransferAPI.getInstantReachability)
 );
 
 app.post(
