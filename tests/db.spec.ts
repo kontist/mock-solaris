@@ -47,6 +47,21 @@ describe("getPersons()", async () => {
     expect(persons[0].email).to.equal(`user${numPersons}@kontist.com`);
   });
 
+  it(`findPersons() filter when cb function is provided, but not limit`, async () => {
+    const req = mockReq({
+      body: {
+        email: `superuser@kontist.com`,
+      },
+      headers,
+    });
+    const res = mockRes();
+    await createPerson(req, res);
+    const persons = await findPersons({
+      callbackFn: (person) => person.email.endsWith("@kontist.com"),
+    });
+    expect(persons.length).to.equal(1);
+  });
+
   it("findPerson() returns a person if the person is found", async () => {
     const email = `person@person.com`;
     const req = mockReq({
