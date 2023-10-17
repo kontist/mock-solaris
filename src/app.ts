@@ -778,6 +778,10 @@ router.post(
   "/sepa_instant_reachability/:iban",
   safeRequestHandler(instantCreditTransferAPI.getInstantReachability)
 );
+router.post(
+  "/accounts/:accountId/transactions/sepa_instant_credit_transfers",
+  safeRequestHandler(instantCreditTransferAPI.createInstantCreditTransfer)
+);
 
 app.post(
   "/__BACKOFFICE__/createMaps",
