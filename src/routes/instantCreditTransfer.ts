@@ -40,7 +40,7 @@ export const getInstantReachability = (req: Request, res: Response) => {
 export const createInstantCreditTransfer = async (req, res) => {
   const { body } = req;
   const { accountId } = req.params;
-  const person = await findPersonByAccount(accountId);
+  const person = await findPersonByAccount({ id: accountId });
 
   const {
     creditor_iban: creditorIban,
@@ -82,10 +82,9 @@ export const createInstantCreditTransfer = async (req, res) => {
     idempotency_key: idempotencyKey,
     description,
   };
-  const instantCreditTransfers = person.instantCreditTransfers || [];
-  person.instantCreditTransfers = instantCreditTransfers.push(
-    instantCreditTransfer
-  );
+
+  person.instantCreditTransfers = person.instantCreditTransfers || [];
+  person.instantCreditTransfers.push(instantCreditTransfer);
 
   person.changeRequest = {
     method: INSTANT_CREDIT_TRANSFER_CREATE,
@@ -136,21 +135,22 @@ const mapInstantTransferToTransaction = (instantCreditTransfer) => {
 
 export const confirmInstantCreditTransfer = async (person) => {
   const instantCreditTransferId = person.changeRequest.instantCreditTransfer.id;
-  const [instantCreditTransfer] = person.standingOrders.filter(
+  const instantCreditTransfer = person.instantCreditTransfers.find(
     (item) => item.id === instantCreditTransferId
   );
 
   person.transactions.push(
     mapInstantTransferToTransaction(instantCreditTransfer)
   );
+
   const itemIndex = person.instantCreditTransfers.findIndex(
-    (to) => to.id === instantCreditTransferId.id
+    (tr) => tr.id === instantCreditTransfer.id
   );
   person.instantCreditTransfers[itemIndex] = {
     ...instantCreditTransfer,
     status: InstantCreditTransferStatus.CLEARED,
   };
-  await savePerson(person);
 
+  await savePerson(person);
   await triggerBookingsWebhook(person);
 };
