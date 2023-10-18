@@ -774,7 +774,7 @@ router.post(
 
 // SEPA INSTANT CREDIT TRANSFERS
 
-router.post(
+router.get(
   "/sepa_instant_reachability/:iban",
   safeRequestHandler(instantCreditTransferAPI.getInstantReachability)
 );
