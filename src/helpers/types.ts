@@ -505,7 +505,7 @@ export enum BookingType {
   CANCELLATION_INTEREST_ACCRUED = "CANCELLATION_INTEREST_ACCRUED",
   COMMISSION_OVERDRAFT = "COMMISSION_OVERDRAFT",
   TOP_UP_CARD = "TopUpCard",
-  SEPA_INSTANT_CREDIT_TRANSFER = "SepaInstantCreditTransfer",
+  SEPA_INSTANT_CREDIT_TRANSFER = "SEPAInstantCreditTransfer",
 }
 
 export enum CardAuthorizationDeclinedStatus {
