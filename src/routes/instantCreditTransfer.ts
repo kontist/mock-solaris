@@ -25,7 +25,7 @@ export const getInstantReachability = (req: Request, res: Response) => {
 
   let result = true;
 
-  if (IBAN.isValid(iban)) {
+  if (!IBAN.isValid(iban)) {
     result = false;
   }
 
