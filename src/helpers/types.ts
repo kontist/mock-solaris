@@ -201,6 +201,7 @@ export type MockChangeRequest = {
   delta?: Record<string, unknown>;
   transfer?: Record<string, any>;
   timedOrder?: TimedOrder;
+  instantCreditTransfer?: InstantCreditTransfer;
 };
 
 export interface StandingOrder {
@@ -211,6 +212,26 @@ export interface StandingOrder {
   status: string;
   last_execution_date?: string;
   reoccurrence?: string;
+}
+
+export interface InstantCreditTransfer {
+  id: string;
+  amount: Amount;
+  creditor_iban: string;
+  creditor_name: string;
+  description: string;
+  idempotency_key?: string;
+  end_to_end_id?: string;
+  initiator_reference?: string;
+  valuta_date: string;
+  status: InstantCreditTransferStatus;
+}
+
+export enum InstantCreditTransferStatus {
+  INITIATED = "INITIATED",
+  RESERVED = "RESERVED",
+  READY_FOR_CLEARING = "READY_FOR_CLEARING",
+  CLEARED = "CLEARED",
 }
 
 export type PostboxItem = {
@@ -232,6 +253,7 @@ export type MockPerson = {
   billing_account?: BillingAccount;
   identifications?: Record<string, unknown>;
   timedOrders?: TimedOrder[];
+  instantCreditTransfers?: InstantCreditTransfer[];
   stripeCustomerId?: string;
   first_name: string;
   last_name: string;
@@ -483,6 +505,7 @@ export enum BookingType {
   CANCELLATION_INTEREST_ACCRUED = "CANCELLATION_INTEREST_ACCRUED",
   COMMISSION_OVERDRAFT = "COMMISSION_OVERDRAFT",
   TOP_UP_CARD = "TopUpCard",
+  SEPA_INSTANT_CREDIT_TRANSFER = "SEPAInstantCreditTransfer",
 }
 
 export enum CardAuthorizationDeclinedStatus {

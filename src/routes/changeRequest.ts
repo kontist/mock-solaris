@@ -45,10 +45,11 @@ import {
   confirmCardTransaction,
   declineCardTransaction,
 } from "../helpers/scaChallenge";
+import {DIRECT_DEBIT_REFUND_METHOD, SEPA_TRANSFER_METHOD} from "./transactions";
 import {
-  DIRECT_DEBIT_REFUND_METHOD,
-  SEPA_TRANSFER_METHOD,
-} from "./transactions";
+  INSTANT_CREDIT_TRANSFER_CREATE,
+  confirmInstantCreditTransfer,
+} from "./instantCreditTransfer";
 
 const MAX_CHANGE_REQUEST_AGE_IN_MINUTES = 5;
 
@@ -240,6 +241,11 @@ export const confirmChangeRequest = async (req, res) => {
       const order = person.timedOrders.find(({ id }) => id === timedOrder.id);
       order.status = TimedOrderStatus.SCHEDULED;
       response.response_body = order;
+      break;
+    case INSTANT_CREDIT_TRANSFER_CREATE:
+      const {instantCreditTransfer} = person.changeRequest;
+      await confirmInstantCreditTransfer(person);
+      response.response_body = {id: instantCreditTransfer.id};
       break;
     case BATCH_TRANSFER_CREATE_METHOD:
       response.response_body = await confirmBatchTransfer(
