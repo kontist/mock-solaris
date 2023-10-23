@@ -1,6 +1,6 @@
 import crypto from "crypto";
 import assert from "assert";
-import moment from "moment";
+import moment, { Moment } from "moment";
 import _ from "lodash";
 
 import { getPerson, savePerson } from "../db";
@@ -14,12 +14,14 @@ import {
 } from "../helpers/types";
 import generateID from "../helpers/id";
 
-const STANDING_ORDER_PAYMENT_FREQUENCY = {
-  MONTHLY: "MONTHLY",
-  QUARTERLY: "QUARTERLY",
-  EVERYSIXMONTHS: "EVERY_SIX_MONTHS",
-  YEARLY: "ANNUALLY",
-};
+export enum STANDING_ORDER_PAYMENT_FREQUENCY {
+  MONTHLY = "MONTHLY",
+  QUARTERLY = "QUARTERLY",
+  EVERY_SIX_MONTHS = "EVERY_SIX_MONTHS",
+  YEARLY = "ANNUALLY",
+  WEEKLY = "WEEKLY",
+  BIWEEKLY = "BIWEEKLY",
+}
 
 const STANDING_ORDER_PAYMENT_STATUSES = {
   EXECUTED: "EXECUTED",
@@ -262,16 +264,23 @@ const updateStandingOrderNextOccurrenceDateAndStatus = async (
   await savePerson(person);
 };
 
-const getNextOccurrenceDate = (lastDate, reoccurrence) => {
+export const getNextOccurrenceDate = (
+  lastDate: Moment,
+  reoccurrence: STANDING_ORDER_PAYMENT_FREQUENCY
+) => {
   switch (reoccurrence) {
     case STANDING_ORDER_PAYMENT_FREQUENCY.MONTHLY:
       return lastDate.add(1, "months");
     case STANDING_ORDER_PAYMENT_FREQUENCY.QUARTERLY:
       return lastDate.add(3, "months");
-    case STANDING_ORDER_PAYMENT_FREQUENCY.EVERYSIXMONTHS:
+    case STANDING_ORDER_PAYMENT_FREQUENCY.EVERY_SIX_MONTHS:
       return lastDate.add(6, "months");
     case STANDING_ORDER_PAYMENT_FREQUENCY.YEARLY:
       return lastDate.add(1, "years");
+    case STANDING_ORDER_PAYMENT_FREQUENCY.WEEKLY:
+      return lastDate.add(1, "week");
+    case STANDING_ORDER_PAYMENT_FREQUENCY.BIWEEKLY:
+      return lastDate.add(2, "weeks");
     default:
       throw new Error(
         `Unexpected standing order reoccurrence: ${reoccurrence}`

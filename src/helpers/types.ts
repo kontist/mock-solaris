@@ -1,3 +1,5 @@
+import { STANDING_ORDER_PAYMENT_FREQUENCY } from "../routes/standingOrders";
+
 export enum ReservationType {
   CARD_AUTHORIZATION = "CARD_AUTHORIZATION",
 }
@@ -211,7 +213,7 @@ export interface StandingOrder {
   next_occurrence?: string;
   status: string;
   last_execution_date?: string;
-  reoccurrence?: string;
+  reoccurrence?: STANDING_ORDER_PAYMENT_FREQUENCY;
 }
 
 export interface InstantCreditTransfer {
