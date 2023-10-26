@@ -31,7 +31,6 @@ describe("Standing orders", () => {
         reoccurrence: STANDING_ORDER_PAYMENT_FREQUENCY.EVERY_SIX_MONTHS,
         expectedDate: moment(getDate()).add(6, "month").toDate(),
       },
-      ,
       {
         reoccurrence: STANDING_ORDER_PAYMENT_FREQUENCY.QUARTERLY,
         expectedDate: moment(getDate()).add(1, "quarter").toDate(),
