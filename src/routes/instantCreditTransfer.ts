@@ -153,4 +153,6 @@ export const confirmInstantCreditTransfer = async (person) => {
 
   await savePerson(person);
   await triggerBookingsWebhook(person);
+
+  return instantCreditTransfer;
 };
