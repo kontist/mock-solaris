@@ -1,4 +1,6 @@
-export const generateToken = async (req, res) => {
+import type { Request, Response } from "express";
+
+export const generateToken = async (req: Request, res: Response) => {
   let isValidRequestUsingBasicAuth = false;
   const isValidRequestUsingJSON =
     req.body.grant_type === "client_credentials" &&
@@ -29,12 +31,46 @@ export const generateToken = async (req, res) => {
     return;
   }
 
-  const expiresIn = Math.floor(Math.random() * 1000);
+  const expiresIn = 3599;
   const token = Date.now() + ":" + expiresIn;
 
   res.status(201).send({
     token_type: "Bearer",
     expires_in: expiresIn,
+    access_token: Buffer.from(token).toString("base64").replace(/=/g, ""),
+  });
+};
+
+export const generateOAuth2Token = async (req: Request, res: Response) => {
+  const authHeader = req.get("authorization");
+  const contentType = req.get("content-type");
+  const [user, password] = Buffer.from(authHeader.split(" ")[1], "base64")
+    .toString()
+    .split(":", 2);
+
+  const isValid =
+    contentType === "application/x-www-form-urlencoded" &&
+    [
+      process.env.SOLARIS_CLIENT_ID_OAUTH2,
+      process.env.SOLARIS_KONTIST_ACCOUNT_CLIENT_ID_OAUTH2,
+    ].includes(user) &&
+    [
+      process.env.SOLARIS_CLIENT_SECRET_OAUTH2,
+      process.env.SOLARIS_KONTIST_ACCOUNT_CLIENT_SECRET_OAUTH2,
+    ].includes(password);
+
+  if (!isValid) {
+    res.status(401).send("Unauthorized");
+    return;
+  }
+
+  const expiresIn = 3599;
+  const token = Date.now() + ":" + expiresIn;
+
+  res.status(201).send({
+    token_type: "bearer",
+    expires_in: expiresIn,
+    scope: "partners",
     access_token: Buffer.from(token).toString("base64").replace(/=/g, ""),
   });
 };
