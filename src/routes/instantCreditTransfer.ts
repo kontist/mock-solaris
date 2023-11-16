@@ -55,7 +55,6 @@ export const createInstantCreditTransfer = async (req, res) => {
     creditorName,
     amount.value,
     amount.currency,
-    description,
   ].every((value) => value);
 
   if (isDataMissing) {
@@ -81,6 +80,7 @@ export const createInstantCreditTransfer = async (req, res) => {
     creditor_name: creditorName,
     idempotency_key: idempotencyKey,
     description,
+    end_to_end_id: body.end_to_end_id,
   };
 
   person.instantCreditTransfers = person.instantCreditTransfers || [];
@@ -94,10 +94,12 @@ export const createInstantCreditTransfer = async (req, res) => {
   };
 
   const response = {
-    id: person.changeRequest.id,
-    status: ChangeRequestStatus.AUTHORIZATION_REQUIRED,
-    updated_at: person.changeRequest.createdAt,
-    url: `:env/v1/change_requests/${person.changeRequest.id}/authorize`,
+    change_request: {
+      id: person.changeRequest.id,
+      status: ChangeRequestStatus.AUTHORIZATION_REQUIRED,
+      updated_at: person.changeRequest.createdAt,
+      url: `:env/v1/change_requests/${person.changeRequest.id}/authorize`,
+    },
   };
 
   await savePerson(person);
@@ -113,6 +115,7 @@ const mapInstantTransferToTransaction = (instantCreditTransfer) => {
     creditor_iban: creditorIban,
     creditor_name: creditorName,
     idempotency_key: idempotencyKey,
+    end_to_end_id: e2eId,
   } = instantCreditTransfer;
 
   return {
@@ -129,6 +132,7 @@ const mapInstantTransferToTransaction = (instantCreditTransfer) => {
     reference: idempotencyKey,
     created_at: new Date().toISOString(),
     status: "accepted",
+    end_to_end_id: e2eId,
     booking_type: BookingType.SEPA_INSTANT_CREDIT_TRANSFER,
   };
 };

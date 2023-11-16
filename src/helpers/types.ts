@@ -221,7 +221,7 @@ export interface InstantCreditTransfer {
   amount: Amount;
   creditor_iban: string;
   creditor_name: string;
-  description: string;
+  description?: string;
   idempotency_key?: string;
   end_to_end_id?: string;
   initiator_reference?: string;

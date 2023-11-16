@@ -59,6 +59,7 @@ describe("Instant Credit Transfer", () => {
           creditor_name: "John Doe",
           idempotency_key: "12345",
           description: "test",
+          end_to_end_id: "123456",
           amount: {
             value: 100,
             currency: "EUR",
@@ -71,7 +72,7 @@ describe("Instant Credit Transfer", () => {
 
     it("should return confirmation id", async () => {
       const lastCall = res.send.args[res.send.args.length - 1];
-      changeRequestId = lastCall[0].id;
+      changeRequestId = lastCall[0].change_request.id;
       expect(changeRequestId).to.be.a("string");
     });
 
