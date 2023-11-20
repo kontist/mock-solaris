@@ -246,7 +246,8 @@ export const confirmChangeRequest = async (req, res) => {
       response.response_body = order;
       break;
     case INSTANT_CREDIT_TRANSFER_CREATE:
-      response.response_body = await confirmInstantCreditTransfer(person);
+      const instantCreditTransfer = await confirmInstantCreditTransfer(person);
+      response.response_body = { id: instantCreditTransfer.id };
       break;
     case BATCH_TRANSFER_CREATE_METHOD:
       response.response_body = await confirmBatchTransfer(
