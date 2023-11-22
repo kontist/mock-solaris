@@ -50,6 +50,7 @@ export const createDevice = async (req, res) => {
     key_type,
     key,
     verified: false,
+    created_at: new Date().toISOString(),
     signatureChallenge: {
       id: deviceId,
       type: "signature",
@@ -328,6 +329,7 @@ export const getDevices = async (req, res) => {
   }
 
   const devices = await getDevicesByPersonId(personId);
+  const verifiedDevices = devices.filter((device) => device.verified);
 
-  res.status(200).send(devices);
+  res.status(200).send(verifiedDevices);
 };
