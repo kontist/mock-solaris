@@ -716,6 +716,12 @@ app.post(
   safeRequestHandler(postboxItemAPI.createPostboxItemRequestHandler)
 );
 
+// BACKOFFICE - DEVICES
+app.post(
+  "/__BACKOFFICE__/deleteDevice/:person_id/:device_id",
+  safeRequestHandler(backofficeAPI.deleteDeviceRequestHandler)
+);
+
 // WEBHOOKS
 router.get(
   "/webhooks",

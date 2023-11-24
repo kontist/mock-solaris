@@ -319,6 +319,17 @@ export const saveDevice = async (device) => {
   await saveDeviceIdToPersonId(device.person_id, device.id);
 };
 
+export const deleteDevice = async (deviceId: string, personId: string) => {
+  await redisClient.del(
+    `${process.env.MOCKSOLARIS_REDIS_PREFIX}:device:${deviceId}`
+  );
+  await redisClient.lRem(
+    `${process.env.MOCKSOLARIS_REDIS_PREFIX}:person-deviceIds:${personId}`,
+    0,
+    deviceId
+  );
+};
+
 export const getDeviceChallenge = async (challengeId) =>
   JSON.parse(
     await redisClient.get(

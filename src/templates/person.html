@@ -802,6 +802,7 @@
     <table class="table">
     <thead>
       <tr>
+        <th>Actions</th>
         <th>ID</th>
         <th>Name</th>
         <th>Key Type</th>
@@ -813,6 +814,13 @@
     </thead>
     {% for device in devices %}
       <tr>
+        <td>
+          <form method="POST" action="/__BACKOFFICE__/deleteDevice/{{ person.id }}/{{ device.id }}" class="form-inline">
+            <button type="submit" class="btn btn-warning btn-sm">
+              Delete
+            </button>
+          </form>
+        </td>
         <td>{{ device.id }}</td>
         <td>{{ device.name }}</td>
         <td>{{ device.key_type }}</td>
