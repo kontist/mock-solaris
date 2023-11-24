@@ -1,4 +1,5 @@
 import _ from "lodash";
+import type { Request, Response } from "express";
 import moment from "moment";
 import HttpStatusCodes from "http-status";
 import {
@@ -19,6 +20,7 @@ import {
   getWebhooks,
   findPerson,
   saveDeviceIdToPersonId,
+  deleteDevice,
   _getAllDevices,
   saveAccountToPersonId,
   redisClient,
@@ -910,4 +912,14 @@ export const createMaps = async (req, res) => {
   }
 
   res.status(201).send();
+};
+
+export const deleteDeviceRequestHandler = async (
+  req: Request,
+  res: Response
+) => {
+  const { person_id: personId, device_id: deviceId } = req.params;
+
+  await deleteDevice(deviceId, personId);
+  res.redirect("back");
 };
