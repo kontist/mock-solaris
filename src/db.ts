@@ -211,7 +211,9 @@ export const savePerson = async (person, skipInterest = false) => {
     // we need to catch here because initial person has id
     // assigned and if it's not saved in redis yet,
     // we will get an error
-    _person = await getPerson(person.id).catch(() => {});
+    _person = await getPerson(person.id).catch(() => {
+      // silence the error here
+    });
     if (_person?.account) {
       log.warning(
         `Person ${person.id} is missing account, using account from redis`
