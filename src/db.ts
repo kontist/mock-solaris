@@ -203,12 +203,31 @@ const addAmountValues = (a, b) => a + b.amount.value;
 export const savePerson = async (person, skipInterest = false) => {
   person.address = person.address || { country: null };
 
-  const account = person.account;
+  let _person: MockPerson;
+  // checking if person stored in redis has account,
+  // so this account is used in case of parallel requests
+  // to save person resource
+  if (person.id && !person.account) {
+    // we need to catch here because initial person has id
+    // assigned and if it's not saved in redis yet,
+    // we will get an error
+    _person = await getPerson(person.id).catch(() => {
+      // silence the error here
+    });
+    if (_person?.account) {
+      log.warning(
+        `Person ${person.id} is missing account, using account from redis`
+      );
+    }
+  }
+
+  const account = person.account || _person?.account;
 
   if (account) {
-    const transactions = person.transactions || [];
-    const queuedBookings = person.queuedBookings || [];
-    const reservations = person.account.reservations || [];
+    const transactions = person.transactions || _person?.transactions || [];
+    const queuedBookings =
+      person.queuedBookings || _person?.queuedBookings || [];
+    const reservations = account.reservations || [];
     const now = new Date().getTime();
     const transactionsBalance = transactions
       .filter(
