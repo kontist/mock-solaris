@@ -25,6 +25,7 @@ import {
   saveAccountToPersonId,
   redisClient,
   _getPersons,
+  redlock,
 } from "../db";
 import {
   createSepaDirectDebitReturn,
@@ -608,26 +609,40 @@ export const queueBookingRequestHandler = async (req, res) => {
   senderName = senderName || "mocksolaris";
   purpose = purpose || "";
   amount = amount ? parseInt(amount, 10) : Math.round(Math.random() * 10000);
+  let queuedBooking;
 
-  const person = await getPerson(personId);
-  const queuedBooking = generateBookingForPerson({
-    person,
-    purpose,
-    amount,
-    senderName,
-    endToEndId,
-    hasFutureValutaDate,
-    bookingType,
-    iban,
-    transactionId,
-    bookingDate,
-    valutaDate,
-    status,
+  /**
+   * Hint: This is a reference to the lock and not to the actual data
+   * we can't use the original key here and we prepend some string
+   */
+  const personKey = `redlock:${process.env.MOCKSOLARIS_REDIS_PREFIX}:person:${personId}`;
+  await redlock.using([personKey], 5000, async (signal) => {
+    // Make sure any attempted lock extension has not failed.
+    if (signal.aborted) {
+      throw signal.error;
+    }
+
+    const person = await getPerson(personId);
+
+    queuedBooking = generateBookingForPerson({
+      person,
+      purpose,
+      amount,
+      senderName,
+      endToEndId,
+      hasFutureValutaDate,
+      bookingType,
+      iban,
+      transactionId,
+      bookingDate,
+      valutaDate,
+      status,
+    });
+
+    person.queuedBookings.push(queuedBooking);
+
+    await savePerson(person);
   });
-
-  person.queuedBookings.push(queuedBooking);
-
-  await savePerson(person);
 
   if (shouldReturnJSON(req)) {
     res.status(201).send(queuedBooking);
