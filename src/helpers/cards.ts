@@ -464,7 +464,7 @@ export const activateCard = async (cardForActivation: Card): Promise<Card> => {
     if (signal.aborted) {
       throw signal.error;
     }
-    const person = await db.getPerson(cardForActivation.person_id);
+    person = await db.getPerson(cardForActivation.person_id);
     const cardIndex = person.account.cards.findIndex(
       ({ card }) => card.id === cardForActivation.id
     );
