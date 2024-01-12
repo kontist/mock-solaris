@@ -406,13 +406,19 @@ export const saveDeviceChallenge = async (challenge) =>
     JSON.stringify(challenge, undefined, 2)
   );
 
-export const saveBooking = (accountId, booking) => {
-  return findPersonByAccount({ id: accountId })
-    .then((person) => {
-      person.transactions.push(booking);
-      return person;
-    })
-    .then(savePerson);
+export const saveBooking = async (accountId, booking) => {
+  let person;
+  const personId = await getPersonIdByAccount({ id: accountId });
+  const personLockKey = `redlock:${process.env.MOCKSOLARIS_REDIS_PREFIX}:person:${personId}`;
+  await redlock.using([personLockKey], 5000, async (signal) => {
+    if (signal.aborted) {
+      throw signal.error;
+    }
+    person = await findPersonByAccount({ id: accountId });
+    person.transactions.push(booking);
+    await savePerson(person);
+  });
+  return person;
 };
 
 export const _getPersons = async () => {
