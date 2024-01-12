@@ -3,7 +3,10 @@ import { expect } from "chai";
 import { mockReq, mockRes } from "sinon-express-mock";
 
 import * as db from "../../src/db";
-import { createMaps } from "../../src/routes/backoffice";
+import {
+  createMaps,
+  queueBookingRequestHandler,
+} from "../../src/routes/backoffice";
 
 describe("Backoffice", () => {
   describe("createMaps", () => {
@@ -55,6 +58,38 @@ describe("Backoffice", () => {
       expect(fetchedPersonById.id).to.equal(personId);
       const fetchedPersonByIBAN = await db.findPersonByAccount({ iban });
       expect(fetchedPersonByIBAN.id).to.equal(personId);
+    });
+  });
+
+  describe("queueBookingRequestHandler()", () => {
+    before(async () => {
+      await db.flushDb();
+      await db.savePerson({
+        id: "person_id",
+        createdAt: "2020-01-01",
+        account: {
+          id: "account_id",
+          iban: "iban",
+        },
+      });
+    });
+    it("Should return HTTP 201 when the input is valid, ", async () => {
+      const req = mockReq({
+        headers: { accept: "application/json" },
+        params: {
+          personId: "person_id",
+        },
+        body: {
+          amount: 999999999,
+          purpose: "purpose_9433",
+          bookingType: "SEPA_CREDIT_TRANSFER",
+          processed: true,
+          iban: "DE17050536539501705053",
+        },
+      });
+      const res = mockRes();
+      await queueBookingRequestHandler(req, res);
+      expect(res.status.args[0][0]).to.equal(201);
     });
   });
 });
