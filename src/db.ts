@@ -301,12 +301,10 @@ export const savePerson = async (person, skipInterest = false) => {
     person.timedOrders = person.timedOrders || [];
   }
 
-  const response = await redisClient.set(
+  return await redisClient.set(
     `${process.env.MOCKSOLARIS_REDIS_PREFIX}:person:${person.id}`,
     JSON.stringify(person, undefined, 2)
   );
-
-  return response;
 };
 
 export const getTaxIdentifications = async (personId) =>
