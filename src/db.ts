@@ -301,7 +301,7 @@ export const savePerson = async (person, skipInterest = false) => {
     person.timedOrders = person.timedOrders || [];
   }
 
-  return await redisClient.set(
+  return redisClient.set(
     `${process.env.MOCKSOLARIS_REDIS_PREFIX}:person:${person.id}`,
     JSON.stringify(person, undefined, 2)
   );
@@ -789,7 +789,7 @@ export const getPersonIdByAccount = async ({
   const key = id
     ? `${process.env.MOCKSOLARIS_REDIS_PREFIX}:accountId-personId:${id}`
     : `${process.env.MOCKSOLARIS_REDIS_PREFIX}:accountIBAN-personId:${iban}`;
-  return await redisClient.get(key);
+  return redisClient.get(key);
 };
 
 export const findPersonByAccount: ({
