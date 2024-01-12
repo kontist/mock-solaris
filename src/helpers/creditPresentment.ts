@@ -12,7 +12,6 @@ import {
   CardAuthorizationDeclineV2Type,
   POSEntryMode,
 } from "./types";
-import { redlock } from "../db";
 
 export const createCreditPresentment = async ({
   personId,
@@ -33,7 +32,7 @@ export const createCreditPresentment = async ({
 }) => {
   let person;
   const personLockKey = `redlock:${process.env.MOCKSOLARIS_REDIS_PREFIX}:person:${personId}`;
-  await redlock.using([personLockKey], 5000, async (signal) => {
+  await db.redlock.using([personLockKey], 5000, async (signal) => {
     if (signal.aborted) {
       throw signal.error;
     }
