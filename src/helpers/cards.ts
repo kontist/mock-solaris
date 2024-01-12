@@ -458,15 +458,22 @@ export const activateCard = async (cardForActivation: Card): Promise<Card> => {
     throw new Error(CardErrorCodes.CARD_ACTIVATION_INVALID_STATUS);
   }
 
-  const person = await db.getPerson(cardForActivation.person_id);
-  const cardIndex = person.account.cards.findIndex(
-    ({ card }) => card.id === cardForActivation.id
-  );
+  let person;
+  const personLockKey = `redlock:${process.env.MOCKSOLARIS_REDIS_PREFIX}:person:${cardForActivation.person_id}`;
+  await db.redlock.using([personLockKey], 5000, async (signal) => {
+    if (signal.aborted) {
+      throw signal.error;
+    }
+    const person = await db.getPerson(cardForActivation.person_id);
+    const cardIndex = person.account.cards.findIndex(
+      ({ card }) => card.id === cardForActivation.id
+    );
+    cardForActivation.status = CardStatus.ACTIVE;
+    cardForActivation.new_card_ordered = false;
+    person.account.cards[cardIndex].card = cardForActivation;
+    await db.savePerson(person);
+  });
 
-  cardForActivation.status = CardStatus.ACTIVE;
-  cardForActivation.new_card_ordered = false;
-  person.account.cards[cardIndex].card = cardForActivation;
-  await db.savePerson(person);
   await triggerWebhook({
     type: CardWebhookEvent.CARD_LIFECYCLE_EVENT,
     payload: cardForActivation,
