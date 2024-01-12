@@ -276,6 +276,7 @@ export type MockPerson = {
   screening_progress?: ScreeningProgress;
   risk_classification_status?: RiskClarificationStatus;
   customer_vetting_status?: CustomerVettingStatus;
+  accountOpeningRequests?: AccountOpeningRequest[];
 };
 
 export type MockCreatePerson = {
@@ -365,6 +366,7 @@ export enum PersonWebhookEvent {
   "PERSON_SEIZURE_FULFILLED" = "PERSON_SEIZURE_FULFILLED",
   "PERSON_DELETED" = "PERSON_DELETED",
   "PERSON_CHANGED" = "PERSON_CHANGED",
+  "ACCOUNT_OPENING_REQUEST" = "ACCOUNT_OPENING_REQUEST",
 }
 
 export enum AccountWebhookEvent {
@@ -723,4 +725,31 @@ export enum TopUpStatus {
   EXECUTED = "EXECUTED",
   DECLINED = "DECLINED",
   CANCELLED = "CANCELLED",
+}
+
+export enum AccountOpeningRequestStatus {
+  INITIATED = "INITIATED",
+  IN_PROGRESS = "IN_PROGRESS",
+  COMPLETED = "COMPLETED",
+  REJECTED = "REJECTED",
+}
+
+export interface AccountOpeningRequest {
+  id: string;
+  customer_id: string;
+  account_id: string | null;
+  customer_type: string;
+  product_name: string;
+  account_type: string;
+  account_purpose: string;
+  account_bic: string;
+  account_currency: string;
+  status: AccountOpeningRequestStatus;
+  rejection_reason: {
+    failed_validation: string | null;
+    details: string | null;
+  };
+  iban: string | null;
+  created_at: string;
+  updated_at: string;
 }
