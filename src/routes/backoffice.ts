@@ -23,7 +23,6 @@ import {
   deleteDevice,
   _getAllDevices,
   saveAccountToPersonId,
-  redisClient,
   _getPersons,
   redlock,
 } from "../db";

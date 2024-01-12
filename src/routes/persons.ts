@@ -7,7 +7,6 @@ import {
   savePerson,
   setPersonOrigin,
   saveAccountToPersonId,
-  redisClient,
   redlock,
 } from "../db";
 
