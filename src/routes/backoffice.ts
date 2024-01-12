@@ -456,84 +456,90 @@ export const processQueuedBooking = async (
   id,
   isStandingOrder = false
 ) => {
-  const person = await getPerson(personId);
-  person.transactions = person.transactions || [];
-
-  let bookings;
-  bookings = isStandingOrder
-    ? person.standingOrders || []
-    : person.queuedBookings;
-
+  let person;
   let booking;
-  if (id) {
-    const findQueuedBooking = (queuedBooking) => queuedBooking.id === id;
-    booking = bookings.find(findQueuedBooking);
-    // Standing orders are not removed until cancelled or expired.
-    if (!isStandingOrder) {
-      _.remove(bookings, findQueuedBooking);
+  const personLockKey = `redlock:${process.env.MOCKSOLARIS_REDIS_PREFIX}:person:${personId}`;
+  await redlock.using([personLockKey], 5000, async (signal) => {
+    if (signal.aborted) {
+      throw signal.error;
     }
-  } else {
-    booking = bookings.shift();
-  }
+    person = await getPerson(personId);
+    person.transactions = person.transactions || [];
 
-  if (isStandingOrder) {
-    booking = generateBookingFromStandingOrder(booking);
-  }
+    let bookings;
+    bookings = isStandingOrder
+      ? person.standingOrders || []
+      : person.queuedBookings;
 
-  const isDirectDebit = [
-    BookingType.DIRECT_DEBIT,
-    BookingType.SEPA_DIRECT_DEBIT,
-  ].includes(booking.booking_type);
-
-  const wouldOverdraw =
-    person.account.available_balance.value < booking.amount.value;
-
-  let directDebitReturn;
-  let sepaDirectDebitReturn;
-
-  if (isDirectDebit) {
-    if (wouldOverdraw) {
-      directDebitReturn = {
-        ...booking,
-        sender_iban: booking.recipient_iban,
-        recipient_iban: booking.sender_iban,
-        sender_name: booking.recipient_name,
-        recipient_name: booking.sender_name,
-        sender_bic: booking.recipient_bic,
-        recipient_bic: booking.sender_bic,
-        id: booking.id.split("-").reverse().join("-"),
-        transaction_id: null,
-        return_transaction_id: booking.transaction_id,
-        booking_type: BookingType.SEPA_DIRECT_DEBIT_RETURN,
-        amount: {
-          value: booking.amount.value,
-          unit: "cents",
-          currency: "EUR",
-        },
-      };
+    if (id) {
+      const findQueuedBooking = (queuedBooking) => queuedBooking.id === id;
+      booking = bookings.find(findQueuedBooking);
+      // Standing orders are not removed until cancelled or expired.
+      if (!isStandingOrder) {
+        _.remove(bookings, findQueuedBooking);
+      }
+    } else {
+      booking = bookings.shift();
     }
 
-    // direct debits come with a negative value
-    booking.amount.value = -Math.abs(booking.amount.value);
-  }
+    if (isStandingOrder) {
+      booking = generateBookingFromStandingOrder(booking);
+    }
 
-  person.transactions.push(booking);
-  if (directDebitReturn) {
-    person.transactions.push(directDebitReturn);
-    sepaDirectDebitReturn = createSepaDirectDebitReturn(
-      person,
-      directDebitReturn
-    );
-    await saveSepaDirectDebitReturn(sepaDirectDebitReturn);
-  }
+    const isDirectDebit = [
+      BookingType.DIRECT_DEBIT,
+      BookingType.SEPA_DIRECT_DEBIT,
+    ].includes(booking.booking_type);
 
-  await savePerson(person);
-  await triggerBookingsWebhook(person);
+    const wouldOverdraw =
+      person.account.available_balance.value < booking.amount.value;
 
-  if (sepaDirectDebitReturn) {
-    await triggerSepaDirectDebitReturnWebhook(sepaDirectDebitReturn, person);
-  }
+    let directDebitReturn;
+    let sepaDirectDebitReturn;
 
+    if (isDirectDebit) {
+      if (wouldOverdraw) {
+        directDebitReturn = {
+          ...booking,
+          sender_iban: booking.recipient_iban,
+          recipient_iban: booking.sender_iban,
+          sender_name: booking.recipient_name,
+          recipient_name: booking.sender_name,
+          sender_bic: booking.recipient_bic,
+          recipient_bic: booking.sender_bic,
+          id: booking.id.split("-").reverse().join("-"),
+          transaction_id: null,
+          return_transaction_id: booking.transaction_id,
+          booking_type: BookingType.SEPA_DIRECT_DEBIT_RETURN,
+          amount: {
+            value: booking.amount.value,
+            unit: "cents",
+            currency: "EUR",
+          },
+        };
+      }
+
+      // direct debits come with a negative value
+      booking.amount.value = -Math.abs(booking.amount.value);
+    }
+
+    person.transactions.push(booking);
+    if (directDebitReturn) {
+      person.transactions.push(directDebitReturn);
+      sepaDirectDebitReturn = createSepaDirectDebitReturn(
+        person,
+        directDebitReturn
+      );
+      await saveSepaDirectDebitReturn(sepaDirectDebitReturn);
+    }
+
+    await savePerson(person);
+    await triggerBookingsWebhook(person);
+
+    if (sepaDirectDebitReturn) {
+      await triggerSepaDirectDebitReturnWebhook(sepaDirectDebitReturn, person);
+    }
+  });
   return booking;
 };
 
