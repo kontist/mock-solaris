@@ -775,6 +775,19 @@ export const saveAccountToPersonId = async (
   ]);
 };
 
+export const getPersonIdByAccount = async ({
+  id,
+  iban,
+}: {
+  id?: string;
+  iban?: string;
+}) => {
+  const key = id
+    ? `${process.env.MOCKSOLARIS_REDIS_PREFIX}:accountId-personId:${id}`
+    : `${process.env.MOCKSOLARIS_REDIS_PREFIX}:accountIBAN-personId:${iban}`;
+  return await redisClient.get(key);
+};
+
 export const findPersonByAccount: ({
   id,
   iban,
