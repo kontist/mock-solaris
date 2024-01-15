@@ -792,6 +792,22 @@ export const getPersonIdByAccount = async ({
   return redisClient.get(key);
 };
 
+export const saveAccountOpeningRequestToPersonId = async (
+  accountOpeningRequestId: string,
+  personId: string
+) => {
+  const idKey = `${process.env.MOCKSOLARIS_REDIS_PREFIX}:accountOpeningRequestId-personId:${accountOpeningRequestId}`;
+
+  await redisClient.set(idKey, personId);
+};
+
+export const getPersonIdByAccountOpeningRequest = async (
+  accountOpeningRequestId: string
+) => {
+  const key = `${process.env.MOCKSOLARIS_REDIS_PREFIX}:accountOpeningRequestId-personId:${accountOpeningRequestId}`;
+  return redisClient.get(key);
+};
+
 export const findPersonByAccount: ({
   id,
   iban,

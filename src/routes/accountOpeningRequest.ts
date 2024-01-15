@@ -2,7 +2,12 @@ import type { Request, Response } from "express";
 import HttpStatusCodes from "http-status";
 import moment from "moment";
 
-import { getPerson, savePerson } from "../db";
+import {
+  getPerson,
+  savePerson,
+  saveAccountOpeningRequestToPersonId,
+  getPersonIdByAccountOpeningRequest,
+} from "../db";
 import {
   AccountOpeningRequestStatus,
   AccountOpeningRequest,
@@ -44,6 +49,8 @@ export const createAccountOpeningRequest = async (
 
   await savePerson(person);
 
+  await saveAccountOpeningRequestToPersonId(accountOpeningRequest.id, personId);
+
   const account = await createAccount(personId);
 
   person.accountOpeningRequests = [
@@ -64,4 +71,23 @@ export const createAccountOpeningRequest = async (
     type: PersonWebhookEvent.ACCOUNT_OPENING_REQUEST,
     payload: accountOpeningRequest,
   });
+};
+
+export const retrieveAccountOpeningRequest = async (
+  req: Request,
+  res: Response
+) => {
+  const { id: accountOpeningRequestId } = req.params;
+
+  const personId = await getPersonIdByAccountOpeningRequest(
+    accountOpeningRequestId
+  );
+
+  const person = await getPerson(personId);
+
+  const accountOpeningRequest = person.accountOpeningRequests.find(
+    (request) => request.id === accountOpeningRequestId
+  );
+
+  res.status(HttpStatusCodes.OK).send(accountOpeningRequest);
 };
