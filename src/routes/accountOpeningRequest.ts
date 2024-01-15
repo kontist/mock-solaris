@@ -38,14 +38,27 @@ export const createAccountOpeningRequest = async (
 
   res.status(HttpStatusCodes.CREATED).send(accountOpeningRequest);
 
-  person.accountOpeningRequests = (person.accountOpeningRequests || []).push({
-    ...accountOpeningRequest,
-    status: AccountOpeningRequestStatus.COMPLETED,
-  });
+  person.accountOpeningRequests = (person.accountOpeningRequests || []).push(
+    accountOpeningRequest
+  );
+
+  await savePerson(person);
 
   const account = await createAccount(personId);
 
-  // create account
+  person.accountOpeningRequests = [
+    ...person.accountOpeningRequests.filter(
+      (request) => request.id !== accountOpeningRequest.id
+    ),
+    {
+      ...accountOpeningRequest,
+      status: AccountOpeningRequestStatus.COMPLETED,
+      account_id: account.id,
+      iban: account.iban,
+    },
+  ];
+
+  await savePerson(person);
 
   await triggerWebhook({
     type: PersonWebhookEvent.ACCOUNT_OPENING_REQUEST,
