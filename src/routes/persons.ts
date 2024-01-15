@@ -7,7 +7,7 @@ import {
   savePerson,
   setPersonOrigin,
   saveAccountToPersonId,
-  redisClient,
+  redlock,
 } from "../db";
 
 import { createChangeRequest } from "./changeRequest";
@@ -21,42 +21,49 @@ const format = (date: Moment): string => date.format("YYYY-MM-DD");
 /**
  * Creates a person
  * @deprecated Expected to be removed by 11.09.2023
- * @see {@link https://docs.solarisgroup.com/api-reference/onboarding/account-creation/#tag/Person-accounts/paths/~1v1~1persons~1{person_id}~1accounts/post}
+ * @see {@link "https://docs.solarisgroup.com/api-reference/onboarding/account-creation/#tag/Person-accounts/paths/~1v1~1persons~1{person_id}~1accounts/post"}
  */
 export const createPerson = async (req, res) => {
   const personId = generateID(); // Do not exceed 36 characters
-  const createdAt = moment();
+  let createdPerson;
+  const personLockKey = `redlock:${process.env.MOCKSOLARIS_REDIS_PREFIX}:person:${personId}`;
+  await redlock.using([personLockKey], 5000, async (signal) => {
+    if (signal.aborted) {
+      throw signal.error;
+    }
+    const createdAt = moment();
 
-  const person = {
-    ...req.body,
-    id: personId,
-    identifications: {},
-    transactions: [],
-    statements: [],
-    queuedBookings: [],
-    createdAt: createdAt.toISOString(),
-    aml_confirmed_on: format(createdAt),
-    aml_follow_up_date: format(createdAt.add(2, "year")),
-  };
-
-  const result = await savePerson(person).then(() => {
-    res.status(200).send({
-      id: personId,
+    const person = {
       ...req.body,
+      id: personId,
+      identifications: {},
+      transactions: [],
+      statements: [],
+      queuedBookings: [],
+      createdAt: createdAt.toISOString(),
+      aml_confirmed_on: format(createdAt),
+      aml_follow_up_date: format(createdAt.add(2, "year")),
+    };
+
+    createdPerson = await savePerson(person).then(() => {
+      res.status(200).send({
+        id: personId,
+        ...req.body,
+      });
     });
+
+    await storePersonInSortedSet(person);
+
+    if (person.account?.id) {
+      await saveAccountToPersonId(person.account, personId);
+    }
+
+    if (req.headers.origin) {
+      await setPersonOrigin(personId, req.headers.origin);
+    }
   });
 
-  await storePersonInSortedSet(person);
-
-  if (person.account?.id) {
-    await saveAccountToPersonId(person.account, personId);
-  }
-
-  if (req.headers.origin) {
-    await setPersonOrigin(personId, req.headers.origin);
-  }
-
-  return result;
+  return createdPerson;
 };
 
 export const showPerson = async (req, res) => {
@@ -218,38 +225,46 @@ export const updatePerson = async (req, res) => {
     body,
   } = req;
   const data = _.pick(body, fields);
-  const person = (await getPerson(personId)) as MockPerson;
 
-  const fieldsBanned = [];
-  Object.keys(data).forEach((key) => {
-    if (!editableFields.includes(key)) fieldsBanned.push(key);
-  });
+  let person;
+  const personLockKey = `redlock:${process.env.MOCKSOLARIS_REDIS_PREFIX}:person:${personId}`;
+  await redlock.using([personLockKey], 5000, async (signal) => {
+    if (signal.aborted) {
+      throw signal.error;
+    }
+    person = (await getPerson(personId)) as MockPerson;
 
-  if (fieldsBanned.length) {
-    return res.status(400).send({
-      id: "f0487cda-5a03-11e9-8ebd-02420a86840b",
-      status: 400,
-      code: "deprecated_params",
-      title: "Deprecated Parameters",
-      detail: `Updating ${fieldsBanned[0]} is deprecated.`,
+    const fieldsBanned = [];
+    Object.keys(data).forEach((key) => {
+      if (!editableFields.includes(key)) fieldsBanned.push(key);
     });
-  }
 
-  const editable = _.pick(data, editableFields);
-  editable.address = _.pick(data.address, editableFields);
-  editable.contact_address = _.pick(data.contact_address, editableFields);
-  editable.tax_information = _.pick(data.tax_information, editableFields);
+    if (fieldsBanned.length) {
+      return res.status(400).send({
+        id: "f0487cda-5a03-11e9-8ebd-02420a86840b",
+        status: 400,
+        code: "deprecated_params",
+        title: "Deprecated Parameters",
+        detail: `Updating ${fieldsBanned[0]} is deprecated.`,
+      });
+    }
 
-  if (data.aml_confirmed_on) {
-    data.aml_follow_up_date = moment(data.aml_confirmed_on).add(2, "year");
-  }
+    const editable = _.pick(data, editableFields);
+    editable.address = _.pick(data.address, editableFields);
+    editable.contact_address = _.pick(data.contact_address, editableFields);
+    editable.tax_information = _.pick(data.tax_information, editableFields);
 
-  if (isChangeRequestRequired(editable, person)) {
-    return createChangeRequest(req, res, person, PERSON_UPDATE, data);
-  }
+    if (data.aml_confirmed_on) {
+      data.aml_follow_up_date = moment(data.aml_confirmed_on).add(2, "year");
+    }
 
-  _.merge(person, data);
-  await savePerson(person);
+    if (isChangeRequestRequired(editable, person)) {
+      return createChangeRequest(req, res, person, PERSON_UPDATE, data);
+    }
+
+    _.merge(person, data);
+    await savePerson(person);
+  });
 
   await triggerWebhook({
     type: PersonWebhookEvent.PERSON_CHANGED,

@@ -6,6 +6,7 @@ import {
   savePerson,
   findPersonByAccount,
   saveAccountToPersonId,
+  redlock,
 } from "../db";
 import { IBAN, CountryCode } from "ibankit";
 import generateID from "../helpers/id";
@@ -117,12 +118,18 @@ export const showPersonAccounts = async (req, res) => {
   res.status(200).send(accounts);
 };
 
-export const createAccount = async (personId) => {
-  const person = await getPerson(personId);
-  person.account = getDefaultAccount(personId);
-
-  await savePerson(person);
-  await saveAccountToPersonId(person.account, personId);
+export const createAccount = async (personId: string) => {
+  let person;
+  const personLockKey = `redlock:${process.env.MOCKSOLARIS_REDIS_PREFIX}:person:${personId}`;
+  await redlock.using([personLockKey], 5000, async (signal) => {
+    if (signal.aborted) {
+      throw signal.error;
+    }
+    person = await getPerson(personId);
+    person.account = getDefaultAccount(personId);
+    await savePerson(person);
+    await saveAccountToPersonId(person.account, personId);
+  });
 
   return person.account;
 };
