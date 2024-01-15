@@ -10,6 +10,7 @@ import {
 } from "../helpers/types";
 import { triggerWebhook } from "../helpers/webhooks";
 import generateID from "../helpers/id";
+import { createAccount } from "../routes/accounts";
 
 export const createAccountOpeningRequest = async (
   req: Request,
@@ -17,7 +18,9 @@ export const createAccountOpeningRequest = async (
 ) => {
   const { body }: { body: AccountOpeningRequest } = req;
 
-  const person = await getPerson(body.customer_id);
+  const personId = body.customer_id;
+
+  const person = await getPerson(personId);
 
   const accountOpeningRequest = {
     ...body,
@@ -39,6 +42,8 @@ export const createAccountOpeningRequest = async (
     ...accountOpeningRequest,
     status: AccountOpeningRequestStatus.COMPLETED,
   });
+
+  const account = await createAccount(personId);
 
   // create account
 

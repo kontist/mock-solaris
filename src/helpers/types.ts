@@ -753,3 +753,8 @@ export interface AccountOpeningRequest {
   created_at: string;
   updated_at: string;
 }
+
+export enum AccountType {
+  "CHECKING_SOLE_PROPRIETOR" = "CHECKING_SOLE_PROPRIETOR",
+  "CHECKING_PERSONAL" = "CHECKING_PERSONAL",
+}

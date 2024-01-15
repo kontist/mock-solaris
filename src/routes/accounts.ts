@@ -10,16 +10,17 @@ import {
 import { IBAN, CountryCode } from "ibankit";
 import generateID from "../helpers/id";
 import { getLogger } from "../logger";
+import { AccountType } from "../helpers/types";
 
 const ACCOUNT_SNAPSHOT_SOURCE = "SOLARISBANK";
 
 const log = getLogger("accounts");
 
-const DEFAULT_ACCOUNT = {
-  id: "df478cbe801e30550f7cea9340783e6bcacc",
-  iban: "DE87110101001000022513",
-  bic: "SOBKDEBBXXX",
-  type: "CHECKING_PERSONAL",
+const getDefaultAccount = (personId: string) => ({
+  id: personId.split("").reverse().join(""),
+  iban: IBAN.random(CountryCode.DE).toString(),
+  bic: process.env.SOLARIS_BIC,
+  type: AccountType.CHECKING_SOLE_PROPRIETOR,
   balance: {
     value: 0,
     unit: "cents",
@@ -37,11 +38,11 @@ const DEFAULT_ACCOUNT = {
     unit: "cents",
     currency: "EUR",
   },
-  person_id: "66a692fdddc32c05ebe1c1f1c3145a3bcper",
+  person_id: personId,
   status: "ACTIVE",
   closure_reasons: null,
   seizure_protection: null,
-};
+});
 
 const requestAccountFields = [
   "id",
@@ -118,13 +119,9 @@ export const showPersonAccounts = async (req, res) => {
 
 let counter = 0;
 
-export const createAccount = async (personId, data) => {
+export const createAccount = async (personId) => {
   const person = await getPerson(personId);
-  person.account = {
-    ...DEFAULT_ACCOUNT,
-    ...person.account,
-    ...data,
-  };
+  person.account = getDefaultAccount(personId);
 
   await savePerson(person);
   await saveAccountToPersonId(person.account, personId);
@@ -135,27 +132,7 @@ export const createAccount = async (personId, data) => {
 export const createAccountRequestHandler = async (req, res) => {
   const { person_id: personId } = req.params;
 
-  counter++;
-
-  const accountId = personId.split("").reverse().join("");
-
-  const iban = IBAN.random(CountryCode.DE).toString();
-
-  const account = await createAccount(personId, {
-    ...DEFAULT_ACCOUNT,
-    id: accountId,
-    iban,
-    type: "CHECKING_SOLE_PROPRIETOR",
-    person_id: personId,
-    balance: {
-      value: 0, // new accounts have no money
-    },
-    available_balance: {
-      value: 0, // new accounts have no money
-    },
-    sender_name: `bank-mock-${counter}`,
-    locking_status: "NO_BLOCK",
-  });
+  const account = await createAccount(personId);
 
   res.status(201).send(account);
 };
