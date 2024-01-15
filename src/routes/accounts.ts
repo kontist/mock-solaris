@@ -117,8 +117,6 @@ export const showPersonAccounts = async (req, res) => {
   res.status(200).send(accounts);
 };
 
-let counter = 0;
-
 export const createAccount = async (personId) => {
   const person = await getPerson(personId);
   person.account = getDefaultAccount(personId);
