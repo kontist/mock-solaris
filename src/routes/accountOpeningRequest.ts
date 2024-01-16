@@ -27,7 +27,13 @@ export const createAccountOpeningRequest = async (
   const person = await getPerson(personId);
 
   const accountOpeningRequest = {
-    ...data,
+    customer_id: data.customer_id,
+    customer_type: data.customer_type,
+    product_name: data.product_name,
+    account_type: data.account_type,
+    account_bic: data.account_bic,
+    account_currency: data.account_currency,
+    account_purpose: data.account_purpose,
     id: generateID(),
     status: AccountOpeningRequestStatus.INITIATED,
     account_id: null,
