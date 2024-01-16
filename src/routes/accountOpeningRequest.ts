@@ -41,35 +41,36 @@ export const createAccountOpeningRequest = async (
     },
   };
 
-  res.status(HttpStatusCodes.CREATED).send(accountOpeningRequest);
-
-  person.accountOpeningRequests = (person.accountOpeningRequests || []).push(
-    accountOpeningRequest
-  );
+  person.accountOpeningRequests = person.accountOpeningRequests || [];
+  person.accountOpeningRequests.push(accountOpeningRequest);
 
   await savePerson(person);
 
   await saveAccountOpeningRequestToPersonId(accountOpeningRequest.id, personId);
 
+  res.status(HttpStatusCodes.CREATED).send(accountOpeningRequest);
+
   const account = await createAccount(personId);
+
+  const completedRequest = {
+    ...accountOpeningRequest,
+    status: AccountOpeningRequestStatus.COMPLETED,
+    account_id: account.id,
+    iban: account.iban,
+  };
 
   person.accountOpeningRequests = [
     ...person.accountOpeningRequests.filter(
       (request) => request.id !== accountOpeningRequest.id
     ),
-    {
-      ...accountOpeningRequest,
-      status: AccountOpeningRequestStatus.COMPLETED,
-      account_id: account.id,
-      iban: account.iban,
-    },
+    completedRequest,
   ];
 
   await savePerson(person);
 
   await triggerWebhook({
     type: PersonWebhookEvent.ACCOUNT_OPENING_REQUEST,
-    payload: accountOpeningRequest,
+    payload: completedRequest,
   });
 };
 
