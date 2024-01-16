@@ -70,7 +70,14 @@ export const createAccountOpeningRequest = async (
 
   await triggerWebhook({
     type: PersonWebhookEvent.ACCOUNT_OPENING_REQUEST,
-    payload: completedRequest,
+    payload: {
+      account_opening_request_id: completedRequest.id,
+      customer_id: completedRequest.customer_id,
+      status: completedRequest.status,
+      account_id: completedRequest.account_id,
+      updated_at: completedRequest.updated_at,
+      error: null,
+    },
   });
 };
 
