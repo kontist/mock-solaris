@@ -10,7 +10,6 @@ import {
 } from "../db";
 import {
   AccountOpeningRequestStatus,
-  AccountOpeningRequest,
   PersonWebhookEvent,
 } from "../helpers/types";
 import { triggerWebhook } from "../helpers/webhooks";
@@ -21,14 +20,14 @@ export const createAccountOpeningRequest = async (
   req: Request,
   res: Response
 ) => {
-  const { body }: { body: AccountOpeningRequest } = req;
+  const data = req.body;
 
-  const personId = body.customer_id;
+  const personId = data.customer_id;
 
   const person = await getPerson(personId);
 
   const accountOpeningRequest = {
-    ...body,
+    ...data,
     id: generateID(),
     status: AccountOpeningRequestStatus.INITIATED,
     account_id: null,
