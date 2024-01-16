@@ -81,4 +81,28 @@ describe("Account Opening Request", () => {
       expect(args.payload.account_id).to.be.ok;
     });
   });
+
+  describe("retrieve Account Opening Request", () => {
+    let accountOpeningRequestId;
+
+    before(async () => {
+      res = mockRes();
+
+      accountOpeningRequestId = (await db.getPerson(personId))
+        .accountOpeningRequests[0].id;
+
+      const req = mockReq({
+        params: {
+          id: accountOpeningRequestId,
+        },
+      });
+
+      await accountOpeningRequestAPI.retrieveAccountOpeningRequest(req, res);
+    });
+
+    it("should return successful response", () => {
+      expect(res.status.calledWith(200)).to.be.true;
+      expect(res.send.getCall(0).args[0].id).to.equal(accountOpeningRequestId);
+    });
+  });
 });
