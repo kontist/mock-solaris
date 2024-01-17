@@ -17,7 +17,7 @@ const ACCOUNT_SNAPSHOT_SOURCE = "SOLARISBANK";
 
 const log = getLogger("accounts");
 
-const getDefaultAccount = (personId: string) => ({
+const getDefaultAccount = (personId: string, data = {}) => ({
   id: personId.split("").reverse().join(""),
   iban: IBAN.random(CountryCode.DE).toString(),
   bic: process.env.SOLARIS_BIC,
@@ -43,6 +43,7 @@ const getDefaultAccount = (personId: string) => ({
   status: "ACTIVE",
   closure_reasons: null,
   seizure_protection: null,
+  ...data,
 });
 
 const requestAccountFields = [
@@ -118,7 +119,7 @@ export const showPersonAccounts = async (req, res) => {
   res.status(200).send(accounts);
 };
 
-export const createAccount = async (personId: string) => {
+export const createAccount = async (personId: string, data = {}) => {
   let person;
   const personLockKey = `redlock:${process.env.MOCKSOLARIS_REDIS_PREFIX}:person:${personId}`;
   await redlock.using([personLockKey], 5000, async (signal) => {
@@ -126,7 +127,7 @@ export const createAccount = async (personId: string) => {
       throw signal.error;
     }
     person = await getPerson(personId);
-    person.account = getDefaultAccount(personId);
+    person.account = getDefaultAccount(personId, data);
     await savePerson(person);
     await saveAccountToPersonId(person.account, personId);
   });
