@@ -1,13 +1,13 @@
 import type { Request, Response } from "express";
 import HttpStatusCodes from "http-status";
 import moment from "moment";
-import { redlock } from "../db";
 
 import {
   getPerson,
   savePerson,
   saveAccountOpeningRequestToPersonId,
   getPersonIdByAccountOpeningRequest,
+  redlock,
 } from "../db";
 import {
   AccountOpeningRequestStatus,
