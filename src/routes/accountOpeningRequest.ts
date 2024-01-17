@@ -24,7 +24,7 @@ export const createAccountOpeningRequest = async (
 
   const personId = data.customer_id;
 
-  const person = await getPerson(personId);
+  let person = await getPerson(personId);
 
   const accountOpeningRequest = {
     customer_id: data.customer_id,
@@ -56,6 +56,7 @@ export const createAccountOpeningRequest = async (
   res.status(HttpStatusCodes.CREATED).send(accountOpeningRequest);
 
   const account = await createAccount(personId);
+  person = await getPerson(personId);
 
   const completedRequest = {
     ...accountOpeningRequest,
