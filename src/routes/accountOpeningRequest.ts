@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import HttpStatusCodes from "http-status";
 import moment from "moment";
+import { redlock } from "../db";
 
 import {
   getPerson,
@@ -24,8 +25,6 @@ export const createAccountOpeningRequest = async (
 
   const personId = data.customer_id;
 
-  let person = await getPerson(personId);
-
   const accountOpeningRequest = {
     customer_id: data.customer_id,
     customer_type: data.customer_type,
@@ -46,17 +45,22 @@ export const createAccountOpeningRequest = async (
     },
   };
 
-  person.accountOpeningRequests = person.accountOpeningRequests || [];
-  person.accountOpeningRequests.push(accountOpeningRequest);
-
-  await savePerson(person);
-
+  const personKey = `reslock:${process.env.MOCKSOLARIS_REDIS_PREFIX}:person:${personId}`;
+  let person;
+  await redlock.using([personKey], 5000, async (signal) => {
+    if (signal.aborted) {
+      throw signal.error;
+    }
+    person = await getPerson(personId);
+    person.accountOpeningRequests = person.accountOpeningRequests || [];
+    person.accountOpeningRequests.push(accountOpeningRequest);
+    await savePerson(person);
+  });
   await saveAccountOpeningRequestToPersonId(accountOpeningRequest.id, personId);
 
   res.status(HttpStatusCodes.CREATED).send(accountOpeningRequest);
 
   const account = await createAccount(personId);
-  person = await getPerson(personId);
 
   const completedRequest = {
     ...accountOpeningRequest,
@@ -65,14 +69,19 @@ export const createAccountOpeningRequest = async (
     iban: account.iban,
   };
 
-  person.accountOpeningRequests = [
-    ...person.accountOpeningRequests.filter(
-      (request) => request.id !== accountOpeningRequest.id
-    ),
-    completedRequest,
-  ];
-
-  await savePerson(person);
+  await redlock.using([personKey], 5000, async (signal) => {
+    if (signal.aborted) {
+      throw signal.error;
+    }
+    person = await getPerson(personId);
+    person.accountOpeningRequests = [
+      ...person.accountOpeningRequests.filter(
+        (request) => request.id !== accountOpeningRequest.id
+      ),
+      completedRequest,
+    ];
+    await savePerson(person);
+  });
 
   await triggerWebhook({
     type: PersonWebhookEvent.ACCOUNT_OPENING_REQUEST,
