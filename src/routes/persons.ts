@@ -7,7 +7,7 @@ import {
   savePerson,
   setPersonOrigin,
   saveAccountToPersonId,
-  redisClient,
+  removePerson,
 } from "../db";
 
 import { createChangeRequest } from "./changeRequest";
@@ -57,6 +57,23 @@ export const createPerson = async (req, res) => {
   }
 
   return result;
+};
+
+export const deletePerson = async (req, res) => {
+  const { id: personId } = req.params;
+  try {
+    const isPersonDeleted = await removePerson(personId);
+    return res.status(200).send(isPersonDeleted);
+  } catch (err) {
+    return res.status(500).send({
+      errors: [
+        {
+          id: "0a5ec2ea-6772-11e9-a656-02420a868404",
+          status: 500,
+        },
+      ],
+    });
+  }
 };
 
 export const showPerson = async (req, res) => {

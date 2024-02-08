@@ -196,6 +196,22 @@ export const getPerson = async (personId: string): Promise<MockPerson> => {
   return augmentPerson(person);
 };
 
+export const removePerson = async (personId: string): Promise<MockPerson> => {
+  const person = await getPerson(personId);
+  const score = moment(person.createdAt).valueOf();
+  const key = `${process.env.MOCKSOLARIS_REDIS_PREFIX}:persons`;
+  await redisClient.zRemRangeByScore(key, score, score);
+  const isDeleted = await redisClient.del(
+    `${process.env.MOCKSOLARIS_REDIS_PREFIX}:person:${personId}`
+  );
+  if (!isDeleted) {
+    throw new Error(
+      `Person who has personID: ${personId} was not found in redis`
+    );
+  }
+  return true;
+};
+
 export const getTechnicalUserPerson = () => getPerson("mockpersonkontistgmbh");
 
 const addAmountValues = (a, b) => a + b.amount.value;
