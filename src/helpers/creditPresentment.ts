@@ -30,39 +30,49 @@ export const createCreditPresentment = async ({
   recipient: string;
   declineReason?: CardAuthorizationDeclineV2Type;
 }) => {
-  const person = await db.getPerson(personId);
-  const cardData = person.account.cards.find(({ card }) => card.id === cardId);
+  let person;
+  const personLockKey = `redlock:${process.env.MOCKSOLARIS_REDIS_PREFIX}:person:${personId}`;
+  await db.redlock.using([personLockKey], 5000, async (signal) => {
+    if (signal.aborted) {
+      throw signal.error;
+    }
+    person = await db.getPerson(personId);
 
-  if (!cardData) {
-    throw new Error("Card not found");
-  }
+    const cardData = person.account.cards.find(
+      ({ card }) => card.id === cardId
+    );
 
-  const date = moment().toDate();
-  const convertedAmount = Math.abs(parseInt(amount, 10));
+    if (!cardData) {
+      throw new Error("Card not found");
+    }
 
-  const metaInfo = generateMetaInfo({
-    originalAmount: convertedAmount,
-    originalCurrency: currency,
-    recipient,
-    cardId,
-    date,
-    type,
-    incoming: true,
-    posEntryMode: POSEntryMode.CARD_NOT_PRESENT,
+    const date = moment().toDate();
+    const convertedAmount = Math.abs(parseInt(amount, 10));
+
+    const metaInfo = generateMetaInfo({
+      originalAmount: convertedAmount,
+      originalCurrency: currency,
+      recipient,
+      cardId,
+      date,
+      type,
+      incoming: true,
+      posEntryMode: POSEntryMode.CARD_NOT_PRESENT,
+    });
+
+    const booking = creteBookingFromReservation(
+      person,
+      {
+        amount: { value: Math.round(convertedAmount * FxRate[currency]) },
+        description: recipient,
+        meta_info: metaInfo,
+      },
+      true
+    );
+
+    person.transactions.push(booking);
+
+    await db.savePerson(person);
+    await triggerBookingsWebhook(person);
   });
-
-  const booking = creteBookingFromReservation(
-    person,
-    {
-      amount: { value: Math.round(convertedAmount * FxRate[currency]) },
-      description: recipient,
-      meta_info: metaInfo,
-    },
-    true
-  );
-
-  person.transactions.push(booking);
-
-  await db.savePerson(person);
-  await triggerBookingsWebhook(person);
 };

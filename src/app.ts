@@ -30,6 +30,8 @@ import * as termsAPI from "./routes/termsAndConditions";
 import * as psd2API from "./routes/psd2";
 import * as postboxItemAPI from "./routes/postbox";
 import * as topUpsAPI from "./routes/topUps";
+import * as instantCreditTransferAPI from "./routes/instantCreditTransfer";
+import * as accountOpeningRequestAPI from "./routes/accountOpeningRequest";
 
 import { migrate } from "./db";
 
@@ -38,6 +40,7 @@ import { safeRequestHandler } from "./helpers/safeRequestHandler";
 import { shouldReturnJSON } from "./helpers";
 import { CardStatus } from "./helpers/types";
 import { createStripeCustomerIfNotExistsMiddleware } from "./helpers/stripe";
+
 const app = express();
 
 function logResponseBody(req, res, next) {
@@ -90,6 +93,7 @@ app.use(errorHandler);
 app.set("json spaces", 2);
 app.use("/v1", router);
 app.post("/oauth/token", oauthAPI.generateToken);
+app.post("/oauth2/token", oauthAPI.generateOAuth2Token);
 
 function errorHandler(err, req, res, next) {
   log.error(err, {
@@ -720,6 +724,12 @@ app.post(
   safeRequestHandler(postboxItemAPI.createPostboxItemRequestHandler)
 );
 
+// BACKOFFICE - DEVICES
+app.post(
+  "/__BACKOFFICE__/deleteDevice/:person_id/:device_id",
+  safeRequestHandler(backofficeAPI.deleteDeviceRequestHandler)
+);
+
 // WEBHOOKS
 router.get(
   "/webhooks",
@@ -775,6 +785,28 @@ router.post(
   middlewares.withPerson,
   middlewares.withAccount,
   safeRequestHandler(topUpsAPI.cancelTopUp)
+);
+
+// SEPA INSTANT CREDIT TRANSFERS
+
+router.get(
+  "/sepa_instant_reachability/:iban",
+  safeRequestHandler(instantCreditTransferAPI.getInstantReachability)
+);
+router.post(
+  "/accounts/:accountId/transactions/sepa_instant_credit_transfers",
+  safeRequestHandler(instantCreditTransferAPI.createInstantCreditTransfer)
+);
+
+// ACCOUNT OPENING REQUEST
+
+router.post(
+  "/accounts/opening_requests",
+  safeRequestHandler(accountOpeningRequestAPI.createAccountOpeningRequest)
+);
+router.get(
+  "/accounts/opening_requests/:id",
+  safeRequestHandler(accountOpeningRequestAPI.retrieveAccountOpeningRequest)
 );
 
 app.post(

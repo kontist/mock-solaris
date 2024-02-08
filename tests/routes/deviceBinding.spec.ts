@@ -118,7 +118,7 @@ describe("Device Binding", () => {
       expect(res.status.firstCall.args[0]).to.equal(404);
     });
 
-    it("should return 200 and list of devices if person is found", async () => {
+    it("should return 200 and list of verified devices if person is found", async () => {
       await db.savePerson({
         id: "person-id",
         name: "person-name",
@@ -132,8 +132,20 @@ describe("Device Binding", () => {
 
       await deviceBinding.getDevices(req, res);
 
-      expect(res.status.firstCall.args[0]).to.equal(200);
-      expect(res.send.firstCall.args[0].length).to.equal(1);
+      expect(res.status.lastCall.args[0]).to.equal(200);
+      expect(res.send.lastCall.args[0].length).to.equal(0);
+
+      await db.saveDevice({
+        id: "device-id",
+        person_id: "person-id",
+        name: "device-name",
+        verified: true,
+      });
+
+      await deviceBinding.getDevices(req, res);
+
+      expect(res.status.lastCall.args[0]).to.equal(200);
+      expect(res.send.lastCall.args[0].length).to.equal(1);
     });
   });
 });

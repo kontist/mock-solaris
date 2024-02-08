@@ -1,3 +1,5 @@
+import { STANDING_ORDER_PAYMENT_FREQUENCY } from "../routes/standingOrders";
+
 export enum ReservationType {
   CARD_AUTHORIZATION = "CARD_AUTHORIZATION",
 }
@@ -201,6 +203,7 @@ export type MockChangeRequest = {
   delta?: Record<string, unknown>;
   transfer?: Record<string, any>;
   timedOrder?: TimedOrder;
+  instantCreditTransfer?: InstantCreditTransfer;
 };
 
 export interface StandingOrder {
@@ -210,7 +213,27 @@ export interface StandingOrder {
   next_occurrence?: string;
   status: string;
   last_execution_date?: string;
-  reoccurrence?: string;
+  reoccurrence?: STANDING_ORDER_PAYMENT_FREQUENCY;
+}
+
+export interface InstantCreditTransfer {
+  id: string;
+  amount: Amount;
+  creditor_iban: string;
+  creditor_name: string;
+  description?: string;
+  idempotency_key?: string;
+  end_to_end_id?: string;
+  initiator_reference?: string;
+  valuta_date: string;
+  status: InstantCreditTransferStatus;
+}
+
+export enum InstantCreditTransferStatus {
+  INITIATED = "INITIATED",
+  RESERVED = "RESERVED",
+  READY_FOR_CLEARING = "READY_FOR_CLEARING",
+  CLEARED = "CLEARED",
 }
 
 export type PostboxItem = {
@@ -232,6 +255,7 @@ export type MockPerson = {
   billing_account?: BillingAccount;
   identifications?: Record<string, unknown>;
   timedOrders?: TimedOrder[];
+  instantCreditTransfers?: InstantCreditTransfer[];
   stripeCustomerId?: string;
   first_name: string;
   last_name: string;
@@ -252,6 +276,7 @@ export type MockPerson = {
   screening_progress?: ScreeningProgress;
   risk_classification_status?: RiskClarificationStatus;
   customer_vetting_status?: CustomerVettingStatus;
+  accountOpeningRequests?: AccountOpeningRequest[];
 };
 
 export type MockCreatePerson = {
@@ -341,6 +366,7 @@ export enum PersonWebhookEvent {
   "PERSON_SEIZURE_FULFILLED" = "PERSON_SEIZURE_FULFILLED",
   "PERSON_DELETED" = "PERSON_DELETED",
   "PERSON_CHANGED" = "PERSON_CHANGED",
+  "ACCOUNT_OPENING_REQUEST" = "ACCOUNT_OPENING_REQUEST",
 }
 
 export enum AccountWebhookEvent {
@@ -483,6 +509,7 @@ export enum BookingType {
   CANCELLATION_INTEREST_ACCRUED = "CANCELLATION_INTEREST_ACCRUED",
   COMMISSION_OVERDRAFT = "COMMISSION_OVERDRAFT",
   TOP_UP_CARD = "TopUpCard",
+  SEPA_INSTANT_CREDIT_TRANSFER = "SEPAInstantCreditTransfer",
 }
 
 export enum CardAuthorizationDeclinedStatus {
@@ -698,4 +725,36 @@ export enum TopUpStatus {
   EXECUTED = "EXECUTED",
   DECLINED = "DECLINED",
   CANCELLED = "CANCELLED",
+}
+
+export enum AccountOpeningRequestStatus {
+  INITIATED = "INITIATED",
+  IN_PROGRESS = "IN_PROGRESS",
+  COMPLETED = "COMPLETED",
+  REJECTED = "REJECTED",
+}
+
+export interface AccountOpeningRequest {
+  id: string;
+  customer_id: string;
+  account_id: string | null;
+  customer_type: string;
+  product_name: string;
+  account_type: string;
+  account_purpose: string;
+  account_bic: string;
+  account_currency: string;
+  status: AccountOpeningRequestStatus;
+  rejection_reason: {
+    failed_validation: string | null;
+    details: string | null;
+  };
+  iban: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export enum AccountType {
+  "CHECKING_SOLE_PROPRIETOR" = "CHECKING_SOLE_PROPRIETOR",
+  "CHECKING_PERSONAL" = "CHECKING_PERSONAL",
 }
