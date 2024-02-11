@@ -236,15 +236,17 @@ export const removePerson = async (personId: string): Promise<MockPerson> => {
   const score = moment(person.createdAt).valueOf();
   const key = `${process.env.MOCKSOLARIS_REDIS_PREFIX}:persons`;
   await redisClient.zRemRangeByScore(key, score, score);
-  const isDeleted = await redisClient.del(
+  await redisClient.del(
     `${process.env.MOCKSOLARIS_REDIS_PREFIX}:person:${personId}`
   );
-  if (!isDeleted) {
-    throw new Error(
-      `Person who has personID: ${personId} was not found in redis`
-    );
-  }
-  return true;
+  await redisClient.del(
+    `${process.env.MOCKSOLARIS_REDIS_PREFIX}:taxIdentifications:${personId}`
+  );
+  await redisClient.del(
+    `${process.env.MOCKSOLARIS_REDIS_PREFIX}:mobileNumber:${personId}`
+  );
+
+  await deletePersonDevices(personId);
 };
 
 export const getTechnicalUserPerson = () => getPerson("mockpersonkontistgmbh");
@@ -380,6 +382,18 @@ export const getDevicesByPersonId = (personId: string) => {
   );
 
   return Promise.map(deviceIds, getDevice);
+};
+
+export const deletePersonDevices = async (personId: string) => {
+  const deviceIds = await redisClient.lRange(
+    `${process.env.MOCKSOLARIS_REDIS_PREFIX}:person-deviceIds:${personId}`,
+    0,
+    -1
+  );
+
+  await Promise.map(deviceIds, async (deviceId) => {
+    await deleteDevice(deviceId, personId);
+  });
 };
 
 export const saveDevice = async (device) => {
