@@ -195,6 +195,11 @@ router.get(
   safeRequestHandler(accountsAPI.showAccountBalance)
 );
 
+router.get(
+  "/accounts/:account_id/average_daily_balance",
+  safeRequestHandler(accountsAPI.showAverageDailyAccountBalance)
+);
+
 // PSD2
 router.get(
   "/psd2/challenges/:challenge_id",
