@@ -7,6 +7,7 @@ import {
   savePerson,
   setPersonOrigin,
   saveAccountToPersonId,
+  removePerson,
   redlock,
 } from "../db";
 
@@ -17,6 +18,7 @@ import generateID from "../helpers/id";
 import { storePersonInSortedSet } from "../helpers/persons";
 
 const format = (date: Moment): string => date.format("YYYY-MM-DD");
+const ERROR_NOT_FOUND_ID = "0a5ec2ea-6772-11e9-a656-02420a868404";
 
 /**
  * Creates a person
@@ -66,6 +68,23 @@ export const createPerson = async (req, res) => {
   return createdPerson;
 };
 
+export const deletePerson = async (req, res) => {
+  const { id: personId } = req.params;
+  try {
+    const isPersonDeleted = await removePerson(personId);
+    return res.status(200).send(isPersonDeleted);
+  } catch (err) {
+    return res.status(500).send({
+      errors: [
+        {
+          id: ERROR_NOT_FOUND_ID,
+          status: 500,
+        },
+      ],
+    });
+  }
+};
+
 export const showPerson = async (req, res) => {
   const { person_id: personId } = req.params;
   try {
@@ -77,7 +96,7 @@ export const showPerson = async (req, res) => {
       const resp = {
         errors: [
           {
-            id: "0a5ec2ea-6772-11e9-a656-02420a868404",
+            id: ERROR_NOT_FOUND_ID,
             status: 404,
             code: "model_not_found",
             title: "Model Not Found",
@@ -92,7 +111,7 @@ export const showPerson = async (req, res) => {
     return res.status(500).send({
       errors: [
         {
-          id: "0a5ec2ea-6772-11e9-a656-02420a868404",
+          id: ERROR_NOT_FOUND_ID,
           status: 500,
         },
       ],

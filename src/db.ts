@@ -231,6 +231,24 @@ export const getPerson = async (personId: string): Promise<MockPerson> => {
   return augmentPerson(person);
 };
 
+export const removePerson = async (personId: string): Promise<MockPerson> => {
+  const person = await getPerson(personId);
+  const score = moment(person.createdAt).valueOf();
+  const key = `${process.env.MOCKSOLARIS_REDIS_PREFIX}:persons`;
+  await redisClient.zRemRangeByScore(key, score, score);
+  await redisClient.del(
+    `${process.env.MOCKSOLARIS_REDIS_PREFIX}:person:${personId}`
+  );
+  await redisClient.del(
+    `${process.env.MOCKSOLARIS_REDIS_PREFIX}:taxIdentifications:${personId}`
+  );
+  await redisClient.del(
+    `${process.env.MOCKSOLARIS_REDIS_PREFIX}:mobileNumber:${personId}`
+  );
+
+  await deletePersonDevices(personId);
+};
+
 export const getTechnicalUserPerson = () => getPerson("mockpersonkontistgmbh");
 
 const addAmountValues = (a, b) => a + b.amount.value;
@@ -364,6 +382,18 @@ export const getDevicesByPersonId = (personId: string) => {
   );
 
   return Promise.map(deviceIds, getDevice);
+};
+
+export const deletePersonDevices = async (personId: string) => {
+  const deviceIds = await redisClient.lRange(
+    `${process.env.MOCKSOLARIS_REDIS_PREFIX}:person-deviceIds:${personId}`,
+    0,
+    -1
+  );
+
+  await Promise.map(deviceIds, async (deviceId) => {
+    await deleteDevice(deviceId, personId);
+  });
 };
 
 export const saveDevice = async (device) => {

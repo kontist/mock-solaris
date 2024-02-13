@@ -589,6 +589,12 @@ app.get(
   "/__BACKOFFICE__/person/:id",
   safeRequestHandler(backofficeAPI.getPersonHandler)
 );
+
+app.delete(
+  "/__BACKOFFICE__/person/:id",
+  safeRequestHandler(personsAPI.deletePerson)
+);
+
 app.post(
   "/__BACKOFFICE__/person/:id",
   safeRequestHandler(backofficeAPI.updatePersonHandler)
