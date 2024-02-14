@@ -327,3 +327,17 @@ export const createCreditRecord = async (req, res) => {
     created_at: new Date().toISOString(),
   });
 };
+
+export const createSettings = async (req, res) => {
+  const {
+    body: { language },
+    params: { person_id: personId },
+  } = req;
+
+  const person = await getPerson(personId);
+
+  person.language = language;
+  await savePerson(person);
+
+  return res.status(201).send({ language });
+};
