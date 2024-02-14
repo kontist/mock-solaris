@@ -222,3 +222,53 @@ export const showAccountBalance = async (req, res) => {
 
   res.status(200).send(balance);
 };
+
+export const showAverageDailyAccountBalance = async (req, res) => {
+  const { account_id: accountId } = req.params;
+  const { start_date, end_date } = req.query;
+
+  if (!start_date || !end_date) {
+    log.error("Missing start_date or end_date", {
+      accountId,
+      start_date,
+      end_date,
+    });
+    return res.status(HttpStatusCodes.BAD_REQUEST).send({
+      errors: [
+        {
+          id: generateID(),
+          status: 400,
+          code: "bad_request",
+          title: "Bad Request",
+          detail: "Missing start_date or end_date",
+        },
+      ],
+    });
+  }
+
+  const person = await findPersonByAccount({ id: accountId });
+
+  if (!person) {
+    log.error(`Account not found for id: ${accountId}`);
+    return res.status(HttpStatusCodes.NOT_FOUND).send({
+      errors: [
+        {
+          id: generateID(),
+          status: 404,
+          code: "model_not_found",
+          title: "Model Not Found",
+          detail: `Couldn't find 'Solaris::Account' for id '${accountId}'.`,
+        },
+      ],
+    });
+  }
+
+  res.send({
+    account_id: person.account.id,
+    average_daily_balance: {
+      value: person.account.balance.value,
+      unit: "cents",
+      currency: "EUR",
+    },
+  });
+};
