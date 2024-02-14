@@ -25,6 +25,7 @@ import {
   saveAccountToPersonId,
   _getPersons,
   redlock,
+  saveQuestionSetIdToPersonId,
 } from "../db";
 import {
   createSepaDirectDebitReturn,
@@ -289,6 +290,7 @@ export const updatePersonHandler = async (req, res) => {
     person.questionSets = person.questionSets || [];
     questionSet = await createQuestionSet(person.id);
     person.questionSets.push(questionSet);
+    await saveQuestionSetIdToPersonId(person.id, questionSet.id);
   }
 
   await savePerson(person);

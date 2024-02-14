@@ -40,6 +40,7 @@ import { safeRequestHandler } from "./helpers/safeRequestHandler";
 import { shouldReturnJSON } from "./helpers";
 import { CardStatus } from "./helpers/types";
 import { createStripeCustomerIfNotExistsMiddleware } from "./helpers/stripe";
+import * as questionsAPI from "./routes/questions";
 
 const app = express();
 
@@ -138,6 +139,17 @@ router.post(
   "/persons/:person_id/credit_records",
   safeRequestHandler(personsAPI.createCreditRecord)
 );
+
+router.get(
+  "/question_set/:question_set_id",
+  safeRequestHandler(questionsAPI.listQuestions)
+);
+router.patch(
+  "/question_set/:question_set_id/questions/:question_id/answer",
+  safeRequestHandler(questionsAPI.answerQuestion)
+);
+
+// https://api.solarisbank.de/v1/question_set/{question_set_id}
 
 // DEVICE BINDING
 router.post("/mfa/devices", safeRequestHandler(deviceBindingAPI.createDevice));
