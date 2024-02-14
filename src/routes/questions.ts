@@ -1,7 +1,8 @@
 import type { Request, Response } from "express";
 
 import * as db from "../db";
-import { CustomerVettingStatus } from "../helpers/types";
+import { CustomerVettingStatus, PersonWebhookEvent } from "../helpers/types";
+import { triggerWebhook } from "../helpers/webhooks";
 
 const getPersonAndQuestionSet = async (setId: string) => {
   const personId = await db.getPersonIdByQuestionSetId(setId);
@@ -44,6 +45,18 @@ export const answerQuestion = async (req: Request, res: Response) => {
   }
 
   await db.savePerson(person);
+
+  if (
+    person.customer_vetting_status ===
+    CustomerVettingStatus.INFORMATION_RECEIVED
+  ) {
+    triggerWebhook({
+      type: PersonWebhookEvent.PERSON_CHANGED,
+      payload: {},
+      extraHeaders: { "solaris-entity-id": req.params.id },
+      personId: person.id,
+    });
+  }
 
   res.json(question);
 };
