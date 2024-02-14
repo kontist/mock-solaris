@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 
 import * as db from "../db";
+import { CustomerVettingStatus } from "../helpers/types";
 
 const getPersonAndQuestionSet = async (setId: string) => {
   const personId = await db.getPersonIdByQuestionSetId(setId);
@@ -35,6 +36,12 @@ export const answerQuestion = async (req: Request, res: Response) => {
     attachments,
     ready_for_review,
   };
+
+  const areAllQuestionsAnswered = set.questions.every((q) => q.answer);
+
+  if (areAllQuestionsAnswered) {
+    person.customer_vetting_status = CustomerVettingStatus.INFORMATION_RECEIVED;
+  }
 
   await db.savePerson(person);
 
