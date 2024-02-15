@@ -130,6 +130,7 @@ describe("Persons", () => {
 
   describe("postDocument", () => {
     let res: sinon.SinonSpy;
+    const documentType = "SIGNED_CONTRACT";
 
     before(async () => {
       await db.flushDb();
@@ -140,7 +141,7 @@ describe("Persons", () => {
         },
         body: {
           file: Buffer.from("file").toString("base64"),
-          document_type: "SIGNED_CONTRACT",
+          document_type: documentType,
         },
       });
       await personsApi.postDocument(req, res);
@@ -149,6 +150,7 @@ describe("Persons", () => {
     it("should return saved document data", async () => {
       const lastCall = res.send.args[res.send.args.length - 1];
       expect(lastCall[0].id).to.be.a("string");
+      expect(lastCall[0].document_type).to.equal(documentType);
     });
   });
 
