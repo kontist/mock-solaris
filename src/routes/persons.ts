@@ -341,3 +341,20 @@ export const createSettings = async (req, res) => {
 
   return res.status(201).send({ language });
 };
+
+export const postDocument = async (req, res) => {
+  const {
+    body: { document_type: documentType },
+  } = req;
+
+  return res.status(201).send({
+    id: generateID(),
+    document_type: documentType,
+    name: "Operation_authorization.png",
+    content_type: "image/png",
+    size: 10187,
+    customer_accessible: false,
+    created_at: new Date(),
+    deleted_at: null,
+  });
+};

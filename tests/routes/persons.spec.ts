@@ -128,5 +128,29 @@ describe("Persons", () => {
     });
   });
 
+  describe("postDocument", () => {
+    let res: sinon.SinonSpy;
+
+    before(async () => {
+      await db.flushDb();
+      res = mockRes();
+      const req = mockReq({
+        params: {
+          person_id: "1234abc",
+        },
+        body: {
+          file: Buffer.from("file").toString("base64"),
+          document_type: "SIGNED_CONTRACT",
+        },
+      });
+      await personsApi.postDocument(req, res);
+    });
+
+    it("should return saved document data", async () => {
+      const lastCall = res.send.args[res.send.args.length - 1];
+      expect(lastCall[0].id).to.be.a("string");
+    });
+  });
+
   after(db.flushDb);
 });
