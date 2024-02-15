@@ -138,6 +138,10 @@ router.post(
   "/persons/:person_id/credit_records",
   safeRequestHandler(personsAPI.createCreditRecord)
 );
+router.post(
+  "/persons/:person_id/settings",
+  safeRequestHandler(personsAPI.createSettings)
+);
 
 // DEVICE BINDING
 router.post("/mfa/devices", safeRequestHandler(deviceBindingAPI.createDevice));
