@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 
 import * as db from "../db";
 import {
+  Answer,
   CustomerVettingStatus,
   PersonWebhookEvent,
   QuestionAnswerResponse,
@@ -28,7 +29,8 @@ export const listQuestions = async (req: Request, res: Response) => {
 
 export const answerQuestion = async (req: Request, res: Response) => {
   const { question_set_id: setId } = req.params;
-  const { response, partner_notes, attachments, ready_for_review } = req.body;
+  const { response, partner_notes, attachments, ready_for_review } =
+    req.body as Answer;
   const { person, set } = await getPersonAndQuestionSet(setId);
   const question = set.questions.find(
     (q) => q.id === req.body.question_id
