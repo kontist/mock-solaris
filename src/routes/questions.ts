@@ -52,14 +52,28 @@ export const answerQuestion = async (req: Request, res: Response) => {
   );
 
   if (areAllQuestionsAnswered) {
-    person.customer_vetting_status = CustomerVettingStatus.INFORMATION_RECEIVED;
+    if (
+      person.customer_vetting_status ===
+      CustomerVettingStatus.INFORMATION_REQUESTED
+    ) {
+      person.customer_vetting_status =
+        CustomerVettingStatus.INFORMATION_RECEIVED;
+    } else if (
+      person.risk_classification_status ===
+      CustomerVettingStatus.INFORMATION_REQUESTED
+    ) {
+      person.risk_classification_status =
+        CustomerVettingStatus.INFORMATION_RECEIVED;
+    }
   }
 
   await db.savePerson(person);
 
   if (
-    person.customer_vetting_status ===
-    CustomerVettingStatus.INFORMATION_RECEIVED
+    [
+      person.customer_vetting_status,
+      person.risk_classification_status,
+    ].includes(CustomerVettingStatus.INFORMATION_RECEIVED)
   ) {
     triggerWebhook({
       type: PersonWebhookEvent.PERSON_CHANGED,
