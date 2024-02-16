@@ -149,8 +149,6 @@ router.patch(
   safeRequestHandler(questionsAPI.answerQuestion)
 );
 
-// https://api.solarisbank.de/v1/question_set/{question_set_id}
-
 // DEVICE BINDING
 router.post("/mfa/devices", safeRequestHandler(deviceBindingAPI.createDevice));
 router.get("/mfa/devices", safeRequestHandler(deviceBindingAPI.getDevices));

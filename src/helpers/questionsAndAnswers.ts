@@ -1,5 +1,6 @@
 import moment from "moment";
 import _ from "lodash";
+
 import generateID from "./id";
 
 const fetchRandomQuestion = async () => {
@@ -25,27 +26,29 @@ const fetchRandomQuestion = async () => {
 };
 
 export const createQuestionSet = async (personId: string) => {
-  const numberOfQuestions = Math.floor(Math.random() * 2) + 1;
   const deadline = moment().add(10, "days").toISOString();
-  const questions = [];
-
-  for (let i = 0; i < numberOfQuestions; i++) {
-    questions.push({
+  const questions = [
+    {
       id: generateID(),
       question: await fetchRandomQuestion(),
-      answer_type: i % 2 == 0 ? "TEXT_ONLY" : "TEXT_AND_FILES",
+      answer_type: "TEXT_ONLY",
       deadline,
-      allowed_document_types: [
-        i % 2 === 0 ? "ACCOUNT_STATEMENT" : "KYC_REPORT",
-      ],
-    });
-  }
+      allowed_document_types: ["KYC_REPORT", "ACCOUNT_STATEMENT"],
+    },
+    {
+      id: generateID(),
+      question: await fetchRandomQuestion(),
+      answer_type: "TEXT_AND_FILES",
+      deadline,
+      allowed_document_types: ["ACCOUNT_STATEMENT", "KYC_REPORT"],
+    },
+  ];
 
   return {
     id: generateID(),
     entity_id: personId,
     context_id: generateID(),
-    description: "some description",
+    description: "Very fancy description",
     deadline,
     questions,
     recipient: {
