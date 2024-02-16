@@ -15,7 +15,6 @@ export const fetchRandomQuestion = async () => {
         ...data[0].incorrectAnswers,
       ]);
 
-      // return single line with question and available options, but with number prefix based on comment structure
       const questionText = `${data[0].question.text}\n${answers
         .map((answer, index) => `${index + 1}. ${answer}`)
         .join("\n")}`;
@@ -35,7 +34,6 @@ export const fetchRandomQuestion = async () => {
 };
 
 export const createQuestionSet = async (personId: string) => {
-  // remove time
   const deadline = moment().add(10, "days").toISOString().split("T")[0];
   const questions = [
     {
