@@ -283,7 +283,7 @@ export const updatePersonHandler = async (req, res) => {
 
   let questionSet = null;
   const shouldGenerateQuestionSet =
-    req.body.customerVettingStatus ===
+    req.body.customer_vetting_status ===
       CustomerVettingStatus.INFORMATION_REQUESTED ||
     req.body.risk_classification_status ===
       RiskClarificationStatus.INFORMATION_REQUESTED;
