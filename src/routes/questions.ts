@@ -13,8 +13,8 @@ import { triggerWebhook } from "../helpers/webhooks";
 const getPersonAndQuestionSet = async (setId: string) => {
   const personId = await db.getPersonIdByQuestionSetId(setId);
   const person = await db.getPerson(personId);
-  const set: QuestionSet = person.questionSets.find((s) => s.id === setId);
-  if (!set) {
+  const set: QuestionSet = person.questionSet;
+  if (set?.id !== setId) {
     throw new Error("Question set not found");
   }
 
