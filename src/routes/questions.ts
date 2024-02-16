@@ -52,19 +52,9 @@ export const answerQuestion = async (req: Request, res: Response) => {
   );
 
   if (areAllQuestionsAnswered) {
-    if (
-      person.customer_vetting_status ===
-      CustomerVettingStatus.INFORMATION_REQUESTED
-    ) {
-      person.customer_vetting_status =
-        CustomerVettingStatus.INFORMATION_RECEIVED;
-    } else if (
-      person.risk_classification_status ===
-      CustomerVettingStatus.INFORMATION_REQUESTED
-    ) {
-      person.risk_classification_status =
-        CustomerVettingStatus.INFORMATION_RECEIVED;
-    }
+    person.customer_vetting_status = CustomerVettingStatus.INFORMATION_RECEIVED;
+    person.risk_classification_status =
+      CustomerVettingStatus.INFORMATION_RECEIVED;
   }
 
   await db.savePerson(person);
