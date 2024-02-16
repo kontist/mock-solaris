@@ -282,11 +282,13 @@ export const updatePersonHandler = async (req, res) => {
   }
 
   let questionSet = null;
-
-  if (
+  const shouldGenerateQuestionSet =
     req.body.customerVettingStatus ===
-    CustomerVettingStatus.INFORMATION_REQUESTED
-  ) {
+      CustomerVettingStatus.INFORMATION_REQUESTED ||
+    req.body.risk_classification_status ===
+      RiskClarificationStatus.INFORMATION_REQUESTED;
+
+  if (shouldGenerateQuestionSet) {
     person.questionSets = person.questionSets || [];
     questionSet = await createQuestionSet(person.id);
     person.questionSets.push(questionSet);
