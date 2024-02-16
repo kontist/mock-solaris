@@ -25,6 +25,7 @@ import {
   saveAccountToPersonId,
   _getPersons,
   redlock,
+  saveQuestionSetIdToPersonId,
 } from "../db";
 import {
   createSepaDirectDebitReturn,
@@ -57,6 +58,7 @@ import {
 } from "../helpers/overdraft";
 import generateID from "../helpers/id";
 import { storePersonInSortedSet } from "../helpers/persons";
+import { createQuestionSet } from "../helpers/questionsAndAnswers";
 
 const triggerIdentificationWebhook = (payload, personId?: string) =>
   triggerWebhook({
@@ -279,6 +281,18 @@ export const updatePersonHandler = async (req, res) => {
     await deleteMobileNumber(person.id);
   }
 
+  let questionSet = null;
+  const shouldGenerateQuestionSet = [
+    req.body.customer_vetting_status,
+    req.body.risk_classification_status,
+  ].includes(CustomerVettingStatus.INFORMATION_REQUESTED);
+
+  if (shouldGenerateQuestionSet) {
+    questionSet = await createQuestionSet(person.id);
+    person.questionSet = questionSet;
+    await saveQuestionSetIdToPersonId(person.id, questionSet.id);
+  }
+
   await savePerson(person);
 
   await triggerWebhook({
@@ -287,6 +301,14 @@ export const updatePersonHandler = async (req, res) => {
     extraHeaders: { "solaris-entity-id": req.params.id },
     personId: person.id,
   });
+
+  if (questionSet) {
+    await triggerWebhook({
+      type: PersonWebhookEvent.QUESTIONS_REQUIRE_RESPONSE,
+      payload: questionSet,
+      personId: person.id,
+    });
+  }
 
   res.redirect(`/__BACKOFFICE__/person/${person.id}`);
 };

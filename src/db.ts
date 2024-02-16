@@ -797,6 +797,21 @@ export const saveDeviceIdToPersonId = async (
   return false;
 };
 
+export const saveQuestionSetIdToPersonId = async (
+  personId: string,
+  questionSetId: string
+): Promise<boolean> => {
+  const key = `${process.env.MOCKSOLARIS_REDIS_PREFIX}:person-questionSetIds:${questionSetId}`;
+  await redisClient.set(key, personId);
+};
+
+export const getPersonIdByQuestionSetId = async (
+  questionSetId: string
+): Promise<string> => {
+  const key = `${process.env.MOCKSOLARIS_REDIS_PREFIX}:person-questionSetIds:${questionSetId}`;
+  return redisClient.get(key);
+};
+
 export const saveAccountToPersonId = async (
   account: MockAccount,
   personId: string

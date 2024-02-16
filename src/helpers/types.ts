@@ -277,6 +277,7 @@ export type MockPerson = {
   risk_classification_status?: RiskClarificationStatus;
   customer_vetting_status?: CustomerVettingStatus;
   accountOpeningRequests?: AccountOpeningRequest[];
+  questionSet?: QuestionSet;
   language?: string;
 };
 
@@ -368,6 +369,7 @@ export enum PersonWebhookEvent {
   "PERSON_DELETED" = "PERSON_DELETED",
   "PERSON_CHANGED" = "PERSON_CHANGED",
   "ACCOUNT_OPENING_REQUEST" = "ACCOUNT_OPENING_REQUEST",
+  QUESTIONS_REQUIRE_RESPONSE = "QUESTIONS_REQUIRE_RESPONSE",
 }
 
 export enum AccountWebhookEvent {
@@ -758,4 +760,34 @@ export interface AccountOpeningRequest {
 export enum AccountType {
   "CHECKING_SOLE_PROPRIETOR" = "CHECKING_SOLE_PROPRIETOR",
   "CHECKING_PERSONAL" = "CHECKING_PERSONAL",
+}
+
+export interface Question {
+  id: string;
+  question: string;
+  answer_type: "TEXT_ONLY" | "TEXT_AND_FILES";
+  deadline: string;
+  allowed_document_types: string[];
+}
+
+export interface Answer {
+  response: string;
+  partner_notes: string | null;
+  attachments: string[];
+  ready_for_review: boolean;
+}
+
+export type QuestionAnswerResponse = Question & { answer: Answer };
+
+export interface QuestionSet {
+  id: string;
+  entity_id: string;
+  context_id: string;
+  description: string;
+  deadline: string;
+  recipient: {
+    recipient_id: string;
+    recipient_type: string;
+  };
+  questions: Question[];
 }

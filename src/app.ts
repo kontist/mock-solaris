@@ -40,6 +40,7 @@ import { safeRequestHandler } from "./helpers/safeRequestHandler";
 import { shouldReturnJSON } from "./helpers";
 import { CardStatus } from "./helpers/types";
 import { createStripeCustomerIfNotExistsMiddleware } from "./helpers/stripe";
+import * as questionsAPI from "./routes/questions";
 
 const app = express();
 
@@ -145,6 +146,15 @@ router.post(
 router.post(
   "persons/:person_id/documents",
   safeRequestHandler(personsAPI.postDocument)
+);
+
+router.get(
+  "/question_set/:question_set_id",
+  safeRequestHandler(questionsAPI.listQuestions)
+);
+router.patch(
+  "/question_set/:question_set_id/questions/:question_id/answer",
+  safeRequestHandler(questionsAPI.answerQuestion)
 );
 
 // DEVICE BINDING
