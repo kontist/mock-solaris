@@ -278,6 +278,7 @@ export type MockPerson = {
   customer_vetting_status?: CustomerVettingStatus;
   accountOpeningRequests?: AccountOpeningRequest[];
   questionSet?: QuestionSet;
+  language?: string;
 };
 
 export type MockCreatePerson = {

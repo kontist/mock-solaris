@@ -139,6 +139,14 @@ router.post(
   "/persons/:person_id/credit_records",
   safeRequestHandler(personsAPI.createCreditRecord)
 );
+router.post(
+  "/persons/:person_id/settings",
+  safeRequestHandler(personsAPI.createSettings)
+);
+router.post(
+  "persons/:person_id/documents",
+  safeRequestHandler(personsAPI.postDocument)
+);
 
 router.get(
   "/question_set/:question_set_id",
