@@ -277,6 +277,7 @@ export type MockPerson = {
   risk_classification_status?: RiskClarificationStatus;
   customer_vetting_status?: CustomerVettingStatus;
   accountOpeningRequests?: AccountOpeningRequest[];
+  questionSet?: QuestionSet;
 };
 
 export type MockCreatePerson = {

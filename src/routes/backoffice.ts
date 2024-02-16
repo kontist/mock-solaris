@@ -289,9 +289,8 @@ export const updatePersonHandler = async (req, res) => {
       RiskClarificationStatus.INFORMATION_REQUESTED;
 
   if (shouldGenerateQuestionSet) {
-    person.questionSets = person.questionSets || [];
     questionSet = await createQuestionSet(person.id);
-    person.questionSets.push(questionSet);
+    person.questionSet = questionSet;
     await saveQuestionSetIdToPersonId(person.id, questionSet.id);
   }
 

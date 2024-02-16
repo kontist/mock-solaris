@@ -20,17 +20,15 @@ describe("Question Set Routes", () => {
     sandbox.stub(db, "getPersonIdByQuestionSetId").resolves("personId");
     sandbox.stub(db, "getPerson").resolves({
       id: "personId",
-      questionSets: [
-        {
-          id: "questionSetId",
-          questions: [
-            {
-              id: "questionId",
-              answer: null,
-            },
-          ],
-        },
-      ],
+      questionSet: {
+        id: "questionSetId",
+        questions: [
+          {
+            id: "questionId",
+            answer: null,
+          },
+        ],
+      },
       customer_vetting_status: CustomerVettingStatus.CUSTOMER_UNRESPONSIVE,
     });
     savePersonStub = sandbox.stub(db, "savePerson").resolves();
