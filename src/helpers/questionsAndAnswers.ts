@@ -3,7 +3,7 @@ import _ from "lodash";
 
 import generateID from "./id";
 
-const fetchRandomQuestion = async () => {
+export const fetchRandomQuestion = async () => {
   const getQuestion = async () => {
     try {
       const response = await fetch(
@@ -26,16 +26,17 @@ const fetchRandomQuestion = async () => {
     }
   };
 
-  const results = (await Promise.race([
+  const result = (await Promise.race([
     getQuestion(),
     new Promise((resolve) => setTimeout(resolve, 5000)),
-  ])) as string[];
+  ])) as string;
 
-  return results.filter((r) => r).pop();
+  return result;
 };
 
 export const createQuestionSet = async (personId: string) => {
-  const deadline = moment().add(10, "days").toISOString();
+  // remove time
+  const deadline = moment().add(10, "days").toISOString().split("T")[0];
   const questions = [
     {
       id: generateID(),
