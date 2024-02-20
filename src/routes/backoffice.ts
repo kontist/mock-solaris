@@ -306,7 +306,10 @@ export const updatePersonHandler = async (req, res) => {
   if (questionSet) {
     await triggerWebhook({
       type: PersonWebhookEvent.QUESTIONS_REQUIRE_RESPONSE,
-      payload: questionSet,
+      payload: {
+        question_set_id: questionSet.id,
+        ...questionSet,
+      },
       personId: person.id,
     });
   }
