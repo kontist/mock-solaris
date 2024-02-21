@@ -107,6 +107,22 @@ JOBS_USERNAME=jobuser
 JOBS_PASSWORD=jobpassword
 ```
 
-## Usage in tests
+## Publishing New Version
 
-## Contribute
+Create a branch that doesn't have the same name as the tag e.g. v1.0.120
+
+```
+git checkout version-<some_version>
+```
+
+Increase the version
+
+```
+npm version <some_version>
+```
+
+Push the changes with tags
+
+```
+git push --follow-tags
+```
