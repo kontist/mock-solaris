@@ -109,7 +109,7 @@ JOBS_PASSWORD=jobpassword
 
 ## Publishing New Version
 
-Create a branch that doesn't have the same name as the tag e.g. v1.0.120
+Create a branch that doesn't have the same name as the tag e.g. NOT v1.0.120
 
 ```
 git checkout version-<some_version>
