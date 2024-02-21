@@ -135,8 +135,7 @@ describe("Backoffice", () => {
         const req = mockReq({
           params: { id: "personId" },
           body: {
-            customer_vetting_status:
-              CustomerVettingStatus.INFORMATION_REQUESTED,
+            customerVettingStatus: CustomerVettingStatus.INFORMATION_REQUESTED,
           },
         });
         const res = mockRes();
@@ -162,7 +161,7 @@ describe("Backoffice", () => {
         const req = mockReq({
           params: { id: "personId" },
           body: {
-            risk_classification_status:
+            riskClassificationStatus:
               RiskClarificationStatus.INFORMATION_REQUESTED,
           },
         });
