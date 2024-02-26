@@ -1,5 +1,6 @@
 import _ from "lodash";
 import moment, { Moment } from "moment";
+import HttpStatusCodes from "http-status";
 
 import {
   getPerson,
@@ -72,7 +73,7 @@ export const deletePerson = async (req, res) => {
   const { id: personId } = req.params;
   try {
     await removePerson(personId);
-    return res.status(200).send();
+    res.sendStatus(HttpStatusCodes.NO_CONTENT);
   } catch (err) {
     return res.status(500).send({
       errors: [
