@@ -34,6 +34,7 @@
     "lodash": "^4.17.15",
     "moment": "^2.29.4",
     "moment-timezone": "^0.5.40",
+    "multer": "^1.4.5-lts.1",
     "node-fetch": "^2.3.0",
     "node-jose": "^2.1.1",
     "node-loggly-bulk": "^4.0.1",
