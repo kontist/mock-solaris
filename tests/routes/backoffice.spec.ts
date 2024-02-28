@@ -183,6 +183,82 @@ describe("Backoffice", () => {
           PersonWebhookEvent.QUESTIONS_REQUIRE_RESPONSE
         );
       });
+
+      it("should create a question set if there is a completed question set", async () => {
+        const person = await db.getPerson("personId");
+        person.questionSet = {
+          id: "questionSetId",
+          questions: [
+            {
+              id: "questionId",
+              answer: { answer: "Answer", ready_for_review: true },
+            },
+          ],
+        };
+
+        (db.savePerson as any).restore();
+        await db.savePerson(person);
+
+        const req = mockReq({
+          params: { id: "personId" },
+          body: {
+            riskClassificationStatus:
+              RiskClarificationStatus.INFORMATION_REQUESTED,
+          },
+        });
+        const res = mockRes();
+
+        await updatePersonHandler(req, res);
+
+        expect(
+          (questionHelpers.createQuestionSet as any).lastCall.args[0]
+        ).to.eq("personId");
+        expect((db.saveQuestionSetIdToPersonId as any).lastCall.args[0]).to.eq(
+          "personId"
+        );
+        expect((db.saveQuestionSetIdToPersonId as any).lastCall.args[1]).to.eq(
+          "newQuestionSetId"
+        );
+        expect((webhooks.triggerWebhook as any).callCount).to.equal(2);
+        expect((webhooks.triggerWebhook as any).lastCall.args[0].type).to.equal(
+          PersonWebhookEvent.QUESTIONS_REQUIRE_RESPONSE
+        );
+      });
+
+      it("should not create a question set if there is a not completed question set", async () => {
+        const person = await db.getPerson("personId");
+        person.questionSet = {
+          id: "questionSetId",
+          questions: [
+            {
+              id: "questionId",
+              answer: { answer: "Answer", ready_for_review: false },
+            },
+          ],
+        };
+
+        (db.savePerson as any).restore();
+        await db.savePerson(person);
+
+        const req = mockReq({
+          params: { id: "personId" },
+          body: {
+            riskClassificationStatus:
+              RiskClarificationStatus.INFORMATION_REQUESTED,
+          },
+        });
+        const res = mockRes();
+
+        await updatePersonHandler(req, res);
+
+        expect((questionHelpers.createQuestionSet as any).callCount).to.eq(0);
+        // expect((db.saveQuestionSetIdToPersonId as any).callCount).to.eq(0);
+        // expect((db.saveQuestionSetIdToPersonId as any).callCount).to.eq(0);
+        // expect((webhooks.triggerWebhook as any).callCount).to.equal(1);
+        // expect((webhooks.triggerWebhook as any).lastCall.args[0].type).to.equal(
+        //   PersonWebhookEvent.PERSON_CHANGED
+        // );
+      });
     });
   });
 });

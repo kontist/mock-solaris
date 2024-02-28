@@ -59,6 +59,7 @@ import {
 import generateID from "../helpers/id";
 import { storePersonInSortedSet } from "../helpers/persons";
 import { createQuestionSet } from "../helpers/questionsAndAnswers";
+import { isQuestionSetComplete } from "./questions";
 
 const triggerIdentificationWebhook = (payload, personId?: string) =>
   triggerWebhook({
@@ -282,11 +283,15 @@ export const updatePersonHandler = async (req, res) => {
   }
 
   let questionSet = null;
-  const shouldGenerateQuestionSet =
+  const hasQuestionSetEligibleStatus =
     req.body.customerVettingStatus ===
       CustomerVettingStatus.INFORMATION_REQUESTED ||
     req.body.riskClassificationStatus ===
       RiskClarificationStatus.INFORMATION_REQUESTED;
+
+  const shouldGenerateQuestionSet =
+    hasQuestionSetEligibleStatus &&
+    (!person.questionSet || isQuestionSetComplete(person.questionSet));
 
   if (shouldGenerateQuestionSet) {
     questionSet = await createQuestionSet(person.id);
