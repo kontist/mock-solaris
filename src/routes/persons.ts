@@ -1,6 +1,7 @@
 import _ from "lodash";
 import moment, { Moment } from "moment";
 import type { Request, Response } from "express";
+import HttpStatusCodes from "http-status";
 
 import {
   getPerson,
@@ -73,8 +74,8 @@ export const createPerson = async (req, res) => {
 export const deletePerson = async (req, res) => {
   const { id: personId } = req.params;
   try {
-    const isPersonDeleted = await removePerson(personId);
-    return res.status(200).send(isPersonDeleted);
+    await removePerson(personId);
+    res.sendStatus(HttpStatusCodes.NO_CONTENT);
   } catch (err) {
     return res.status(500).send({
       errors: [

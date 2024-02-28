@@ -231,7 +231,7 @@ export const getPerson = async (personId: string): Promise<MockPerson> => {
   return augmentPerson(person);
 };
 
-export const removePerson = async (personId: string): Promise<MockPerson> => {
+export const removePerson = async (personId: string) => {
   const person = await getPerson(personId);
   const score = moment(person.createdAt).valueOf();
   const key = `${process.env.MOCKSOLARIS_REDIS_PREFIX}:persons`;
