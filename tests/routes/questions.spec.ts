@@ -57,9 +57,8 @@ describe("Question Set Routes", () => {
   describe("answerQuestion", () => {
     it("should save an answer for a given question and set customer vetting status if all questions are answered", async () => {
       const req = mockReq({
-        params: { question_set_id: "questionSetId" },
+        params: { question_set_id: "questionSetId", question_id: "questionId" },
         body: {
-          question_id: "questionId",
           response: "Answer",
           partner_notes: "Notes",
           attachments: ["attachment"],

@@ -299,7 +299,7 @@ export const updatePersonHandler = async (req, res) => {
   await triggerWebhook({
     type: PersonWebhookEvent.PERSON_CHANGED,
     payload: {},
-    extraHeaders: { "solaris-entity-id": req.params.id },
+    extraHeaders: { "solaris-entity-id": person.id },
     personId: person.id,
   });
 
