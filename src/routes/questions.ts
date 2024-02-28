@@ -27,6 +27,12 @@ export const listQuestions = async (req: Request, res: Response) => {
   res.json(set);
 };
 
+export const isQuestionSetComplete = (questionSet: QuestionSet) => {
+  return !!questionSet?.questions.every(
+    (q) => !!(q as QuestionAnswerResponse).answer?.ready_for_review
+  );
+};
+
 export const answerQuestion = async (req: Request, res: Response) => {
   const { question_set_id: setId, question_id: questionId } = req.params;
   const { response, partner_notes, attachments, ready_for_review } =
@@ -47,11 +53,7 @@ export const answerQuestion = async (req: Request, res: Response) => {
     ready_for_review,
   };
 
-  const areAllQuestionsAnswered = set.questions.every(
-    (q) => !!(q as QuestionAnswerResponse).answer?.ready_for_review
-  );
-
-  if (areAllQuestionsAnswered) {
+  if (isQuestionSetComplete(set)) {
     person.customer_vetting_status = CustomerVettingStatus.INFORMATION_RECEIVED;
     person.risk_classification_status =
       CustomerVettingStatus.INFORMATION_RECEIVED;
