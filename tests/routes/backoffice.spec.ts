@@ -252,12 +252,12 @@ describe("Backoffice", () => {
         await updatePersonHandler(req, res);
 
         expect((questionHelpers.createQuestionSet as any).callCount).to.eq(0);
-        // expect((db.saveQuestionSetIdToPersonId as any).callCount).to.eq(0);
-        // expect((db.saveQuestionSetIdToPersonId as any).callCount).to.eq(0);
-        // expect((webhooks.triggerWebhook as any).callCount).to.equal(1);
-        // expect((webhooks.triggerWebhook as any).lastCall.args[0].type).to.equal(
-        //   PersonWebhookEvent.PERSON_CHANGED
-        // );
+        expect((db.saveQuestionSetIdToPersonId as any).callCount).to.eq(0);
+        expect((db.saveQuestionSetIdToPersonId as any).callCount).to.eq(0);
+        expect((webhooks.triggerWebhook as any).callCount).to.equal(1);
+        expect((webhooks.triggerWebhook as any).lastCall.args[0].type).to.equal(
+          PersonWebhookEvent.PERSON_CHANGED
+        );
       });
     });
   });
