@@ -2,6 +2,7 @@ import express, { Router } from "express";
 import bodyParser from "body-parser";
 import swig from "swig";
 import path from "path";
+import multer from "multer";
 
 import * as log from "./logger";
 import * as oauthAPI from "./routes/oauth";
@@ -43,6 +44,7 @@ import { createStripeCustomerIfNotExistsMiddleware } from "./helpers/stripe";
 import * as questionsAPI from "./routes/questions";
 
 const app = express();
+const fileUpload = multer();
 
 function logResponseBody(req, res, next) {
   const oldWrite = res.write;
@@ -144,7 +146,9 @@ router.post(
   safeRequestHandler(personsAPI.createSettings)
 );
 router.post(
-  "persons/:person_id/documents",
+  "/persons/:person_id/documents",
+  middlewares.withPerson,
+  fileUpload.single("file"),
   safeRequestHandler(personsAPI.postDocument)
 );
 

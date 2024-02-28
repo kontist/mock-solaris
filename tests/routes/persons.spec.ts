@@ -140,9 +140,9 @@ describe("Persons", () => {
           person_id: "1234abc",
         },
         body: {
-          file: Buffer.from("file").toString("base64"),
           document_type: documentType,
         },
+        file: Buffer.from("file").toString("base64"),
       });
       await personsApi.postDocument(req, res);
     });

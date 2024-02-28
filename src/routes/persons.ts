@@ -1,5 +1,6 @@
 import _ from "lodash";
 import moment, { Moment } from "moment";
+import type { Request, Response } from "express";
 import HttpStatusCodes from "http-status";
 
 import {
@@ -17,6 +18,7 @@ import { triggerWebhook } from "../helpers/webhooks";
 import { MockPerson, PersonWebhookEvent } from "../helpers/types";
 import generateID from "../helpers/id";
 import { storePersonInSortedSet } from "../helpers/persons";
+import * as log from "../logger";
 
 const format = (date: Moment): string => date.format("YYYY-MM-DD");
 const ERROR_NOT_FOUND_ID = "0a5ec2ea-6772-11e9-a656-02420a868404";
@@ -343,10 +345,34 @@ export const createSettings = async (req, res) => {
   return res.status(201).send({ language });
 };
 
-export const postDocument = async (req, res) => {
-  const {
-    body: { document_type: documentType },
-  } = req;
+export const postDocument = async (req: Request, res: Response) => {
+  const documentType = req.body.document_type as string;
+
+  if (!documentType) {
+    return res.status(400).send({
+      id: generateID(),
+      status: 400,
+      code: "bad_request",
+      title: "Bad Request",
+      detail: "document_type is required",
+    });
+  }
+
+  if (!req.file) {
+    return res.status(400).send({
+      id: generateID(),
+      status: 400,
+      code: "bad_request",
+      title: "Bad Request",
+      detail: "file is required",
+    });
+  }
+
+  log.info("Document uploaded", {
+    person_id: req.params.person_id,
+    documentType,
+    file: req.file.originalname,
+  });
 
   return res.status(201).send({
     id: generateID(),
