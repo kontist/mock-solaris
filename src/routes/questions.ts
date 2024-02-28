@@ -28,12 +28,12 @@ export const listQuestions = async (req: Request, res: Response) => {
 };
 
 export const answerQuestion = async (req: Request, res: Response) => {
-  const { question_set_id: setId } = req.params;
+  const { question_set_id: setId, question_id: questionId } = req.params;
   const { response, partner_notes, attachments, ready_for_review } =
     req.body as Answer;
   const { person, set } = await getPersonAndQuestionSet(setId);
   const question = set.questions.find(
-    (q) => q.id === req.body.question_id
+    (q) => q.id === questionId
   ) as QuestionAnswerResponse;
 
   if (!question) {
@@ -68,7 +68,7 @@ export const answerQuestion = async (req: Request, res: Response) => {
     triggerWebhook({
       type: PersonWebhookEvent.PERSON_CHANGED,
       payload: {},
-      extraHeaders: { "solaris-entity-id": req.params.id },
+      extraHeaders: { "solaris-entity-id": person.id },
       personId: person.id,
     });
   }
