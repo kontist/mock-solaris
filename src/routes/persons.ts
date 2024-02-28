@@ -1,5 +1,6 @@
 import _ from "lodash";
 import moment, { Moment } from "moment";
+import type { Request, Response } from "express";
 
 import {
   getPerson,
@@ -343,10 +344,8 @@ export const createSettings = async (req, res) => {
   return res.status(201).send({ language });
 };
 
-export const postDocument = async (req, res) => {
-  const {
-    body: { document_type: documentType },
-  } = req;
+export const postDocument = async (req: Request, res: Response) => {
+  const documentType = req.body.document_type as string;
 
   if (!documentType) {
     return res.status(400).send({
