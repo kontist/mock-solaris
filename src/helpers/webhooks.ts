@@ -82,6 +82,8 @@ const WEBHOOK_SECRETS = {
     process.env.SOLARIS_ACCOUNT_LIMIT_CHANGE_WEBHOOK_SECRET,
   [PostboxItemEvent.POSTBOX_ITEM_CREATED]:
     process.env.SOLARIS_POSTBOX_ITEM_CREATED_WEBHOOK_SECRET,
+  [PersonWebhookEvent.ACCOUNT_OPENING_REQUEST]:
+    process.env.SOLARIS_ACCOUNT_OPENING_REQUEST_WEBHOOK_SECRET,
 };
 
 export const getWebhookUrl = (url: string, origin?: string) => {
