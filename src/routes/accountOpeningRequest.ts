@@ -85,6 +85,7 @@ export const createAccountOpeningRequest = async (
 
   await triggerWebhook({
     type: PersonWebhookEvent.ACCOUNT_OPENING_REQUEST,
+    personId: person.id,
     payload: {
       account_opening_request_id: completedRequest.id,
       customer_id: completedRequest.customer_id,
