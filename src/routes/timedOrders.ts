@@ -73,13 +73,15 @@ const processTimedOrder = async (person, timedOrder) => {
   );
 
   timedOrder.executed_at = new Date().toISOString();
+  let transaction;
   // if user has less money on account than timed order value, timed order fails
   if (person.account.balance.value < timedOrderValue) {
     timedOrder.status = SOLARIS_TIMED_ORDER_STATUSES.FAILED;
   } else {
     person.account.balance.value -= timedOrderValue;
     person.account.available_balance.value = person.account.balance.value;
-    person.transactions.push(mapTimedOrderToTransaction(timedOrder));
+    transaction = mapTimedOrderToTransaction(timedOrder);
+    person.transactions.push(transaction);
     timedOrder.status = SOLARIS_TIMED_ORDER_STATUSES.EXECUTED;
   }
 
@@ -90,8 +92,11 @@ const processTimedOrder = async (person, timedOrder) => {
   const updatedPerson = await savePerson(person);
 
   await triggerTimedOrderWebhook(person, timedOrder);
-  if (timedOrder.status === SOLARIS_TIMED_ORDER_STATUSES.EXECUTED) {
-    await triggerBookingsWebhook(person);
+  if (
+    timedOrder.status === SOLARIS_TIMED_ORDER_STATUSES.EXECUTED &&
+    transaction
+  ) {
+    await triggerBookingsWebhook(person, transaction);
   }
 
   return updatedPerson;

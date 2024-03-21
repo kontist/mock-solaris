@@ -123,7 +123,7 @@ export const createSepaDirectDebit = async (req, res) => {
 
   await savePerson(person);
   await savePerson(technicalPerson);
-  await triggerBookingsWebhook(person);
+  await triggerBookingsWebhook(person, booking);
 
   res.status(200).send({
     ...booking,
