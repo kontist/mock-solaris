@@ -143,9 +143,8 @@ export const confirmInstantCreditTransfer = async (person) => {
     (item) => item.id === instantCreditTransferId
   );
 
-  person.transactions.push(
-    mapInstantTransferToTransaction(instantCreditTransfer)
-  );
+  const transaction = mapInstantTransferToTransaction(instantCreditTransfer);
+  person.transactions.push(transaction);
 
   const itemIndex = person.instantCreditTransfers.findIndex(
     (tr) => tr.id === instantCreditTransfer.id
@@ -156,7 +155,7 @@ export const confirmInstantCreditTransfer = async (person) => {
   };
 
   await savePerson(person);
-  await triggerBookingsWebhook(person);
+  await triggerBookingsWebhook(person, transaction);
 
   return instantCreditTransfer;
 };

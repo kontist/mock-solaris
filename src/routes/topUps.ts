@@ -61,20 +61,19 @@ export const checkTopUpForBookingCreation = async (data: {
     if (paymentIntent.status === "succeeded") {
       const person = await db.getPerson(personId);
       const now = new Date().toISOString().split("T")[0];
-      person.transactions.push(
-        backofficeHelpers.generateBookingForPerson({
-          person,
-          amount,
-          purpose: "Top-up",
-          senderName: `${person.first_name} ${person.last_name}`,
-          endToEndId: paymentIntentId,
-          bookingType: BookingType.TOP_UP_CARD,
-          bookingDate: now,
-          valutaDate: now,
-        })
-      );
+      const transaction = backofficeHelpers.generateBookingForPerson({
+        person,
+        amount,
+        purpose: "Top-up",
+        senderName: `${person.first_name} ${person.last_name}`,
+        endToEndId: paymentIntentId,
+        bookingType: BookingType.TOP_UP_CARD,
+        bookingDate: now,
+        valutaDate: now,
+      });
+      person.transactions.push(transaction);
       await db.savePerson(person);
-      await backofficeHelpers.triggerBookingsWebhook(person);
+      await backofficeHelpers.triggerBookingsWebhook(person, transaction);
       log.info(`TopUp ${paymentIntentId} was successful`, person.id);
     } else {
       if (retry) {

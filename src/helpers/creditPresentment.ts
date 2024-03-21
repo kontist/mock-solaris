@@ -73,6 +73,6 @@ export const createCreditPresentment = async ({
     person.transactions.push(booking);
 
     await db.savePerson(person);
-    await triggerBookingsWebhook(person);
+    await triggerBookingsWebhook(person, booking);
   });
 };

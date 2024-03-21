@@ -51,6 +51,7 @@ import {
   RiskClarificationStatus,
   CustomerVettingStatus,
   MockPerson,
+  Booking,
 } from "../helpers/types";
 import {
   changeOverdraftApplicationStatus,
@@ -87,8 +88,14 @@ const triggerAccountBlockWebhook = async (person: MockPerson) => {
   });
 };
 
-export const triggerBookingsWebhook = async (person: MockPerson) => {
-  const payload = { account_id: person.account.id };
+export const triggerBookingsWebhook = async (
+  person: MockPerson,
+  bookingOrTransaction: {
+    amount: { value: number };
+    booking_type: BookingType;
+  }
+) => {
+  const payload = { ...bookingOrTransaction, account_id: person.account.id };
   await triggerWebhook({
     type: TransactionWebhookEvent.BOOKING,
     payload,
@@ -564,7 +571,7 @@ export const processQueuedBooking = async (
     }
 
     await savePerson(person);
-    await triggerBookingsWebhook(person);
+    await triggerBookingsWebhook(person, booking);
 
     if (sepaDirectDebitReturn) {
       await triggerSepaDirectDebitReturnWebhook(sepaDirectDebitReturn, person);
