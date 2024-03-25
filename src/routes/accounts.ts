@@ -44,7 +44,7 @@ const getDefaultAccount = (personId: string, data = {}) => ({
   status: "ACTIVE",
   closure_reasons: null,
   seizure_protection: null,
-  mockBalanceValue: null, // for e2e testing purposes, to set and increase balance to a specific value
+  mockBalanceValue: null, // for e2e testing purposes, to set balance to a specific value
   ...data,
 });
 
@@ -197,7 +197,7 @@ export const createAccountSnapshot = async (req, res) => {
   });
 };
 
-export const setAndIncreaseMockBalance = async (req, res) => {
+export const setMockBalance = async (req, res) => {
   const { person_id: personId } = req.params;
   const { value } = req.body;
 
@@ -231,9 +231,7 @@ export const setAndIncreaseMockBalance = async (req, res) => {
     });
   }
 
-  person.account.mockBalanceValue = person.account.mockBalanceValue
-    ? person.account.mockBalanceValue + value
-    : value;
+  person.account.mockBalanceValue = value;
   person.account.balance.value = value;
   person.account.available_balance.value = value;
 

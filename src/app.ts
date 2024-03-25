@@ -656,8 +656,8 @@ app.post(
   safeRequestHandler(backofficeAPI.saveTaxIdentificationsHandler)
 );
 app.post(
-  "/__BACKOFFICE__/account/:person_id/setAndIncreaseMockBalance",
-  safeRequestHandler(accountsAPI.setAndIncreaseMockBalance)
+  "/__BACKOFFICE__/account/:person_id/setMockBalance",
+  safeRequestHandler(accountsAPI.setMockBalance)
 );
 
 // BACKOFFICE - CARDS
