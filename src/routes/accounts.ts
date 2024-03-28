@@ -7,6 +7,7 @@ import {
   findPersonByAccount,
   saveAccountToPersonId,
   redlock,
+  setPerson,
 } from "../db";
 import { IBAN, CountryCode } from "ibankit";
 import generateID from "../helpers/id";
@@ -43,6 +44,7 @@ const getDefaultAccount = (personId: string, data = {}) => ({
   status: "ACTIVE",
   closure_reasons: null,
   seizure_protection: null,
+  mockBalanceValue: null, // for e2e testing purposes, to set balance to a specific value
   ...data,
 });
 
@@ -193,6 +195,49 @@ export const createAccountSnapshot = async (req, res) => {
     id: snapshot.id,
     account_id: accountId,
   });
+};
+
+export const setMockBalance = async (req, res) => {
+  const { person_id: personId } = req.params;
+  const { value } = req.body;
+
+  const person = await getPerson(personId);
+
+  if (!person) {
+    log.error(`Person not found for id: ${personId}`);
+    return res.status(HttpStatusCodes.NOT_FOUND).send({
+      errors: [
+        {
+          id: generateID(),
+          status: 404,
+          code: "model_not_found",
+          title: "Model Not Found",
+          detail: `Couldn't find 'Solaris::Person' for id '${personId}'.`,
+        },
+      ],
+    });
+  } else if (!person.account) {
+    log.error(`Account not found for person id: ${personId}`);
+    return res.status(HttpStatusCodes.NOT_FOUND).send({
+      errors: [
+        {
+          id: generateID(),
+          status: 404,
+          code: "model_not_found",
+          title: "Model Not Found",
+          detail: `Couldn't find 'Solaris::Account' for person id '${personId}'.`,
+        },
+      ],
+    });
+  }
+
+  person.account.mockBalanceValue = value;
+  person.account.balance.value = value;
+  person.account.available_balance.value = value;
+
+  await setPerson(person);
+
+  res.status(HttpStatusCodes.NO_CONTENT).send();
 };
 
 export const showAccountBalance = async (req, res) => {

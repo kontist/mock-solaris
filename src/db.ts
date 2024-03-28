@@ -302,15 +302,25 @@ export const savePerson = async (person, skipInterest = false) => {
       calculateOverdraftInterest(account, transactionsBalance);
     }
 
+    /**
+     * mockBalanceValue is used for e2e tests to simulate a balance
+     * If account has mockBalanceValue, we use it as a balance
+     */
+    const accountBalance = account.mockBalanceValue
+      ? !transactions.length
+        ? account.mockBalanceValue
+        : account.mockBalanceValue + transactionsBalance // in case made some transactions(transfers negative amounts)
+      : transactionsBalance;
+
     account.balance = {
-      value: transactionsBalance,
+      value: accountBalance,
     };
 
     account.available_balance = {
       // Confirmed transfers amounts are negative
       value:
         limitBalance +
-        transactionsBalance +
+        accountBalance +
         confirmedTransfersBalance -
         reservationsBalance,
     };
@@ -319,6 +329,10 @@ export const savePerson = async (person, skipInterest = false) => {
     person.timedOrders = person.timedOrders || [];
   }
 
+  return setPerson(person);
+};
+
+export const setPerson = async (person) => {
   return redisClient.set(
     `${process.env.MOCKSOLARIS_REDIS_PREFIX}:person:${person.id}`,
     JSON.stringify(person, undefined, 2)
