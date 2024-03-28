@@ -302,19 +302,15 @@ export const savePerson = async (person, skipInterest = false) => {
       calculateOverdraftInterest(account, transactionsBalance);
     }
 
-    let accountBalance = transactionsBalance;
-
     /**
-     * It is used for e2e tests to simulate a balance
+     * mockBalanceValue is used for e2e tests to simulate a balance
      * If account has mockBalanceValue, we use it as a balance
      */
-    if (account.mockBalanceValue) {
-      if (!transactions.length) {
-        accountBalance = account.mockBalanceValue;
-      } else {
-        accountBalance = account.mockBalanceValue + transactionsBalance; // in case made some transactions(transfers negative amounts)
-      }
-    }
+    const accountBalance = account.mockBalanceValue
+      ? !transactions.length
+        ? account.mockBalanceValue
+        : account.mockBalanceValue + transactionsBalance // in case made some transactions(transfers negative amounts)
+      : transactionsBalance;
 
     account.balance = {
       value: accountBalance,
