@@ -308,10 +308,12 @@ export const savePerson = async (person, skipInterest = false) => {
      * It is used for e2e tests to simulate a balance
      * If account has mockBalanceValue, we use it as a balance
      */
-    if (account.mockBalanceValue && !transactions.length) {
-      accountBalance = account.mockBalanceValue;
-    } else if (account.mockBalanceValue && transactions.length) {
-      accountBalance = account.mockBalanceValue + transactionsBalance; // in case made some transactions(transfers negative amounts)
+    if (account.mockBalanceValue) {
+      if (!transactions.length) {
+        accountBalance = account.mockBalanceValue;
+      } else {
+        accountBalance = account.mockBalanceValue + transactionsBalance; // in case made some transactions(transfers negative amounts)
+      }
     }
 
     account.balance = {
