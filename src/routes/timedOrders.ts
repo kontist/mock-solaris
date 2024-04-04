@@ -27,10 +27,9 @@ export const TIMED_ORDER_CREATE = "timed_orders:create";
 
 const mapTimedOrderToTransaction = (timedOrder) => {
   const {
-    id: timedOrderId,
     executed_at: executedAt,
     scheduled_transaction: {
-      id,
+      id: transactionId,
       reference,
       description,
       end_to_end_id: e2eId,
@@ -42,7 +41,7 @@ const mapTimedOrderToTransaction = (timedOrder) => {
   } = timedOrder;
 
   return {
-    id,
+    id: generateID(),
     description,
     e2eId,
     reference,
@@ -56,7 +55,7 @@ const mapTimedOrderToTransaction = (timedOrder) => {
     recipient_iban: recipientIBAN,
     recipient_name: recipientName,
     recipient_bic: recipientBIC,
-    transaction_id: timedOrderId,
+    transaction_id: transactionId,
     status: "accepted",
     booking_type: BookingType.SEPA_CREDIT_TRANSFER,
   };
