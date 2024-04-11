@@ -251,6 +251,11 @@ router.put(
   safeRequestHandler(overdraftAPI.createOverdraft)
 );
 
+router.post(
+  "/persons/:person_id/overdrafts/:overdraft_id/terminate",
+  safeRequestHandler(overdraftAPI.terminateOverdraft)
+);
+
 // CARDS
 router.post(
   "/persons/:person_id/accounts/:account_id/cards",

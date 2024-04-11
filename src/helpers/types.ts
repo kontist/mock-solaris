@@ -650,6 +650,7 @@ export type OverdraftApplication = {
 export enum OverdraftStatus {
   CREATED = "created",
   LIMIT_SET = "limit_set",
+  TERMINATED = "terminated",
 }
 
 export type Overdraft = {
