@@ -126,12 +126,18 @@ export const linkOverdraftApplicationSnapshot = async (req, res) => {
 
 export const terminateOverdraft = async (req, res) => {
   const {
-    params: { person_id: personId },
+    params: { person_id: personId, overdraft_id: overdraftId },
   } = req;
 
   const person = await getPerson(personId);
 
   const { account } = person;
+
+  if (overdraftId !== account.overdraft.id) {
+    return res
+      .status(404)
+      .send(generateEntityNotFoundPayload("overdraft_id", overdraftId));
+  }
 
   account.overdraft.status = OverdraftStatus.TERMINATED;
   account.account_limit = {
