@@ -124,6 +124,43 @@ export const linkOverdraftApplicationSnapshot = async (req, res) => {
   res.sendStatus(204);
 };
 
+export const terminateOverdraft = async (req, res) => {
+  const {
+    params: { person_id: personId, overdraft_id: overdraftId },
+  } = req;
+
+  const person = await getPerson(personId);
+
+  const { account } = person;
+
+  if (overdraftId !== account.overdraft.id) {
+    return res
+      .status(404)
+      .send(generateEntityNotFoundPayload("overdraft_id", overdraftId));
+  }
+
+  account.overdraft.status = OverdraftStatus.TERMINATED;
+  account.account_limit = {
+    ...OVERDRAFT_LIMIT,
+    value: 0,
+  };
+
+  person.account = account;
+  person.account.overdraftApplications = [];
+
+  await savePerson(person);
+
+  await triggerWebhook({
+    type: AccountWebhookEvent.ACCOUNT_LIMIT_CHANGE,
+    payload: {
+      account_id: account.id,
+    },
+    personId: person.id,
+  });
+
+  res.status(202).send(account.overdraft);
+};
+
 export const createOverdraft = async (req, res) => {
   const {
     body: { account_id: accountId },
