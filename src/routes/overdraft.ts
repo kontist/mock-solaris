@@ -146,6 +146,7 @@ export const terminateOverdraft = async (req, res) => {
   };
 
   person.account = account;
+  person.account.overdraftApplications = [];
 
   await savePerson(person);
 
