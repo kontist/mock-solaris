@@ -56,7 +56,7 @@ export const patchIdentification = async (req, res) => {
     identificationUrl = `https://go.test.idnow.de/kontist/identifications/${identificationId}`;
     startUrl = `https://api.test.idnow.de/api/v1/kontist/identifications/${identificationId}/start`;
 
-    if (!process.env.MOCKSOLARIS_DISABLE_IDNOW_TESTSERVER) {
+    if (process.env.MOCKSOLARIS_DISABLE_IDNOW_TESTSERVER !== "true") {
       const response = await fetch(createUrl, {
         method: "POST",
         headers: {
