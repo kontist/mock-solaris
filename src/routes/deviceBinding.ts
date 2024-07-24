@@ -7,6 +7,7 @@ import {
   deleteDeviceChallenge,
   getDevicesByPersonId,
   getPerson,
+  deleteDevice as _deleteDevice,
 } from "../db";
 import generateID from "../helpers/id";
 
@@ -140,6 +141,31 @@ export const getDeviceInfo = async (req, res) => {
     name: device.name,
     created_at: device.signatureChallenge.created_at,
   });
+};
+
+export const deleteDevice = async (req, res) => {
+  const { id: deviceId } = req.params;
+
+  const device = await getDevice(deviceId);
+
+  if (!device) {
+    res.status(404).send({
+      errors: [
+        {
+          id: generateID(),
+          status: 404,
+          code: "not_found",
+          title: "Not Found",
+          detail: `device "${deviceId}" not found`,
+        },
+      ],
+    });
+    return;
+  }
+
+  await _deleteDevice(deviceId, device.person_id);
+
+  res.status(204).send();
 };
 
 export const createDeviceChallenge = async (req, res) => {

@@ -168,6 +168,10 @@ router.get(
   "/mfa/devices/:id",
   safeRequestHandler(deviceBindingAPI.getDeviceInfo)
 );
+router.delete(
+  "/mfa/devices/:id",
+  safeRequestHandler(deviceBindingAPI.deleteDevice)
+);
 
 router.get(
   "/mfa/devices/:id/keys",
