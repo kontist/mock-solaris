@@ -56,6 +56,7 @@ export type Business = {
 export type findQuery = {
   registration_number: string;
   registration_issuer: string;
+  country: Country;
 };
 
 export type ModelNotFoundError = {
@@ -114,11 +115,16 @@ export const find = (
   req: Request<{}, {}, {}, findQuery>,
   res: Response<SearchByNameResponseBody | ModelNotFoundError>
 ) => {
-  const { registration_number, registration_issuer } = req.query;
+  const {
+    registration_number,
+    registration_issuer,
+    country = "DE",
+  } = req.query;
   const foundBusiness = businesses.find(
     (business) =>
       business.registration_number === registration_number &&
-      business.registration_issuer === registration_issuer
+      business.registration_issuer === registration_issuer &&
+      business.address.country === country
   );
 
   const highEffort =
