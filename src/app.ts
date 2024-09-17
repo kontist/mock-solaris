@@ -42,7 +42,10 @@ import { shouldReturnJSON } from "./helpers";
 import { CardStatus } from "./helpers/types";
 import { createStripeCustomerIfNotExistsMiddleware } from "./helpers/stripe";
 import * as questionsAPI from "./routes/questions";
-import { find, searchByName } from "./routes/commercialRegistrations";
+import {
+  find,
+  searchByName,
+} from "./routes/commercialRegistrations/commercialRegistrations";
 
 const app = express();
 const fileUpload = multer();

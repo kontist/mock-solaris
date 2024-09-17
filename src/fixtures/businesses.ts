@@ -1,4 +1,4 @@
-import { Business } from "../routes/commercialRegistrations";
+import { Business } from "../routes/commercialRegistrations/types";
 
 export const businesses: Business[] = [
   {
