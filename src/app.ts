@@ -42,6 +42,7 @@ import { shouldReturnJSON } from "./helpers";
 import { CardStatus } from "./helpers/types";
 import { createStripeCustomerIfNotExistsMiddleware } from "./helpers/stripe";
 import * as questionsAPI from "./routes/questions";
+import { find, searchByName } from "./routes/commercialRegistrations";
 
 const app = express();
 const fileUpload = multer();
@@ -848,6 +849,18 @@ router.get(
   "/accounts/opening_requests/:id",
   safeRequestHandler(accountOpeningRequestAPI.retrieveAccountOpeningRequest)
 );
+
+// COMMERCIAL REGISTRATIONS
+
+router.get(
+  "/commercial_registrations/search_by_name",
+  safeRequestHandler(searchByName)
+);
+
+/**
+ * This endpoint has an associated cost per request. Contact your Partner Manager for more information.
+ */
+router.get("/commercial_registrations/find", safeRequestHandler(find));
 
 app.post(
   "/__BACKOFFICE__/createMaps",
