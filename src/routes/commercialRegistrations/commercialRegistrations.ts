@@ -54,7 +54,7 @@ export const searchByName = async (
  */
 export const find = (
   req: Request<{}, {}, {}, findQuery>,
-  res: Response<SearchByNameResponseBody | ModelNotFoundError>
+  res: Response<Business | ModelNotFoundError>
 ) => {
   const {
     registration_number,
