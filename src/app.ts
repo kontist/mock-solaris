@@ -42,10 +42,8 @@ import { shouldReturnJSON } from "./helpers";
 import { CardStatus } from "./helpers/types";
 import { createStripeCustomerIfNotExistsMiddleware } from "./helpers/stripe";
 import * as questionsAPI from "./routes/questions";
-import {
-  find,
-  searchByName,
-} from "./routes/commercialRegistrations/commercialRegistrations";
+import { find } from "./routes/commercialRegistrations/commercialRegistrations";
+import { search } from "./routes/commercialRegistrations/search";
 
 const app = express();
 const fileUpload = multer();
@@ -857,7 +855,7 @@ router.get(
 
 router.get(
   "/commercial_registrations/search_by_name",
-  safeRequestHandler(searchByName)
+  safeRequestHandler(search)
 );
 
 /**
