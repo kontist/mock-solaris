@@ -18,19 +18,23 @@ export const search = async (
 ) => {
   const { country = "DE", name } = req.query;
   const foundBusiness = businesses.find(
-    (business) => business.name === name && business.address.country === country
+    (business) =>
+      business.name.includes(name) && business.address.country === country
   );
   const highEffort = String(country).length + String(name).length > 2;
 
   if (foundBusiness) {
-    return res.status(200).send(foundBusiness);
+    return res.status(200).send({
+      name: foundBusiness.name,
+      registration_number: foundBusiness.registration_number,
+      registration_issuer: foundBusiness.registration_issuer,
+    });
   } else if (highEffort) {
-    const mockBusiness: Business = {
-      ...businesses[0],
+    return res.status(200).send({
       name,
-      address: { ...businesses[0].address, country },
-    };
-    return res.status(200).send(mockBusiness);
+      registration_number: businesses[0].registration_number,
+      registration_issuer: businesses[0].registration_issuer,
+    });
   } else {
     const errorResponse: ModelNotFoundError = {
       title: "Model Not Found",
