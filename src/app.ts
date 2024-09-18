@@ -42,7 +42,7 @@ import { shouldReturnJSON } from "./helpers";
 import { CardStatus } from "./helpers/types";
 import { createStripeCustomerIfNotExistsMiddleware } from "./helpers/stripe";
 import * as questionsAPI from "./routes/questions";
-import { find } from "./routes/commercialRegistrations/commercialRegistrations";
+import { find } from "./routes/commercialRegistrations/find";
 import { search } from "./routes/commercialRegistrations/search";
 
 const app = express();
