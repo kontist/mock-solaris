@@ -1,4 +1,4 @@
-export type SearchResponseBody = {
+export type Registration = {
   name: string;
   registration_number: string;
   /**

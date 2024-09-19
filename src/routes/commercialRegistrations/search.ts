@@ -3,7 +3,7 @@ import { businesses } from "../../fixtures/businesses";
 import { ModelNotFoundError } from "./types/modelNotFoundError";
 import { Business } from "./types/business";
 import { SearchQuery } from "./types/searchQuery";
-import { SearchResponseBody } from "./types/searchResponseBody";
+import { Registration } from "./types/registration";
 
 /**
  * @see {@link https://docs.solarisgroup.com/api-reference/onboarding/businesses/#tag/Business-Registrations/paths/~1v1~1commercial_registrations~1search_by_name/get}
@@ -14,27 +14,34 @@ import { SearchResponseBody } from "./types/searchResponseBody";
  */
 export const search = async (
   req: Request<{}, {}, {}, SearchQuery>,
-  res: Response<SearchResponseBody | ModelNotFoundError>
+  res: Response<Registration[] | ModelNotFoundError>
 ) => {
   const { country = "DE", name } = req.query;
   const foundBusiness = businesses.find(
     (business) =>
-      business.name.includes(name) && business.address.country === country
+      String(business.name)
+        .toLowerCase()
+        .includes(String(name).toLowerCase()) &&
+      business.address.country === country
   );
   const highEffort = String(country).length + String(name).length > 2;
 
   if (foundBusiness) {
-    return res.status(200).send({
-      name: foundBusiness.name,
-      registration_number: foundBusiness.registration_number,
-      registration_issuer: foundBusiness.registration_issuer,
-    });
+    return res.status(200).send([
+      {
+        name: foundBusiness.name,
+        registration_number: foundBusiness.registration_number,
+        registration_issuer: foundBusiness.registration_issuer,
+      },
+    ]);
   } else if (highEffort) {
-    return res.status(200).send({
-      name,
-      registration_number: businesses[0].registration_number,
-      registration_issuer: businesses[0].registration_issuer,
-    });
+    return res.status(200).send([
+      {
+        name,
+        registration_number: businesses[0].registration_number,
+        registration_issuer: businesses[0].registration_issuer,
+      },
+    ]);
   } else {
     const errorResponse: ModelNotFoundError = {
       title: "Model Not Found",
