@@ -9,6 +9,7 @@ export const businesses: Business[] = [
       city: "Utting a.Ammersee",
       line_1: "Seestraße 9",
       line_2: "",
+      state: "Bayern",
     },
     legal_form: "GMBH",
     tax_country: "DE",

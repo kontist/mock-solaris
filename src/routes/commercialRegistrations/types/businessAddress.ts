@@ -6,4 +6,5 @@ export type BusinessAddress = {
   city: string;
   line_1: string;
   line_2: string;
+  state?: string;
 };
