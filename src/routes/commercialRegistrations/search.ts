@@ -1,7 +1,6 @@
 import type { Request, Response } from "express";
 import { businesses } from "../../fixtures/businesses";
 import { ModelNotFoundError } from "./types/modelNotFoundError";
-import { Business } from "./types/business";
 import { SearchQuery } from "./types/searchQuery";
 import { Registration } from "./types/registration";
 
