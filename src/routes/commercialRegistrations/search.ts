@@ -11,7 +11,7 @@ import { Registration } from "./types/registration";
  */
 export const search = async (
   req: Request<{}, {}, {}, SearchQuery>,
-  res: Response<Registration[] | ModelNotFoundError>
+  res: Response<Registration[] | []>
 ) => {
   const { country = "DE", name } = req.query;
   const foundBusinesses = businesses.filter(
@@ -40,13 +40,6 @@ export const search = async (
       },
     ]);
   } else {
-    const errorResponse: ModelNotFoundError = {
-      title: "Model Not Found",
-      status: "404",
-      code: "model_not_found",
-      detail: "someString",
-      id: "someString",
-    };
-    return res.status(404).send(errorResponse);
+    return res.status(404).send([]);
   }
 };
