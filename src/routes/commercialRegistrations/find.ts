@@ -6,9 +6,6 @@ import { findQuery } from "./types/findQuery";
 
 /**
  * @see {@link https://docs.solarisgroup.com/api-reference/onboarding/businesses/#tag/Business-Registrations/paths/~1v1~1commercial_registrations~1find/get}
- * Notes:
- *  This endpoint has an associated cost per request. Contact your Partner Manager for more information.
- *  For companies in Germany, you must add AMTSGERICHT before the value of the registration_issuer, e.g., AMTSGERICHT MÜNCHEN.
  */
 export const find = (
   req: Request<{}, {}, {}, findQuery>,
