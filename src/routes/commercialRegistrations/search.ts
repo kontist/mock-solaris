@@ -6,10 +6,8 @@ import { Registration } from "./types/registration";
 
 /**
  * @see {@link https://docs.solarisgroup.com/api-reference/onboarding/businesses/#tag/Business-Registrations/paths/~1v1~1commercial_registrations~1search_by_name/get}
- * Note: This endpoint may be used free of charge.
  *
- * Returns some business as if it exists
- * Returns a mock business if more than 2 characters are provided for country and name
+ * Searches for businesses by name and country
  */
 export const search = async (
   req: Request<{}, {}, {}, SearchQuery>,
