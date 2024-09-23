@@ -18,7 +18,8 @@ export const find = (
   } = req.query;
   const foundBusiness = businesses.find(
     (business) =>
-      business.registration_number === registration_number &&
+      String(business.registration_number).replace(" ", "") ===
+        registration_number &&
       business.registration_issuer === registration_issuer &&
       business.address.country === country
   );
