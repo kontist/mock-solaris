@@ -16,7 +16,7 @@ export const search = async (
   res: Response<Registration[] | ModelNotFoundError>
 ) => {
   const { country = "DE", name } = req.query;
-  const foundBusiness = businesses.find(
+  const foundBusinesses = businesses.filter(
     (business) =>
       String(business.name)
         .toLowerCase()
@@ -25,14 +25,14 @@ export const search = async (
   );
   const highEffort = String(country).length + String(name).length > 2;
 
-  if (foundBusiness) {
-    return res.status(200).send([
-      {
-        name: foundBusiness.name,
-        registration_number: foundBusiness.registration_number,
-        registration_issuer: foundBusiness.registration_issuer,
-      },
-    ]);
+  if (foundBusinesses) {
+    return res.status(200).send(
+      foundBusinesses.map((business) => ({
+        name: business.name,
+        registration_number: business.registration_number,
+        registration_issuer: business.registration_issuer,
+      }))
+    );
   } else if (highEffort) {
     return res.status(200).send([
       {
