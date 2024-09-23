@@ -22,5 +22,4 @@ export type Business = {
    */
   registry_updated_at: string;
   legal_representatives: LegalRepresentative[];
-  commercial_registry_industry_key: string[];
 };

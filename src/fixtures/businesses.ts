@@ -23,11 +23,5 @@ export const businesses: Business[] = [
         last_name: "Schneider",
       },
     ],
-    commercial_registry_industry_key: [
-      "66190 - Sonstige mit Finanzdienstleistungen verbundene Tätigkeiten",
-      "70109 - Sonstige Verwaltung und Führung von Unternehmen und Betrieben",
-      "70220 - Unternehmensberatung",
-      "73110 - Werbeagenturen",
-    ],
   },
 ];
