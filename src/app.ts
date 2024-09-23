@@ -858,9 +858,6 @@ router.get(
   safeRequestHandler(search)
 );
 
-/**
- * This endpoint has an associated cost per request. Contact your Partner Manager for more information.
- */
 router.get("/commercial_registrations/find", safeRequestHandler(find));
 
 app.post(
