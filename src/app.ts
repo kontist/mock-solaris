@@ -854,6 +854,7 @@ router.get(
 
 router.post(
   "/businesses/:business_id/documents",
+  fileUpload.single("file"),
   safeRequestHandler(businessAPI.postDocument)
 );
 
