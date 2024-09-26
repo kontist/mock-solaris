@@ -60,7 +60,6 @@ export const find = (req: FindRequest, res: FindResponse) => {
     };
     return res.status(200).send(mockBusiness);
   } else {
-    const errorResponse: ModelNotFoundError = modelNotFoundError;
-    return res.status(404).send(errorResponse);
+    return res.status(404).send(modelNotFoundError);
   }
 };
