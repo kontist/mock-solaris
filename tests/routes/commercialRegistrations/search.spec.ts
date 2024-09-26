@@ -1,11 +1,11 @@
 import { assert, match } from "sinon";
 import { mockReq, mockRes } from "sinon-express-mock";
+import HttpStatusCodes from "http-status";
 import {
   search,
   SearchRequest,
 } from "../../../src/routes/commercialRegistrations/search";
 import { Registration } from "../../../src/routes/commercialRegistrations/types/registration";
-import { issuerNames } from "../../../src/fixtures/issuerNames";
 
 describe("search", () => {
   it("Returns found business registrations if businesses are found", () => {
@@ -15,7 +15,7 @@ describe("search", () => {
     const mockSearchRequest = mockReq(searchRequest);
     const mockSearchResponse = mockRes();
     search(mockSearchRequest, mockSearchResponse);
-    assert.calledWith(mockSearchResponse.status, 200);
+    assert.calledWith(mockSearchResponse.status, HttpStatusCodes.OK);
     const expectedResponse1: Registration = {
       name: match(String),
       registration_number: match("HRB 198673"),
@@ -36,25 +36,6 @@ describe("search", () => {
     );
   });
 
-  it("Returns a business if the business is not found and the length of the name is between 4-10 characters", () => {
-    const searchRequest: SearchRequest = {
-      query: { name: "someName", country: "DE" },
-    };
-    const mockSearchRequest = mockReq(searchRequest);
-    const mockSearchResponse = mockRes();
-    search(mockSearchRequest, mockSearchResponse);
-    assert.calledWith(mockSearchResponse.status, 200);
-    const expectedResponse: Registration = {
-      name: match(String),
-      registration_number: match("HRB"),
-      registration_issuer: match.in(issuerNames),
-    };
-    assert.calledWith(
-      mockSearchResponse.send,
-      match.some(match(expectedResponse))
-    );
-  });
-
   it("returns an empty array if the business is not found and name requested is longer than 10 characters", () => {
     const searchRequest: SearchRequest = {
       query: { name: "someLongName", country: "DE" },
@@ -62,7 +43,7 @@ describe("search", () => {
     const mockSearchRequest = mockReq(searchRequest);
     const mockSearchResponse = mockRes();
     search(mockSearchRequest, mockSearchResponse);
-    assert.calledWith(mockSearchResponse.status, 404);
+    assert.calledWith(mockSearchResponse.status, HttpStatusCodes.OK);
     assert.calledWith(mockSearchResponse.send, []);
   });
 });

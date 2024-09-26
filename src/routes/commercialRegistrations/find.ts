@@ -1,4 +1,5 @@
 import type { Request, Response } from "express";
+import HttpStatusCodes from "http-status";
 import { businesses } from "../../fixtures/businesses";
 import { ModelNotFoundError } from "./types/modelNotFoundError";
 import { Business } from "./types/business";
@@ -42,7 +43,7 @@ export const find = (req: FindRequest, res: FindResponse) => {
     String(registration_issuer).length >= 4 &&
     String(registration_issuer).length <= 10;
   if (foundBusiness) {
-    return res.status(200).send(foundBusiness);
+    return res.status(HttpStatusCodes.OK).send(foundBusiness);
   } else if (shouldGenerateBusiness) {
     const randomDate = new Date(Date.now() * Math.random());
     const mockBusiness: Business = {
@@ -69,9 +70,9 @@ export const find = (req: FindRequest, res: FindResponse) => {
       registration_number,
       registration_issuer,
     };
-    return res.status(200).send(mockBusiness);
+    return res.status(HttpStatusCodes.OK).send(mockBusiness);
   } else {
     const errorResponse: ModelNotFoundError = modelNotFoundError;
-    return res.status(404).send(errorResponse);
+    return res.status(HttpStatusCodes.NOT_FOUND).send(errorResponse);
   }
 };
