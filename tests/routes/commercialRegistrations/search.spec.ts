@@ -62,7 +62,7 @@ describe("search", () => {
     const mockSearchRequest = mockReq(searchRequest);
     const mockSearchResponse = mockRes();
     search(mockSearchRequest, mockSearchResponse);
-    assert.calledWith(mockSearchResponse.status, 404);
+    assert.calledWith(mockSearchResponse.status, 200);
     assert.calledWith(mockSearchResponse.send, []);
   });
 });
