@@ -17,10 +17,12 @@ describe("search", () => {
     search(mockSearchRequest, mockSearchResponse);
     assert.calledWith(mockSearchResponse.status, 200);
     const expectedResponse1: Registration = {
+      name: match(String),
       registration_number: match("HRB 198673"),
       registration_issuer: match("AMTSGERICHT MÜNCHEN"),
     };
     const expectedResponse2: Registration = {
+      name: match(String),
       registration_number: match("HRB 198674"),
       registration_issuer: match("ISSUER MÜNCHEN"),
     };
@@ -43,6 +45,7 @@ describe("search", () => {
     search(mockSearchRequest, mockSearchResponse);
     assert.calledWith(mockSearchResponse.status, 200);
     const expectedResponse: Registration = {
+      name: match(String),
       registration_number: match("HRB"),
       registration_issuer: match.in(issuerNames),
     };
