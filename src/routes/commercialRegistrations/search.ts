@@ -3,6 +3,7 @@ import { businesses } from "../../fixtures/businesses";
 import { SearchQuery } from "./types/searchQuery";
 import { Registration } from "./types/registration";
 import { issuerNames } from "../../fixtures/issuerNames";
+import { businessNames } from "../../fixtures/businessNames";
 
 export type SearchRequest = Partial<Request<{}, {}, {}, SearchQuery>>;
 export type SearchResponse = Partial<Response<Registration[] | []>>;
@@ -27,6 +28,7 @@ export const search = (req: SearchRequest, res: SearchResponse) => {
   if (foundBusinesses.length > 0) {
     return res.status(200).send(
       foundBusinesses.map((business) => ({
+        name: business.name,
         registration_number: business.registration_number,
         registration_issuer: business.registration_issuer,
       }))
@@ -34,6 +36,7 @@ export const search = (req: SearchRequest, res: SearchResponse) => {
   } else if (shouldGenerateBusiness) {
     return res.status(200).send([
       {
+        name: businessNames[Math.floor(Math.random() * businessNames.length)],
         registration_number: `HRB ${Math.floor(Math.random() * 1000000)}`,
         registration_issuer:
           issuerNames[Math.floor(Math.random() * issuerNames.length)],
