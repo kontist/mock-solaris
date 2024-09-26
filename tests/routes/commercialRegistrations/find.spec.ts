@@ -1,5 +1,4 @@
 import { assert } from "sinon";
-import HttpStatusCodes from "http-status";
 import { mockReq, mockRes } from "sinon-express-mock";
 import {
   find,
@@ -18,7 +17,7 @@ describe("find", () => {
     });
     const findResponse = mockRes();
     find(findRequest, findResponse);
-    assert.calledWith(findResponse.status, HttpStatusCodes.OK);
+    assert.calledWith(findResponse.status, 200);
     assert.calledWithMatch(findResponse.send, {
       registration_number: "HRB 198673",
       registration_issuer: "AMTSGERICHT MÜNCHEN",
@@ -35,7 +34,7 @@ describe("find", () => {
     });
     const findResponse = mockRes();
     find(findRequest, findResponse);
-    assert.calledWith(findResponse.status, HttpStatusCodes.OK);
+    assert.calledWith(findResponse.status, 200);
     const expectedBusiness: Partial<Business> = {
       registration_number: "someNumber",
       registration_issuer: "someIssuer",
@@ -53,7 +52,7 @@ describe("find", () => {
     });
     const findResponse = mockRes();
     find(findRequest, findResponse);
-    assert.calledWith(findResponse.status, HttpStatusCodes.NOT_FOUND);
+    assert.calledWith(findResponse.status, 404);
     assert.calledWithMatch(findResponse.send, modelNotFoundError);
   });
 });
