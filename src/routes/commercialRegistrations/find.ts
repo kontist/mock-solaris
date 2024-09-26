@@ -5,8 +5,6 @@ import { Business } from "./types/business";
 import { findQuery } from "./types/findQuery";
 import { addresses } from "../../fixtures/addresses";
 import { businessNames } from "../../fixtures/businessNames";
-import { germanFirstNames } from "../../fixtures/firstNames";
-import { germanLastNames } from "../../fixtures/lastNames";
 
 export type FindRequest = Partial<Request<{}, {}, {}, findQuery>>;
 export type FindResponse = Partial<Response<Business | ModelNotFoundError>>;
@@ -50,16 +48,7 @@ export const find = (req: FindRequest, res: FindResponse) => {
       legal_form: "GMBH",
       tax_country: "DE",
       name: businessNames[Math.floor(Math.random() * businessNames.length)],
-      legal_representatives: [
-        {
-          first_name:
-            germanFirstNames[
-              Math.floor(Math.random() * germanFirstNames.length)
-            ],
-          last_name:
-            germanLastNames[Math.floor(Math.random() * germanLastNames.length)],
-        },
-      ],
+      legal_representatives: [],
       registration_date: `${randomDate.getFullYear()}-${
         randomDate.getMonth() + 1
       }-${randomDate.getDate()}`,
