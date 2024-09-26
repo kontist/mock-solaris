@@ -42,6 +42,8 @@ import { shouldReturnJSON } from "./helpers";
 import { CardStatus } from "./helpers/types";
 import { createStripeCustomerIfNotExistsMiddleware } from "./helpers/stripe";
 import * as questionsAPI from "./routes/questions";
+import { find } from "./routes/commercialRegistrations/find";
+import { search } from "./routes/commercialRegistrations/search";
 
 const app = express();
 const fileUpload = multer();
@@ -848,6 +850,15 @@ router.get(
   "/accounts/opening_requests/:id",
   safeRequestHandler(accountOpeningRequestAPI.retrieveAccountOpeningRequest)
 );
+
+// COMMERCIAL REGISTRATIONS
+
+router.get(
+  "/commercial_registrations/search_by_name",
+  safeRequestHandler(search)
+);
+
+router.get("/commercial_registrations/find", safeRequestHandler(find));
 
 app.post(
   "/__BACKOFFICE__/createMaps",
