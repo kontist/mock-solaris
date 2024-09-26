@@ -42,19 +42,11 @@ export const find = (req: FindRequest, res: FindResponse) => {
   if (foundBusiness) {
     return res.status(200).send(foundBusiness);
   } else if (shouldGenerateBusiness) {
-    const randomDate = new Date(Date.now() * Math.random());
     const mockBusiness: Business = {
       address: addresses[Math.floor(Math.random() * addresses.length)],
       legal_form: "GMBH",
       tax_country: "DE",
       name: businessNames[Math.floor(Math.random() * businessNames.length)],
-      legal_representatives: [],
-      registration_date: `${randomDate.getFullYear()}-${
-        randomDate.getMonth() + 1
-      }-${randomDate.getDate()}`,
-      registry_updated_at: `${randomDate.getFullYear()}-${
-        randomDate.getMonth() + 1
-      }-${randomDate.getDate()}`,
       registration_number,
       registration_issuer,
     };
