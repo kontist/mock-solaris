@@ -150,6 +150,11 @@ export const terminateOverdraft = async (req, res) => {
 
   await savePerson(person);
 
+  res.status(202).send(account.overdraft);
+
+  // add 1 second delay to simulate async processing
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+
   await triggerWebhook({
     type: AccountWebhookEvent.ACCOUNT_LIMIT_CHANGE,
     payload: {
@@ -157,8 +162,6 @@ export const terminateOverdraft = async (req, res) => {
     },
     personId: person.id,
   });
-
-  res.status(202).send(account.overdraft);
 };
 
 export const createOverdraft = async (req, res) => {
