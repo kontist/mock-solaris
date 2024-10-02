@@ -133,7 +133,6 @@ describe("Persons", () => {
     const documentType = "SIGNED_CONTRACT";
 
     before(async () => {
-      await db.flushDb();
       res = mockRes();
       const req = mockReq({
         params: {
@@ -147,12 +146,10 @@ describe("Persons", () => {
       await personsApi.postDocument(req, res);
     });
 
-    it("should return saved document data", async () => {
+    it("should return document data", async () => {
       const lastCall = res.send.args[res.send.args.length - 1];
       expect(lastCall[0].id).to.be.a("string");
       expect(lastCall[0].document_type).to.equal(documentType);
     });
   });
-
-  after(db.flushDb);
 });

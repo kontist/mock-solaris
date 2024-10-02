@@ -42,6 +42,7 @@ import { shouldReturnJSON } from "./helpers";
 import { CardStatus } from "./helpers/types";
 import { createStripeCustomerIfNotExistsMiddleware } from "./helpers/stripe";
 import * as questionsAPI from "./routes/questions";
+import * as businessAPI from "./routes/business";
 import { find } from "./routes/commercialRegistrations/find";
 import { search } from "./routes/commercialRegistrations/search";
 
@@ -849,6 +850,14 @@ router.post(
 router.get(
   "/accounts/opening_requests/:id",
   safeRequestHandler(accountOpeningRequestAPI.retrieveAccountOpeningRequest)
+);
+
+// Business
+
+router.post(
+  "/businesses/:business_id/documents",
+  fileUpload.single("file"),
+  safeRequestHandler(businessAPI.postDocument)
 );
 
 // COMMERCIAL REGISTRATIONS
