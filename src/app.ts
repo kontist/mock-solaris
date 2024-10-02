@@ -43,6 +43,8 @@ import { CardStatus } from "./helpers/types";
 import { createStripeCustomerIfNotExistsMiddleware } from "./helpers/stripe";
 import * as questionsAPI from "./routes/questions";
 import * as businessAPI from "./routes/business";
+import { find } from "./routes/commercialRegistrations/find";
+import { search } from "./routes/commercialRegistrations/search";
 
 const app = express();
 const fileUpload = multer();
@@ -857,6 +859,15 @@ router.post(
   fileUpload.single("file"),
   safeRequestHandler(businessAPI.postDocument)
 );
+
+// COMMERCIAL REGISTRATIONS
+
+router.get(
+  "/commercial_registrations/search_by_name",
+  safeRequestHandler(search)
+);
+
+router.get("/commercial_registrations/find", safeRequestHandler(find));
 
 app.post(
   "/__BACKOFFICE__/createMaps",
