@@ -15,6 +15,13 @@ export const businesses: Business[] = [
     tax_country: "DE",
     registration_number: "HRB 198673",
     registration_issuer: "AMTSGERICHT MÜNCHEN",
+    registration_date: "2021-01-01",
+    legal_representatives: [
+      {
+        first_name: "Max",
+        last_name: "Mustermann",
+      },
+    ],
   },
   {
     name: "FLOOR 14 GmbH",
@@ -30,6 +37,13 @@ export const businesses: Business[] = [
     tax_country: "DE",
     registration_number: "HRB 198674",
     registration_issuer: "ISSUER MÜNCHEN",
+    registration_date: "2022-01-01",
+    legal_representatives: [
+      {
+        first_name: "John",
+        last_name: "Doer",
+      },
+    ],
   },
   {
     name: "COMPANY 15 GmbH",
@@ -45,6 +59,13 @@ export const businesses: Business[] = [
     tax_country: "DE",
     registration_number: "HRB 198674",
     registration_issuer: "ISSUER BAVARIA",
+    registration_date: "2023-01-01",
+    legal_representatives: [
+      {
+        first_name: "Jane",
+        last_name: "Doe",
+      },
+    ],
   },
   {
     name: "COMPANY 16 GmbH",
@@ -60,5 +81,12 @@ export const businesses: Business[] = [
     tax_country: "DE",
     registration_number: "HRB 198674",
     registration_issuer: "ISSUER SAXONY",
+    registration_date: "2023-01-01",
+    legal_representatives: [
+      {
+        first_name: "Jane",
+        last_name: "Doer",
+      },
+    ],
   },
 ];

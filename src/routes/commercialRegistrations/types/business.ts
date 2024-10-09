@@ -13,4 +13,6 @@ export type Business = {
   tax_country: Country;
   registration_number: string;
   registration_issuer: string;
+  registration_date: string;
+  legal_representatives: LegalRepresentative[];
 };

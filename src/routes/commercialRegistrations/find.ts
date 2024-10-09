@@ -49,6 +49,13 @@ export const find = (req: FindRequest, res: FindResponse) => {
       name: businessNames[Math.floor(Math.random() * businessNames.length)],
       registration_number,
       registration_issuer,
+      registration_date: new Date().toISOString().substring(0, 10),
+      legal_representatives: [
+        {
+          first_name: "Max",
+          last_name: "Mustermann",
+        },
+      ],
     };
     return res.status(200).send(mockBusiness);
   } else {
