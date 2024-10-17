@@ -7,6 +7,7 @@ import multer from "multer";
 import * as log from "./logger";
 import * as oauthAPI from "./routes/oauth";
 import * as personsAPI from "./routes/persons";
+import * as businessesAPI from "./routes/businesses";
 import * as deviceBindingAPI from "./routes/deviceBinding";
 import * as standingOrdersAPI from "./routes/standingOrders";
 import * as accountsAPI from "./routes/accounts";
@@ -154,6 +155,9 @@ router.post(
   fileUpload.single("file"),
   safeRequestHandler(personsAPI.postDocument)
 );
+
+// BUSINESSES
+router.post("/businesses", safeRequestHandler(businessesAPI.createBusiness));
 
 router.get(
   "/question_set/:question_set_id",

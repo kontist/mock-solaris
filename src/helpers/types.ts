@@ -292,6 +292,32 @@ export type MockCreatePerson = {
   billing_account?: BillingAccount;
 };
 
+export type MockBusiness = {
+  id: string;
+  name: string;
+  createdAt: string;
+  address?: {
+    line_1: string;
+    line_2: string;
+    postal_code: string;
+    city: string;
+    state: string;
+    country: string;
+  };
+};
+
+export type MockCreateBusiness = {
+  name: string;
+  address?: {
+    line_1: string;
+    line_2: string;
+    postal_code: string;
+    city: string;
+    state: string;
+    country: string;
+  };
+};
+
 export type FraudCase = {
   id: string;
   reservationId: string;

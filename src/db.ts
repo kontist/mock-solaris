@@ -15,12 +15,14 @@ import {
   DeviceConsent,
   DeviceConsentPayload,
   MockAccount,
+  MockBusiness,
   MockPerson,
   RiskClarificationStatus,
   ScreeningProgress,
 } from "./helpers/types";
 import generateID from "./helpers/id";
 import { storePersonInSortedSet } from "./helpers/persons";
+import { storeBusinessInSortedSet } from "./helpers/businesses";
 
 const clientConfig = process.env.MOCKSOLARIS_REDIS_SERVER
   ? {
@@ -82,6 +84,7 @@ export const redlock = new Redlock(
 export const migrate = async () => {
   try {
     await getPerson("mockpersonkontistgmbh");
+    await getBusiness("mockbusinesskontistgmbh");
     throw new Error("during development, we create it every time");
   } catch (error) {
     log.warning("kontistGmbHAccount not found, creating");
@@ -202,10 +205,15 @@ export const migrate = async () => {
 
     await savePerson(kontistAccountPerson);
     await storePersonInSortedSet(kontistAccountPerson);
-    await saveAccountToPersonId(
-      kontistAccountPerson.account,
-      kontistAccountPerson.id
-    );
+
+    const kontistAccountBusiness: MockBusiness = {
+      id: "mockbusinesskontistgmbh",
+      name: "Kontist GmbH",
+      createdAt: new Date("2024-01-01").toISOString(),
+    };
+
+    await saveBusiness(kontistAccountBusiness);
+    await storeBusinessInSortedSet(kontistAccountBusiness);
   }
 };
 
@@ -216,6 +224,14 @@ const jsonToPerson = (value: string) => {
   const person = JSON.parse(value);
   person.transactions = person.transactions || [];
   return person;
+};
+
+const jsonToBusiness = (value: string) => {
+  if (!value) {
+    throw new Error("Business was not found");
+  }
+  const business = JSON.parse(value);
+  return business;
 };
 
 export const getPerson = async (personId: string): Promise<MockPerson> => {
@@ -229,6 +245,21 @@ export const getPerson = async (personId: string): Promise<MockPerson> => {
   }
   const person = jsonToPerson(personJSON);
   return augmentPerson(person);
+};
+
+export const getBusiness = async (
+  businessId: string
+): Promise<MockBusiness> => {
+  const businessJSON = await redisClient.get(
+    `${process.env.MOCKSOLARIS_REDIS_PREFIX}:business:${businessId}`
+  );
+  if (!businessJSON) {
+    throw new Error(
+      `Business which has businessId: ${businessId} was not found in redis`
+    );
+  }
+  const business = jsonToBusiness(businessJSON);
+  return augmentBusiness(business);
 };
 
 export const removePerson = async (personId: string) => {
@@ -332,10 +363,27 @@ export const savePerson = async (person, skipInterest = false) => {
   return setPerson(person);
 };
 
+/**
+ * Consider using locks using the redlock package,
+ * in functions which load from redis and then save to redis
+ */
+export const saveBusiness = async (business) => {
+  business.address = business.address || { country: null };
+
+  return setBusiness(business);
+};
+
 export const setPerson = async (person) => {
   return redisClient.set(
     `${process.env.MOCKSOLARIS_REDIS_PREFIX}:person:${person.id}`,
     JSON.stringify(person, undefined, 2)
+  );
+};
+
+export const setBusiness = async (business) => {
+  return redisClient.set(
+    `${process.env.MOCKSOLARIS_REDIS_PREFIX}:business:${business.id}`,
+    JSON.stringify(business, undefined, 2)
   );
 };
 
@@ -557,6 +605,12 @@ const augmentPerson = (person: MockPerson): MockPerson => {
   return augmented;
 };
 
+const augmentBusiness = (business: MockBusiness): MockBusiness => {
+  const augmented = _.cloneDeep(business);
+
+  return augmented;
+};
+
 export const getWebhooks = async () => {
   const webHooks = [];
   for await (const key of redisClient.scanIterator({
@@ -697,6 +751,16 @@ export const getPersonByDeviceId = async (deviceId) => {
 export const setPersonOrigin = async (personId: string, origin?: string) => {
   await redisClient.set(
     `${process.env.MOCKSOLARIS_REDIS_PREFIX}:person-origin:${personId}`,
+    origin || ""
+  );
+};
+
+export const setBusinessOrigin = async (
+  businessId: string,
+  origin?: string
+) => {
+  await redisClient.set(
+    `${process.env.MOCKSOLARIS_REDIS_PREFIX}:business-origin:${businessId}`,
     origin || ""
   );
 };
