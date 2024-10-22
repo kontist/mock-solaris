@@ -84,7 +84,6 @@ export const redlock = new Redlock(
 export const migrate = async () => {
   try {
     await getPerson("mockpersonkontistgmbh");
-    await getBusiness("mockbusinesskontistgmbh");
     throw new Error("during development, we create it every time");
   } catch (error) {
     log.warning("kontistGmbHAccount not found, creating");
@@ -205,11 +204,26 @@ export const migrate = async () => {
 
     await savePerson(kontistAccountPerson);
     await storePersonInSortedSet(kontistAccountPerson);
+  }
+
+  try {
+    await getBusiness("mockbusinesskontistgmbh");
+    throw new Error("during development, we create it every time");
+  } catch (error) {
+    log.warning("mockbusinesskontistgmbh not found, creating");
 
     const kontistAccountBusiness: MockBusiness = {
       id: "mockbusinesskontistgmbh",
       name: "Kontist GmbH",
       createdAt: new Date("2024-01-01").toISOString(),
+      address: {
+        line_1: "Torstraße 177",
+        line_2: null,
+        postal_code: "10155",
+        city: "Berlin",
+        state: null,
+        country: "DE",
+      },
     };
 
     await saveBusiness(kontistAccountBusiness);
@@ -465,6 +479,16 @@ export const getDevicesByPersonId = (personId: string) => {
   return Promise.map(deviceIds, getDevice);
 };
 
+export const getDevicesByBusinessId = (businessId: string) => {
+  const deviceIds = redisClient.lRange(
+    `${process.env.MOCKSOLARIS_REDIS_PREFIX}:business-deviceIds:${businessId}`,
+    0,
+    -1
+  );
+
+  return Promise.map(deviceIds, getDevice);
+};
+
 export const deletePersonDevices = async (personId: string) => {
   const deviceIds = await redisClient.lRange(
     `${process.env.MOCKSOLARIS_REDIS_PREFIX}:person-deviceIds:${personId}`,
@@ -640,7 +664,7 @@ export const findBusinesses = async (
     // Use zRange with REV: true to get the most recent businesses based on their createdAt timestamp
     const keys = (await redisClient.sendCommand([
       "ZREVRANGEBYSCORE",
-      `${process.env.MOCKSOLARIS_REDIS_PREFIX}:businesess`,
+      `${process.env.MOCKSOLARIS_REDIS_PREFIX}:businesses`,
       "+inf",
       "-inf",
       "LIMIT",

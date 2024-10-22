@@ -26,6 +26,10 @@ import {
   _getPersons,
   redlock,
   saveQuestionSetIdToPersonId,
+  findBusinesses,
+  getBusiness,
+  getDevicesByBusinessId,
+  getBusinessOrigin,
 } from "../db";
 import {
   createSepaDirectDebitReturn,
@@ -188,6 +192,12 @@ export const listPersons = async (req, res) => {
   res.render("persons", { persons });
 };
 
+export const listBusinesses = async (req, res) => {
+  const limit = req.query.limit || 100;
+  const businesses = await findBusinesses({ limit });
+  res.render("businesses", { businesses });
+};
+
 export const listWebhooks = async (req, res) => {
   const webhooks = await getWebhooks();
   res.json(webhooks);
@@ -240,6 +250,35 @@ export const getPersonHandler = async (req, res) => {
       origin,
       deviceMonitoringActivities,
       deviceMonitoringConsents,
+    });
+  }
+};
+
+export const getBusinessHandler = async (req, res) => {
+  const business = await getBusiness(req.params.id);
+
+  if (!business) {
+    return res.status(HttpStatusCodes.NOT_FOUND).send({
+      message: "Couldn't find business",
+      details: req.params,
+    });
+  }
+
+  const jsonResponse = shouldReturnJSON(req);
+  const id = business.id;
+
+  const [devices, origin] = await Promise.all([
+    getDevicesByBusinessId(id),
+    getBusinessOrigin(id),
+  ]);
+
+  if (jsonResponse) {
+    res.send(business);
+  } else {
+    res.render("business", {
+      devices,
+      SEIZURE_STATUSES,
+      origin,
     });
   }
 };

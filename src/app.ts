@@ -617,6 +617,10 @@ if (process.env.NODE_ENV === "e2e") {
 
 // BACKOFFICE
 app.get("/__BACKOFFICE__", safeRequestHandler(backofficeAPI.listPersons));
+app.get(
+  "/__BACKOFFICE__/businesses",
+  safeRequestHandler(backofficeAPI.listBusinesses)
+);
 
 app.get(
   "/__BACKOFFICE__/webhooks",
@@ -640,6 +644,11 @@ app.post(
 app.get(
   "/__BACKOFFICE__/person/:id",
   safeRequestHandler(backofficeAPI.getPersonHandler)
+);
+
+app.get(
+  "/__BACKOFFICE__/business/:id",
+  safeRequestHandler(backofficeAPI.getBusinessHandler)
 );
 
 app.delete(

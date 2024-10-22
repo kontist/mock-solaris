@@ -1,0 +1,49 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+
+<style>
+  .idnow {
+      min-width: 85px;
+      height: 30px;
+      background-repeat: no-repeat;
+      background-image: url( data:image/png;base64,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);
+  }
+</style>
+
+<ul class="nav nav-tabs">
+  <li role="presentation"><a href="/__BACKOFFICE__/businesses">⬅ Businesses</a></li>
+<li role="presentation" class="active"><a href="/__BACKOFFICE__/business/{{ business.id }}">Individual business</a></li>
+</ul>
+
+<div class="page-header">
+  <h2>{{ business.name }}</h2>
+</div>
+
+<div class="row">
+  <div class="col-md-6">
+    <div class="panel panel-default">
+      <div class="panel-heading"><h4>Business data</h4></div>
+      <div class="panel-body">
+        <form method="POST">
+          <div class="row">
+            <div class="form-group col-md-12">
+              <label for="first_name">Name</label>
+              <input type="text" class="form-control" name="first_name" id="first_name" placeholder="First name"
+                value="{{ business.name }}">
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">Submit</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+$(".autosubmitonchange").change(function() {
+  this.submit();
+});
+</script>
+
+{% endblock %}
