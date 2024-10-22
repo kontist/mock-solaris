@@ -326,7 +326,7 @@ export type MockBusiness = {
   business_purpose?: string;
   terms_conditions_signed_at?: string;
   branch?: string;
-  international_operativity_expectation?: Array<string>;
+  international_operativity_expectation?: string[];
   vat_number?: string;
   purpose_of_account_opening?: string;
   source_of_funds?: string;
