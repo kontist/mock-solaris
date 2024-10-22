@@ -162,6 +162,7 @@ router.get(
   "/businesses/:business_id",
   safeRequestHandler(businessesAPI.showBusiness)
 );
+router.get("/businesses", safeRequestHandler(businessesAPI.showBusinesses));
 
 router.get(
   "/question_set/:question_set_id",

@@ -9,6 +9,7 @@ import {
   saveAccountToBusinessId,
   removeBusiness,
   getBusiness,
+  findBusinesses,
 } from "../db";
 
 import generateID from "../helpers/id";
@@ -103,4 +104,15 @@ export const showBusiness = async (req, res) => {
       ],
     });
   }
+};
+
+export const showBusinesses = async (req, res) => {
+  const { page: { size = 10, number = 1 } = {} } = req.query;
+
+  const businesses = ((await findBusinesses()) || []).slice(
+    (number - 1) * size,
+    size * number
+  );
+
+  return res.status(200).send(businesses);
 };

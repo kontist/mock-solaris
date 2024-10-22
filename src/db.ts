@@ -610,6 +610,57 @@ export const findPersons = async (
   }
 };
 
+/**
+ * Finds businesses. When callbackFn is not supplied, loads all businesses.
+ * Notes:
+ *  Avoid using this function without a callbackFn
+ *  If you need to find one business, you can use findBusiness() instead
+ * @param limit
+ * @param callbackFn
+ */
+export const findBusinesses = async (
+  {
+    callbackFn,
+    limit,
+  }: {
+    callbackFn?: (business: MockBusiness) => Promise<boolean>;
+    limit?: number;
+  } = { callbackFn: null, limit: DEFAULT_LIMIT }
+): Promise<MockBusiness[]> => {
+  try {
+    const businesses = [];
+
+    // Use zRange with REV: true to get the most recent businesses based on their createdAt timestamp
+    const keys = (await redisClient.sendCommand([
+      "ZREVRANGEBYSCORE",
+      `${process.env.MOCKSOLARIS_REDIS_PREFIX}:businesess`,
+      "+inf",
+      "-inf",
+      "LIMIT",
+      "0",
+      String(limit || DEFAULT_LIMIT),
+    ])) as string[];
+
+    for (const key of keys) {
+      const value = await redisClient.get(
+        `${process.env.MOCKSOLARIS_REDIS_PREFIX}:business:${key}`
+      );
+      const business = jsonToBusiness(value);
+      const shouldSelectBusiness = callbackFn
+        ? await callbackFn(business)
+        : true;
+      if (shouldSelectBusiness) {
+        businesses.push(business);
+      }
+    }
+
+    return businesses.map((business) => augmentBusiness(business));
+  } catch (err) {
+    log.error("findBusinesses", err);
+    throw err;
+  }
+};
+
 export const findPerson = async (
   callbackFn: (person: MockPerson) => Promise<boolean>
 ): Promise<MockPerson | null> => {
