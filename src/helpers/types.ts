@@ -430,6 +430,10 @@ export enum PersonWebhookEvent {
   QUESTIONS_REQUIRE_RESPONSE = "QUESTIONS_REQUIRE_RESPONSE",
 }
 
+export enum BusinessWebhookEvent {
+  "BUSINESS_CHANGED" = "BUSINESS_CHANGED",
+}
+
 export enum AccountWebhookEvent {
   "ACCOUNT_BLOCK" = "ACCOUNT_BLOCK",
   "ACCOUNT_CLOSURE" = "ACCOUNT_CLOSURE",
@@ -473,7 +477,8 @@ export type WebhookType =
   | TransactionWebhookEvent
   | PersonWebhookEvent
   | AccountWebhookEvent
-  | PostboxItemEvent;
+  | PostboxItemEvent
+  | BusinessWebhookEvent;
 
 export enum CardAuthorizationDeclineV2Type {
   "3DS_FAILED" = "3DS_FAILED", // We could not approve your transaction because the merchant did not provide correct authentication information. Please try again.

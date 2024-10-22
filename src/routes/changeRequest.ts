@@ -6,6 +6,8 @@ import {
   savePerson,
   getMobileNumber,
   getPersonByDeviceId,
+  getBusinessMobileNumber,
+  saveBusiness,
 } from "../db";
 import {
   removeMobileNumberConfirmChangeRequest,
@@ -80,6 +82,45 @@ export const createChangeRequest = async (req, res, person, method, delta) => {
     delta,
   };
   await savePerson(person);
+
+  return res.status(202).send({
+    id: changeRequestId,
+    status: ChangeRequestStatus.AUTHORIZATION_REQUIRED,
+    updated_at: new Date().toISOString(),
+    url: `:env/v1/change_requests/${changeRequestId}/authorize`,
+  });
+};
+
+export const createBusinessChangeRequest = async (
+  req,
+  res,
+  business,
+  method,
+  delta
+) => {
+  const businessId = business.id;
+
+  const mobileNumber = await getBusinessMobileNumber(businessId);
+  if (!mobileNumber) {
+    return res.status(403).send({
+      id: Date.now().toString(),
+      status: 403,
+      code: "Unauthorized Change Request",
+      title: "Unauthorized Change Request",
+      detail:
+        "Unauthorized change request for Solaris::Business " +
+        businessId +
+        ". While authorization required, no entity with a possibility to authorize data change is present.",
+    });
+  }
+
+  const changeRequestId = Date.now().toString();
+  business.changeRequest = {
+    id: changeRequestId,
+    method,
+    delta,
+  };
+  await saveBusiness(business);
 
   return res.status(202).send({
     id: changeRequestId,

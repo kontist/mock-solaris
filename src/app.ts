@@ -163,6 +163,10 @@ router.get(
   safeRequestHandler(businessesAPI.showBusiness)
 );
 router.get("/businesses", safeRequestHandler(businessesAPI.showBusinesses));
+router.patch(
+  "/businesses/:business_id",
+  safeRequestHandler(businessesAPI.updateBusiness)
+);
 
 router.get(
   "/question_set/:question_set_id",

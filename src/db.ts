@@ -419,6 +419,13 @@ export const getMobileNumber = async (personId) =>
     )
   );
 
+export const getBusinessMobileNumber = async (businessId) =>
+  JSON.parse(
+    await redisClient.get(
+      `${process.env.MOCKSOLARIS_REDIS_PREFIX}:mobileNumber:${businessId}`
+    )
+  );
+
 export const saveMobileNumber = async (personId, data) =>
   redisClient.set(
     `${process.env.MOCKSOLARIS_REDIS_PREFIX}:mobileNumber:${personId}`,
@@ -947,6 +954,14 @@ export const getPersonOrigin = async (
 ): Promise<string | null> => {
   return redisClient.get(
     `${process.env.MOCKSOLARIS_REDIS_PREFIX}:person-origin:${personId}`
+  );
+};
+
+export const getBusinessOrigin = async (
+  businessId: string
+): Promise<string | null> => {
+  return redisClient.get(
+    `${process.env.MOCKSOLARIS_REDIS_PREFIX}:business-origin:${businessId}`
   );
 };
 
