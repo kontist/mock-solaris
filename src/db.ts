@@ -280,6 +280,18 @@ export const removePerson = async (personId: string) => {
   await deletePersonDevices(personId);
 };
 
+export const removeBusiness = async (businessId: string) => {
+  const business = await getBusiness(businessId);
+  const score = moment(business.createdAt).valueOf();
+  const key = `${process.env.MOCKSOLARIS_REDIS_PREFIX}:business`;
+  await redisClient.zRemRangeByScore(key, score, score);
+  await redisClient.del(
+    `${process.env.MOCKSOLARIS_REDIS_PREFIX}:business:${businessId}`
+  );
+
+  await deletePersonDevices(businessId);
+};
+
 export const getTechnicalUserPerson = () => getPerson("mockpersonkontistgmbh");
 
 const addAmountValues = (a, b) => a + b.amount.value;
@@ -458,6 +470,18 @@ export const deletePersonDevices = async (personId: string) => {
   });
 };
 
+export const deleteBusinessDevices = async (businessId: string) => {
+  const deviceIds = await redisClient.lRange(
+    `${process.env.MOCKSOLARIS_REDIS_PREFIX}:business-deviceIds:${businessId}`,
+    0,
+    -1
+  );
+
+  await Promise.map(deviceIds, async (deviceId) => {
+    await deleteBusinessDevice(deviceId, businessId);
+  });
+};
+
 export const saveDevice = async (device) => {
   await redisClient.set(
     `${process.env.MOCKSOLARIS_REDIS_PREFIX}:device:${device.id}`,
@@ -473,6 +497,20 @@ export const deleteDevice = async (deviceId: string, personId: string) => {
   );
   await redisClient.lRem(
     `${process.env.MOCKSOLARIS_REDIS_PREFIX}:person-deviceIds:${personId}`,
+    0,
+    deviceId
+  );
+};
+
+export const deleteBusinessDevice = async (
+  deviceId: string,
+  businessId: string
+) => {
+  await redisClient.del(
+    `${process.env.MOCKSOLARIS_REDIS_PREFIX}:device:${businessId}`
+  );
+  await redisClient.lRem(
+    `${process.env.MOCKSOLARIS_REDIS_PREFIX}:business-deviceIds:${businessId}`,
     0,
     deviceId
   );
@@ -899,6 +937,18 @@ export const saveAccountToPersonId = async (
   await Promise.all([
     redisClient.set(idKey, personId),
     redisClient.set(ibanKey, personId),
+  ]);
+};
+
+export const saveAccountToBusinessId = async (
+  account: MockAccount,
+  businessId: string
+): Promise<boolean> => {
+  const idKey = `${process.env.MOCKSOLARIS_REDIS_PREFIX}:accountId-businessId:${account.id}`;
+  const ibanKey = `${process.env.MOCKSOLARIS_REDIS_PREFIX}:accountIBAN-businessId:${account.iban}`;
+  await Promise.all([
+    redisClient.set(idKey, businessId),
+    redisClient.set(ibanKey, businessId),
   ]);
 };
 

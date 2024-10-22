@@ -638,6 +638,11 @@ app.delete(
   safeRequestHandler(personsAPI.deletePerson)
 );
 
+app.delete(
+  "/__BACKOFFICE__/business/:id",
+  safeRequestHandler(businessesAPI.deleteBusiness)
+);
+
 app.post(
   "/__BACKOFFICE__/person/:id",
   safeRequestHandler(backofficeAPI.updatePersonHandler)

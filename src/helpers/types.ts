@@ -295,7 +295,13 @@ export type MockCreatePerson = {
 export type MockBusiness = {
   id: string;
   name: string;
-  createdAt: string;
+  account?: MockAccount;
+  origin?: string;
+  sector?: string;
+  industry?: string;
+  industry_key?: string;
+  legal_form?: string;
+  foundation_date?: string;
   address?: {
     line_1: string;
     line_2: string;
@@ -304,10 +310,36 @@ export type MockBusiness = {
     state: string;
     country: string;
   };
+  tax_information?: {
+    tax_country: string;
+    tax_confirmation: string;
+    registration_number: string;
+    registration_issuer: string;
+  };
+  fatca_relevant?: boolean;
+  fatca_crs_confirmed_at?: string;
+  crs_company_type?: string;
+  balance_sheet_total?: number;
+  number_employees?: number;
+  registration_type?: string;
+  registration_district?: string;
+  business_purpose?: string;
+  terms_conditions_signed_at?: string;
+  branch?: string;
+  international_operativity_expectation?: Array<string>;
+  vat_number?: string;
+  purpose_of_account_opening?: string;
+  source_of_funds?: string;
+  expected_annual_revenue?: string;
+  expected_annual_incoming_funds?: string;
+  company_status?: string;
+  createdAt: string;
 };
 
 export type MockCreateBusiness = {
   name: string;
+  account?: MockAccount;
+  origin?: string;
   address?: {
     line_1: string;
     line_2: string;
