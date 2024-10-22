@@ -665,6 +665,12 @@ app.post(
   "/__BACKOFFICE__/person/:id",
   safeRequestHandler(backofficeAPI.updatePersonHandler)
 );
+
+app.post(
+  "/__BACKOFFICE__/business/:id",
+  safeRequestHandler(backofficeAPI.updateBusinessHandler)
+);
+
 app.post(
   "/__BACKOFFICE__/updateOrigin/:id",
   safeRequestHandler(backofficeAPI.updateOrigin)

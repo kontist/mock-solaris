@@ -30,6 +30,7 @@ import {
   getBusiness,
   getDevicesByBusinessId,
   getBusinessOrigin,
+  saveBusiness,
 } from "../db";
 import {
   createSepaDirectDebitReturn,
@@ -56,6 +57,7 @@ import {
   CustomerVettingStatus,
   MockPerson,
   Booking,
+  BusinessWebhookEvent,
 } from "../helpers/types";
 import {
   changeOverdraftApplicationStatus,
@@ -367,6 +369,44 @@ export const updatePersonHandler = async (req, res) => {
   }
 
   res.redirect(`/__BACKOFFICE__/person/${person.id}`);
+};
+
+export const updateBusinessHandler = async (req, res) => {
+  const business = await getBusiness(req.params.id);
+
+  Object.keys(req.body).forEach((key) => {
+    business[key] = req.body[key];
+  });
+
+  business.address = business.address || {};
+  business.address.line_1 = req.body.line_1;
+  business.address.line_2 = req.body.line_2;
+  business.address.postal_code = req.body.postal_code;
+  business.address.city = req.body.city;
+  business.address.country = req.body.country;
+
+  if (business.fatca_relevant === "null") {
+    business.fatca_relevant = null;
+  } else if (business.fatca_relevant === "true") {
+    business.fatca_relevant = true;
+  } else if (business.fatca_relevant === "false") {
+    business.fatca_relevant = false;
+  }
+
+  if (!req.body.mobile_number) {
+    await deleteMobileNumber(business.id);
+  }
+
+  await saveBusiness(business);
+
+  await triggerWebhook({
+    type: BusinessWebhookEvent.BUSINESS_CHANGED,
+    payload: {},
+    extraHeaders: { "solaris-entity-id": business.id },
+    businessId: business.id,
+  });
+
+  res.redirect(`/__BACKOFFICE__/business/${business.id}`);
 };
 
 const shouldMarkMobileNumberAsVerified = (identification) =>

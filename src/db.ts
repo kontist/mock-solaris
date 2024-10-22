@@ -303,7 +303,7 @@ export const removeBusiness = async (businessId: string) => {
     `${process.env.MOCKSOLARIS_REDIS_PREFIX}:business:${businessId}`
   );
 
-  await deletePersonDevices(businessId);
+  await deleteBusinessDevices(businessId);
 };
 
 export const getTechnicalUserPerson = () => getPerson("mockpersonkontistgmbh");
