@@ -158,6 +158,10 @@ router.post(
 
 // BUSINESSES
 router.post("/businesses", safeRequestHandler(businessesAPI.createBusiness));
+router.get(
+  "/businesses/:business_id",
+  safeRequestHandler(businessesAPI.showBusiness)
+);
 
 router.get(
   "/question_set/:question_set_id",
