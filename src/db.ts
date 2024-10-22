@@ -426,23 +426,16 @@ export const saveTaxIdentifications = async (personId, data) =>
     JSON.stringify(data, undefined, 2)
   );
 
-export const getMobileNumber = async (personId) =>
+export const getMobileNumber = async (entityId) =>
   JSON.parse(
     await redisClient.get(
-      `${process.env.MOCKSOLARIS_REDIS_PREFIX}:mobileNumber:${personId}`
+      `${process.env.MOCKSOLARIS_REDIS_PREFIX}:mobileNumber:${entityId}`
     )
   );
 
-export const getBusinessMobileNumber = async (businessId) =>
-  JSON.parse(
-    await redisClient.get(
-      `${process.env.MOCKSOLARIS_REDIS_PREFIX}:mobileNumber:${businessId}`
-    )
-  );
-
-export const saveMobileNumber = async (personId, data) =>
+export const saveMobileNumber = async (entityId, data) =>
   redisClient.set(
-    `${process.env.MOCKSOLARIS_REDIS_PREFIX}:mobileNumber:${personId}`,
+    `${process.env.MOCKSOLARIS_REDIS_PREFIX}:mobileNumber:${entityId}`,
     JSON.stringify(data, undefined, 2)
   );
 

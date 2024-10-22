@@ -6,7 +6,6 @@ import {
   savePerson,
   getMobileNumber,
   getPersonByDeviceId,
-  getBusinessMobileNumber,
   saveBusiness,
 } from "../db";
 import {
@@ -100,7 +99,7 @@ export const createBusinessChangeRequest = async (
 ) => {
   const businessId = business.id;
 
-  const mobileNumber = await getBusinessMobileNumber(businessId);
+  const mobileNumber = await getMobileNumber(businessId);
   if (!mobileNumber) {
     return res.status(403).send({
       id: Date.now().toString(),
