@@ -276,6 +276,7 @@ export const getBusinessHandler = async (req, res) => {
     res.send(business);
   } else {
     res.render("business", {
+      business,
       devices,
       SEIZURE_STATUSES,
       origin,
