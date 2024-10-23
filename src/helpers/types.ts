@@ -792,3 +792,14 @@ export interface QuestionSet {
   };
   questions: Question[];
 }
+
+export interface BeneficialOwner {
+  id: string;
+  beneficial_owner_id: string;
+  person_id: string;
+  valid_until: string;
+  voting_share: number;
+  business_id: string;
+  fictitious: boolean;
+  relationship_to_business: string;
+}
