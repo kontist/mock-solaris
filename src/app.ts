@@ -860,6 +860,11 @@ router.post(
   safeRequestHandler(businessAPI.postDocument)
 );
 
+router.post(
+  "/businesses/:business_id/beneficial_owners",
+  safeRequestHandler(businessAPI.createBeneficialOwner)
+);
+
 // COMMERCIAL REGISTRATIONS
 
 router.get(
