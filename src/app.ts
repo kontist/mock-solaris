@@ -865,6 +865,11 @@ router.post(
   safeRequestHandler(businessAPI.createBeneficialOwner)
 );
 
+router.patch(
+  "/businesses/:business_id/beneficial_owners/:id",
+  safeRequestHandler(businessAPI.updateBeneficialOwner)
+);
+
 // COMMERCIAL REGISTRATIONS
 
 router.get(
