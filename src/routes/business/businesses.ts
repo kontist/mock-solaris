@@ -94,32 +94,6 @@ export const showBusinesses = async (req, res) => {
   return res.status(200).send(businesses);
 };
 
-export const BUSINESS_UPDATE = "Patch/Business/business_id";
-
-/**
- * Checks if the model has setted previously a value given in the input.
- * This is useful to check is a Solaris entity may be updated or not checking the full entity
- * or the desired part of the entity.
- * i.e isChangeRequestRequired(mydata, business) or isChangeRequestRequired(mydata, business.address)
- * @param {$Request} req
- * @param {$Response} res
- */
-const isChangeRequestRequired = (input, model) => {
-  let flag = false;
-
-  if (input && model) {
-    Object.keys(input).forEach((key) => {
-      if (typeof input[key] === "object" && model[key]) {
-        flag = flag || isChangeRequestRequired(input[key], model[key]);
-      } else if (model[key]) {
-        flag = true;
-      }
-    });
-  }
-
-  return flag;
-};
-
 export const updateBusiness = async (req, res) => {
   // Solaris responds with a 403 when the parameter being updated is "empty",
   // i.e., `null`. This is not yet implemented here.

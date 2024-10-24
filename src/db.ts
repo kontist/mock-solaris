@@ -667,6 +667,22 @@ export const findPerson = async (
   return null;
 };
 
+export const findBusiness = async (
+  callbackFn: (business: MockBusiness) => Promise<boolean>
+): Promise<MockBusiness | null> => {
+  for await (const key of redisClient.scanIterator({
+    MATCH: `${process.env.MOCKSOLARIS_REDIS_PREFIX}:business:*`,
+  })) {
+    const value = await redisClient.get(key);
+    const business = jsonToBusiness(value);
+    const shouldSelectBusiness = await callbackFn(business);
+    if (shouldSelectBusiness) {
+      return augmentBusiness(business);
+    }
+  }
+  return null;
+};
+
 const augmentPerson = (person: MockPerson): MockPerson => {
   const augmented = _.cloneDeep(person);
   augmented.fraudCases = augmented.fraudCases || [];
