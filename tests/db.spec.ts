@@ -3,6 +3,8 @@ import { mockReq, mockRes } from "sinon-express-mock";
 import Bluebird from "bluebird";
 
 import {
+  findBusiness,
+  findBusinesses,
   findPerson,
   findPersonByAccount,
   findPersons,
@@ -23,6 +25,7 @@ import {
   mockPostboxItem,
 } from "./mockData";
 import { getPostboxItemById } from "../src/routes/postbox";
+import { createBusiness } from "../src/routes/business";
 
 describe("getPersons()", async () => {
   const headers = { origin: "Kontist HQ" };
@@ -227,5 +230,76 @@ describe("getPersons()", async () => {
     await createPerson(req, res);
     const postboxItem = await getPostboxItemById(mockPostboxItem.id);
     expect(postboxItem).to.be.undefined;
+  });
+});
+
+describe("Gets Businesses", async () => {
+  const headers = { origin: "Kontist HQ" };
+  beforeEach(flushDb);
+  afterEach(flushDb);
+
+  it(`findBusinesses() returns all businesses`, async () => {
+    const numBusinesses = 5;
+    for (let i = 1; i <= numBusinesses; i++) {
+      const req = mockReq({
+        body: {
+          name: `Konstist ${i}`,
+        },
+        headers,
+      });
+      const res = mockRes();
+      await Bluebird.delay(10);
+      await createBusiness(req, res);
+    }
+
+    const businesses = await findBusinesses();
+    expect(businesses.length).to.equal(numBusinesses);
+    expect(businesses[0].name).to.equal(`Konstist ${numBusinesses}`);
+  });
+
+  it(`findBusinesses() filter when cb function is provided, but not limit`, async () => {
+    const req = mockReq({
+      body: {
+        name: `Kontist GmbH`,
+      },
+      headers,
+    });
+    const res = mockRes();
+    await createBusiness(req, res);
+
+    const businesses = await findBusinesses({
+      callbackFn: (business) => business.name.endsWith("GmbH"),
+    });
+    expect(businesses.length).to.equal(1);
+  });
+
+  it("findBusiness() returns a business if the business is found", async () => {
+    const name = `Kontist GmbH`;
+    const req = mockReq({
+      body: {
+        name,
+      },
+      headers,
+    });
+    const res = mockRes();
+    await createBusiness(req, res);
+
+    const business = await findBusiness((b) => b.name === name);
+    expect(business).to.be.ok;
+  });
+
+  it("findBusiness() returns null if the business is not found", async () => {
+    const name = `Kontist GmbH`;
+    const req = mockReq({
+      body: {
+        name,
+      },
+      headers,
+    });
+    const res = mockRes();
+    await createBusiness(req, res);
+
+    const business = await findBusiness((b) => b.name === "Different Name");
+    expect(business).to.be.null;
   });
 });

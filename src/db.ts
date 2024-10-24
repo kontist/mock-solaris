@@ -15,12 +15,14 @@ import {
   DeviceConsent,
   DeviceConsentPayload,
   MockAccount,
+  MockBusiness,
   MockPerson,
   RiskClarificationStatus,
   ScreeningProgress,
 } from "./helpers/types";
 import generateID from "./helpers/id";
 import { storePersonInSortedSet } from "./helpers/persons";
+import { storeBusinessInSortedSet } from "./helpers/businesses";
 
 const clientConfig = process.env.MOCKSOLARIS_REDIS_SERVER
   ? {
@@ -202,10 +204,30 @@ export const migrate = async () => {
 
     await savePerson(kontistAccountPerson);
     await storePersonInSortedSet(kontistAccountPerson);
-    await saveAccountToPersonId(
-      kontistAccountPerson.account,
-      kontistAccountPerson.id
-    );
+  }
+
+  try {
+    await getBusiness("mockbusinesskontistgmbh");
+    throw new Error("during development, we create it every time");
+  } catch (error) {
+    log.warning("mockbusinesskontistgmbh not found, creating");
+
+    const kontistAccountBusiness: MockBusiness = {
+      id: "mockbusinesskontistgmbh",
+      name: "Kontist GmbH",
+      createdAt: new Date("2024-01-01").toISOString(),
+      address: {
+        line_1: "Torstraße 177",
+        line_2: null,
+        postal_code: "10155",
+        city: "Berlin",
+        state: null,
+        country: "DE",
+      },
+    };
+
+    await saveBusiness(kontistAccountBusiness);
+    await storeBusinessInSortedSet(kontistAccountBusiness);
   }
 };
 
@@ -216,6 +238,14 @@ const jsonToPerson = (value: string) => {
   const person = JSON.parse(value);
   person.transactions = person.transactions || [];
   return person;
+};
+
+const jsonToBusiness = (value: string) => {
+  if (!value) {
+    throw new Error("Business was not found");
+  }
+  const business = JSON.parse(value);
+  return business;
 };
 
 export const getPerson = async (personId: string): Promise<MockPerson> => {
@@ -229,6 +259,21 @@ export const getPerson = async (personId: string): Promise<MockPerson> => {
   }
   const person = jsonToPerson(personJSON);
   return augmentPerson(person);
+};
+
+export const getBusiness = async (
+  businessId: string
+): Promise<MockBusiness> => {
+  const businessJSON = await redisClient.get(
+    `${process.env.MOCKSOLARIS_REDIS_PREFIX}:business:${businessId}`
+  );
+  if (!businessJSON) {
+    throw new Error(
+      `Business which has businessId: ${businessId} was not found in redis`
+    );
+  }
+  const business = jsonToBusiness(businessJSON);
+  return augmentBusiness(business);
 };
 
 export const removePerson = async (personId: string) => {
@@ -332,10 +377,27 @@ export const savePerson = async (person, skipInterest = false) => {
   return setPerson(person);
 };
 
+/**
+ * Consider using locks using the redlock package,
+ * in functions which load from redis and then save to redis
+ */
+export const saveBusiness = async (business) => {
+  business.address = business.address || { country: null };
+
+  return setBusiness(business);
+};
+
 export const setPerson = async (person) => {
   return redisClient.set(
     `${process.env.MOCKSOLARIS_REDIS_PREFIX}:person:${person.id}`,
     JSON.stringify(person, undefined, 2)
+  );
+};
+
+export const setBusiness = async (business) => {
+  return redisClient.set(
+    `${process.env.MOCKSOLARIS_REDIS_PREFIX}:business:${business.id}`,
+    JSON.stringify(business, undefined, 2)
   );
 };
 
@@ -425,6 +487,20 @@ export const deleteDevice = async (deviceId: string, personId: string) => {
   );
   await redisClient.lRem(
     `${process.env.MOCKSOLARIS_REDIS_PREFIX}:person-deviceIds:${personId}`,
+    0,
+    deviceId
+  );
+};
+
+export const deleteBusinessDevice = async (
+  deviceId: string,
+  businessId: string
+) => {
+  await redisClient.del(
+    `${process.env.MOCKSOLARIS_REDIS_PREFIX}:device:${businessId}`
+  );
+  await redisClient.lRem(
+    `${process.env.MOCKSOLARIS_REDIS_PREFIX}:business-deviceIds:${businessId}`,
     0,
     deviceId
   );
@@ -524,6 +600,57 @@ export const findPersons = async (
   }
 };
 
+/**
+ * Finds businesses. When callbackFn is not supplied, loads all businesses.
+ * Notes:
+ *  Avoid using this function without a callbackFn
+ *  If you need to find one business, you can use findBusiness() instead
+ * @param limit
+ * @param callbackFn
+ */
+export const findBusinesses = async (
+  {
+    callbackFn,
+    limit,
+  }: {
+    callbackFn?: (business: MockBusiness) => Promise<boolean>;
+    limit?: number;
+  } = { callbackFn: null, limit: DEFAULT_LIMIT }
+): Promise<MockBusiness[]> => {
+  try {
+    const businesses = [];
+
+    // Use zRange with REV: true to get the most recent businesses based on their createdAt timestamp
+    const keys = (await redisClient.sendCommand([
+      "ZREVRANGEBYSCORE",
+      `${process.env.MOCKSOLARIS_REDIS_PREFIX}:businesses`,
+      "+inf",
+      "-inf",
+      "LIMIT",
+      "0",
+      String(limit || DEFAULT_LIMIT),
+    ])) as string[];
+
+    for (const key of keys) {
+      const value = await redisClient.get(
+        `${process.env.MOCKSOLARIS_REDIS_PREFIX}:business:${key}`
+      );
+      const business = jsonToBusiness(value);
+      const shouldSelectBusiness = callbackFn
+        ? await callbackFn(business)
+        : true;
+      if (shouldSelectBusiness) {
+        businesses.push(business);
+      }
+    }
+
+    return businesses.map((business) => augmentBusiness(business));
+  } catch (err) {
+    log.error("findBusinesses", err);
+    throw err;
+  }
+};
+
 export const findPerson = async (
   callbackFn: (person: MockPerson) => Promise<boolean>
 ): Promise<MockPerson | null> => {
@@ -535,6 +662,22 @@ export const findPerson = async (
     const shouldSelectPerson = await callbackFn(person);
     if (shouldSelectPerson) {
       return augmentPerson(person);
+    }
+  }
+  return null;
+};
+
+export const findBusiness = async (
+  callbackFn: (business: MockBusiness) => Promise<boolean>
+): Promise<MockBusiness | null> => {
+  for await (const key of redisClient.scanIterator({
+    MATCH: `${process.env.MOCKSOLARIS_REDIS_PREFIX}:business:*`,
+  })) {
+    const value = await redisClient.get(key);
+    const business = jsonToBusiness(value);
+    const shouldSelectBusiness = await callbackFn(business);
+    if (shouldSelectBusiness) {
+      return augmentBusiness(business);
     }
   }
   return null;
@@ -554,6 +697,12 @@ const augmentPerson = (person: MockPerson): MockPerson => {
     augmented.account.pendingReservation =
       augmented.account.pendingReservation || {};
   }
+  return augmented;
+};
+
+const augmentBusiness = (business: MockBusiness): MockBusiness => {
+  const augmented = _.cloneDeep(business);
+
   return augmented;
 };
 
@@ -701,6 +850,16 @@ export const setPersonOrigin = async (personId: string, origin?: string) => {
   );
 };
 
+export const setBusinessOrigin = async (
+  businessId: string,
+  origin?: string
+) => {
+  await redisClient.set(
+    `${process.env.MOCKSOLARIS_REDIS_PREFIX}:business-origin:${businessId}`,
+    origin || ""
+  );
+};
+
 export const createDeviceConsent = async (
   personId: string,
   deviceConsent: DeviceConsentPayload
@@ -797,6 +956,14 @@ export const getPersonOrigin = async (
   );
 };
 
+export const getBusinessOrigin = async (
+  businessId: string
+): Promise<string | null> => {
+  return redisClient.get(
+    `${process.env.MOCKSOLARIS_REDIS_PREFIX}:business-origin:${businessId}`
+  );
+};
+
 export const saveDeviceIdToPersonId = async (
   personId: string,
   deviceId: string
@@ -835,6 +1002,18 @@ export const saveAccountToPersonId = async (
   await Promise.all([
     redisClient.set(idKey, personId),
     redisClient.set(ibanKey, personId),
+  ]);
+};
+
+export const saveAccountToBusinessId = async (
+  account: MockAccount,
+  businessId: string
+): Promise<boolean> => {
+  const idKey = `${process.env.MOCKSOLARIS_REDIS_PREFIX}:accountId-businessId:${account.id}`;
+  const ibanKey = `${process.env.MOCKSOLARIS_REDIS_PREFIX}:accountIBAN-businessId:${account.iban}`;
+  await Promise.all([
+    redisClient.set(idKey, businessId),
+    redisClient.set(ibanKey, businessId),
   ]);
 };
 

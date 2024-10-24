@@ -26,6 +26,10 @@ import {
   _getPersons,
   redlock,
   saveQuestionSetIdToPersonId,
+  findBusinesses,
+  getBusiness,
+  getBusinessOrigin,
+  saveBusiness,
 } from "../db";
 import {
   createSepaDirectDebitReturn,
@@ -52,6 +56,7 @@ import {
   CustomerVettingStatus,
   MockPerson,
   Booking,
+  BusinessWebhookEvent,
 } from "../helpers/types";
 import {
   changeOverdraftApplicationStatus,
@@ -188,6 +193,12 @@ export const listPersons = async (req, res) => {
   res.render("persons", { persons });
 };
 
+export const listBusinesses = async (req, res) => {
+  const limit = req.query.limit || 100;
+  const businesses = await findBusinesses({ limit });
+  res.render("businesses", { businesses });
+};
+
 export const listWebhooks = async (req, res) => {
   const webhooks = await getWebhooks();
   res.json(webhooks);
@@ -240,6 +251,32 @@ export const getPersonHandler = async (req, res) => {
       origin,
       deviceMonitoringActivities,
       deviceMonitoringConsents,
+    });
+  }
+};
+
+export const getBusinessHandler = async (req, res) => {
+  const business = await getBusiness(req.params.id);
+
+  if (!business) {
+    return res.status(HttpStatusCodes.NOT_FOUND).send({
+      message: "Couldn't find business",
+      details: req.params,
+    });
+  }
+
+  const jsonResponse = shouldReturnJSON(req);
+  const id = business.id;
+
+  const [origin] = await Promise.all([getBusinessOrigin(id)]);
+
+  if (jsonResponse) {
+    res.send(business);
+  } else {
+    res.render("business", {
+      business,
+      SEIZURE_STATUSES,
+      origin,
     });
   }
 };
@@ -327,6 +364,38 @@ export const updatePersonHandler = async (req, res) => {
   }
 
   res.redirect(`/__BACKOFFICE__/person/${person.id}`);
+};
+
+export const updateBusinessHandler = async (req, res) => {
+  const business = await getBusiness(req.params.id);
+
+  Object.keys(req.body).forEach((key) => {
+    business[key] = req.body[key];
+  });
+
+  business.address = business.address || {};
+  business.address.line_1 = req.body.line_1;
+  business.address.line_2 = req.body.line_2;
+  business.address.postal_code = req.body.postal_code;
+  business.address.city = req.body.city;
+  business.address.country = req.body.country;
+
+  business.tax_information = business.tax_information || {};
+  business.tax_information.tax_country = req.body.tax_country;
+  business.tax_information.tax_confirmation = req.body.tax_confirmation;
+  business.tax_information.registration_number = req.body.registration_number;
+  business.tax_information.registration_issuer = req.body.registration_issuer;
+
+  await saveBusiness(business);
+
+  await triggerWebhook({
+    type: BusinessWebhookEvent.BUSINESS_CHANGED,
+    payload: {},
+    extraHeaders: { "solaris-entity-id": business.id },
+    businessId: business.id,
+  });
+
+  res.redirect(`/__BACKOFFICE__/business/${business.id}`);
 };
 
 const shouldMarkMobileNumberAsVerified = (identification) =>
