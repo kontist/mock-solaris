@@ -431,6 +431,7 @@ export enum PersonWebhookEvent {
 }
 
 export enum BusinessWebhookEvent {
+  "BUSINESS_DELETED" = "BUSINESS_DELETED",
   "BUSINESS_CHANGED" = "BUSINESS_CHANGED",
 }
 

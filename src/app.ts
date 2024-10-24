@@ -7,7 +7,7 @@ import multer from "multer";
 import * as log from "./logger";
 import * as oauthAPI from "./routes/oauth";
 import * as personsAPI from "./routes/persons";
-import * as businessesAPI from "./routes/businesses";
+import * as businessesAPI from "./routes/business";
 import * as deviceBindingAPI from "./routes/deviceBinding";
 import * as standingOrdersAPI from "./routes/standingOrders";
 import * as accountsAPI from "./routes/accounts";
@@ -43,7 +43,6 @@ import { shouldReturnJSON } from "./helpers";
 import { CardStatus } from "./helpers/types";
 import { createStripeCustomerIfNotExistsMiddleware } from "./helpers/stripe";
 import * as questionsAPI from "./routes/questions";
-import * as businessAPI from "./routes/business";
 import { find } from "./routes/commercialRegistrations/find";
 import { search } from "./routes/commercialRegistrations/search";
 
@@ -154,18 +153,6 @@ router.post(
   middlewares.withPerson,
   fileUpload.single("file"),
   safeRequestHandler(personsAPI.postDocument)
-);
-
-// BUSINESSES
-router.post("/businesses", safeRequestHandler(businessesAPI.createBusiness));
-router.get(
-  "/businesses/:business_id",
-  safeRequestHandler(businessesAPI.showBusiness)
-);
-router.get("/businesses", safeRequestHandler(businessesAPI.showBusinesses));
-router.patch(
-  "/businesses/:business_id",
-  safeRequestHandler(businessesAPI.updateBusiness)
 );
 
 router.get(
@@ -656,11 +643,6 @@ app.delete(
   safeRequestHandler(personsAPI.deletePerson)
 );
 
-app.delete(
-  "/__BACKOFFICE__/business/:id",
-  safeRequestHandler(businessesAPI.deleteBusiness)
-);
-
 app.post(
   "/__BACKOFFICE__/person/:id",
   safeRequestHandler(backofficeAPI.updatePersonHandler)
@@ -885,12 +867,23 @@ router.get(
   safeRequestHandler(accountOpeningRequestAPI.retrieveAccountOpeningRequest)
 );
 
-// Business
+// BUSINESSES
+
+router.post("/businesses", safeRequestHandler(businessesAPI.createBusiness));
+router.get(
+  "/businesses/:business_id",
+  safeRequestHandler(businessesAPI.showBusiness)
+);
+router.get("/businesses", safeRequestHandler(businessesAPI.showBusinesses));
+router.patch(
+  "/businesses/:business_id",
+  safeRequestHandler(businessesAPI.updateBusiness)
+);
 
 router.post(
   "/businesses/:business_id/documents",
   fileUpload.single("file"),
-  safeRequestHandler(businessAPI.postDocument)
+  safeRequestHandler(businessesAPI.postDocument)
 );
 
 // COMMERCIAL REGISTRATIONS

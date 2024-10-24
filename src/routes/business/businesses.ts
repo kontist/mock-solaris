@@ -1,27 +1,19 @@
 import _ from "lodash";
 import moment from "moment";
-import HttpStatusCodes from "http-status";
+import uuid from "node-uuid";
 
 import {
   saveBusiness,
   redlock,
   setBusinessOrigin,
-  saveAccountToBusinessId,
-  removeBusiness,
   getBusiness,
   findBusinesses,
-} from "../db";
+} from "../../db";
 
-import generateID from "../helpers/id";
-import { storeBusinessInSortedSet } from "../helpers/businesses";
-import { BusinessWebhookEvent, MockBusiness } from "../helpers/types";
-import {
-  createBusinessChangeRequest,
-  createChangeRequest,
-} from "./changeRequest";
-import { triggerWebhook } from "../helpers/webhooks";
-
-const ERROR_NOT_FOUND_ID = "0a5ec2ea-6772-11e9-a656-02420a868404";
+import generateID from "../../helpers/id";
+import { storeBusinessInSortedSet } from "../../helpers/businesses";
+import { BusinessWebhookEvent, MockBusiness } from "../../helpers/types";
+import { triggerWebhook } from "../../helpers/webhooks";
 
 export const createBusiness = async (req, res) => {
   const businessId = generateID(); // Do not exceed 36 characters
@@ -41,7 +33,7 @@ export const createBusiness = async (req, res) => {
     };
 
     createdBusiness = await saveBusiness(business).then(() => {
-      res.status(200).send({
+      res.status(201).send({
         id: businessId,
         ...req.body,
       });
@@ -49,33 +41,12 @@ export const createBusiness = async (req, res) => {
 
     await storeBusinessInSortedSet(business);
 
-    if (business.account?.id) {
-      await saveAccountToBusinessId(business.account, businessId);
-    }
-
     if (req.headers.origin) {
       await setBusinessOrigin(businessId, req.headers.origin);
     }
   });
 
   return createdBusiness;
-};
-
-export const deleteBusiness = async (req, res) => {
-  const { id: businessId } = req.params;
-  try {
-    await removeBusiness(businessId);
-    res.sendStatus(HttpStatusCodes.NO_CONTENT);
-  } catch (err) {
-    return res.status(500).send({
-      errors: [
-        {
-          id: ERROR_NOT_FOUND_ID,
-          status: 500,
-        },
-      ],
-    });
-  }
 };
 
 export const showBusiness = async (req, res) => {
@@ -89,7 +60,7 @@ export const showBusiness = async (req, res) => {
       const resp = {
         errors: [
           {
-            id: ERROR_NOT_FOUND_ID,
+            id: uuid.v4(),
             status: 404,
             code: "model_not_found",
             title: "Model Not Found",
@@ -104,7 +75,7 @@ export const showBusiness = async (req, res) => {
     return res.status(500).send({
       errors: [
         {
-          id: ERROR_NOT_FOUND_ID,
+          id: uuid.v4(),
           status: 500,
         },
       ],
@@ -154,8 +125,6 @@ export const updateBusiness = async (req, res) => {
   // i.e., `null`. This is not yet implemented here.
   const fields = [
     "name",
-    "title",
-    "origin",
     "sector",
     "industry",
     "industry_key",
@@ -194,8 +163,6 @@ export const updateBusiness = async (req, res) => {
 
   const editableFields = [
     "name",
-    "title",
-    "origin",
     "sector",
     "industry",
     "industry_key",
@@ -259,19 +226,6 @@ export const updateBusiness = async (req, res) => {
         title: "Deprecated Parameters",
         detail: `Updating ${fieldsBanned[0]} is deprecated.`,
       });
-    }
-
-    const editable = _.pick(data, editableFields);
-    editable.address = _.pick(data.address, editableFields);
-
-    if (isChangeRequestRequired(editable, business)) {
-      return createBusinessChangeRequest(
-        req,
-        res,
-        business,
-        BUSINESS_UPDATE,
-        data
-      );
     }
 
     _.merge(business, data);

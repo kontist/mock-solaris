@@ -28,7 +28,6 @@ import {
   saveQuestionSetIdToPersonId,
   findBusinesses,
   getBusiness,
-  getDevicesByBusinessId,
   getBusinessOrigin,
   saveBusiness,
 } from "../db";
@@ -269,17 +268,13 @@ export const getBusinessHandler = async (req, res) => {
   const jsonResponse = shouldReturnJSON(req);
   const id = business.id;
 
-  const [devices, origin] = await Promise.all([
-    getDevicesByBusinessId(id),
-    getBusinessOrigin(id),
-  ]);
+  const [origin] = await Promise.all([getBusinessOrigin(id)]);
 
   if (jsonResponse) {
     res.send(business);
   } else {
     res.render("business", {
       business,
-      devices,
       SEIZURE_STATUSES,
       origin,
     });
@@ -385,17 +380,11 @@ export const updateBusinessHandler = async (req, res) => {
   business.address.city = req.body.city;
   business.address.country = req.body.country;
 
-  if (business.fatca_relevant === "null") {
-    business.fatca_relevant = null;
-  } else if (business.fatca_relevant === "true") {
-    business.fatca_relevant = true;
-  } else if (business.fatca_relevant === "false") {
-    business.fatca_relevant = false;
-  }
-
-  if (!req.body.mobile_number) {
-    await deleteMobileNumber(business.id);
-  }
+  business.tax_information = business.tax_information || {};
+  business.tax_information.tax_country = req.body.tax_country;
+  business.tax_information.tax_confirmation = req.body.tax_confirmation;
+  business.tax_information.registration_number = req.body.registration_number;
+  business.tax_information.registration_issuer = req.body.registration_issuer;
 
   await saveBusiness(business);
 
