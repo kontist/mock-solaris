@@ -1,0 +1,40 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+
+<ul class="nav nav-tabs">
+  <li role="presentation"><a href="/__BACKOFFICE__/businesses">⬅ Businesses</a></li>
+<li role="presentation" class="active"><a href="/__BACKOFFICE__/business/{{ business.id }}">Individual business</a></li>
+</ul>
+
+<div class="page-header">
+  <h2>{{ business.name }}</h2>
+</div>
+
+<div class="row">
+  <div class="col-md-6">
+    <div class="panel panel-default">
+      <div class="panel-heading"><h4>Business data</h4></div>
+      <div class="panel-body">
+        <form method="POST">
+          <div class="row">
+            <div class="form-group col-md-12">
+              <label for="name">Name</label>
+              <input type="text" class="form-control" name="name" id="name" placeholder="Name"
+                value="{{ business.name }}">
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">Submit</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+$(".autosubmitonchange").change(function() {
+  this.submit();
+});
+</script>
+
+{% endblock %}

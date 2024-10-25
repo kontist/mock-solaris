@@ -2,7 +2,13 @@ import fetch, { Response } from "node-fetch";
 
 import * as log from "../logger";
 import { PostboxItemEvent, WebhookType } from "../helpers/types";
-import { getPersonOrigin, getWebhookByType, setPersonOrigin } from "../db";
+import {
+  getBusinessOrigin,
+  getPersonOrigin,
+  getWebhookByType,
+  setBusinessOrigin,
+  setPersonOrigin,
+} from "../db";
 import { generateSolarisWebhookSignature } from "./solarisWebhookSignature";
 import {
   CardWebhookEvent,
@@ -97,11 +103,13 @@ export const triggerWebhook = async ({
   payload,
   extraHeaders = {},
   personId,
+  businessId,
 }: {
   type: WebhookType;
   payload: Record<string, unknown>;
   extraHeaders?: Record<string, unknown>;
   personId?: string;
+  businessId?: string;
 }) => {
   const webhook = await getWebhookByType(type);
 
@@ -148,8 +156,19 @@ export const triggerWebhook = async ({
     }
   };
 
-  const personOrigin = personId && (await getPersonOrigin(personId));
-  const webhookUrl = getWebhookUrl(webhook.url, personOrigin);
+  let webhookUrl;
+  let personOrigin;
+  let businessOrigin;
+
+  if (personId) {
+    personOrigin = personId && (await getPersonOrigin(personId));
+    webhookUrl = getWebhookUrl(webhook.url, personOrigin);
+  }
+
+  if (businessId) {
+    businessOrigin = businessId && (await getBusinessOrigin(businessId));
+    webhookUrl = getWebhookUrl(webhook.url, businessOrigin);
+  }
 
   try {
     await triggerRequest(webhookUrl);
@@ -158,6 +177,17 @@ export const triggerWebhook = async ({
       // if preview env doesn't exist anymore,
       // we reset the origin and retrigger request with default webhook url
       await setPersonOrigin(personId);
+      await triggerRequest(getWebhookUrl(webhook.url));
+      return;
+    }
+
+    if (
+      businessOrigin &&
+      (err.code === "ECONNREFUSED" || err.statusCode > 500)
+    ) {
+      // if preview env doesn't exist anymore,
+      // we reset the origin and retrigger request with default webhook url
+      await setBusinessOrigin(businessId);
       await triggerRequest(getWebhookUrl(webhook.url));
       return;
     }

@@ -19,53 +19,35 @@
 </style>
 
 <ul class="nav nav-tabs">
-  <li role="presentation" class="active"><a href="/__BACKOFFICE__/">Persons</a></li>
-  <li role="presentation"><a href="/__BACKOFFICE__/businesses">Businesses</a></li>
+  <li role="presentation"><a href="/__BACKOFFICE__/">Persons</a></li>
+  <li role="presentation" class="active"><a href="/__BACKOFFICE__/businesses">Businesses</a></li>
 </ul>
 
 <div class="panelcontainer row">
 
-{% for person in persons %}
+{% for business in businesses %}
 <div class="col-xs-12 col-md-6">
 <div class="panel panel-default">
   <div class="panel-heading">
-    <h3 class="panel-title">{{ person.first_name }} {{ person.last_name }} ({{ person.email }})</h3>
+    <h3 class="panel-title">{{ business.name }}</h3>
   </div>
 
 
 
 <table class="table">
   <thead><tr><th>About</th></tr></thead>
-  {% if person.createdAt %}
+  {% if business.createdAt %}
     <tr>
       <td>Created</td>
       <td class="displayMoment">
-        {{ person.createdAt }}
+        {{ business.createdAt }}
       </td>
     </tr>
   {% endif %}
-  {% if person.account %}
-    <tr>
-      <td>Balance</td>
-      <td>{{ person.account.balance.value / 100 }} €</td>
-    </tr>
-  {% endif %}
-</table>
-<table class="table">
-  <thead><tr><th>Identifications</th></tr></thead>
-  {% for identification in person.identifications %}
-    <tr>
-      <td class="displayMoment">
-        {{ identification.identificationLinkCreatedAt || identification.createdAt }}
-      </td>
-      <td class="{{ identification.method }}"></td>
-      <td>{{ identification.status }}</td>
-    </tr>
-  {% endfor %}
 </table>
 
   <div class="panel-body">
-    <a class="btn btn-primary" href="/__BACKOFFICE__/person/{{ person.id }}">View details</a>
+    <a class="btn btn-primary" href="/__BACKOFFICE__/business/{{ business.id }}">View details</a>
   </div>
 </div>
 </div>

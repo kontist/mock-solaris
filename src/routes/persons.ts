@@ -51,7 +51,7 @@ export const createPerson = async (req, res) => {
     };
 
     createdPerson = await savePerson(person).then(() => {
-      res.status(200).send({
+      res.status(201).send({
         id: personId,
         ...req.body,
       });
