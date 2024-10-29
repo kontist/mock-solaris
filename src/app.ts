@@ -888,12 +888,8 @@ router.post(
 
 router.post(
   "/businesses/:business_id/beneficial_owners",
-  safeRequestHandler(businessAPI.createBeneficialOwner)
-);
-
-router.patch(
-  "/businesses/:business_id/beneficial_owners/:id",
-  safeRequestHandler(businessAPI.updateBeneficialOwner)
+  middlewares.withPerson,
+  safeRequestHandler(businessesAPI.createBeneficialOwner)
 );
 
 // COMMERCIAL REGISTRATIONS
