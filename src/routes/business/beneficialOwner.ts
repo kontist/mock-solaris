@@ -33,7 +33,10 @@ export const createBeneficialOwner = async (req: Request, res: Response) => {
 
     return res.status(201).send(beneficialOwner);
   } catch (err) {
-    if (err.message === "did not find business") {
+    if (
+      err.message ===
+      `Business which has businessId: ${businessId} was not found in redis`
+    ) {
       const resp = {
         errors: [
           {
