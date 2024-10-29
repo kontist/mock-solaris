@@ -1,10 +1,15 @@
+const getRandomPositiveInteger = (max = 365) =>
+  Math.floor(Math.random() * max) + 1;
+
+const getIsoCalendarDate = (date: Date) => date.toISOString().split("T")[0];
+
 const generateDate = () => {
   const today = new Date();
-  const randomDays = Math.floor(Math.random() * 365) + 1; // Random number between 1 and 365
+  const randomDays = getRandomPositiveInteger();
   const validUntilDate = new Date(today);
   validUntilDate.setDate(today.getDate() + randomDays);
 
-  return validUntilDate.toISOString().split("T")[0]; // Format as "YYYY-MM-DD"
+  return getIsoCalendarDate(validUntilDate);
 };
 
 export default generateDate;
