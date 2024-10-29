@@ -6,7 +6,7 @@ import * as db from "../../../src/db";
 import * as businessesAPI from "../../../src/routes/business/businesses";
 import { createBeneficialOwner } from "../../../src/routes/business/beneficialOwner";
 
-describe.only("createBeneficialOwner", () => {
+describe("createBeneficialOwner", () => {
   let res: sinon.SinonSpy;
 
   describe("when business is not found", () => {
