@@ -1,8 +1,7 @@
 import type { Request, Response } from "express";
 
 import generateID from "../../helpers/id";
-import * as log from "../../logger";
-import { getBusiness } from "../../db";
+import { getBusiness, saveBusiness } from "../../db";
 import uuid from "node-uuid";
 import { BeneficialOwner } from "../../helpers/types";
 import generateDate from "../../helpers/date";
@@ -29,6 +28,10 @@ export const createBeneficialOwner = async (req: Request, res: Response) => {
     } else {
       business.beneficialOwners.push({ ...beneficialOwner });
     }
+
+    await saveBusiness(business);
+
+    return res.status(201).send(beneficialOwner);
   } catch (err) {
     if (err.message === "did not find business") {
       const resp = {
