@@ -5,6 +5,7 @@ import * as log from "../../logger";
 import { getBusiness } from "../../db";
 import uuid from "node-uuid";
 import { BeneficialOwner } from "../../helpers/types";
+import generateDate from "../../helpers/date";
 
 export const createBeneficialOwner = async (req: Request, res: Response) => {
   const { business_id: businessId } = req.params;
@@ -12,15 +13,11 @@ export const createBeneficialOwner = async (req: Request, res: Response) => {
   try {
     const business = await getBusiness(businessId);
 
-    const today = new Date();
-    const nextYear = new Date(today.setFullYear(today.getFullYear() + 1));
-    const validUntil = nextYear.toISOString().split("T")[0]; // Format as "YYYY-MM-DD"
-
     const beneficialOwner: BeneficialOwner = {
       id: generateID(),
       beneficial_owner_id: generateID(),
       person_id: req.body.person_id,
-      valid_until: validUntil,
+      valid_until: generateDate(),
       voting_share: req.body.voting_share,
       business_id: businessId,
       fictitious: req.body.fictitious,
