@@ -16,6 +16,8 @@ import { BusinessWebhookEvent, MockBusiness } from "../../helpers/types";
 import { triggerWebhook } from "../../helpers/webhooks";
 
 const businessObjectFields = [
+  "id",
+  "createdAt",
   "name",
   "sector",
   "industry",
