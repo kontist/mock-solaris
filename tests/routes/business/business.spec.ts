@@ -3,8 +3,7 @@ import { expect } from "chai";
 import { mockRes } from "sinon-express-mock";
 
 import * as db from "../../../src/db";
-import * as bsuinessesAPI from "../../../src/routes/business/businesses";
-import { query } from "express";
+import * as businessesAPI from "../../../src/routes/business/businesses";
 
 describe("Businesses", () => {
   describe("createBusiness", () => {
@@ -14,7 +13,7 @@ describe("Businesses", () => {
     before(async () => {
       await db.flushDb();
       res = mockRes();
-      await bsuinessesAPI.createBusiness(
+      await businessesAPI.createBusiness(
         {
           body: {
             name: "Kontist GmbH",
@@ -40,7 +39,7 @@ describe("Businesses", () => {
     before(async () => {
       await db.flushDb();
       res = mockRes();
-      await bsuinessesAPI.createBusiness(
+      await businessesAPI.createBusiness(
         {
           body: {
             name: "Kontist GmbH",
@@ -53,7 +52,7 @@ describe("Businesses", () => {
       businessId = res.send.args[0][0].id;
 
       res = mockRes();
-      await bsuinessesAPI.showBusiness(
+      await businessesAPI.showBusiness(
         {
           params: {
             business_id: businessId,
@@ -75,7 +74,7 @@ describe("Businesses", () => {
     before(async () => {
       await db.flushDb();
       res = mockRes();
-      await bsuinessesAPI.createBusiness(
+      await businessesAPI.createBusiness(
         {
           body: {
             name: "Kontist GmbH",
@@ -86,7 +85,7 @@ describe("Businesses", () => {
       );
 
       res = mockRes();
-      await bsuinessesAPI.showBusinesses(
+      await businessesAPI.showBusinesses(
         {
           headers: {},
           query: { page: { size: 10, number: 1 } },
@@ -108,7 +107,7 @@ describe("Businesses", () => {
     before(async () => {
       await db.flushDb();
       res = mockRes();
-      await bsuinessesAPI.createBusiness(
+      await businessesAPI.createBusiness(
         {
           body: {
             name: "Kontist GmbH",
@@ -121,7 +120,7 @@ describe("Businesses", () => {
       businessId = res.send.args[0][0].id;
 
       res = mockRes();
-      await bsuinessesAPI.updateBusiness(
+      await businessesAPI.updateBusiness(
         {
           params: {
             business_id: businessId,
