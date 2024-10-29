@@ -334,6 +334,7 @@ export type MockBusiness = {
   expected_annual_incoming_funds?: string;
   company_status?: string;
   createdAt: string;
+  beneficialOwners?: BeneficialOwner[];
 };
 
 export type MockCreateBusiness = {
