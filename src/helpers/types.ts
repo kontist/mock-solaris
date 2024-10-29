@@ -300,6 +300,7 @@ export type MockBusiness = {
   sector?: string;
   industry?: string;
   industry_key?: string;
+  nace_code?: string;
   legal_form?: string;
   foundation_date?: string;
   address?: {

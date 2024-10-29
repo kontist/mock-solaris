@@ -15,6 +15,45 @@ import { storeBusinessInSortedSet } from "../../helpers/businesses";
 import { BusinessWebhookEvent, MockBusiness } from "../../helpers/types";
 import { triggerWebhook } from "../../helpers/webhooks";
 
+const businessObjectFields = [
+  "name",
+  "sector",
+  "industry",
+  "industry_key",
+  "nace_code",
+  "legal_form",
+  "foundation_date",
+  "address",
+  "line_1",
+  "line_2",
+  "postal_code",
+  "city",
+  "state",
+  "country",
+  "tax_information",
+  "tax_country",
+  "tax_confirmation",
+  "registration_number",
+  "registration_issuer",
+  "fatca_relevant",
+  "fatca_crs_confirmed_at",
+  "crs_company_type",
+  "balance_sheet_total",
+  "number_employees",
+  "registration_type",
+  "registration_district",
+  "business_purpose",
+  "terms_conditions_signed_at",
+  "branch",
+  "international_operativity_expectation",
+  "vat_number",
+  "purpose_of_account_opening",
+  "source_of_funds",
+  "expected_annual_revenue",
+  "expected_annual_incoming_funds",
+  "company_status",
+];
+
 export const createBusiness = async (req, res) => {
   const businessId = generateID(); // Do not exceed 36 characters
   let createdBusiness;
@@ -54,7 +93,9 @@ export const showBusiness = async (req, res) => {
   try {
     const business = await getBusiness(businessId);
 
-    return res.status(200).send(business);
+    const mappedBusiness = _.pick(business, businessObjectFields);
+
+    return res.status(200).send(mappedBusiness);
   } catch (err) {
     if (err.message === "did not find business") {
       const resp = {
@@ -91,55 +132,20 @@ export const showBusinesses = async (req, res) => {
     size * number
   );
 
-  return res.status(200).send(businesses);
+  const mappedBusinesses = businesses.map((business) =>
+    _.pick(business, businessObjectFields)
+  );
+
+  return res.status(200).send(mappedBusinesses);
 };
 
 export const updateBusiness = async (req, res) => {
-  // Solaris responds with a 403 when the parameter being updated is "empty",
-  // i.e., `null`. This is not yet implemented here.
-  const fields = [
-    "name",
-    "sector",
-    "industry",
-    "industry_key",
-    "legal_form",
-    "foundation_date",
-    "address",
-    "line_1",
-    "line_2",
-    "postal_code",
-    "city",
-    "state",
-    "country",
-    "tax_information",
-    "tax_country",
-    "tax_confirmation",
-    "registration_number",
-    "registration_issuer",
-    "fatca_relevant",
-    "fatca_crs_confirmed_at",
-    "crs_company_type",
-    "balance_sheet_total",
-    "number_employees",
-    "registration_type",
-    "registration_district",
-    "business_purpose",
-    "terms_conditions_signed_at",
-    "branch",
-    "international_operativity_expectation",
-    "vat_number",
-    "purpose_of_account_opening",
-    "source_of_funds",
-    "expected_annual_revenue",
-    "expected_annual_incoming_funds",
-    "company_status",
-  ];
-
   const editableFields = [
     "name",
     "sector",
     "industry",
     "industry_key",
+    "nace_code",
     "legal_form",
     "foundation_date",
     "address",
@@ -177,7 +183,7 @@ export const updateBusiness = async (req, res) => {
     params: { business_id: businessId },
     body,
   } = req;
-  const data = _.pick(body, fields);
+  const data = _.pick(body, businessObjectFields);
 
   let business;
   const businessLockKey = `redlock:${process.env.MOCKSOLARIS_REDIS_PREFIX}:business:${businessId}`;
