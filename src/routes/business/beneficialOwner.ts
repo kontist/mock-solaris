@@ -12,11 +12,15 @@ export const createBeneficialOwner = async (req: Request, res: Response) => {
   try {
     const business = await getBusiness(businessId);
 
+    const today = new Date();
+    const nextYear = new Date(today.setFullYear(today.getFullYear() + 1));
+    const validUntil = nextYear.toISOString().split("T")[0]; // Format as "YYYY-MM-DD"
+
     const beneficialOwner: BeneficialOwner = {
       id: generateID(),
       beneficial_owner_id: generateID(),
       person_id: req.body.person_id,
-      valid_until: "2021-01-01",
+      valid_until: validUntil,
       voting_share: req.body.voting_share,
       business_id: businessId,
       fictitious: req.body.fictitious,
