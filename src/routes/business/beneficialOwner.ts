@@ -4,6 +4,7 @@ import generateID from "../../helpers/id";
 import * as log from "../../logger";
 import { getBusiness } from "../../db";
 import uuid from "node-uuid";
+import { BeneficialOwner } from "../../helpers/types";
 
 export const createBeneficialOwner = async (req: Request, res: Response) => {
   const { business_id: businessId } = req.params;
