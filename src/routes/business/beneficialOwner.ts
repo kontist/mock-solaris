@@ -4,7 +4,6 @@ import generateID from "../../helpers/id";
 import { getBusiness, saveBusiness } from "../../db";
 import uuid from "node-uuid";
 import { BeneficialOwner } from "../../helpers/types";
-import generateDate from "../../helpers/date";
 
 export const createBeneficialOwner = async (req: Request, res: Response) => {
   const { business_id: businessId } = req.params;
@@ -16,7 +15,6 @@ export const createBeneficialOwner = async (req: Request, res: Response) => {
       id: generateID(),
       beneficial_owner_id: generateID(),
       person_id: req.body.person_id,
-      valid_until: generateDate(),
       voting_share: req.body.voting_share,
       business_id: businessId,
       fictitious: req.body.fictitious,
