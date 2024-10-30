@@ -51,7 +51,7 @@ export const createPerson = async (req, res) => {
     };
 
     createdPerson = await savePerson(person).then(() => {
-      res.status(200).send({
+      res.status(201).send({
         id: personId,
         ...req.body,
       });
@@ -95,7 +95,10 @@ export const showPerson = async (req, res) => {
 
     return res.status(200).send(person);
   } catch (err) {
-    if (err.message === "did not find person") {
+    if (
+      err.message ===
+      `Person who has personID: ${personId} was not found in redis`
+    ) {
       const resp = {
         errors: [
           {

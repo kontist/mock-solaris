@@ -292,6 +292,66 @@ export type MockCreatePerson = {
   billing_account?: BillingAccount;
 };
 
+export type MockBusiness = {
+  id: string;
+  name: string;
+  account?: MockAccount;
+  origin?: string;
+  sector?: string;
+  industry?: string;
+  industry_key?: string;
+  nace_code?: string;
+  legal_form?: string;
+  foundation_date?: string;
+  address?: {
+    line_1: string;
+    line_2: string;
+    postal_code: string;
+    city: string;
+    state: string;
+    country: string;
+  };
+  tax_information?: {
+    tax_country: string;
+    tax_confirmation: string;
+    registration_number: string;
+    registration_issuer: string;
+  };
+  fatca_relevant?: boolean;
+  fatca_crs_confirmed_at?: string;
+  crs_company_type?: string;
+  balance_sheet_total?: number;
+  number_employees?: number;
+  registration_type?: string;
+  registration_district?: string;
+  business_purpose?: string;
+  terms_conditions_signed_at?: string;
+  branch?: string;
+  international_operativity_expectation?: string[];
+  vat_number?: string;
+  purpose_of_account_opening?: string;
+  source_of_funds?: string;
+  expected_annual_revenue?: string;
+  expected_annual_incoming_funds?: string;
+  company_status?: string;
+  createdAt: string;
+  beneficialOwners?: BeneficialOwner[];
+};
+
+export type MockCreateBusiness = {
+  name: string;
+  account?: MockAccount;
+  origin?: string;
+  address?: {
+    line_1: string;
+    line_2: string;
+    postal_code: string;
+    city: string;
+    state: string;
+    country: string;
+  };
+};
+
 export type FraudCase = {
   id: string;
   reservationId: string;
@@ -372,6 +432,11 @@ export enum PersonWebhookEvent {
   QUESTIONS_REQUIRE_RESPONSE = "QUESTIONS_REQUIRE_RESPONSE",
 }
 
+export enum BusinessWebhookEvent {
+  "BUSINESS_DELETED" = "BUSINESS_DELETED",
+  "BUSINESS_CHANGED" = "BUSINESS_CHANGED",
+}
+
 export enum AccountWebhookEvent {
   "ACCOUNT_BLOCK" = "ACCOUNT_BLOCK",
   "ACCOUNT_CLOSURE" = "ACCOUNT_CLOSURE",
@@ -415,7 +480,8 @@ export type WebhookType =
   | TransactionWebhookEvent
   | PersonWebhookEvent
   | AccountWebhookEvent
-  | PostboxItemEvent;
+  | PostboxItemEvent
+  | BusinessWebhookEvent;
 
 export enum CardAuthorizationDeclineV2Type {
   "3DS_FAILED" = "3DS_FAILED", // We could not approve your transaction because the merchant did not provide correct authentication information. Please try again.
@@ -791,4 +857,15 @@ export interface QuestionSet {
     recipient_type: string;
   };
   questions: Question[];
+}
+
+export interface BeneficialOwner {
+  id: string;
+  beneficial_owner_id: string;
+  person_id: string;
+  voting_share: number;
+  business_id: string;
+  fictitious: boolean;
+  relationship_to_business: string;
+  valid_until: string;
 }
