@@ -99,7 +99,10 @@ export const showBusiness = async (req, res) => {
 
     return res.status(200).send(mappedBusiness);
   } catch (err) {
-    if (err.message === "did not find business") {
+    if (
+      err.message ===
+      `Business which has businessId: ${businessId} was not found in redis`
+    ) {
       const resp = {
         errors: [
           {

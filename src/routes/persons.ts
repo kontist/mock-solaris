@@ -95,7 +95,10 @@ export const showPerson = async (req, res) => {
 
     return res.status(200).send(person);
   } catch (err) {
-    if (err.message === "did not find person") {
+    if (
+      err.message ===
+      `Person who has personID: ${personId} was not found in redis`
+    ) {
       const resp = {
         errors: [
           {
