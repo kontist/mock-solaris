@@ -886,6 +886,12 @@ router.post(
   safeRequestHandler(businessesAPI.postDocument)
 );
 
+router.post(
+  "/businesses/:business_id/beneficial_owners",
+  middlewares.withPerson,
+  safeRequestHandler(businessesAPI.createBeneficialOwner)
+);
+
 // COMMERCIAL REGISTRATIONS
 
 router.get(

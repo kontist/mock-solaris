@@ -335,6 +335,7 @@ export type MockBusiness = {
   expected_annual_incoming_funds?: string;
   company_status?: string;
   createdAt: string;
+  beneficialOwners?: BeneficialOwner[];
 };
 
 export type MockCreateBusiness = {
@@ -856,4 +857,15 @@ export interface QuestionSet {
     recipient_type: string;
   };
   questions: Question[];
+}
+
+export interface BeneficialOwner {
+  id: string;
+  beneficial_owner_id: string;
+  person_id: string;
+  voting_share: number;
+  business_id: string;
+  fictitious: boolean;
+  relationship_to_business: string;
+  valid_until: string;
 }
