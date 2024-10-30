@@ -72,5 +72,14 @@ describe("createBeneficialOwner", () => {
       expect(lastCall[0].business_id).to.equal(businessId);
       expect(lastCall[0].person_id).to.equal(req.body.person_id);
     });
+
+    it("should add beneficial owner to business", async () => {
+      const business = await db.getBusiness(businessId);
+      expect(business.beneficialOwners.length).to.equal(1);
+      expect(business.beneficialOwners[0].business_id).to.equal(businessId);
+      expect(business.beneficialOwners[0].person_id).to.equal(
+        req.body.person_id
+      );
+    });
   });
 });
