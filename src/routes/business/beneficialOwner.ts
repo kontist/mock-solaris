@@ -19,6 +19,7 @@ export const createBeneficialOwner = async (req: Request, res: Response) => {
       business_id: businessId,
       fictitious: req.body.fictitious,
       relationship_to_business: req.body.relationship_to_business,
+      valid_until: null,
     };
 
     if (!business.beneficialOwners) {

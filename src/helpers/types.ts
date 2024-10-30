@@ -866,5 +866,5 @@ export interface BeneficialOwner {
   business_id: string;
   fictitious: boolean;
   relationship_to_business: string;
-  valid_until?: string;
+  valid_until: string;
 }
