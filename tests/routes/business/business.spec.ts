@@ -137,5 +137,10 @@ describe("Businesses", () => {
       const lastCall = res.send.args[res.send.args.length - 1];
       expect(lastCall[0].name).to.equal("Kontist AG");
     });
+
+    it("should have updated the business in the db", async () => {
+      const business = await db.getBusiness(businessId);
+      expect(business.name).to.equal("Kontist AG");
+    });
   });
 });
