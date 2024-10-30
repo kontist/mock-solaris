@@ -25,18 +25,16 @@ const businessObjectFields = [
   "nace_code",
   "legal_form",
   "foundation_date",
-  "address",
-  "line_1",
-  "line_2",
-  "postal_code",
-  "city",
-  "state",
-  "country",
-  "tax_information",
-  "tax_country",
-  "tax_confirmation",
-  "registration_number",
-  "registration_issuer",
+  "address.line_1",
+  "address.line_2",
+  "address.postal_code",
+  "address.city",
+  "address.state",
+  "address.country",
+  "tax_information.tax_country",
+  "tax_information.tax_confirmation",
+  "tax_information.registration_number",
+  "tax_information.registration_issuer",
   "fatca_relevant",
   "fatca_crs_confirmed_at",
   "crs_company_type",
@@ -145,7 +143,7 @@ export const showBusinesses = async (req, res) => {
 };
 
 export const updateBusiness = async (req, res) => {
-  const editableFields = [
+  const fields = [
     "name",
     "sector",
     "industry",
@@ -184,11 +182,48 @@ export const updateBusiness = async (req, res) => {
     "company_status",
   ];
 
+  const editableFields = [
+    "name",
+    "sector",
+    "nace_code",
+    "legal_form",
+    "foundation_date",
+    "address",
+    "line_1",
+    "line_2",
+    "postal_code",
+    "city",
+    "state",
+    "country",
+    "tax_information",
+    "tax_country",
+    "tax_confirmation",
+    "registration_number",
+    "registration_issuer",
+    "fatca_relevant",
+    "fatca_crs_confirmed_at",
+    "crs_company_type",
+    "balance_sheet_total",
+    "number_employees",
+    "registration_type",
+    "registration_district",
+    "business_purpose",
+    "terms_conditions_signed_at",
+    "branch",
+    "international_operativity_expectation",
+    "vat_number",
+    "purpose_of_account_opening",
+    "source_of_funds",
+    "expected_annual_revenue",
+    "expected_annual_incoming_funds",
+    "company_status",
+  ];
+
   const {
     params: { business_id: businessId },
     body,
   } = req;
-  const data = _.pick(body, businessObjectFields);
+  const data = _.pick(body, fields);
 
   let business;
   const businessLockKey = `redlock:${process.env.MOCKSOLARIS_REDIS_PREFIX}:business:${businessId}`;
