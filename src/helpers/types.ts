@@ -336,6 +336,7 @@ export type MockBusiness = {
   company_status?: string;
   createdAt: string;
   beneficialOwners?: BeneficialOwner[];
+  accountOpeningRequests?: AccountOpeningRequest[];
 };
 
 export type MockCreateBusiness = {
@@ -868,4 +869,9 @@ export interface BeneficialOwner {
   fictitious: boolean;
   relationship_to_business: string;
   valid_until: string;
+}
+
+export enum CustomerType {
+  PERSON = "Person",
+  BUSINESS = "Business",
 }

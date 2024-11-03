@@ -22,7 +22,7 @@ import {
   saveDeviceIdToPersonId,
   deleteDevice,
   _getAllDevices,
-  saveAccountToPersonId,
+  saveAccountToEntity,
   _getPersons,
   redlock,
   saveQuestionSetIdToPersonId,
@@ -1005,7 +1005,7 @@ export const createMaps = async (req, res) => {
     let savedAccounts = 0;
     for (const person of persons) {
       if (person.account?.id) {
-        await saveAccountToPersonId(person.account, person.id);
+        await saveAccountToEntity(person.account, person.id);
         savedAccounts++;
       }
     }

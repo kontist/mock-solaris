@@ -5,12 +5,18 @@ import moment from "moment";
 import {
   getPerson,
   savePerson,
-  saveAccountOpeningRequestToPersonId,
   getPersonIdByAccountOpeningRequest,
   redlock,
+  getBusiness,
+  saveBusiness,
+  saveAccountOpeningRequestToBusinessId,
+  saveAccountOpeningRequestToEntityId,
 } from "../db";
 import {
   AccountOpeningRequestStatus,
+  CustomerType,
+  MockBusiness,
+  MockPerson,
   PersonWebhookEvent,
 } from "../helpers/types";
 import { triggerWebhook } from "../helpers/webhooks";
@@ -22,8 +28,11 @@ export const createAccountOpeningRequest = async (
   res: Response
 ) => {
   const data = req.body;
-
-  const personId = data.customer_id;
+  const entityId = data.customer_id;
+  const getEntity =
+    data.customer_type === CustomerType.PERSON ? getPerson : getBusiness;
+  const saveEntity =
+    data.customer_type === CustomerType.PERSON ? savePerson : saveBusiness;
 
   const accountOpeningRequest = {
     customer_id: data.customer_id,
@@ -45,22 +54,28 @@ export const createAccountOpeningRequest = async (
     },
   };
 
-  const personKey = `reslock:${process.env.MOCKSOLARIS_REDIS_PREFIX}:person:${personId}`;
-  let person;
-  await redlock.using([personKey], 5000, async (signal) => {
+  const entityKey = `reslock:${
+    process.env.MOCKSOLARIS_REDIS_PREFIX
+  }:${data.customer_type.toLowerCase()}:${entityId}`;
+  let entity: MockPerson | MockBusiness;
+  await redlock.using([entityKey], 5000, async (signal) => {
     if (signal.aborted) {
       throw signal.error;
     }
-    person = await getPerson(personId);
-    person.accountOpeningRequests = person.accountOpeningRequests || [];
-    person.accountOpeningRequests.push(accountOpeningRequest);
-    await savePerson(person);
+    entity = await getEntity(entityId);
+    entity.accountOpeningRequests = entity.accountOpeningRequests || [];
+    entity.accountOpeningRequests.push(accountOpeningRequest);
+    await saveEntity(entity);
   });
-  await saveAccountOpeningRequestToPersonId(accountOpeningRequest.id, personId);
+  await saveAccountOpeningRequestToEntityId(
+    accountOpeningRequest.id,
+    entityId,
+    data.customer_type.toLowerCase()
+  );
 
   res.status(HttpStatusCodes.CREATED).send(accountOpeningRequest);
 
-  const account = await createAccount(personId);
+  const account = await createAccount(entityId, undefined, data.customer_type);
 
   const completedRequest = {
     ...accountOpeningRequest,
@@ -69,23 +84,22 @@ export const createAccountOpeningRequest = async (
     iban: account.iban,
   };
 
-  await redlock.using([personKey], 5000, async (signal) => {
+  await redlock.using([entityKey], 5000, async (signal) => {
     if (signal.aborted) {
       throw signal.error;
     }
-    person = await getPerson(personId);
-    person.accountOpeningRequests = [
-      ...person.accountOpeningRequests.filter(
+    entity = await getEntity(entityId);
+    entity.accountOpeningRequests = [
+      ...entity.accountOpeningRequests.filter(
         (request) => request.id !== accountOpeningRequest.id
       ),
       completedRequest,
     ];
-    await savePerson(person);
+    await saveEntity(entity);
   });
 
   await triggerWebhook({
     type: PersonWebhookEvent.ACCOUNT_OPENING_REQUEST,
-    personId: person.id,
     payload: {
       account_opening_request_id: completedRequest.id,
       customer_id: completedRequest.customer_id,

@@ -8,7 +8,7 @@ import {
   findPersons,
   savePerson,
   setPersonOrigin,
-  saveAccountToPersonId,
+  saveAccountToEntity,
   removePerson,
   redlock,
 } from "../db";
@@ -60,7 +60,7 @@ export const createPerson = async (req, res) => {
     await storePersonInSortedSet(person);
 
     if (person.account?.id) {
-      await saveAccountToPersonId(person.account, personId);
+      await saveAccountToEntity(person.account, personId);
     }
 
     if (req.headers.origin) {
