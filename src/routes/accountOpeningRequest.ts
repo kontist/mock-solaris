@@ -47,6 +47,21 @@ export const createAccountOpeningRequest = async (
   const data = req.body;
   const entityId = data.customer_id;
   const customerType = data.customer_type as CustomerType;
+  if (Object.values(CustomerType).indexOf(customerType) === -1) {
+    res.status(HttpStatusCodes.BAD_REQUEST).send({
+      id: generateID(),
+      status: HttpStatusCodes.BAD_REQUEST,
+      code: "bad_request",
+      title: "Bad Request",
+      detail: `Invalid customer type: ${customerType}`,
+      source: {
+        message: `Invalid customer type: ${customerType}`,
+        field: "customer_type",
+      },
+    });
+    return;
+  }
+
   const getEntity = ACCOUNT_OPENING_MAP.getEntity[customerType];
   const saveEntity = ACCOUNT_OPENING_MAP.saveEntity[customerType];
   const accountType = ACCOUNT_OPENING_MAP.accountType[customerType];
