@@ -25,7 +25,7 @@ import { triggerWebhook } from "../helpers/webhooks";
 import generateID from "../helpers/id";
 import { createAccount } from "../routes/accounts";
 
-const AccountOpeningMap = {
+const ACCOUNT_OPENING_MAP = {
   getEntity: {
     [CustomerType.PERSON]: getPerson,
     [CustomerType.BUSINESS]: getBusiness,
@@ -47,9 +47,9 @@ export const createAccountOpeningRequest = async (
   const data = req.body;
   const entityId = data.customer_id;
   const customerType = data.customer_type as CustomerType;
-  const getEntity = AccountOpeningMap.getEntity[data.customer_type];
-  const saveEntity = AccountOpeningMap.saveEntity[data.customer_type];
-  const accountType = AccountOpeningMap.accountType[data.customer_type];
+  const getEntity = ACCOUNT_OPENING_MAP.getEntity[data.customer_type];
+  const saveEntity = ACCOUNT_OPENING_MAP.saveEntity[data.customer_type];
+  const accountType = ACCOUNT_OPENING_MAP.accountType[data.customer_type];
 
   const accountOpeningRequest = {
     customer_id: data.customer_id,
