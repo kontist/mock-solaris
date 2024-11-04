@@ -1025,9 +1025,11 @@ export const getPersonIdByAccount = async ({
 export const saveAccountOpeningRequestToEntityId = async (
   accountOpeningRequestId: string,
   entityId: string,
-  entityType: "person" | "business"
+  customerType: CustomerType
 ) => {
-  const idKey = `${process.env.MOCKSOLARIS_REDIS_PREFIX}:accountOpeningRequestId-${entityType}Id:${accountOpeningRequestId}`;
+  const idKey = `${
+    process.env.MOCKSOLARIS_REDIS_PREFIX
+  }:accountOpeningRequestId-${customerType.toLowerCase()}Id:${accountOpeningRequestId}`;
 
   await redisClient.set(idKey, entityId);
 };

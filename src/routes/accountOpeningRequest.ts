@@ -15,6 +15,7 @@ import {
 import {
   AccountOpeningRequest,
   AccountOpeningRequestStatus,
+  AccountType,
   CustomerType,
   MockBusiness,
   MockPerson,
@@ -24,16 +25,31 @@ import { triggerWebhook } from "../helpers/webhooks";
 import generateID from "../helpers/id";
 import { createAccount } from "../routes/accounts";
 
+const AccountOpeningMap = {
+  getEntity: {
+    [CustomerType.PERSON]: getPerson,
+    [CustomerType.BUSINESS]: getBusiness,
+  },
+  saveEntity: {
+    [CustomerType.PERSON]: savePerson,
+    [CustomerType.BUSINESS]: saveBusiness,
+  },
+  accountType: {
+    [CustomerType.PERSON]: AccountType.CHECKING_SOLE_PROPRIETOR,
+    [CustomerType.BUSINESS]: AccountType.CHECKING_BUSINESS,
+  },
+};
+
 export const createAccountOpeningRequest = async (
   req: Request,
   res: Response
 ) => {
   const data = req.body;
   const entityId = data.customer_id;
-  const getEntity =
-    data.customer_type === CustomerType.PERSON ? getPerson : getBusiness;
-  const saveEntity =
-    data.customer_type === CustomerType.PERSON ? savePerson : saveBusiness;
+  const customerType = data.customer_type as CustomerType;
+  const getEntity = AccountOpeningMap.getEntity[data.customer_type];
+  const saveEntity = AccountOpeningMap.saveEntity[data.customer_type];
+  const accountType = AccountOpeningMap.accountType[data.customer_type];
 
   const accountOpeningRequest = {
     customer_id: data.customer_id,
@@ -57,7 +73,7 @@ export const createAccountOpeningRequest = async (
 
   const entityKey = `reslock:${
     process.env.MOCKSOLARIS_REDIS_PREFIX
-  }:${data.customer_type.toLowerCase()}:${entityId}`;
+  }:${customerType.toLowerCase()}:${entityId}`;
   let entity: MockPerson | MockBusiness;
   await redlock.using([entityKey], 5000, async (signal) => {
     if (signal.aborted) {
@@ -71,12 +87,16 @@ export const createAccountOpeningRequest = async (
   await saveAccountOpeningRequestToEntityId(
     accountOpeningRequest.id,
     entityId,
-    data.customer_type.toLowerCase()
+    customerType
   );
 
   res.status(HttpStatusCodes.CREATED).send(accountOpeningRequest);
 
-  const account = await createAccount(entityId, undefined, data.customer_type);
+  const account = await createAccount(
+    entityId,
+    { type: accountType },
+    customerType
+  );
 
   const completedRequest = {
     ...accountOpeningRequest,
@@ -126,7 +146,7 @@ export const retrieveAccountOpeningRequest = async (
 
     entityId = await getCustomerIdByAccountOpeningRequest(
       accountOpeningRequestId,
-      CustomerType.PERSON
+      customerType
     );
 
     if (entityId) {
@@ -135,7 +155,7 @@ export const retrieveAccountOpeningRequest = async (
       customerType = CustomerType.BUSINESS;
       entityId = await getCustomerIdByAccountOpeningRequest(
         accountOpeningRequestId,
-        CustomerType.BUSINESS
+        customerType
       );
       entity = await getBusiness(entityId);
     }

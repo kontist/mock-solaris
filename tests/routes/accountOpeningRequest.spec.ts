@@ -13,6 +13,7 @@ import {
   MockPerson,
   CustomerType,
   MockBusiness,
+  ProductType,
 } from "../../src/helpers/types";
 import * as webhookHelpers from "../../src/helpers/webhooks";
 
@@ -64,7 +65,7 @@ describe("Account Opening Request", () => {
         body: {
           customer_id: personId,
           customer_type: CustomerType.PERSON,
-          product_name: "CURRENT_ACCOUNT_FREELANCER_GERMANY",
+          product_name: ProductType.CURRENT_ACCOUNT_FREELANCER_GERMANY,
           account_type: AccountType.CHECKING_SOLE_PROPRIETOR,
           account_currency: "EUR",
           account_purpose: "primary",
@@ -88,6 +89,9 @@ describe("Account Opening Request", () => {
 
     it("should create an account for user", async () => {
       expect(person.account).to.be.an("object");
+      expect(person.account.type).to.equal(
+        AccountType.CHECKING_SOLE_PROPRIETOR
+      );
     });
 
     it("should trigger webhook", () => {
@@ -129,8 +133,8 @@ describe("Account Opening Request", () => {
         body: {
           customer_id: businessId,
           customer_type: CustomerType.BUSINESS,
-          product_name: "CURRENT_ACCOUNT_FREELANCER_GERMANY",
-          account_type: AccountType.CHECKING_SOLE_PROPRIETOR,
+          product_name: ProductType.CURRENT_ACCOUNT_BUSINESS_GERMANY,
+          account_type: AccountType.CHECKING_BUSINESS,
           account_currency: "EUR",
           account_purpose: "primary",
           account_bic: process.env.SOLARIS_BIC,
@@ -153,6 +157,7 @@ describe("Account Opening Request", () => {
 
     it("should create an account for business", async () => {
       expect(business.account).to.be.an("object");
+      expect(business.account.type).to.equal(AccountType.CHECKING_BUSINESS);
     });
 
     it("should trigger webhook", () => {
