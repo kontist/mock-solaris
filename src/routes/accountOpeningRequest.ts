@@ -5,7 +5,7 @@ import moment from "moment";
 import {
   getPerson,
   savePerson,
-  getPersonIdByAccountOpeningRequest,
+  getCustomerIdByAccountOpeningRequest,
   redlock,
   getBusiness,
   saveBusiness,
@@ -13,6 +13,7 @@ import {
   saveAccountOpeningRequestToEntityId,
 } from "../db";
 import {
+  AccountOpeningRequest,
   AccountOpeningRequestStatus,
   CustomerType,
   MockBusiness,
@@ -116,16 +117,50 @@ export const retrieveAccountOpeningRequest = async (
   res: Response
 ) => {
   const { id: accountOpeningRequestId } = req.params;
+  let accountOpeningRequest: AccountOpeningRequest;
 
-  const personId = await getPersonIdByAccountOpeningRequest(
-    accountOpeningRequestId
-  );
+  try {
+    let customerType = CustomerType.PERSON;
+    let entityId: string;
+    let entity: MockPerson | MockBusiness;
 
-  const person = await getPerson(personId);
+    entityId = await getCustomerIdByAccountOpeningRequest(
+      accountOpeningRequestId,
+      CustomerType.PERSON
+    );
 
-  const accountOpeningRequest = person.accountOpeningRequests.find(
-    (request) => request.id === accountOpeningRequestId
-  );
+    if (entityId) {
+      entity = await getPerson(entityId);
+    } else {
+      customerType = CustomerType.BUSINESS;
+      entityId = await getCustomerIdByAccountOpeningRequest(
+        accountOpeningRequestId,
+        CustomerType.BUSINESS
+      );
+      entity = await getBusiness(entityId);
+    }
+
+    if (!entity) {
+      throw new Error("Entity not found");
+    }
+
+    accountOpeningRequest = entity?.accountOpeningRequests.find(
+      (request) => request.id === accountOpeningRequestId
+    );
+  } catch (err) {
+    res.status(HttpStatusCodes.NOT_FOUND).send({
+      id: generateID(),
+      status: HttpStatusCodes.NOT_FOUND,
+      code: "not_found",
+      title: "Not Found",
+      detail: `Account Opening Request with id: ${accountOpeningRequestId} not found`,
+      source: {
+        message: `Account Opening Request with id: ${accountOpeningRequestId} not found`,
+        field: "id",
+      },
+    });
+    return;
+  }
 
   res.status(HttpStatusCodes.OK).send(accountOpeningRequest);
 };

@@ -1041,10 +1041,13 @@ export const saveAccountOpeningRequestToBusinessId = async (
   await redisClient.set(idKey, businessId);
 };
 
-export const getPersonIdByAccountOpeningRequest = async (
-  accountOpeningRequestId: string
+export const getCustomerIdByAccountOpeningRequest = async (
+  accountOpeningRequestId: string,
+  customerType = CustomerType.PERSON
 ) => {
-  const key = `${process.env.MOCKSOLARIS_REDIS_PREFIX}:accountOpeningRequestId-personId:${accountOpeningRequestId}`;
+  const key = `${
+    process.env.MOCKSOLARIS_REDIS_PREFIX
+  }:accountOpeningRequestId-${customerType.toLowerCase()}Id:${accountOpeningRequestId}`;
   return redisClient.get(key);
 };
 
