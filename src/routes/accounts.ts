@@ -5,14 +5,21 @@ import {
   getPerson,
   savePerson,
   findPersonByAccount,
-  saveAccountToPersonId,
+  saveAccountToEntity,
   redlock,
   setPerson,
+  getBusiness,
+  saveBusiness,
 } from "../db";
 import { IBAN, CountryCode } from "ibankit";
 import generateID from "../helpers/id";
 import { getLogger } from "../logger";
-import { AccountType } from "../helpers/types";
+import {
+  AccountType,
+  CustomerType,
+  MockBusiness,
+  MockPerson,
+} from "../helpers/types";
 
 const ACCOUNT_SNAPSHOT_SOURCE = "SOLARISBANK";
 
@@ -121,20 +128,30 @@ export const showPersonAccounts = async (req, res) => {
   res.status(200).send(accounts);
 };
 
-export const createAccount = async (personId: string, data = {}) => {
-  let person;
-  const personLockKey = `redlock:${process.env.MOCKSOLARIS_REDIS_PREFIX}:person:${personId}`;
-  await redlock.using([personLockKey], 5000, async (signal) => {
+export const createAccount = async (
+  entityId: string,
+  data = {},
+  customerType = CustomerType.PERSON
+) => {
+  let entity: MockPerson | MockBusiness;
+  const lockKey = `redlock:${
+    process.env.MOCKSOLARIS_REDIS_PREFIX
+  }:${customerType.toLowerCase()}:${entityId}`;
+  await redlock.using([lockKey], 5000, async (signal) => {
     if (signal.aborted) {
       throw signal.error;
     }
-    person = await getPerson(personId);
-    person.account = getDefaultAccount(personId, data);
-    await savePerson(person);
-    await saveAccountToPersonId(person.account, personId);
+    entity = await (customerType === CustomerType.PERSON
+      ? getPerson
+      : getBusiness)(entityId);
+    entity.account = getDefaultAccount(entityId, data) as any; // FIXME: fix invalid type
+    await (customerType === CustomerType.PERSON ? savePerson : saveBusiness)(
+      entity
+    );
+    await saveAccountToEntity(entity.account, entityId);
   });
 
-  return person.account;
+  return entity.account;
 };
 
 export const createAccountRequestHandler = async (req, res) => {

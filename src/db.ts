@@ -10,6 +10,7 @@ import { calculateOverdraftInterest } from "./helpers/overdraft";
 import {
   Card,
   CardData,
+  CustomerType,
   CustomerVettingStatus,
   DeviceActivityPayload,
   DeviceConsent,
@@ -979,15 +980,20 @@ export const getPersonIdByQuestionSetId = async (
   return redisClient.get(key);
 };
 
-export const saveAccountToPersonId = async (
+export const saveAccountToEntity = async (
   account: MockAccount,
-  personId: string
+  entityId: string,
+  customerType = CustomerType.PERSON
 ): Promise<boolean> => {
-  const idKey = `${process.env.MOCKSOLARIS_REDIS_PREFIX}:accountId-personId:${account.id}`;
-  const ibanKey = `${process.env.MOCKSOLARIS_REDIS_PREFIX}:accountIBAN-personId:${account.iban}`;
+  const idKey = `${
+    process.env.MOCKSOLARIS_REDIS_PREFIX
+  }:accountId-${customerType.toLowerCase()}Id:${account.id}`;
+  const ibanKey = `${
+    process.env.MOCKSOLARIS_REDIS_PREFIX
+  }:accountIBAN-${customerType.toLowerCase()}Id:${account.iban}`;
   await Promise.all([
-    redisClient.set(idKey, personId),
-    redisClient.set(ibanKey, personId),
+    redisClient.set(idKey, entityId),
+    redisClient.set(ibanKey, entityId),
   ]);
 };
 
@@ -1016,19 +1022,34 @@ export const getPersonIdByAccount = async ({
   return redisClient.get(key);
 };
 
-export const saveAccountOpeningRequestToPersonId = async (
+export const saveAccountOpeningRequestToEntityId = async (
   accountOpeningRequestId: string,
-  personId: string
+  entityId: string,
+  customerType: CustomerType
 ) => {
-  const idKey = `${process.env.MOCKSOLARIS_REDIS_PREFIX}:accountOpeningRequestId-personId:${accountOpeningRequestId}`;
+  const idKey = `${
+    process.env.MOCKSOLARIS_REDIS_PREFIX
+  }:accountOpeningRequestId-${customerType.toLowerCase()}Id:${accountOpeningRequestId}`;
 
-  await redisClient.set(idKey, personId);
+  await redisClient.set(idKey, entityId);
 };
 
-export const getPersonIdByAccountOpeningRequest = async (
-  accountOpeningRequestId: string
+export const saveAccountOpeningRequestToBusinessId = async (
+  accountOpeningRequestId: string,
+  businessId: string
 ) => {
-  const key = `${process.env.MOCKSOLARIS_REDIS_PREFIX}:accountOpeningRequestId-personId:${accountOpeningRequestId}`;
+  const idKey = `${process.env.MOCKSOLARIS_REDIS_PREFIX}:accountOpeningRequestId-businessId:${accountOpeningRequestId}`;
+
+  await redisClient.set(idKey, businessId);
+};
+
+export const getCustomerIdByAccountOpeningRequest = async (
+  accountOpeningRequestId: string,
+  customerType = CustomerType.PERSON
+) => {
+  const key = `${
+    process.env.MOCKSOLARIS_REDIS_PREFIX
+  }:accountOpeningRequestId-${customerType.toLowerCase()}Id:${accountOpeningRequestId}`;
   return redisClient.get(key);
 };
 

@@ -336,6 +336,7 @@ export type MockBusiness = {
   company_status?: string;
   createdAt: string;
   beneficialOwners?: BeneficialOwner[];
+  accountOpeningRequests?: AccountOpeningRequest[];
 };
 
 export type MockCreateBusiness = {
@@ -824,9 +825,15 @@ export interface AccountOpeningRequest {
   updated_at: string;
 }
 
+export enum ProductType {
+  CURRENT_ACCOUNT_FREELANCER_GERMANY = "CURRENT_ACCOUNT_FREELANCER_GERMANY",
+  CURRENT_ACCOUNT_BUSINESS_GERMANY = "CURRENT_ACCOUNT_BUSINESS_GERMANY",
+}
+
 export enum AccountType {
-  "CHECKING_SOLE_PROPRIETOR" = "CHECKING_SOLE_PROPRIETOR",
-  "CHECKING_PERSONAL" = "CHECKING_PERSONAL",
+  CHECKING_SOLE_PROPRIETOR = "CHECKING_SOLE_PROPRIETOR",
+  CHECKING_PERSONAL = "CHECKING_PERSONAL",
+  CHECKING_BUSINESS = "CHECKING_BUSINESS",
 }
 
 export interface Question {
@@ -868,4 +875,9 @@ export interface BeneficialOwner {
   fictitious: boolean;
   relationship_to_business: string;
   valid_until: string;
+}
+
+export enum CustomerType {
+  PERSON = "Person",
+  BUSINESS = "Business",
 }

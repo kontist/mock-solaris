@@ -5,29 +5,70 @@ import moment from "moment";
 import {
   getPerson,
   savePerson,
-  saveAccountOpeningRequestToPersonId,
-  getPersonIdByAccountOpeningRequest,
+  getCustomerIdByAccountOpeningRequest,
   redlock,
+  getBusiness,
+  saveBusiness,
+  saveAccountOpeningRequestToBusinessId,
+  saveAccountOpeningRequestToEntityId,
 } from "../db";
 import {
+  AccountOpeningRequest,
   AccountOpeningRequestStatus,
+  AccountType,
+  CustomerType,
+  MockBusiness,
+  MockPerson,
   PersonWebhookEvent,
 } from "../helpers/types";
 import { triggerWebhook } from "../helpers/webhooks";
 import generateID from "../helpers/id";
 import { createAccount } from "../routes/accounts";
 
+const ACCOUNT_OPENING_MAP = {
+  getEntity: {
+    [CustomerType.PERSON]: getPerson,
+    [CustomerType.BUSINESS]: getBusiness,
+  },
+  saveEntity: {
+    [CustomerType.PERSON]: savePerson,
+    [CustomerType.BUSINESS]: saveBusiness,
+  },
+  accountType: {
+    [CustomerType.PERSON]: AccountType.CHECKING_SOLE_PROPRIETOR,
+    [CustomerType.BUSINESS]: AccountType.CHECKING_BUSINESS,
+  },
+};
+
 export const createAccountOpeningRequest = async (
   req: Request,
   res: Response
 ) => {
   const data = req.body;
+  const entityId = data.customer_id;
+  const customerType = data.customer_type as CustomerType;
+  if (Object.values(CustomerType).indexOf(customerType) === -1) {
+    res.status(HttpStatusCodes.BAD_REQUEST).send({
+      id: generateID(),
+      status: HttpStatusCodes.BAD_REQUEST,
+      code: "bad_request",
+      title: "Bad Request",
+      detail: `Invalid customer type: ${customerType}`,
+      source: {
+        message: `Invalid customer type: ${customerType}`,
+        field: "customer_type",
+      },
+    });
+    return;
+  }
 
-  const personId = data.customer_id;
+  const getEntity = ACCOUNT_OPENING_MAP.getEntity[customerType];
+  const saveEntity = ACCOUNT_OPENING_MAP.saveEntity[customerType];
+  const accountType = ACCOUNT_OPENING_MAP.accountType[customerType];
 
   const accountOpeningRequest = {
-    customer_id: data.customer_id,
-    customer_type: data.customer_type,
+    customer_id: entityId,
+    customer_type: customerType,
     product_name: data.product_name,
     account_type: data.account_type,
     account_bic: data.account_bic,
@@ -45,22 +86,32 @@ export const createAccountOpeningRequest = async (
     },
   };
 
-  const personKey = `reslock:${process.env.MOCKSOLARIS_REDIS_PREFIX}:person:${personId}`;
-  let person;
-  await redlock.using([personKey], 5000, async (signal) => {
+  const entityKey = `reslock:${
+    process.env.MOCKSOLARIS_REDIS_PREFIX
+  }:${customerType.toLowerCase()}:${entityId}`;
+  let entity: MockPerson | MockBusiness;
+  await redlock.using([entityKey], 5000, async (signal) => {
     if (signal.aborted) {
       throw signal.error;
     }
-    person = await getPerson(personId);
-    person.accountOpeningRequests = person.accountOpeningRequests || [];
-    person.accountOpeningRequests.push(accountOpeningRequest);
-    await savePerson(person);
+    entity = await getEntity(entityId);
+    entity.accountOpeningRequests = entity.accountOpeningRequests || [];
+    entity.accountOpeningRequests.push(accountOpeningRequest);
+    await saveEntity(entity);
   });
-  await saveAccountOpeningRequestToPersonId(accountOpeningRequest.id, personId);
+  await saveAccountOpeningRequestToEntityId(
+    accountOpeningRequest.id,
+    entityId,
+    customerType
+  );
 
   res.status(HttpStatusCodes.CREATED).send(accountOpeningRequest);
 
-  const account = await createAccount(personId);
+  const account = await createAccount(
+    entityId,
+    { type: accountType },
+    customerType
+  );
 
   const completedRequest = {
     ...accountOpeningRequest,
@@ -69,23 +120,22 @@ export const createAccountOpeningRequest = async (
     iban: account.iban,
   };
 
-  await redlock.using([personKey], 5000, async (signal) => {
+  await redlock.using([entityKey], 5000, async (signal) => {
     if (signal.aborted) {
       throw signal.error;
     }
-    person = await getPerson(personId);
-    person.accountOpeningRequests = [
-      ...person.accountOpeningRequests.filter(
+    entity = await getEntity(entityId);
+    entity.accountOpeningRequests = [
+      ...entity.accountOpeningRequests.filter(
         (request) => request.id !== accountOpeningRequest.id
       ),
       completedRequest,
     ];
-    await savePerson(person);
+    await saveEntity(entity);
   });
 
   await triggerWebhook({
     type: PersonWebhookEvent.ACCOUNT_OPENING_REQUEST,
-    personId: person.id,
     payload: {
       account_opening_request_id: completedRequest.id,
       customer_id: completedRequest.customer_id,
@@ -102,16 +152,50 @@ export const retrieveAccountOpeningRequest = async (
   res: Response
 ) => {
   const { id: accountOpeningRequestId } = req.params;
+  let accountOpeningRequest: AccountOpeningRequest;
 
-  const personId = await getPersonIdByAccountOpeningRequest(
-    accountOpeningRequestId
-  );
+  try {
+    let customerType = CustomerType.PERSON;
+    let entityId: string;
+    let entity: MockPerson | MockBusiness;
 
-  const person = await getPerson(personId);
+    entityId = await getCustomerIdByAccountOpeningRequest(
+      accountOpeningRequestId,
+      customerType
+    );
 
-  const accountOpeningRequest = person.accountOpeningRequests.find(
-    (request) => request.id === accountOpeningRequestId
-  );
+    if (entityId) {
+      entity = await getPerson(entityId);
+    } else {
+      customerType = CustomerType.BUSINESS;
+      entityId = await getCustomerIdByAccountOpeningRequest(
+        accountOpeningRequestId,
+        customerType
+      );
+      entity = await getBusiness(entityId);
+    }
+
+    if (!entity) {
+      throw new Error("Entity not found");
+    }
+
+    accountOpeningRequest = entity?.accountOpeningRequests.find(
+      (request) => request.id === accountOpeningRequestId
+    );
+  } catch (err) {
+    res.status(HttpStatusCodes.NOT_FOUND).send({
+      id: generateID(),
+      status: HttpStatusCodes.NOT_FOUND,
+      code: "not_found",
+      title: "Not Found",
+      detail: `Account Opening Request with id: ${accountOpeningRequestId} not found`,
+      source: {
+        message: `Account Opening Request with id: ${accountOpeningRequestId} not found`,
+        field: "id",
+      },
+    });
+    return;
+  }
 
   res.status(HttpStatusCodes.OK).send(accountOpeningRequest);
 };
