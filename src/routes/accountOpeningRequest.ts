@@ -47,13 +47,13 @@ export const createAccountOpeningRequest = async (
   const data = req.body;
   const entityId = data.customer_id;
   const customerType = data.customer_type as CustomerType;
-  const getEntity = ACCOUNT_OPENING_MAP.getEntity[data.customer_type];
-  const saveEntity = ACCOUNT_OPENING_MAP.saveEntity[data.customer_type];
-  const accountType = ACCOUNT_OPENING_MAP.accountType[data.customer_type];
+  const getEntity = ACCOUNT_OPENING_MAP.getEntity[customerType];
+  const saveEntity = ACCOUNT_OPENING_MAP.saveEntity[customerType];
+  const accountType = ACCOUNT_OPENING_MAP.accountType[customerType];
 
   const accountOpeningRequest = {
-    customer_id: data.customer_id,
-    customer_type: data.customer_type,
+    customer_id: entityId,
+    customer_type: customerType,
     product_name: data.product_name,
     account_type: data.account_type,
     account_bic: data.account_bic,
