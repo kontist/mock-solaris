@@ -126,23 +126,6 @@
       </div>
     </div>
 
-    <!-- Beneficial Owners -->
-    <div class="panel panel-default">
-      <div class="panel-heading">
-        <h4>Beneficial Owners</h4>
-      </div>
-      <div class="panel-body">
-        {% for owner in business.beneficialOwners %}
-        <div class="form-group">
-          <p><strong>Owner ID:</strong> {{ owner.beneficial_owner_id }}</p>
-          <p><strong>Person ID:</strong> {{ owner.person_id }}</p>
-          <p><strong>Voting Share:</strong> {{ owner.voting_share }}%</p>
-          <p><strong>Relationship:</strong> {{ owner.relationship_to_business }}</p>
-        </div>
-        <hr>
-        {% endfor %}
-      </div>
-    </div>
 
     <!-- Legal Representatives -->
     <div class="panel panel-default">
@@ -155,6 +138,24 @@
           <p><strong>Representative ID:</strong> {{ representative.legal_representative_id }}</p>
           <p><strong>Type of Representation:</strong> {{ representative.type_of_representation }}</p>
           <p><strong>Power of Attorney Confirmed At:</strong> {{ representative.power_of_attorney_confirmed_at }}</p>
+        </div>
+        <hr>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Beneficial Owners -->
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h4>Beneficial Owners</h4>
+      </div>
+      <div class="panel-body">
+        {% for owner in business.beneficialOwners %}
+        <div class="form-group">
+          <p><strong>Owner ID:</strong> {{ owner.beneficial_owner_id }}</p>
+          <p><strong>Person ID:</strong> {{ owner.person_id }}</p>
+          <p><strong>Voting Share:</strong> {{ owner.voting_share }}%</p>
+          <p><strong>Relationship:</strong> {{ owner.relationship_to_business }}</p>
         </div>
         <hr>
         {% endfor %}
