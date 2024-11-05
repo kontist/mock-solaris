@@ -27,9 +27,8 @@
               value="{{ business.name }}">
           </div>
           <div class="form-group">
-            <label for="createdAt">Created At</label>
-            <input type="text" class="form-control" name="createdAt" id="createdAt" placeholder="Created At"
-              value="{{ business.createdAt }}" disabled>
+            <label>Created At</label>
+            <p class="form-control-static">{{ business.createdAt }}</p>
           </div>
           <button type="submit" class="btn btn-primary btn-block">Submit</button>
         </form>
@@ -42,29 +41,26 @@
         <h4>Address</h4>
       </div>
       <div class="panel-body">
-        <form method="POST">
-          <div class="form-group">
-            <label for="line_1">Address Line 1</label>
-            <input type="text" class="form-control" name="line_1" id="line_1" value="{{ business.address.line_1 }}">
-          </div>
-          <div class="form-group">
-            <label for="line_2">Address Line 2</label>
-            <input type="text" class="form-control" name="line_2" id="line_2" value="{{ business.address.line_2 }}">
-          </div>
-          <div class="form-group">
-            <label for="postal_code">Postal Code</label>
-            <input type="text" class="form-control" name="postal_code" id="postal_code"
-              value="{{ business.address.postal_code }}">
-          </div>
-          <div class="form-group">
-            <label for="city">City</label>
-            <input type="text" class="form-control" name="city" id="city" value="{{ business.address.city }}">
-          </div>
-          <div class="form-group">
-            <label for="country">Country</label>
-            <input type="text" class="form-control" name="country" id="country" value="{{ business.address.country }}">
-          </div>
-        </form>
+        <div class="form-group">
+          <label>Address Line 1</label>
+          <p class="form-control-static">{{ business.address.line_1 }}</p>
+        </div>
+        <div class="form-group">
+          <label>Address Line 2</label>
+          <p class="form-control-static">{{ business.address.line_2 }}</p>
+        </div>
+        <div class="form-group">
+          <label>Postal Code</label>
+          <p class="form-control-static">{{ business.address.postal_code }}</p>
+        </div>
+        <div class="form-group">
+          <label>City</label>
+          <p class="form-control-static">{{ business.address.city }}</p>
+        </div>
+        <div class="form-group">
+          <label>Country</label>
+          <p class="form-control-static">{{ business.address.country }}</p>
+        </div>
       </div>
     </div>
 
