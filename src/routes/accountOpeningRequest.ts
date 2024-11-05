@@ -146,7 +146,6 @@ export const retrieveAccountOpeningRequest = async (
     let customerType = CustomerType.PERSON;
     let entityId: string;
     let entity: MockPerson | MockBusiness;
-    let handlers = getHandlers(customerType);
 
     entityId = await getCustomerIdByAccountOpeningRequest(
       accountOpeningRequestId,
@@ -154,15 +153,14 @@ export const retrieveAccountOpeningRequest = async (
     );
 
     if (entityId) {
-      entity = await handlers.getEntity(entityId);
+      entity = await getHandlers(customerType).getEntity(entityId);
     } else {
       customerType = CustomerType.BUSINESS;
-      handlers = getHandlers(customerType);
       entityId = await getCustomerIdByAccountOpeningRequest(
         accountOpeningRequestId,
         customerType
       );
-      entity = await handlers.getEntity(entityId);
+      entity = await getHandlers(customerType).getEntity(entityId);
     }
 
     if (!entity) {
