@@ -4,7 +4,8 @@
 
 <ul class="nav nav-tabs">
   <li role="presentation"><a href="/__BACKOFFICE__/businesses">⬅ Businesses</a></li>
-<li role="presentation" class="active"><a href="/__BACKOFFICE__/business/{{ business.id }}">Individual business</a></li>
+  <li role="presentation" class="active"><a href="/__BACKOFFICE__/business/{{ business.id }}">Individual business</a>
+  </li>
 </ul>
 
 <div class="page-header">
@@ -13,28 +14,160 @@
 
 <div class="row">
   <div class="col-md-6">
+    <!-- Business Data -->
     <div class="panel panel-default">
-      <div class="panel-heading"><h4>Business data</h4></div>
+      <div class="panel-heading">
+        <h4>Business Data</h4>
+      </div>
       <div class="panel-body">
         <form method="POST">
-          <div class="row">
-            <div class="form-group col-md-12">
-              <label for="name">Name</label>
-              <input type="text" class="form-control" name="name" id="name" placeholder="Name"
-                value="{{ business.name }}">
-            </div>
+          <div class="form-group">
+            <label for="name">Name</label>
+            <input type="text" class="form-control" name="name" id="name" placeholder="Name"
+              value="{{ business.name }}">
+          </div>
+          <div class="form-group">
+            <label>Created At</label>
+            <p class="form-control-static">{{ business.createdAt }}</p>
           </div>
           <button type="submit" class="btn btn-primary btn-block">Submit</button>
         </form>
+      </div>
+    </div>
+
+    <!-- Address -->
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h4>Address</h4>
+      </div>
+      <div class="panel-body">
+        <div class="form-group">
+          <label>Address Line 1</label>
+          <p class="form-control-static">{{ business.address.line_1 }}</p>
+        </div>
+        <div class="form-group">
+          <label>Address Line 2</label>
+          <p class="form-control-static">{{ business.address.line_2 }}</p>
+        </div>
+        <div class="form-group">
+          <label>Postal Code</label>
+          <p class="form-control-static">{{ business.address.postal_code }}</p>
+        </div>
+        <div class="form-group">
+          <label>City</label>
+          <p class="form-control-static">{{ business.address.city }}</p>
+        </div>
+        <div class="form-group">
+          <label>Country</label>
+          <p class="form-control-static">{{ business.address.country }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Account Opening Requests -->
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h4>Account Opening Requests</h4>
+      </div>
+      <div class="panel-body">
+        {% for request in business.accountOpeningRequests %}
+        <div class="form-group">
+          <p><strong>Customer ID:</strong> {{ request.customer_id }}</p>
+          <p><strong>Product Name:</strong> {{ request.product_name }}</p>
+          <p><strong>Account Type:</strong> {{ request.account_type }}</p>
+          <p><strong>Account BIC:</strong> {{ request.account_bic }}</p>
+          <p><strong>Account Currency:</strong> {{ request.account_currency }}</p>
+          <p><strong>Status:</strong> {{ request.status }}</p>
+          <p><strong>IBAN:</strong> {{ request.iban }}</p>
+        </div>
+        <hr>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <!-- Account Details -->
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h4>Account</h4>
+      </div>
+      <div class="panel-body">
+        <table class="table">
+          <tr>
+            <td>Account ID</td>
+            <td>{{ business.account.id }}</td>
+          </tr>
+          <tr>
+            <td>IBAN</td>
+            <td>{{ business.account.iban }}</td>
+          </tr>
+          <tr>
+            <td>Type</td>
+            <td>{{ business.account.type }}</td>
+          </tr>
+          <tr>
+            <td>Balance</td>
+            <td>{{ business.account.balance.value / 100 }} €</td>
+          </tr>
+          <tr>
+            <td>Available Balance</td>
+            <td>{{ business.account.available_balance.value / 100 }} €</td>
+          </tr>
+          <tr>
+            <td>Locking Status</td>
+            <td>{{ business.account.locking_status }}</td>
+          </tr>
+          <tr>
+            <td>Status</td>
+            <td>{{ business.account.status }}</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+
+    <!-- Legal Representatives -->
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h4>Legal Representatives</h4>
+      </div>
+      <div class="panel-body">
+        {% for representative in business.legalRepresentatives %}
+        <div class="form-group">
+          <p><strong>Representative ID:</strong> {{ representative.legal_representative_id }}</p>
+          <p><strong>Type of Representation:</strong> {{ representative.type_of_representation }}</p>
+          <p><strong>Power of Attorney Confirmed At:</strong> {{ representative.power_of_attorney_confirmed_at }}</p>
+        </div>
+        <hr>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Beneficial Owners -->
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h4>Beneficial Owners</h4>
+      </div>
+      <div class="panel-body">
+        {% for owner in business.beneficialOwners %}
+        <div class="form-group">
+          <p><strong>Owner ID:</strong> {{ owner.beneficial_owner_id }}</p>
+          <p><strong>Person ID:</strong> {{ owner.person_id }}</p>
+          <p><strong>Voting Share:</strong> {{ owner.voting_share }}%</p>
+          <p><strong>Relationship:</strong> {{ owner.relationship_to_business }}</p>
+        </div>
+        <hr>
+        {% endfor %}
       </div>
     </div>
   </div>
 </div>
 
 <script>
-$(".autosubmitonchange").change(function() {
-  this.submit();
-});
+  $(".autosubmitonchange").change(function () {
+    this.submit();
+  });
 </script>
 
 {% endblock %}

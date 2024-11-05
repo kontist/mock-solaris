@@ -25,19 +25,24 @@ import { triggerWebhook } from "../helpers/webhooks";
 import generateID from "../helpers/id";
 import { createAccount } from "../routes/accounts";
 
-const ACCOUNT_OPENING_MAP = {
-  getEntity: {
-    [CustomerType.PERSON]: getPerson,
-    [CustomerType.BUSINESS]: getBusiness,
-  },
-  saveEntity: {
-    [CustomerType.PERSON]: savePerson,
-    [CustomerType.BUSINESS]: saveBusiness,
-  },
-  accountType: {
-    [CustomerType.PERSON]: AccountType.CHECKING_SOLE_PROPRIETOR,
-    [CustomerType.BUSINESS]: AccountType.CHECKING_BUSINESS,
-  },
+const getHandlers = (customerType: CustomerType) => {
+  switch (customerType) {
+    case CustomerType.PERSON:
+      return {
+        getEntity: getPerson,
+        saveEntity: savePerson,
+        accountType: AccountType.CHECKING_SOLE_PROPRIETOR,
+      };
+    case CustomerType.BUSINESS:
+      return {
+        getEntity: getBusiness,
+        saveEntity: saveBusiness,
+        accountType: AccountType.CHECKING_BUSINESS,
+      };
+
+    default:
+      throw new Error(`Invalid customer type: ${customerType}`);
+  }
 };
 
 export const createAccountOpeningRequest = async (
@@ -47,24 +52,7 @@ export const createAccountOpeningRequest = async (
   const data = req.body;
   const entityId = data.customer_id;
   const customerType = data.customer_type as CustomerType;
-  if (Object.values(CustomerType).indexOf(customerType) === -1) {
-    res.status(HttpStatusCodes.BAD_REQUEST).send({
-      id: generateID(),
-      status: HttpStatusCodes.BAD_REQUEST,
-      code: "bad_request",
-      title: "Bad Request",
-      detail: `Invalid customer type: ${customerType}`,
-      source: {
-        message: `Invalid customer type: ${customerType}`,
-        field: "customer_type",
-      },
-    });
-    return;
-  }
-
-  const getEntity = ACCOUNT_OPENING_MAP.getEntity[customerType];
-  const saveEntity = ACCOUNT_OPENING_MAP.saveEntity[customerType];
-  const accountType = ACCOUNT_OPENING_MAP.accountType[customerType];
+  const { getEntity, saveEntity, accountType } = getHandlers(customerType);
 
   const accountOpeningRequest = {
     customer_id: entityId,
@@ -165,14 +153,14 @@ export const retrieveAccountOpeningRequest = async (
     );
 
     if (entityId) {
-      entity = await getPerson(entityId);
+      entity = await getHandlers(customerType).getEntity(entityId);
     } else {
       customerType = CustomerType.BUSINESS;
       entityId = await getCustomerIdByAccountOpeningRequest(
         accountOpeningRequestId,
         customerType
       );
-      entity = await getBusiness(entityId);
+      entity = await getHandlers(customerType).getEntity(entityId);
     }
 
     if (!entity) {
