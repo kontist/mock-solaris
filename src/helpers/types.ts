@@ -309,7 +309,7 @@ export enum LegalIdentificationStatus {
   EXPIRED = "expired",
 }
 
-type LegalRepresentativeIdentification = {
+export type LegalRepresentativeIdentification = {
   id: string;
   reference: string;
   url: string;
@@ -319,7 +319,7 @@ type LegalRepresentativeIdentification = {
   language: string;
 };
 
-type LegalRepresentativeIdentificationResponse = {
+export type LegalRepresentativeIdentificationResponse = {
   person_id: string;
   identifications: LegalRepresentativeIdentification[];
 };
@@ -346,6 +346,21 @@ export type BusinessIdentification = {
   legal_identification_missing_information_details?: string;
   legal_representatives: LegalRepresentativeIdentificationResponse[];
   legal_identification_missing_information: string[];
+};
+
+export enum LegalRepresentativeType {
+  PERSON = "Person",
+  BUSINESS = "Business",
+}
+
+export type LegalRepresentative = {
+  id: string;
+  legal_representative_id: string;
+  legal_representative_type: LegalRepresentativeType;
+  valid_until: string;
+  power_of_attorney_confirmed_at: string;
+  type_of_representation: string;
+  business_id: string;
 };
 
 export type MockBusiness = {
@@ -394,6 +409,7 @@ export type MockBusiness = {
   beneficialOwners?: BeneficialOwner[];
   accountOpeningRequests?: AccountOpeningRequest[];
   identifications?: BusinessIdentification[];
+  legalRepresentatives?: LegalRepresentative[];
 };
 
 export type MockCreateBusiness = {

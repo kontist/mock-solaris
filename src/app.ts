@@ -895,7 +895,7 @@ router.post(
 router.post(
   "/businesses/:business_id/identifications",
   middlewares.withBusiness,
-  safeRequestHandler(businessesAPI.createIdentification)
+  safeRequestHandler(businessesAPI.createBusinessIdentification)
 );
 
 // COMMERCIAL REGISTRATIONS
