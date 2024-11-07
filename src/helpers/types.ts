@@ -292,6 +292,62 @@ export type MockCreatePerson = {
   billing_account?: BillingAccount;
 };
 
+export enum BusinessIdentificationStatus {
+  CREATED = "created",
+  PENDING = "pending",
+  SUCCESSFUL = "successful",
+  FAILED = "failed",
+  EXPIRED = "expired",
+}
+
+export enum LegalIdentificationStatus {
+  CREATED = "created",
+  INFORMATION_REQUIRED = "information_required",
+  BLOCKED_INTERNALY = "blocked_internally",
+  SUCCESSFUL = "successful",
+  FAILED = "failed",
+  EXPIRED = "expired",
+}
+
+type LegalRepresentativeIdentification = {
+  id: string;
+  reference: string;
+  url: string;
+  status: IdentificationStatus;
+  completed_at: string;
+  method: string;
+  language: string;
+};
+
+type LegalRepresentativeIdentificationResponse = {
+  person_id: string;
+  identifications: LegalRepresentativeIdentification[];
+};
+
+export enum BusinessDocumentType {
+  PROOF_OF_ADDRESS = "PROOF_OF_ADDRESS",
+  FOUNDATION_DOCUMENT = "FOUNDATION_DOCUMENT",
+  SHAREHOLDERS_LIST = "SHAREHOLDERS_LIST",
+  REGISTER_EXTRACT = "REGISTER_EXTRACT",
+  VAT_CERTIFICATE = "VAT_CERTIFICATE",
+}
+
+export const COMPLIANCE_QUESTIONS = "COMPLIANCE_QUESTIONS";
+
+export type BusinessIdentification = {
+  id: string;
+  business_id: string;
+  method: string;
+  reference: string;
+  status: BusinessIdentificationStatus;
+  completed_at?: string;
+  legal_identification_status: LegalIdentificationStatus;
+  legal_identification_reason?: string;
+  legal_identification_missing_information_details?: string;
+  legal_representatives: LegalRepresentativeIdentificationResponse[];
+  legal_identification_missing_information: string[];
+};
+
 export type MockBusiness = {
   id: string;
   name: string;
@@ -337,6 +393,7 @@ export type MockBusiness = {
   createdAt: string;
   beneficialOwners?: BeneficialOwner[];
   accountOpeningRequests?: AccountOpeningRequest[];
+  identifications?: BusinessIdentification[];
 };
 
 export type MockCreateBusiness = {
