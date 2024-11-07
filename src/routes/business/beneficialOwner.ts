@@ -24,35 +24,15 @@ export const createBeneficialOwner = async (
       valid_until: null,
     };
 
-    if (!business.beneficialOwners) {
-      business.beneficialOwners = [{ ...beneficialOwner }];
-    } else {
-      business.beneficialOwners.push({ ...beneficialOwner });
-    }
+    const beneficialOwners = business.beneficialOwners || [];
+
+    beneficialOwners.push({ ...beneficialOwner });
+    business.beneficialOwners = beneficialOwners;
 
     await saveBusiness(business);
 
     return res.status(201).send(beneficialOwner);
-  } catch (err) {
-    if (
-      err.message ===
-      `Business which has businessId: ${business.id} was not found in redis`
-    ) {
-      const resp = {
-        errors: [
-          {
-            id: uuid.v4(),
-            status: 404,
-            code: "model_not_found",
-            title: "Model Not Found",
-            detail: `Couldn't find 'Solaris::Business' for id '${business}'.`,
-          },
-        ],
-      };
-
-      return res.status(404).send(resp);
-    }
-
+  } catch (error) {
     return res.status(500).send({
       errors: [
         {
