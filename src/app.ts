@@ -895,7 +895,7 @@ router.post(
 router.post(
   "/businesses/:business_id/legal_representative",
   middlewares.withPerson,
-  safeRequestHandler(businessesAPI.createBeneficialOwner)
+  safeRequestHandler(businessesAPI.createLegalRepresentative)
 );
 
 router.post(
