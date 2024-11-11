@@ -161,6 +161,45 @@
         {% endfor %}
       </div>
     </div>
+
+    <!-- Business Identifications -->
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h4>Business Identifications</h4>
+      </div>
+      <div class="panel-body">
+        {% for identification in business.identifications %}
+        <div class="form-group">
+          <p><strong>Identification ID:</strong> {{ identification.id }}</p>
+          <p><strong>Status:</strong> {{ identification.status }}</p>
+          <p><strong>Method:</strong> {{ identification.method }}</p>
+          <p><strong>Reference:</strong> {{ identification.reference }}</p>
+          <p><strong>Completed At:</strong> {{ identification.completed_at }}</p>
+        </div>
+        <hr>
+        {% if identification.meta && identification.meta.complianceQuestions %}
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4>Compliance Questions</h4>
+          </div>
+          <div class="panel-body">
+            {% for question in identification.meta.complianceQuestions %}
+            <div class="form-group">
+              <p><strong>Question ID:</strong> {{ question.question_id }}</p>
+              <p><strong>Question Text:</strong> {{ question.question_text }}</p>
+              <p><strong>Asked At:</strong> {{ question.asked_at }}</p>
+              <p><strong>Answer ID:</strong> {{ question.answer_id }}</p>
+              <p><strong>Answer Text:</strong> {{ question.answer_text }}</p>
+              <p><strong>Answered At:</strong> {{ question.answered_at }}</p>
+            </div>
+            <hr>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+      </div>
+    </div>
   </div>
 </div>
 
