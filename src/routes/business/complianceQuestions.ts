@@ -83,7 +83,7 @@ export const answerComplianceQuestion = async (
 
   await saveBusiness(business);
 
-  res.status(200).send(question);
+  res.status(201).send(question);
 };
 
 export const markLegalIdentificationAsReady = async (
