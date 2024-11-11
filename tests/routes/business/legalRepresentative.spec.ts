@@ -67,20 +67,17 @@ describe("createLegalRepresentative", () => {
       await createLegalRepresentative(req, res);
     });
 
-    it("should return created beneficial owner", () => {
+    it("should return created legal representative", () => {
       const lastCall = res.send.args[res.send.args.length - 1];
       expect(lastCall[0].business_id).to.equal(businessId);
-      expect(lastCall[0].person_id).to.equal(req.body.person_id);
+      expect(lastCall[0].legal_representative_id).to.equal(req.body.person_id);
     });
 
-    it("should add beneficial owner to business", async () => {
+    it("should add legal representative to business", async () => {
       const business = await db.getBusiness(businessId);
       expect(business.legalRepresentatives.length).to.equal(1);
       expect(business.legalRepresentatives[0].business_id).to.equal(businessId);
       expect(business.legalRepresentatives[0].legal_representative_id).to.equal(
-        req.body.person_id
-      );
-      expect(business.legalRepresentatives[0].person_id).to.equal(
         req.body.person_id
       );
     });
