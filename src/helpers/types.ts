@@ -307,6 +307,7 @@ export enum LegalIdentificationStatus {
   SUCCESSFUL = "successful",
   FAILED = "failed",
   EXPIRED = "expired",
+  PENDING = "pending",
 }
 
 export type LegalRepresentativeIdentification = {
@@ -346,7 +347,22 @@ export type BusinessIdentification = {
   legal_identification_missing_information_details?: string;
   legal_representatives: LegalRepresentativeIdentificationResponse[];
   legal_identification_missing_information: string[];
+  meta?: {
+    complianceQuestions?: ComplianceQuestion[];
+  };
 };
+
+export interface ComplianceQuestion {
+  question_id: string;
+  question_text: string;
+  legal_identification_id: string;
+  business_identification_id: string;
+  business_id: string;
+  asked_at: string;
+  answer_id: string | null;
+  answer_text: string | null;
+  answered_at: string | null;
+}
 
 export enum LegalRepresentativeType {
   PERSON = "Person",

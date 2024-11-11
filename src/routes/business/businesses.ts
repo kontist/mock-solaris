@@ -80,7 +80,7 @@ export const createBusiness = async (req, res) => {
 
     await storeBusinessInSortedSet(business);
 
-    if (req.headers.origin) {
+    if (req.headers?.origin) {
       await setBusinessOrigin(businessId, req.headers.origin);
     }
   });

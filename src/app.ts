@@ -904,6 +904,29 @@ router.get(
   safeRequestHandler(businessesAPI.retrieveBusinessIdentification)
 );
 
+// COMPLIANCE QUESTIONS
+
+router.get(
+  "/businesses/:business_id/identifications/:business_identification_id/legal_identification/questions",
+  middlewares.withBusiness,
+  middlewares.withBusinessIdentification,
+  safeRequestHandler(businessesAPI.listComplianceQuestions)
+);
+
+router.post(
+  "/businesses/:business_id/identifications/:business_identification_id/legal_identification/questions/:question_id/answers",
+  middlewares.withBusiness,
+  middlewares.withBusinessIdentification,
+  safeRequestHandler(businessesAPI.answerComplianceQuestion)
+);
+
+router.patch(
+  "/businesses/:business_id/identifications/:business_identification_id/legal_identification/mark_as_ready",
+  middlewares.withBusiness,
+  middlewares.withBusinessIdentification,
+  safeRequestHandler(businessesAPI.markLegalIdentificationAsReady)
+);
+
 // COMMERCIAL REGISTRATIONS
 
 router.get(

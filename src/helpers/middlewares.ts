@@ -1,11 +1,14 @@
 import * as express from "express";
 import HttpStatusCodes from "http-status";
 import { getPerson, getBusiness } from "../db";
-import { MockPerson, MockBusiness } from "./types";
+import { MockPerson, MockBusiness, BusinessIdentification } from "./types";
 import generateID from "./id";
 
 export type RequestWithPerson = express.Request & { person?: MockPerson };
-export type RequestWithBusiness = express.Request & { business?: MockBusiness };
+export type RequestWithBusiness = express.Request & { business: MockBusiness };
+export type RequestWithBusinessIdentification = RequestWithBusiness & {
+  businessIdentification: BusinessIdentification;
+};
 
 export const withBusiness = async (
   req: RequestWithBusiness,
@@ -101,4 +104,38 @@ export const withAccount = async (
       },
     ],
   });
+};
+
+export const withBusinessIdentification = async (
+  req: RequestWithBusiness,
+  res: express.Response,
+  next: express.NextFunction
+) => {
+  const { business } = req;
+  const businessIdentificationId =
+    req.params.business_identification_id ||
+    req.params.businessIdentificationId;
+
+  const businessIdentification = (business?.identifications || []).find(
+    (identification) => identification.id === businessIdentificationId
+  );
+
+  if (!businessIdentification) {
+    res.status(HttpStatusCodes.NOT_FOUND).send({
+      errors: [
+        {
+          id: generateID(),
+          status: 404,
+          code: "model_not_found",
+          title: "Model Not Found",
+          detail: `Couldn't find 'Solaris::BusinessIdentification' for id '${businessIdentificationId}'.`,
+        },
+      ],
+    });
+    return;
+  }
+
+  (req as RequestWithBusinessIdentification).businessIdentification =
+    businessIdentification;
+  next();
 };

@@ -1,7 +1,8 @@
 import type { Response } from "express";
+import _ from "lodash";
 
 import { RequestWithBusiness } from "../../helpers/middlewares";
-import { saveBusiness, getPerson, savePerson } from "../../db";
+import { saveBusiness, getPerson } from "../../db";
 import generateID from "../../helpers/id";
 import {
   BusinessIdentification,
@@ -61,7 +62,7 @@ export const createBusinessIdentification = async (
 
   await saveBusiness(business);
 
-  return res.status(200).send(identification);
+  replyWithIdentification(res, identification, 201);
 };
 
 export const retrieveBusinessIdentification = async (
@@ -88,8 +89,15 @@ export const retrieveBusinessIdentification = async (
       ],
     };
 
-    return res.status(404).send(resp);
+    res.status(404).send(resp);
+    return;
   }
 
-  return res.status(200).send(identification);
+  replyWithIdentification(res, identification, 200);
 };
+
+const replyWithIdentification = (
+  res: Response,
+  identification: BusinessIdentification,
+  status: number
+) => res.status(status).send(_.omit(identification, "meta"));
