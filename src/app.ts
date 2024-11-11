@@ -906,7 +906,7 @@ router.get(
 
 // COMPLIANCE QUESTIONS
 
-router.post(
+router.get(
   "/businesses/:business_id/identifications/:business_identification_id/legal_identification/questions",
   middlewares.withBusiness,
   middlewares.withBusinessIdentification,
