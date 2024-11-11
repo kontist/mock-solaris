@@ -898,6 +898,12 @@ router.post(
   safeRequestHandler(businessesAPI.createBusinessIdentification)
 );
 
+router.get(
+  "/businesses/:business_id/identifications/:identification_id",
+  middlewares.withBusiness,
+  safeRequestHandler(businessesAPI.retrieveBusinessIdentification)
+);
+
 // COMPLIANCE QUESTIONS
 
 router.post(
