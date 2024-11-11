@@ -1,56 +1,38 @@
-import type { Request, Response } from "express";
+import type { Response } from "express";
 
 import generateID from "../../helpers/id";
-import { getBusiness, saveBusiness } from "../../db";
+import { saveBusiness } from "../../db";
 import uuid from "node-uuid";
 import { BeneficialOwner } from "../../helpers/types";
+import { RequestWithBusiness } from "../../helpers/middlewares";
 
-export const createBeneficialOwner = async (req: Request, res: Response) => {
-  const { business_id: businessId } = req.params;
+export const createBeneficialOwner = async (
+  req: RequestWithBusiness,
+  res: Response
+) => {
+  const { business } = req;
 
   try {
-    const business = await getBusiness(businessId);
-
     const beneficialOwner: BeneficialOwner = {
       id: generateID(),
       beneficial_owner_id: generateID(),
       person_id: req.body.person_id,
       voting_share: req.body.voting_share,
-      business_id: businessId,
+      business_id: business.id,
       fictitious: req.body.fictitious,
       relationship_to_business: req.body.relationship_to_business,
       valid_until: null,
     };
 
-    if (!business.beneficialOwners) {
-      business.beneficialOwners = [{ ...beneficialOwner }];
-    } else {
-      business.beneficialOwners.push({ ...beneficialOwner });
-    }
+    const beneficialOwners = business.beneficialOwners || [];
+
+    beneficialOwners.push({ ...beneficialOwner });
+    business.beneficialOwners = beneficialOwners;
 
     await saveBusiness(business);
 
     return res.status(201).send(beneficialOwner);
-  } catch (err) {
-    if (
-      err.message ===
-      `Business which has businessId: ${businessId} was not found in redis`
-    ) {
-      const resp = {
-        errors: [
-          {
-            id: uuid.v4(),
-            status: 404,
-            code: "model_not_found",
-            title: "Model Not Found",
-            detail: `Couldn't find 'Solaris::Business' for id '${businessId}'.`,
-          },
-        ],
-      };
-
-      return res.status(404).send(resp);
-    }
-
+  } catch (error) {
     return res.status(500).send({
       errors: [
         {

@@ -888,8 +888,20 @@ router.post(
 
 router.post(
   "/businesses/:business_id/beneficial_owners",
-  middlewares.withPerson,
+  middlewares.withBusiness,
   safeRequestHandler(businessesAPI.createBeneficialOwner)
+);
+
+router.post(
+  "/businesses/:business_id/identifications",
+  middlewares.withBusiness,
+  safeRequestHandler(businessesAPI.createBusinessIdentification)
+);
+
+router.get(
+  "/businesses/:business_id/identifications/:identification_id",
+  middlewares.withBusiness,
+  safeRequestHandler(businessesAPI.retrieveBusinessIdentification)
 );
 
 // COMMERCIAL REGISTRATIONS
