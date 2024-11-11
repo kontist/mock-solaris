@@ -4,7 +4,11 @@ import moment from "moment";
 import generateID from "../../helpers/id";
 import { getBusiness, saveBusiness } from "../../db";
 import uuid from "node-uuid";
-import { LegalRepresentative } from "../../helpers/types";
+import {
+  LegalRepresentative,
+  LegalRepresentativeType,
+  LegalRepresentativeRepresentationType,
+} from "../../helpers/types";
 
 export const createLegalRepresentative = async (
   req: Request,
@@ -18,12 +22,11 @@ export const createLegalRepresentative = async (
     const legalRepresentative: LegalRepresentative = {
       id: generateID(),
       legal_representative_id: req.body.person_id,
-      person_id: req.body.person_id,
       business_id: businessId,
       valid_until: null,
-      legal_representative_type: "Person",
+      legal_representative_type: LegalRepresentativeType.PERSON,
       power_of_attorney_confirmed_at: moment().toISOString(),
-      type_of_representation: "ALONE",
+      type_of_representation: LegalRepresentativeRepresentationType.ALONE,
     };
 
     if (!business.legalRepresentatives) {

@@ -353,13 +353,20 @@ export enum LegalRepresentativeType {
   BUSINESS = "Business",
 }
 
+export enum LegalRepresentativeRepresentationType {
+  ALONE = "ALONE",
+  JOINT = "JOINT",
+  OTHER = "OTHER",
+  AUTHORIZED_PERSON = "AUTHORIZED_PERSON",
+}
+
 export type LegalRepresentative = {
   id: string;
   legal_representative_id: string;
   legal_representative_type: LegalRepresentativeType;
   valid_until: string;
   power_of_attorney_confirmed_at: string;
-  type_of_representation: string;
+  type_of_representation: LegalRepresentativeRepresentationType;
   business_id: string;
 };
 
@@ -410,7 +417,6 @@ export type MockBusiness = {
   legalRepresentatives?: LegalRepresentative[];
   accountOpeningRequests?: AccountOpeningRequest[];
   identifications?: BusinessIdentification[];
-  legalRepresentatives?: LegalRepresentative[];
 };
 
 export type MockCreateBusiness = {
@@ -949,17 +955,6 @@ export interface BeneficialOwner {
   fictitious: boolean;
   relationship_to_business: string;
   valid_until: string;
-}
-
-export interface LegalRepresentative {
-  id: string;
-  legal_representative_id: string;
-  legal_representative_type: string;
-  valid_until: string;
-  power_of_attorney_confirmed_at: string;
-  type_of_representation: string;
-  business_id: string;
-  person_id: string;
 }
 
 export enum CustomerType {
