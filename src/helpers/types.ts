@@ -336,6 +336,7 @@ export type MockBusiness = {
   company_status?: string;
   createdAt: string;
   beneficialOwners?: BeneficialOwner[];
+  legalRepresentatives?: LegalRepresentative[];
   accountOpeningRequests?: AccountOpeningRequest[];
 };
 
@@ -875,6 +876,17 @@ export interface BeneficialOwner {
   fictitious: boolean;
   relationship_to_business: string;
   valid_until: string;
+}
+
+export interface LegalRepresentative {
+  id: string;
+  legal_representative_id: string;
+  legal_representative_type: string;
+  valid_until: string;
+  power_of_attorney_confirmed_at: string;
+  type_of_representation: string;
+  business_id: string;
+  person_id: string;
 }
 
 export enum CustomerType {
