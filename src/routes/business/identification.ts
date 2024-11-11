@@ -63,3 +63,33 @@ export const createBusinessIdentification = async (
 
   return res.status(200).send(identification);
 };
+
+export const retrieveBusinessIdentification = async (
+  req: RequestWithBusiness,
+  res: Response
+) => {
+  const { business } = req;
+  const { identification_id: identificationId } = req.params;
+
+  const identification = business.identifications.find(
+    (ident) => ident.id === identificationId
+  );
+
+  if (!identification) {
+    const resp = {
+      errors: [
+        {
+          id: generateID(),
+          status: 404,
+          code: "model_not_found",
+          title: "Model Not Found",
+          detail: `Couldn't find 'Solaris::BusinessIdentification' for id '${identificationId}'.`,
+        },
+      ],
+    };
+
+    return res.status(404).send(resp);
+  }
+
+  return res.status(200).send(identification);
+};
