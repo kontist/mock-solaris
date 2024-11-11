@@ -59,7 +59,7 @@ export const answerComplianceQuestion = async (
   const { text: answerText } = req.body;
 
   const question = businessIdentification.meta?.complianceQuestions?.find(
-    (question) => question.question_id === questionId
+    (q) => q.question_id === questionId
   );
 
   if (!question) {
