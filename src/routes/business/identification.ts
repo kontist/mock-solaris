@@ -24,7 +24,7 @@ const mapLegalRepresentative = async (
   person = await getPerson(person.id);
 
   return {
-    identifications: person.identifications,
+    identifications: Object.values(person.identifications),
     person_id: person.id,
   };
 };
