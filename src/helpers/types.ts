@@ -292,6 +292,77 @@ export type MockCreatePerson = {
   billing_account?: BillingAccount;
 };
 
+export enum BusinessIdentificationStatus {
+  CREATED = "created",
+  PENDING = "pending",
+  SUCCESSFUL = "successful",
+  FAILED = "failed",
+  EXPIRED = "expired",
+}
+
+export enum LegalIdentificationStatus {
+  CREATED = "created",
+  INFORMATION_REQUIRED = "information_required",
+  BLOCKED_INTERNALY = "blocked_internally",
+  SUCCESSFUL = "successful",
+  FAILED = "failed",
+  EXPIRED = "expired",
+}
+
+export type LegalRepresentativeIdentification = {
+  id: string;
+  reference: string;
+  url: string;
+  status: IdentificationStatus;
+  completed_at: string;
+  method: string;
+  language: string;
+};
+
+export type LegalRepresentativeIdentificationResponse = {
+  person_id: string;
+  identifications: LegalRepresentativeIdentification[];
+};
+
+export enum BusinessDocumentType {
+  PROOF_OF_ADDRESS = "PROOF_OF_ADDRESS",
+  FOUNDATION_DOCUMENT = "FOUNDATION_DOCUMENT",
+  SHAREHOLDERS_LIST = "SHAREHOLDERS_LIST",
+  REGISTER_EXTRACT = "REGISTER_EXTRACT",
+  VAT_CERTIFICATE = "VAT_CERTIFICATE",
+}
+
+export const COMPLIANCE_QUESTIONS = "COMPLIANCE_QUESTIONS";
+
+export type BusinessIdentification = {
+  id: string;
+  business_id: string;
+  method: string;
+  reference: string;
+  status: BusinessIdentificationStatus;
+  completed_at?: string;
+  legal_identification_status: LegalIdentificationStatus;
+  legal_identification_reason?: string;
+  legal_identification_missing_information_details?: string;
+  legal_representatives: LegalRepresentativeIdentificationResponse[];
+  legal_identification_missing_information: string[];
+};
+
+export enum LegalRepresentativeType {
+  PERSON = "Person",
+  BUSINESS = "Business",
+}
+
+export type LegalRepresentative = {
+  id: string;
+  legal_representative_id: string;
+  legal_representative_type: LegalRepresentativeType;
+  valid_until: string;
+  power_of_attorney_confirmed_at: string;
+  type_of_representation: string;
+  business_id: string;
+};
+
 export type MockBusiness = {
   id: string;
   name: string;
@@ -338,6 +409,8 @@ export type MockBusiness = {
   beneficialOwners?: BeneficialOwner[];
   legalRepresentatives?: LegalRepresentative[];
   accountOpeningRequests?: AccountOpeningRequest[];
+  identifications?: BusinessIdentification[];
+  legalRepresentatives?: LegalRepresentative[];
 };
 
 export type MockCreateBusiness = {

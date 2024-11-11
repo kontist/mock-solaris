@@ -9,30 +9,7 @@ import { createBeneficialOwner } from "../../../src/routes/business/beneficialOw
 describe("createBeneficialOwner", () => {
   let res: sinon.SinonSpy;
 
-  describe("when business is not found", () => {
-    before(async () => {
-      await db.flushDb();
-      res = mockRes();
-      const req = mockReq({
-        params: {
-          business_id: "1234abc",
-        },
-        body: {
-          person_id: "1234abcdef",
-          voting_share: 0.5,
-          fictitious: false,
-          relationship_to_business: "owner",
-        },
-      });
-      await createBeneficialOwner(req, res);
-    });
-
-    it("should return 404", () => {
-      expect(res.send.args[0][0].errors[0].status).to.equal(404);
-    });
-  });
-
-  describe("when business is found", () => {
+  describe("success case", () => {
     let businessId: string;
     let req;
 
@@ -62,6 +39,9 @@ describe("createBeneficialOwner", () => {
           voting_share: 0.5,
           fictitious: false,
           relationship_to_business: "owner",
+        },
+        business: {
+          id: businessId,
         },
       });
       await createBeneficialOwner(req, res);
