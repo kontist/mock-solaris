@@ -117,7 +117,7 @@ export const markLegalIdentificationAsReady = async (
   businessIdentification.legal_identification_missing_information = [];
   businessIdentification.legal_identification_status =
     LegalIdentificationStatus.PENDING;
-  businessIdentification.status = BusinessIdentificationStatus.PENDING;
+  businessIdentification.status = BusinessIdentificationStatus.CREATED;
 
   await saveBusiness(business);
 

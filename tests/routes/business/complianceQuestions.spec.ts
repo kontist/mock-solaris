@@ -6,6 +6,7 @@ import * as complianceAPI from "../../../src/routes/business/complianceQuestions
 import {
   BusinessIdentification,
   BusinessIdentificationStatus,
+  LegalIdentificationStatus,
 } from "../../../src/helpers/types";
 import generateID from "../../../src/helpers/id";
 import * as qa from "../../../src/helpers/questionsAndAnswers";
@@ -79,7 +80,7 @@ describe("Compliance Questions API", () => {
     beforeEach(async () => {
       req = mockReq({
         businessIdentification,
-        business: { id: businessId, businessIdentification },
+        business: { id: businessId, identifications: [businessIdentification] },
       });
 
       sandbox.stub(qa, "fetchRandomQuestion").resolves("Sample Question?");
@@ -96,7 +97,7 @@ describe("Compliance Questions API", () => {
     it("should save questions in businessIdentification meta", async () => {
       expect(saveBusinessSpy.calledOnce).to.be.true;
       expect(
-        saveBusinessSpy.lastCall.args[0].businessIdentification.meta
+        saveBusinessSpy.lastCall.args[0].identifications[0].meta
           .complianceQuestions
       )
         .to.be.an("array")
@@ -134,7 +135,7 @@ describe("Compliance Questions API", () => {
         params: {
           question_id: identification.meta.complianceQuestions[0].question_id,
         },
-        business: { id: businessId, businessIdentification: identification },
+        business: { id: businessId, identifications: [identification] },
         body: { text: "Sample Answer" },
       });
 
@@ -143,7 +144,7 @@ describe("Compliance Questions API", () => {
 
       expect(saveBusinessSpy.calledOnce).to.be.true;
       const answer =
-        saveBusinessSpy.lastCall.args[0].businessIdentification.meta
+        saveBusinessSpy.lastCall.args[0].identifications[0].meta
           .complianceQuestions[0];
 
       expect(answer).to.have.property("answer_text", "Sample Answer");
@@ -196,17 +197,23 @@ describe("Compliance Questions API", () => {
 
       req = mockReq({
         businessIdentification: identification,
-        business: { id: businessId, businessIdentification: identification },
+        business: { id: businessId, identifications: [identification] },
       });
       await complianceAPI.markLegalIdentificationAsReady(req, res);
     });
 
-    it("should update status of business identification to PENDING", () => {
+    it("should update status of business identification", () => {
       const response = res.send.lastCall.args[0];
       expect(response).to.have.property(
         "status",
-        BusinessIdentificationStatus.PENDING
+        BusinessIdentificationStatus.CREATED
       );
+
+      expect(saveBusinessSpy.calledOnce).to.be.true;
+      expect(
+        saveBusinessSpy.lastCall.args[0].identifications[0]
+          .legal_identification_status
+      ).to.equal(LegalIdentificationStatus.PENDING);
     });
   });
 });
