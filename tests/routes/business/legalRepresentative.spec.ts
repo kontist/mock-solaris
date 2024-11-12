@@ -9,29 +9,6 @@ import { createLegalRepresentative } from "../../../src/routes/business/legalRep
 describe("createLegalRepresentative", () => {
   let res: sinon.SinonSpy;
 
-  describe("when business is not found", () => {
-    before(async () => {
-      await db.flushDb();
-      res = mockRes();
-      const req = mockReq({
-        params: {
-          business_id: "1234abc",
-        },
-        body: {
-          person_id: "1234abcdef",
-          voting_share: 0.5,
-          fictitious: false,
-          relationship_to_business: "owner",
-        },
-      });
-      await createLegalRepresentative(req, res);
-    });
-
-    it("should return 404", () => {
-      expect(res.send.args[0][0].errors[0].status).to.equal(404);
-    });
-  });
-
   describe("when business is found", () => {
     let businessId: string;
     let req;
@@ -62,6 +39,9 @@ describe("createLegalRepresentative", () => {
           voting_share: 0.5,
           fictitious: false,
           relationship_to_business: "owner",
+        },
+        business: {
+          id: businessId,
         },
       });
       await createLegalRepresentative(req, res);
