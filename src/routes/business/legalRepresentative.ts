@@ -1,5 +1,4 @@
 import type { Response } from "express";
-import moment from "moment";
 
 import generateID from "../../helpers/id";
 import { saveBusiness } from "../../db";
@@ -24,7 +23,7 @@ export const createLegalRepresentative = async (
       business_id: business.id,
       valid_until: null,
       legal_representative_type: LegalRepresentativeType.PERSON,
-      power_of_attorney_confirmed_at: moment().toISOString(),
+      power_of_attorney_confirmed_at: req.body.power_of_attorney_confirmed_at,
       type_of_representation: LegalRepresentativeRepresentationType.ALONE,
     };
 

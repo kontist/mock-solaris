@@ -36,9 +36,6 @@ describe("createLegalRepresentative", () => {
         },
         body: {
           person_id: "1234abcdef",
-          voting_share: 0.5,
-          fictitious: false,
-          relationship_to_business: "owner",
         },
         business: {
           id: businessId,
