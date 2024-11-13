@@ -893,6 +893,13 @@ router.post(
 );
 
 router.post(
+  "/businesses/:business_id/legal_representative",
+  middlewares.withPerson,
+  middlewares.withBusiness,
+  safeRequestHandler(businessesAPI.createLegalRepresentative)
+);
+
+router.post(
   "/businesses/:business_id/identifications",
   middlewares.withBusiness,
   safeRequestHandler(businessesAPI.createBusinessIdentification)
