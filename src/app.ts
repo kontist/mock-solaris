@@ -911,6 +911,12 @@ router.get(
   safeRequestHandler(businessesAPI.retrieveBusinessIdentification)
 );
 
+router.get(
+  "businesses/:business_id/accounts/:id",
+  middlewares.withBusiness,
+  safeRequestHandler(businessesAPI.getBusinessAccount)
+);
+
 // COMPLIANCE QUESTIONS
 
 router.get(
