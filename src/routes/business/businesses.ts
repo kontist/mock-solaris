@@ -268,7 +268,25 @@ export const getBusinessAccount = async (
   req: RequestWithBusiness,
   res: Response
 ) => {
-  const { business } = req;
+  const { id } = req.params;
+  const {
+    business: { account },
+  } = req;
 
-  return res.status(201).send(business.account);
+  if (!account) {
+    res.status(404).send({
+      errors: [
+        {
+          id: generateID(),
+          status: 404,
+          code: "model_not_found",
+          title: "Model Not Found",
+          detail: `Couldn't find 'Account' for id '${id}'.`,
+        },
+      ],
+    });
+    return;
+  }
+
+  res.status(201).send(account);
 };
