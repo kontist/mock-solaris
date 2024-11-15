@@ -265,16 +265,11 @@ export const updateBusiness = async (req, res) => {
 
 export const getBusinessAccount = async (req: any, res: any) => {
   const { id } = req.params;
-  console.log("businessId", req.params.business_id);
-  console.log("business", req.business);
   const {
     business: { account },
   } = req;
 
-  console.log("business", req.business);
-
   if (!account) {
-    console.log("--------------------- no account");
     res.status(404).send({
       errors: [
         {
