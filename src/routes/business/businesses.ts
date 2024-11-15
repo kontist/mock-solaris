@@ -1,7 +1,7 @@
 import _ from "lodash";
 import moment from "moment";
 import uuid from "node-uuid";
-import type { Response } from "express";
+import type { Response, Request } from "express";
 
 import {
   saveBusiness,
@@ -15,7 +15,6 @@ import generateID from "../../helpers/id";
 import { storeBusinessInSortedSet } from "../../helpers/businesses";
 import { BusinessWebhookEvent, MockBusiness } from "../../helpers/types";
 import { triggerWebhook } from "../../helpers/webhooks";
-import { RequestWithBusiness } from "../../helpers/middlewares";
 
 const businessObjectFields = [
   "id",
@@ -264,16 +263,18 @@ export const updateBusiness = async (req, res) => {
   return res.status(200).send(business);
 };
 
-export const getBusinessAccount = async (
-  req: RequestWithBusiness,
-  res: Response
-) => {
+export const getBusinessAccount = async (req: any, res: any) => {
   const { id } = req.params;
+  console.log("businessId", req.params.business_id);
+  console.log("business", req.business);
   const {
     business: { account },
   } = req;
 
+  console.log("business", req.business);
+
   if (!account) {
+    console.log("--------------------- no account");
     res.status(404).send({
       errors: [
         {
