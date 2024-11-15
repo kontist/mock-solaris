@@ -1,6 +1,7 @@
 import _ from "lodash";
 import moment from "moment";
 import uuid from "node-uuid";
+import type { Response, Request } from "express";
 
 import {
   saveBusiness,
@@ -260,4 +261,28 @@ export const updateBusiness = async (req, res) => {
   });
 
   return res.status(200).send(business);
+};
+
+export const getBusinessAccount = async (req: any, res: any) => {
+  const { account_id } = req.params;
+  const {
+    business: { account },
+  } = req;
+
+  if (!account) {
+    res.status(404).send({
+      errors: [
+        {
+          id: generateID(),
+          status: 404,
+          code: "model_not_found",
+          title: "Model Not Found",
+          detail: `Couldn't find 'Account' for id '${account_id}'.`,
+        },
+      ],
+    });
+    return;
+  }
+
+  res.status(200).send(account);
 };

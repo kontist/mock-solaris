@@ -143,4 +143,55 @@ describe("Businesses", () => {
       expect(business.name).to.equal("Kontist AG");
     });
   });
+
+  describe("Get Business Account", () => {
+    let res: sinon.SinonSpy;
+
+    it("should return error when no account", async () => {
+      await db.flushDb();
+
+      res = mockRes();
+      await businessesAPI.getBusinessAccount(
+        {
+          params: {
+            business_id: "321",
+            id: "1234",
+          },
+          business: {
+            id: "321",
+          },
+        },
+        res
+      );
+
+      const response = res.send.lastCall.args[0];
+      expect(response.errors[0]).to.have.property("status", 404);
+    });
+
+    it("should return account", async () => {
+      const businessId = "321";
+      const accountId = "1234";
+      await db.flushDb();
+
+      res = mockRes();
+      await businessesAPI.getBusinessAccount(
+        {
+          params: {
+            business_id: businessId,
+            account_id: accountId,
+          },
+          business: {
+            id: businessId,
+            account: {
+              id: accountId,
+            },
+          },
+        },
+        res
+      );
+
+      const lastCall = res.send.args[res.send.args.length - 1];
+      expect(lastCall[0].id).to.equal(accountId);
+    });
+  });
 });
