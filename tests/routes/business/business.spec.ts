@@ -178,7 +178,7 @@ describe("Businesses", () => {
         {
           params: {
             business_id: businessId,
-            id: accountId,
+            account_id: accountId,
           },
           business: {
             id: businessId,

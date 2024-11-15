@@ -912,7 +912,7 @@ router.get(
 );
 
 router.get(
-  "businesses/:business_id/accounts/:id",
+  "businesses/:business_id/accounts/:account_id",
   middlewares.withBusiness,
   safeRequestHandler(businessesAPI.getBusinessAccount)
 );
