@@ -13,7 +13,7 @@ import {
 import { createAccount } from "../../../src/routes/accounts";
 import { createPerson } from "../../../src/routes/persons";
 
-describe.only("createAuthorizedPerson", () => {
+describe("createAuthorizedPerson", () => {
   let res: sinon.SinonSpy;
   let personId: string;
   let businessId: string;
