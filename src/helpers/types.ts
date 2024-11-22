@@ -386,6 +386,15 @@ export type LegalRepresentative = {
   business_id: string;
 };
 
+export type AuthorizedPerson = {
+  id: string;
+  business_id: string;
+  account_id: string;
+  authorized_person_id: string;
+  valid_from: string;
+  valid_until: string;
+};
+
 export type MockBusiness = {
   id: string;
   name: string;
@@ -433,6 +442,7 @@ export type MockBusiness = {
   legalRepresentatives?: LegalRepresentative[];
   accountOpeningRequests?: AccountOpeningRequest[];
   identifications?: BusinessIdentification[];
+  authorizedPersons?: AuthorizedPerson[];
 };
 
 export type MockCreateBusiness = {

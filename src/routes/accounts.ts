@@ -148,7 +148,7 @@ export const createAccount = async (
     await (customerType === CustomerType.PERSON ? savePerson : saveBusiness)(
       entity
     );
-    await saveAccountToEntity(entity.account, entityId);
+    await saveAccountToEntity(entity.account, entityId, customerType);
   });
 
   return entity.account;

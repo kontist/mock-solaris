@@ -4,3 +4,4 @@ export * from "./beneficialOwner";
 export * from "./legalRepresentative";
 export * from "./identification";
 export * from "./complianceQuestions";
+export * from "./authorizedPerson";
