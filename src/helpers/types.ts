@@ -388,8 +388,6 @@ export type LegalRepresentative = {
 
 export type AuthorizedPerson = {
   id: string;
-  business_id: string;
-  account_id: string;
   authorized_person_id: string;
   valid_from: string;
   valid_until: string;

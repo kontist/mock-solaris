@@ -79,7 +79,6 @@ describe("createAuthorizedPerson", () => {
     });
     it("should return created authorized person", () => {
       const lastCall = res.send.args[res.send.args.length - 1];
-      expect(lastCall[0].business_id).to.equal(businessId);
       expect(lastCall[0].authorized_person_id).to.equal(
         req.body.authorized_person_id
       );
@@ -88,7 +87,6 @@ describe("createAuthorizedPerson", () => {
     it("should add authorized person to business", async () => {
       const business = await db.getBusiness(businessId);
       expect(business.authorizedPersons.length).to.equal(1);
-      expect(business.authorizedPersons[0].business_id).to.equal(businessId);
       expect(business.authorizedPersons[0].authorized_person_id).to.equal(
         req.body.authorized_person_id
       );
