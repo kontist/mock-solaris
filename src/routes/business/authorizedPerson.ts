@@ -47,11 +47,7 @@ export const createAuthorizedPerson = async (
       id: generateID(),
       authorized_person_id: authorizedPersonId,
       valid_from: new Date().toISOString().split("T")[0],
-      valid_until: new Date(
-        new Date().setFullYear(new Date().getFullYear() + 10)
-      )
-        .toISOString()
-        .split("T")[0],
+      valid_until: null,
     };
 
     const authorizedPersons = business.authorizedPersons || [];
