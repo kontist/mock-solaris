@@ -4,10 +4,10 @@ import generateID from "../../helpers/id";
 import uuid from "node-uuid";
 import { AuthorizedPerson } from "../../helpers/types";
 import { saveBusiness } from "../../db";
-import { RequestWithBusinessAndAccount } from "../../helpers/middlewares";
+import { RequestWithBusiness } from "../../helpers/middlewares";
 
 export const createAuthorizedPerson = async (
-  req: RequestWithBusinessAndAccount,
+  req: RequestWithBusiness,
   res: Response
 ) => {
   const { business } = req;

@@ -11,9 +11,6 @@ import generateID from "./id";
 
 export type RequestWithPerson = express.Request & { person?: MockPerson };
 export type RequestWithBusiness = express.Request & { business: MockBusiness };
-export type RequestWithBusinessAndAccount = RequestWithBusiness & {
-  account: MockAccount;
-};
 export type RequestWithBusinessIdentification = RequestWithBusiness & {
   businessIdentification: BusinessIdentification;
 };
