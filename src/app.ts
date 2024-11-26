@@ -920,7 +920,6 @@ router.get(
 router.post(
   "/businesses/:business_id/accounts/:account_id/authorized_persons",
   middlewares.withBusiness,
-  middlewares.withAccount,
   safeRequestHandler(businessesAPI.createAuthorizedPerson)
 );
 

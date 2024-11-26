@@ -3,7 +3,7 @@ import type { Response } from "express";
 import generateID from "../../helpers/id";
 import uuid from "node-uuid";
 import { AuthorizedPerson } from "../../helpers/types";
-import { saveBusiness, getBusinessIdByAccount } from "../../db";
+import { saveBusiness } from "../../db";
 import { RequestWithBusinessAndAccount } from "../../helpers/middlewares";
 
 export const createAuthorizedPerson = async (
@@ -28,16 +28,15 @@ export const createAuthorizedPerson = async (
     });
   }
 
-  const businessId = await getBusinessIdByAccount({ id: account_id });
-  if (businessId !== business.id) {
-    return res.status(403).send({
+  if (business.account?.id !== account_id) {
+    return res.status(404).send({
       errors: [
         {
           id: uuid.v4(),
-          status: 403,
-          code: "forbidden",
-          title: "Forbidden",
-          detail: "You are not authorized to perform this action.",
+          status: 404,
+          code: "resource_not_found",
+          title: "The resource could not be found.",
+          detail: "The resource could not be found.",
         },
       ],
     });

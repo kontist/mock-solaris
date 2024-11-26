@@ -72,6 +72,9 @@ describe("createAuthorizedPerson", () => {
         },
         business: {
           id: businessId,
+          account: {
+            id: accountId,
+          },
         },
       });
 
@@ -104,6 +107,9 @@ describe("createAuthorizedPerson", () => {
         body: {},
         business: {
           id: businessId,
+          account: {
+            id: accountId,
+          },
         },
       });
       await createAuthorizedPerson(req, res);
@@ -115,7 +121,7 @@ describe("createAuthorizedPerson", () => {
       expect(lastCall[0].errors[0].detail).to.equal("Invalid request.");
     });
 
-    it("should return 403 if businessId and accountId does not belong to each other", async () => {
+    it("should return 404 if businessId and accountId does not belong to each other", async () => {
       res = mockRes();
       req = mockReq({
         params: {
@@ -127,16 +133,21 @@ describe("createAuthorizedPerson", () => {
         },
         business: {
           id: businessId,
+          account: {
+            id: accountId,
+          },
         },
       });
       await createAuthorizedPerson(req, res);
 
       const lastCall = res.send.args[res.send.args.length - 1];
-      expect(lastCall[0].errors[0].status).to.equal(403);
-      expect(lastCall[0].errors[0].code).to.equal("forbidden");
-      expect(lastCall[0].errors[0].title).to.equal("Forbidden");
+      expect(lastCall[0].errors[0].status).to.equal(404);
+      expect(lastCall[0].errors[0].code).to.equal("resource_not_found");
+      expect(lastCall[0].errors[0].title).to.equal(
+        "The resource could not be found."
+      );
       expect(lastCall[0].errors[0].detail).to.equal(
-        "You are not authorized to perform this action."
+        "The resource could not be found."
       );
     });
   });
