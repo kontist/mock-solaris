@@ -5,34 +5,18 @@ import * as db from "../../../src/db";
 
 import * as businessesAPI from "../../../src/routes/business/businesses";
 import { createAuthorizedPerson } from "../../../src/routes/business/authorizedPerson";
-import {
-  AccountType,
-  CustomerType,
-  ProductType,
-} from "../../../src/helpers/types";
-import { createAccount } from "../../../src/routes/accounts";
-import { createPerson } from "../../../src/routes/persons";
 
 describe("createAuthorizedPerson", () => {
+  const accountId = "account_id";
+  const personId = "person_id";
+
   let res: sinon.SinonSpy;
-  let personId: string;
   let businessId: string;
-  let accountId: string;
   let req;
 
   before(async () => {
     await db.flushDb();
     res = mockRes();
-
-    await createPerson(
-      {
-        body: {},
-        headers: {},
-      },
-      res
-    );
-
-    personId = res.send.args[0][0].id;
 
     await businessesAPI.createBusiness(
       {
@@ -44,20 +28,7 @@ describe("createAuthorizedPerson", () => {
       res
     );
 
-    businessId = res.send.args[1][0].id;
-
-    const account = await createAccount(
-      businessId,
-      {
-        product_name: ProductType.CURRENT_ACCOUNT_BUSINESS_GERMANY,
-        account_type: AccountType.CHECKING_BUSINESS,
-        account_currency: "EUR",
-        account_purpose: "primary",
-        account_bic: process.env.SOLARIS_BIC,
-      },
-      CustomerType.BUSINESS
-    );
-    accountId = account.id;
+    businessId = res.send.args[0][0].id;
   });
 
   describe("success case", () => {
