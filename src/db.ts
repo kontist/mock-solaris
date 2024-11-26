@@ -1009,19 +1009,6 @@ export const saveAccountToBusinessId = async (
   ]);
 };
 
-export const getBusinessIdByAccount = async ({
-  id,
-  iban,
-}: {
-  id?: string;
-  iban?: string;
-}) => {
-  const key = id
-    ? `${process.env.MOCKSOLARIS_REDIS_PREFIX}:accountId-businessId:${id}`
-    : `${process.env.MOCKSOLARIS_REDIS_PREFIX}:accountIBAN-businessId:${iban}`;
-  return redisClient.get(key);
-};
-
 export const getPersonIdByAccount = async ({
   id,
   iban,
