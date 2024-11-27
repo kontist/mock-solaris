@@ -917,6 +917,12 @@ router.get(
   safeRequestHandler(businessesAPI.getBusinessAccount)
 );
 
+router.post(
+  "/businesses/:business_id/accounts/:account_id/authorized_persons",
+  middlewares.withBusiness,
+  safeRequestHandler(businessesAPI.createAuthorizedPerson)
+);
+
 // COMPLIANCE QUESTIONS
 
 router.get(

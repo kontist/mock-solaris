@@ -1,7 +1,12 @@
 import * as express from "express";
 import HttpStatusCodes from "http-status";
 import { getPerson, getBusiness } from "../db";
-import { MockPerson, MockBusiness, BusinessIdentification } from "./types";
+import {
+  MockPerson,
+  MockBusiness,
+  BusinessIdentification,
+  MockAccount,
+} from "./types";
 import generateID from "./id";
 
 export type RequestWithPerson = express.Request & { person?: MockPerson };
