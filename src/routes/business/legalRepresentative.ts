@@ -19,11 +19,12 @@ export const createLegalRepresentative = async (
   try {
     const legalRepresentative: LegalRepresentative = {
       id: generateID(),
-      legal_representative_id: req.body.person_id,
+      legal_representative_id: req.body.legal_representative_id,
       business_id: business.id,
       valid_until: null,
       legal_representative_type: LegalRepresentativeType.PERSON,
-      power_of_attorney_confirmed_at: req.body.power_of_attorney_confirmed_at,
+      power_of_attorney_confirmed_at:
+        req.body.power_of_attorney_confirmed_at || null,
       type_of_representation: LegalRepresentativeRepresentationType.ALONE,
     };
 

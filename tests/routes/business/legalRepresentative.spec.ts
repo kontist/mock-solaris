@@ -35,7 +35,8 @@ describe("createLegalRepresentative", () => {
           business_id: businessId,
         },
         body: {
-          person_id: "1234abcdef",
+          legal_representative_id: "1234abcdef",
+          type_of_representation: "ALONE",
         },
         business: {
           id: businessId,
@@ -47,7 +48,9 @@ describe("createLegalRepresentative", () => {
     it("should return created legal representative", () => {
       const lastCall = res.send.args[res.send.args.length - 1];
       expect(lastCall[0].business_id).to.equal(businessId);
-      expect(lastCall[0].legal_representative_id).to.equal(req.body.person_id);
+      expect(lastCall[0].legal_representative_id).to.equal(
+        req.body.legal_representative_id
+      );
     });
 
     it("should add legal representative to business", async () => {
@@ -55,7 +58,7 @@ describe("createLegalRepresentative", () => {
       expect(business.legalRepresentatives.length).to.equal(1);
       expect(business.legalRepresentatives[0].business_id).to.equal(businessId);
       expect(business.legalRepresentatives[0].legal_representative_id).to.equal(
-        req.body.person_id
+        req.body.legal_representative_id
       );
     });
   });
