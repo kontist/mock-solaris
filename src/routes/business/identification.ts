@@ -136,7 +136,8 @@ export const changeBusinessIdentificationStatus = async (
 export const addBusinessMissingInformation = async (
   businessId,
   identificationId,
-  complianceQuestions
+  complianceQuestions,
+  documents
 ) => {
   const business = await getBusiness(businessId);
   const identification = business.identifications.find(
@@ -174,6 +175,13 @@ export const addBusinessMissingInformation = async (
     );
     identification.meta = identification.meta || {};
     identification.meta.complianceQuestions = questions;
+  }
+
+  if (documents) {
+    identification.legal_identification_missing_information.push(
+      "FOUNDATION_DOCUMENT",
+      "ANNUAL_FINANCIAL_STATEMENT"
+    );
   }
 
   await saveBusiness(business);

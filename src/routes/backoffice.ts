@@ -1068,12 +1068,14 @@ export const changeBusinessIdentificationStatusHandler = async (req, res) => {
 };
 
 export const addBusinessMissingInformationHandler = async (req, res) => {
-  const { businessId, identificationId, complianceQuestions } = req.body;
+  const { businessId, identificationId, complianceQuestions, documents } =
+    req.body;
 
   await addBusinessMissingInformation(
     businessId,
     identificationId,
-    complianceQuestions
+    complianceQuestions,
+    documents
   );
 
   res.redirect("back");

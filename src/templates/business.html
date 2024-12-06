@@ -192,6 +192,15 @@
             </button>
           </form>
           {% endif %}
+          {% if !identification.legal_identification_missing_information.includes('FOUNDATION_DOCUMENT') %}
+          <form method="POST" action="/__BACKOFFICE__/addBusinessMissingInformation">
+            <input type="hidden" name="businessId" value={{ business.id }}>
+            <input type="hidden" name="identificationId" value={{ identification.id }}>
+            <button name="documents" value={{ true }} type="submit" class="btn btn-warning btn-sm">
+              Add documents
+            </button>
+          </form>
+          {% endif %}
         </div>
         <hr>
         {% if identification.meta && identification.meta.complianceQuestions %}
