@@ -10,11 +10,16 @@ import {
   BusinessIdentificationStatus,
   LegalRepresentative,
   LegalRepresentativeIdentificationResponse,
+  BusinessWebhookEvent,
+  ComplianceQuestion,
+  COMPLIANCE_QUESTIONS,
 } from "../../helpers/types";
 import {
   createIdentification,
   generatePendingIdentitfication,
 } from "../identifications";
+import { triggerWebhook } from "../../helpers/webhooks";
+import { fetchRandomQuestion } from "../../helpers/questionsAndAnswers";
 
 const mapLegalRepresentative = async (
   legalRepresentative: LegalRepresentative
@@ -117,6 +122,60 @@ export const changeBusinessIdentificationStatus = async (
   }
 
   identification.status = status;
+  await saveBusiness(business);
+
+  await triggerWebhook({
+    type: BusinessWebhookEvent.BUSINESS_IDENTIFICATION,
+    payload: { id: identification.id, business_id: business.id },
+    businessId: business.id,
+  });
+
+  return identification;
+};
+
+export const addBusinessMissingInformation = async (
+  businessId,
+  identificationId,
+  complianceQuestions
+) => {
+  const business = await getBusiness(businessId);
+  const identification = business.identifications.find(
+    (ident) => ident.id === identificationId
+  );
+
+  if (!identification) {
+    return null;
+  }
+
+  identification.legal_identification_missing_information =
+    identification.legal_identification_missing_information || [];
+
+  if (complianceQuestions) {
+    const questions: ComplianceQuestion[] = await Promise.all(
+      Array.from({ length: 2 }).map(async () => {
+        const question = await fetchRandomQuestion();
+
+        return {
+          question_id: generateID(),
+          question_text: question,
+          legal_identification_id: generateID(),
+          business_identification_id: identificationId,
+          business_id: business.id,
+          asked_at: new Date().toISOString(),
+          answer_id: null,
+          answer_text: null,
+          answered_at: null,
+        };
+      })
+    );
+
+    identification.legal_identification_missing_information.push(
+      COMPLIANCE_QUESTIONS
+    );
+    identification.meta = identification.meta || {};
+    identification.meta.complianceQuestions = questions;
+  }
+
   await saveBusiness(business);
 
   return identification;

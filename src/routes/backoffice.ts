@@ -66,7 +66,10 @@ import generateID from "../helpers/id";
 import { storePersonInSortedSet } from "../helpers/persons";
 import { createQuestionSet } from "../helpers/questionsAndAnswers";
 import { isQuestionSetComplete } from "./questions";
-import { changeBusinessIdentificationStatus } from "./business/identification";
+import {
+  changeBusinessIdentificationStatus,
+  addBusinessMissingInformation,
+} from "./business/identification";
 
 const triggerIdentificationWebhook = (payload, personId?: string) =>
   triggerWebhook({
@@ -1059,6 +1062,18 @@ export const changeBusinessIdentificationStatusHandler = async (req, res) => {
     businessId,
     identificationId,
     status
+  );
+
+  res.redirect("back");
+};
+
+export const addBusinessMissingInformationHandler = async (req, res) => {
+  const { businessId, identificationId, complianceQuestions } = req.body;
+
+  await addBusinessMissingInformation(
+    businessId,
+    identificationId,
+    complianceQuestions
   );
 
   res.redirect("back");

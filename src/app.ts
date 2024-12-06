@@ -794,6 +794,11 @@ app.post(
   safeRequestHandler(backofficeAPI.changeBusinessIdentificationStatusHandler)
 );
 
+app.post(
+  "/__BACKOFFICE__/addBusinessMissingInformation",
+  safeRequestHandler(backofficeAPI.addBusinessMissingInformationHandler)
+);
+
 // WEBHOOKS
 router.get(
   "/webhooks",

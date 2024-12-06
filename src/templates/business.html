@@ -183,6 +183,15 @@
           </form>
           <p><strong>Legal Identification Status:</strong>{{ identification.legal_identification_status }}</p>
           <p><strong>Legal Identification Missing Information:</strong>{{ identification.legal_identification_missing_information }}</p>
+          {% if !identification.meta.complianceQuestions %}
+          <form method="POST" action="/__BACKOFFICE__/addBusinessMissingInformation">
+            <input type="hidden" name="businessId" value={{ business.id }}>
+            <input type="hidden" name="identificationId" value={{ identification.id }}>
+            <button name="complianceQuestions" value={{ true }} type="submit" class="btn btn-warning btn-sm">
+              Add compliance questions
+            </button>
+          </form>
+          {% endif %}
         </div>
         <hr>
         {% if identification.meta && identification.meta.complianceQuestions %}
