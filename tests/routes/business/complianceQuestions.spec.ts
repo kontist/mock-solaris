@@ -79,29 +79,27 @@ describe("Compliance Questions API", () => {
   describe("listComplianceQuestions", () => {
     beforeEach(async () => {
       req = mockReq({
-        businessIdentification,
+        businessIdentification: {
+          ...businessIdentification,
+          meta: {
+            complianceQuestions: [
+              {
+                question_id: generateID(),
+                question_text: "Sample Question?",
+                legal_identification_id: "ident123",
+                business_identification_id: businessIdentification.id,
+                business_id: businessId,
+                asked_at: new Date().toISOString(),
+                answer_id: generateID(),
+                answer_text: "Answer",
+                answered_at: new Date().toISOString(),
+              },
+            ],
+          },
+        },
+
         business: {
           id: businessId,
-          identifications: [
-            {
-              ...businessIdentification,
-              meta: {
-                complianceQuestions: [
-                  {
-                    question_id: generateID(),
-                    question_text: "Sample Question?",
-                    legal_identification_id: "ident123",
-                    business_identification_id: businessIdentification.id,
-                    business_id: businessId,
-                    asked_at: new Date().toISOString(),
-                    answer_id: generateID(),
-                    answer_text: "Answer",
-                    answered_at: new Date().toISOString(),
-                  },
-                ],
-              },
-            },
-          ],
         },
       });
 
@@ -110,20 +108,10 @@ describe("Compliance Questions API", () => {
       await complianceAPI.listComplianceQuestions(req, res);
     });
 
-    it("should return generated compliance questions", () => {
+    it("should return compliance questions", () => {
       const response = res.send.lastCall.args[0];
       expect(response).to.be.an("array").with.lengthOf(1);
       expect(response[0]).to.have.property("question_text", "Sample Question?");
-    });
-
-    it("should save questions in businessIdentification meta", async () => {
-      expect(saveBusinessSpy.calledOnce).to.be.true;
-      expect(
-        saveBusinessSpy.lastCall.args[0].identifications[0].meta
-          .complianceQuestions
-      )
-        .to.be.an("array")
-        .with.lengthOf(1);
     });
   });
 
