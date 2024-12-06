@@ -80,7 +80,29 @@ describe("Compliance Questions API", () => {
     beforeEach(async () => {
       req = mockReq({
         businessIdentification,
-        business: { id: businessId, identifications: [businessIdentification] },
+        business: {
+          id: businessId,
+          identifications: [
+            {
+              ...businessIdentification,
+              meta: {
+                complianceQuestions: [
+                  {
+                    question_id: generateID(),
+                    question_text: "Sample Question?",
+                    legal_identification_id: "ident123",
+                    business_identification_id: businessIdentification.id,
+                    business_id: businessId,
+                    asked_at: new Date().toISOString(),
+                    answer_id: generateID(),
+                    answer_text: "Answer",
+                    answered_at: new Date().toISOString(),
+                  },
+                ],
+              },
+            },
+          ],
+        },
       });
 
       sandbox.stub(qa, "fetchRandomQuestion").resolves("Sample Question?");
@@ -90,7 +112,7 @@ describe("Compliance Questions API", () => {
 
     it("should return generated compliance questions", () => {
       const response = res.send.lastCall.args[0];
-      expect(response).to.be.an("array").with.lengthOf(2);
+      expect(response).to.be.an("array").with.lengthOf(1);
       expect(response[0]).to.have.property("question_text", "Sample Question?");
     });
 
@@ -101,7 +123,7 @@ describe("Compliance Questions API", () => {
           .complianceQuestions
       )
         .to.be.an("array")
-        .with.lengthOf(2);
+        .with.lengthOf(1);
     });
   });
 
