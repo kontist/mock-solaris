@@ -2,7 +2,7 @@ import type { Response } from "express";
 import _ from "lodash";
 
 import { RequestWithBusiness } from "../../helpers/middlewares";
-import { saveBusiness, getPerson } from "../../db";
+import { saveBusiness, getPerson, getBusiness } from "../../db";
 import generateID from "../../helpers/id";
 import {
   BusinessIdentification,
@@ -15,7 +15,6 @@ import {
   createIdentification,
   generatePendingIdentitfication,
 } from "../identifications";
-import { getBusiness } from "../../db";
 
 const mapLegalRepresentative = async (
   legalRepresentative: LegalRepresentative
