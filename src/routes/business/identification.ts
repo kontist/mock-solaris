@@ -15,6 +15,7 @@ import {
   createIdentification,
   generatePendingIdentitfication,
 } from "../identifications";
+import { getBusiness } from "../../db";
 
 const mapLegalRepresentative = async (
   legalRepresentative: LegalRepresentative
@@ -101,3 +102,23 @@ const replyWithIdentification = (
   identification: BusinessIdentification,
   status: number
 ) => res.status(status).send(_.omit(identification, "meta"));
+
+export const changeBusinessIdentificationStatus = async (
+  businessId,
+  identificationId,
+  status
+) => {
+  const business = await getBusiness(businessId);
+  const identification = business.identifications.find(
+    (ident) => ident.id === identificationId
+  );
+
+  if (!identification) {
+    return null;
+  }
+
+  identification.status = status;
+  await saveBusiness(business);
+
+  return identification;
+};

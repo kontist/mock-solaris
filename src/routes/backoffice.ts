@@ -66,6 +66,7 @@ import generateID from "../helpers/id";
 import { storePersonInSortedSet } from "../helpers/persons";
 import { createQuestionSet } from "../helpers/questionsAndAnswers";
 import { isQuestionSetComplete } from "./questions";
+import { changeBusinessIdentificationStatus } from "./business/identification";
 
 const triggerIdentificationWebhook = (payload, personId?: string) =>
   triggerWebhook({
@@ -1048,5 +1049,17 @@ export const deleteDeviceRequestHandler = async (
   const { person_id: personId, device_id: deviceId } = req.params;
 
   await deleteDevice(deviceId, personId);
+  res.redirect("back");
+};
+
+export const changeBusinessIdentificationStatusHandler = async (req, res) => {
+  const { businessId, identificationId, status } = req.body;
+
+  await changeBusinessIdentificationStatus(
+    businessId,
+    identificationId,
+    status
+  );
+
   res.redirect("back");
 };
