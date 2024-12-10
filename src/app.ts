@@ -788,6 +788,17 @@ app.post(
   safeRequestHandler(backofficeAPI.deleteDeviceRequestHandler)
 );
 
+// BACKOFFICE - BUSINESS
+app.post(
+  "/__BACKOFFICE__/changeBusinessIdentificationStatus",
+  safeRequestHandler(backofficeAPI.changeBusinessIdentificationStatusHandler)
+);
+
+app.post(
+  "/__BACKOFFICE__/addBusinessMissingInformation",
+  safeRequestHandler(backofficeAPI.addBusinessMissingInformationHandler)
+);
+
 // WEBHOOKS
 router.get(
   "/webhooks",

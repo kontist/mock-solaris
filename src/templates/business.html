@@ -171,10 +171,36 @@
         {% for identification in business.identifications %}
         <div class="form-group">
           <p><strong>Identification ID:</strong> {{ identification.id }}</p>
-          <p><strong>Status:</strong> {{ identification.status }}</p>
-          <p><strong>Method:</strong> {{ identification.method }}</p>
-          <p><strong>Reference:</strong> {{ identification.reference }}</p>
-          <p><strong>Completed At:</strong> {{ identification.completed_at }}</p>
+          <form class="form-inline autosubmitonchange" method="POST" action="/__BACKOFFICE__/changeBusinessIdentificationStatus">
+            <p><strong>Status:</strong></p>
+            <select name="status">
+              <option {% if identification.status==="created" %}selected {% endif %}value="created">created</option>
+              <option {% if identification.status==="successful" %}selected {% endif %}value="successful">successful</option>
+              <option {% if identification.status==="failed" %}selected {% endif %}value="failed">failed</option>
+            </select>
+            <input type="hidden" name="businessId" value={{ business.id }}>
+            <input type="hidden" name="identificationId" value={{ identification.id }}>
+          </form>
+          <p><strong>Legal Identification Status:</strong>{{ identification.legal_identification_status }}</p>
+          <p><strong>Legal Identification Missing Information:</strong>{{ identification.legal_identification_missing_information }}</p>
+          {% if !identification.meta.complianceQuestions %}
+          <form method="POST" action="/__BACKOFFICE__/addBusinessMissingInformation">
+            <input type="hidden" name="businessId" value={{ business.id }}>
+            <input type="hidden" name="identificationId" value={{ identification.id }}>
+            <button name="complianceQuestions" value={{ true }} type="submit" class="btn btn-warning btn-sm">
+              Add compliance questions
+            </button>
+          </form>
+          {% endif %}
+          {% if !identification.legal_identification_missing_information.includes('FOUNDATION_DOCUMENT') %}
+          <form method="POST" action="/__BACKOFFICE__/addBusinessMissingInformation">
+            <input type="hidden" name="businessId" value={{ business.id }}>
+            <input type="hidden" name="identificationId" value={{ identification.id }}>
+            <button name="documents" value={{ true }} type="submit" class="btn btn-warning btn-sm">
+              Add documents
+            </button>
+          </form>
+          {% endif %}
         </div>
         <hr>
         {% if identification.meta && identification.meta.complianceQuestions %}
@@ -198,6 +224,24 @@
         </div>
         {% endif %}
         {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+  <div class="panel panel-default">
+    <div class="panel-heading" role="tab" id="headingOne">
+      <h4 class="panel-title">
+        <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+          Raw business data
+        </a>
+        <span class="caret"></span>
+      </h4>
+    </div>
+    <div id="collapseOne" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingOne">
+      <div class="panel-body">
+        <pre>{{ JSON.stringify(business, undefined, 2) }}</pre>
       </div>
     </div>
   </div>

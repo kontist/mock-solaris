@@ -1,53 +1,16 @@
 import type { Response } from "express";
 import generateID from "../../helpers/id";
 import { RequestWithBusinessIdentification } from "../../helpers/middlewares";
-import { fetchRandomQuestion } from "../../helpers/questionsAndAnswers";
-import {
-  BusinessIdentificationStatus,
-  ComplianceQuestion,
-  LegalIdentificationStatus,
-} from "../../helpers/types";
+import { LegalIdentificationStatus } from "../../helpers/types";
 import { saveBusiness } from "../../db";
-
-const QUESTION_COUNT = 2;
 
 export const listComplianceQuestions = async (
   req: RequestWithBusinessIdentification,
   res: Response
 ) => {
-  const { businessIdentification, business } = req;
+  const { businessIdentification } = req;
 
-  if (businessIdentification.meta?.complianceQuestions) {
-    res.status(200).send(businessIdentification.meta.complianceQuestions);
-    return;
-  }
-
-  const legalIdentificationId =
-    businessIdentification.legal_representatives[0].identifications?.[0]?.id;
-
-  const questions: ComplianceQuestion[] = await Promise.all(
-    Array.from({ length: QUESTION_COUNT }).map(async () => {
-      const question = await fetchRandomQuestion();
-
-      return {
-        question_id: generateID(),
-        question_text: question,
-        legal_identification_id: legalIdentificationId,
-        business_identification_id: businessIdentification.id,
-        business_id: business.id,
-        asked_at: new Date().toISOString(),
-        answer_id: null,
-        answer_text: null,
-        answered_at: null,
-      };
-    })
-  );
-
-  businessIdentification.meta = businessIdentification.meta || {};
-  businessIdentification.meta.complianceQuestions = questions;
-  await saveBusiness(business);
-
-  res.status(200).send(questions);
+  res.status(200).send(businessIdentification.meta?.complianceQuestions || []);
 };
 
 export const answerComplianceQuestion = async (
