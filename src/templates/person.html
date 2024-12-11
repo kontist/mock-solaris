@@ -921,27 +921,6 @@
   </div>
 </div>
 
-<div class="panel panel-default">
-  <div class="panel-body">
-    <p>In input field below you can provide Backend API URL. This allows to use different webhook URLs when user data changes in mock server.</p>
-    <form method="POST" action="/__BACKOFFICE__/updateOrigin/{{ person.id }}" class="form-inline">
-      <label for="origin">Backend API URL</label>
-      <input
-        type="text"
-        class="form-control"
-        name="origin"
-        id="origin"
-        placeholder="Provide Backend API base url"
-        value="{{ origin }}"
-        style="min-width: 300px;"
-      >
-      <button type="submit" class="btn btn-warning btn-sm">
-        Update
-      </button>
-    </form>
-  </div>
-</div>
-
 <script>
 $(".autosubmitonchange").change(function() {
   this.submit();

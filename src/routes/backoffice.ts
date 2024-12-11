@@ -13,8 +13,6 @@ import {
   saveSepaDirectDebitReturn,
   getDevicesByPersonId,
   saveTaxIdentifications,
-  getPersonOrigin,
-  setPersonOrigin,
   getDeviceConsents,
   getDeviceActivities,
   getWebhooks,
@@ -28,7 +26,6 @@ import {
   saveQuestionSetIdToPersonId,
   findBusinesses,
   getBusiness,
-  getBusinessOrigin,
   saveBusiness,
 } from "../db";
 import {
@@ -75,7 +72,6 @@ const triggerIdentificationWebhook = (payload, personId?: string) =>
   triggerWebhook({
     type: PersonWebhookEvent.IDENTIFICATION,
     payload,
-    personId,
   });
 
 const triggerAccountBlockWebhook = async (person: MockPerson) => {
@@ -93,7 +89,6 @@ const triggerAccountBlockWebhook = async (person: MockPerson) => {
   await triggerWebhook({
     type: AccountWebhookEvent.ACCOUNT_BLOCK,
     payload,
-    personId: person.id,
   });
 };
 
@@ -108,7 +103,6 @@ export const triggerBookingsWebhook = async (
   await triggerWebhook({
     type: TransactionWebhookEvent.BOOKING,
     payload,
-    personId: person.id,
   });
 };
 
@@ -230,14 +224,12 @@ export const getPersonHandler = async (req, res) => {
     mobileNumber,
     taxIdentifications,
     devices,
-    origin,
     deviceMonitoringActivities,
     deviceMonitoringConsents,
   ] = await Promise.all([
     getMobileNumber(id),
     getTaxIdentifications(id),
     getDevicesByPersonId(id),
-    getPersonOrigin(id),
     !jsonResponse && getDeviceActivities(id),
     !jsonResponse && getDeviceConsents(id),
   ]);
@@ -252,7 +244,6 @@ export const getPersonHandler = async (req, res) => {
       devices,
       identifications: person.identifications,
       SEIZURE_STATUSES,
-      origin,
       deviceMonitoringActivities,
       deviceMonitoringConsents,
     });
@@ -272,33 +263,14 @@ export const getBusinessHandler = async (req, res) => {
   const jsonResponse = shouldReturnJSON(req);
   const id = business.id;
 
-  const [origin] = await Promise.all([getBusinessOrigin(id)]);
-
   if (jsonResponse) {
     res.send(business);
   } else {
     res.render("business", {
       business,
       SEIZURE_STATUSES,
-      origin,
     });
   }
-};
-
-export const updateOrigin = async (req, res) => {
-  log.info(`Updating person "${req.params.id} origin"`, req.body);
-
-  const person = await getPerson(req.params.id);
-
-  if (req.body.origin) {
-    if (!/http(s)?:\/\//.test(req.body.origin)) {
-      throw new Error(`Invalid origin provided: ${req.body.origin}`);
-    }
-  }
-
-  await setPersonOrigin(req.params.id, req.body.origin);
-
-  res.redirect(`/__BACKOFFICE__/person/${person.id}`);
 };
 
 export const updatePersonHandler = async (req, res) => {
@@ -353,7 +325,6 @@ export const updatePersonHandler = async (req, res) => {
     type: PersonWebhookEvent.PERSON_CHANGED,
     payload: {},
     extraHeaders: { "solaris-entity-id": person.id },
-    personId: person.id,
   });
 
   if (questionSet) {
@@ -363,7 +334,6 @@ export const updatePersonHandler = async (req, res) => {
         question_set_id: questionSet.id,
         ...questionSet,
       },
-      personId: person.id,
     });
   }
 
@@ -396,7 +366,6 @@ export const updateBusinessHandler = async (req, res) => {
     type: BusinessWebhookEvent.BUSINESS_CHANGED,
     payload: {},
     extraHeaders: { "solaris-entity-id": business.id },
-    businessId: business.id,
   });
 
   res.redirect(`/__BACKOFFICE__/business/${business.id}`);
@@ -478,7 +447,6 @@ export const setScreening = async (req, res) => {
     type: PersonWebhookEvent.PERSON_CHANGED,
     payload: {},
     extraHeaders: { "solaris-entity-id": person.id },
-    personId: person.id,
   });
   res.status(204).send();
 };

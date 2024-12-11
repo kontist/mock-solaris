@@ -654,11 +654,6 @@ app.post(
 );
 
 app.post(
-  "/__BACKOFFICE__/updateOrigin/:id",
-  safeRequestHandler(backofficeAPI.updateOrigin)
-);
-
-app.post(
   "/__BACKOFFICE__/queueBooking/:personId",
   safeRequestHandler(backofficeAPI.queueBookingRequestHandler)
 );

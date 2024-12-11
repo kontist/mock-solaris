@@ -75,7 +75,6 @@ export const createPostboxItemRequestHandler = async (req, res) => {
   await triggerWebhook({
     type: PostboxItemEvent.POSTBOX_ITEM_CREATED,
     payload: postboxItem,
-    personId: person.id,
   });
 
   res.redirect("back");

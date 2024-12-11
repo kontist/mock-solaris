@@ -455,7 +455,6 @@ const triggerSepaScheduledTransactionWebhook = async ({
   await triggerWebhook({
     type: TransactionWebhookEvent.SEPA_SCHEDULED_TRANSACTION,
     payload,
-    personId: person.id,
   });
 };
 

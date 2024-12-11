@@ -160,7 +160,6 @@ export const terminateOverdraft = async (req, res) => {
     payload: {
       account_id: account.id,
     },
-    personId: person.id,
   });
 };
 
@@ -218,7 +217,6 @@ export const createOverdraft = async (req, res) => {
     payload: {
       account_id: accountId,
     },
-    personId: person.id,
   });
 
   res.status(201).send({

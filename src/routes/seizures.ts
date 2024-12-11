@@ -149,7 +149,6 @@ const triggerPersonSeizureCreatedWebhook = async (person: MockPerson) => {
   await triggerWebhook({
     type: PersonWebhookEvent.PERSON_SEIZURE_CREATED,
     payload,
-    personId: person.id,
   });
 };
 
@@ -161,7 +160,6 @@ const triggerPersonSeizureDeletedWebhook = async (
   await triggerWebhook({
     type: PersonWebhookEvent.PERSON_SEIZURE_DELETED,
     payload,
-    personId: person.id,
   });
 };
 
@@ -173,7 +171,6 @@ const triggerPersonSeizureFulfilledWebhook = async (
   await triggerWebhook({
     type: PersonWebhookEvent.PERSON_SEIZURE_FULFILLED,
     payload,
-    personId: person.id,
   });
 };
 

@@ -7,7 +7,6 @@ import {
   getPerson,
   findPersons,
   savePerson,
-  setPersonOrigin,
   saveAccountToEntity,
   removePerson,
   redlock,
@@ -61,10 +60,6 @@ export const createPerson = async (req, res) => {
 
     if (person.account?.id) {
       await saveAccountToEntity(person.account, personId);
-    }
-
-    if (req.headers.origin) {
-      await setPersonOrigin(personId, req.headers.origin);
     }
   });
 
@@ -295,7 +290,6 @@ export const updatePerson = async (req, res) => {
     type: PersonWebhookEvent.PERSON_CHANGED,
     payload: {},
     extraHeaders: { "solaris-entity-id": personId },
-    personId: person.id,
   });
 
   return res.status(200).send(person);

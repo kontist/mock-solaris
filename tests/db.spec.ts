@@ -28,7 +28,7 @@ import { getPostboxItemById } from "../src/routes/postbox";
 import { createBusiness } from "../src/routes/business";
 
 describe("getPersons()", async () => {
-  const headers = { origin: "Kontist HQ" };
+  const headers = {};
   beforeEach(flushDb);
   afterEach(flushDb);
 
@@ -234,7 +234,7 @@ describe("getPersons()", async () => {
 });
 
 describe("Gets Businesses", async () => {
-  const headers = { origin: "Kontist HQ" };
+  const headers = {};
   beforeEach(flushDb);
   afterEach(flushDb);
 

@@ -2,13 +2,7 @@ import fetch, { Response } from "node-fetch";
 
 import * as log from "../logger";
 import { PostboxItemEvent, WebhookType } from "../helpers/types";
-import {
-  getBusinessOrigin,
-  getPersonOrigin,
-  getWebhookByType,
-  setBusinessOrigin,
-  setPersonOrigin,
-} from "../db";
+import { getWebhookByType } from "../db";
 import { generateSolarisWebhookSignature } from "./solarisWebhookSignature";
 import {
   CardWebhookEvent,
@@ -92,18 +86,10 @@ const WEBHOOK_SECRETS = {
     process.env.SOLARIS_ACCOUNT_OPENING_REQUEST_WEBHOOK_SECRET,
 };
 
-export const getWebhookUrl = (url: string, origin?: string) => {
-  return origin
-    ? `${origin.replace(/\/$/, "")}/${url.split("/").splice(3).join("/")}`
-    : url;
-};
-
 export const triggerWebhook = async ({
   type,
   payload,
   extraHeaders = {},
-  personId,
-  businessId,
 }: {
   type: WebhookType;
   payload: Record<string, unknown>;
@@ -156,43 +142,10 @@ export const triggerWebhook = async ({
     }
   };
 
-  let webhookUrl;
-  let personOrigin;
-  let businessOrigin;
-
-  if (personId) {
-    personOrigin = personId && (await getPersonOrigin(personId));
-    webhookUrl = getWebhookUrl(webhook.url, personOrigin);
-  }
-
-  if (businessId) {
-    businessOrigin = businessId && (await getBusinessOrigin(businessId));
-    webhookUrl = getWebhookUrl(webhook.url, businessOrigin);
-  }
-
   try {
-    await triggerRequest(webhookUrl);
+    await triggerRequest(webhook.url);
   } catch (err) {
-    if (personOrigin && (err.code === "ECONNREFUSED" || err.statusCode > 500)) {
-      // if preview env doesn't exist anymore,
-      // we reset the origin and retrigger request with default webhook url
-      await setPersonOrigin(personId);
-      await triggerRequest(getWebhookUrl(webhook.url));
-      return;
-    }
-
-    if (
-      businessOrigin &&
-      (err.code === "ECONNREFUSED" || err.statusCode > 500)
-    ) {
-      // if preview env doesn't exist anymore,
-      // we reset the origin and retrigger request with default webhook url
-      await setBusinessOrigin(businessId);
-      await triggerRequest(getWebhookUrl(webhook.url));
-      return;
-    }
-
-    log.error(`Webhook request to ${webhookUrl} failed`, err);
+    log.error(`Webhook request to ${webhook.url} failed`, err);
     throw err;
   }
 };

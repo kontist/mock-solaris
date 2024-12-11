@@ -3,13 +3,7 @@ import moment from "moment";
 import uuid from "node-uuid";
 import type { Response, Request } from "express";
 
-import {
-  saveBusiness,
-  redlock,
-  setBusinessOrigin,
-  getBusiness,
-  findBusinesses,
-} from "../../db";
+import { saveBusiness, redlock, getBusiness, findBusinesses } from "../../db";
 
 import generateID from "../../helpers/id";
 import { storeBusinessInSortedSet } from "../../helpers/businesses";
@@ -80,10 +74,6 @@ export const createBusiness = async (req, res) => {
     });
 
     await storeBusinessInSortedSet(business);
-
-    if (req.headers?.origin) {
-      await setBusinessOrigin(businessId, req.headers.origin);
-    }
   });
 
   return createdBusiness;
@@ -257,7 +247,6 @@ export const updateBusiness = async (req, res) => {
     type: BusinessWebhookEvent.BUSINESS_CHANGED,
     payload: {},
     extraHeaders: { "solaris-entity-id": businessId },
-    businessId: business.id,
   });
 
   return res.status(200).send(business);

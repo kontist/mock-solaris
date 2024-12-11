@@ -127,7 +127,6 @@ export const changeBusinessIdentificationStatus = async (
   await triggerWebhook({
     type: BusinessWebhookEvent.BUSINESS_IDENTIFICATION,
     payload: { id: identification.id, business_id: business.id },
-    businessId: business.id,
   });
 
   return identification;
