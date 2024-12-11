@@ -899,7 +899,7 @@ router.post(
 );
 
 router.post(
-  "/businesses/:business_id/legal_representative",
+  "/businesses/:business_id/legal_representatives",
   middlewares.withPerson,
   middlewares.withBusiness,
   safeRequestHandler(businessesAPI.createLegalRepresentative)
