@@ -75,7 +75,6 @@ const triggerIdentificationWebhook = (payload, personId?: string) =>
   triggerWebhook({
     type: PersonWebhookEvent.IDENTIFICATION,
     payload,
-    personId,
   });
 
 const triggerAccountBlockWebhook = async (person: MockPerson) => {
@@ -93,7 +92,6 @@ const triggerAccountBlockWebhook = async (person: MockPerson) => {
   await triggerWebhook({
     type: AccountWebhookEvent.ACCOUNT_BLOCK,
     payload,
-    personId: person.id,
   });
 };
 
@@ -108,7 +106,6 @@ export const triggerBookingsWebhook = async (
   await triggerWebhook({
     type: TransactionWebhookEvent.BOOKING,
     payload,
-    personId: person.id,
   });
 };
 
@@ -353,7 +350,6 @@ export const updatePersonHandler = async (req, res) => {
     type: PersonWebhookEvent.PERSON_CHANGED,
     payload: {},
     extraHeaders: { "solaris-entity-id": person.id },
-    personId: person.id,
   });
 
   if (questionSet) {
@@ -363,7 +359,6 @@ export const updatePersonHandler = async (req, res) => {
         question_set_id: questionSet.id,
         ...questionSet,
       },
-      personId: person.id,
     });
   }
 
@@ -396,7 +391,6 @@ export const updateBusinessHandler = async (req, res) => {
     type: BusinessWebhookEvent.BUSINESS_CHANGED,
     payload: {},
     extraHeaders: { "solaris-entity-id": business.id },
-    businessId: business.id,
   });
 
   res.redirect(`/__BACKOFFICE__/business/${business.id}`);
@@ -478,7 +472,6 @@ export const setScreening = async (req, res) => {
     type: PersonWebhookEvent.PERSON_CHANGED,
     payload: {},
     extraHeaders: { "solaris-entity-id": person.id },
-    personId: person.id,
   });
   res.status(204).send();
 };

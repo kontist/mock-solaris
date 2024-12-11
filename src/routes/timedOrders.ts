@@ -377,6 +377,5 @@ const triggerTimedOrderWebhook = async (person: MockPerson, timedOrder) => {
   await triggerWebhook({
     type: TransactionWebhookEvent.SEPA_TIMED_ORDER,
     payload,
-    personId: person.id,
   });
 };

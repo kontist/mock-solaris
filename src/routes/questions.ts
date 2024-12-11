@@ -71,7 +71,6 @@ export const answerQuestion = async (req: Request, res: Response) => {
       type: PersonWebhookEvent.PERSON_CHANGED,
       payload: {},
       extraHeaders: { "solaris-entity-id": person.id },
-      personId: person.id,
     });
   }
 

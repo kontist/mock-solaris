@@ -832,7 +832,7 @@ export const getPersonByDeviceId = async (deviceId) => {
 
 export const setPersonOrigin = async (personId: string, origin?: string) => {
   await redisClient.set(
-    `${process.env.MOCKSOLARIS_REDIS_PREFIX}:person-origin:${personId}`,
+    `${process.env.MOCKSOLARIS_REDIS_PREFIX}::${personId}`,
     origin || ""
   );
 };

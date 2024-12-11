@@ -257,7 +257,6 @@ export const updateBusiness = async (req, res) => {
     type: BusinessWebhookEvent.BUSINESS_CHANGED,
     payload: {},
     extraHeaders: { "solaris-entity-id": businessId },
-    businessId: business.id,
   });
 
   return res.status(200).send(business);

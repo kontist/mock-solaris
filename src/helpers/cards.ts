@@ -275,7 +275,6 @@ export const changeCardStatus = async (
   await triggerWebhook({
     type: CardWebhookEvent.CARD_LIFECYCLE_EVENT,
     payload: cardData.card,
-    personId: person.id,
   });
 
   return cardData.card;
@@ -402,7 +401,6 @@ const triggerProvisioningTokenCreation = async (
     await triggerWebhook({
       type: CardWebhookEvent.CARD_TOKEN_LIFECYCLE,
       payload,
-      personId: person.id,
     });
   }
 
@@ -445,7 +443,6 @@ const triggerProvisioningTokenUpdate = async (
   await triggerWebhook({
     type: CardWebhookEvent.CARD_TOKEN_LIFECYCLE,
     payload,
-    personId: person.id,
   });
 
   return newProvisioningToken;
@@ -477,7 +474,6 @@ export const activateCard = async (cardForActivation: Card): Promise<Card> => {
   await triggerWebhook({
     type: CardWebhookEvent.CARD_LIFECYCLE_EVENT,
     payload: cardForActivation,
-    personId: person.id,
   });
   return cardForActivation;
 };

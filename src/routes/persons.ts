@@ -295,7 +295,6 @@ export const updatePerson = async (req, res) => {
     type: PersonWebhookEvent.PERSON_CHANGED,
     payload: {},
     extraHeaders: { "solaris-entity-id": personId },
-    personId: person.id,
   });
 
   return res.status(200).send(person);
