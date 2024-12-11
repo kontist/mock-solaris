@@ -830,23 +830,6 @@ export const getPersonByDeviceId = async (deviceId) => {
   return getPerson(device.person_id);
 };
 
-export const setPersonOrigin = async (personId: string, origin?: string) => {
-  await redisClient.set(
-    `${process.env.MOCKSOLARIS_REDIS_PREFIX}::${personId}`,
-    origin || ""
-  );
-};
-
-export const setBusinessOrigin = async (
-  businessId: string,
-  origin?: string
-) => {
-  await redisClient.set(
-    `${process.env.MOCKSOLARIS_REDIS_PREFIX}:business-origin:${businessId}`,
-    origin || ""
-  );
-};
-
 export const createDeviceConsent = async (
   personId: string,
   deviceConsent: DeviceConsentPayload
@@ -933,22 +916,6 @@ export const getDeviceActivities = async (personId: string) => {
       -1
     )
   ).map((entry) => JSON.parse(entry));
-};
-
-export const getPersonOrigin = async (
-  personId: string
-): Promise<string | null> => {
-  return redisClient.get(
-    `${process.env.MOCKSOLARIS_REDIS_PREFIX}:person-origin:${personId}`
-  );
-};
-
-export const getBusinessOrigin = async (
-  businessId: string
-): Promise<string | null> => {
-  return redisClient.get(
-    `${process.env.MOCKSOLARIS_REDIS_PREFIX}:business-origin:${businessId}`
-  );
 };
 
 export const saveDeviceIdToPersonId = async (

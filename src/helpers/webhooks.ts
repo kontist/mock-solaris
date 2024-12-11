@@ -2,13 +2,7 @@ import fetch, { Response } from "node-fetch";
 
 import * as log from "../logger";
 import { PostboxItemEvent, WebhookType } from "../helpers/types";
-import {
-  getBusinessOrigin,
-  getPersonOrigin,
-  getWebhookByType,
-  setBusinessOrigin,
-  setPersonOrigin,
-} from "../db";
+import { getWebhookByType } from "../db";
 import { generateSolarisWebhookSignature } from "./solarisWebhookSignature";
 import {
   CardWebhookEvent,
@@ -90,12 +84,6 @@ const WEBHOOK_SECRETS = {
     process.env.SOLARIS_POSTBOX_ITEM_CREATED_WEBHOOK_SECRET,
   [PersonWebhookEvent.ACCOUNT_OPENING_REQUEST]:
     process.env.SOLARIS_ACCOUNT_OPENING_REQUEST_WEBHOOK_SECRET,
-};
-
-export const getWebhookUrl = (url: string) => {
-  return origin
-    ? `${origin.replace(/\/$/, "")}/${url.split("/").splice(3).join("/")}`
-    : url;
 };
 
 export const triggerWebhook = async ({

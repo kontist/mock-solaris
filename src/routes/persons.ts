@@ -7,7 +7,6 @@ import {
   getPerson,
   findPersons,
   savePerson,
-  setPersonOrigin,
   saveAccountToEntity,
   removePerson,
   redlock,
@@ -61,10 +60,6 @@ export const createPerson = async (req, res) => {
 
     if (person.account?.id) {
       await saveAccountToEntity(person.account, personId);
-    }
-
-    if (req.headers.origin) {
-      await setPersonOrigin(personId, req.headers.origin);
     }
   });
 
