@@ -25,8 +25,12 @@ const ACCOUNT_SNAPSHOT_SOURCE = "SOLARISBANK";
 
 const log = getLogger("accounts");
 
-const getDefaultAccount = (personId: string, data = {}) => ({
-  id: personId.split("").reverse().join(""),
+const getDefaultAccount = (
+  entityId: string,
+  customerType: CustomerType,
+  data = {}
+) => ({
+  id: entityId.split("").reverse().join(""),
   iban: IBAN.random(CountryCode.DE).toString(),
   bic: process.env.SOLARIS_BIC,
   type: AccountType.CHECKING_SOLE_PROPRIETOR,
@@ -47,7 +51,8 @@ const getDefaultAccount = (personId: string, data = {}) => ({
     unit: "cents",
     currency: "EUR",
   },
-  person_id: personId,
+  person_id: customerType === CustomerType.PERSON ? entityId : null,
+  business_id: customerType === CustomerType.BUSINESS ? entityId : null,
   status: "ACTIVE",
   closure_reasons: null,
   seizure_protection: null,
@@ -144,7 +149,7 @@ export const createAccount = async (
     entity = await (customerType === CustomerType.PERSON
       ? getPerson
       : getBusiness)(entityId);
-    entity.account = getDefaultAccount(entityId, data) as any; // FIXME: fix invalid type
+    entity.account = getDefaultAccount(entityId, customerType, data) as any; // FIXME: fix invalid type
     await (customerType === CustomerType.PERSON ? savePerson : saveBusiness)(
       entity
     );
