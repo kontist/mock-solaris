@@ -133,10 +133,10 @@ export const changeBusinessIdentificationStatus = async (
 };
 
 export const addBusinessMissingInformation = async (
-  businessId,
-  identificationId,
-  complianceQuestions,
-  documents
+  businessId: string,
+  identificationId: string,
+  complianceQuestions: boolean,
+  documents: boolean
 ) => {
   const business = await getBusiness(businessId);
   const identification = business.identifications.find(
@@ -184,6 +184,13 @@ export const addBusinessMissingInformation = async (
   }
 
   await saveBusiness(business);
+
+  if (complianceQuestions || documents) {
+    await triggerWebhook({
+      type: BusinessWebhookEvent.BUSINESS_IDENTIFICATION,
+      payload: { id: identification.id, business_id: businessId },
+    });
+  }
 
   return identification;
 };
