@@ -13,7 +13,7 @@ import {
   BusinessIdentificationStatus,
   LegalIdentificationStatus,
 } from "../../../src/helpers/types";
-import * as identification from "../../../src/routes/identifications";
+import * as identificationHandlers from "../../../src/routes/identifications";
 
 describe("Business Identification", () => {
   let res: sinon.SinonSpy;
@@ -29,7 +29,7 @@ describe("Business Identification", () => {
       res = mockRes();
       sandbox = sinon.createSandbox();
       patchIdentificationSpy = sandbox.spy(
-        identification,
+        identificationHandlers,
         "patchIdentification"
       );
 
