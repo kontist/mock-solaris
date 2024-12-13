@@ -14,10 +14,7 @@ import {
   ComplianceQuestion,
   COMPLIANCE_QUESTIONS,
 } from "../../helpers/types";
-import {
-  createIdentification,
-  generatePendingIdentitfication,
-} from "../identifications";
+import { createIdentification, patchIdentification } from "../identifications";
 import { triggerWebhook } from "../../helpers/webhooks";
 import { fetchRandomQuestion } from "../../helpers/questionsAndAnswers";
 
@@ -26,7 +23,7 @@ const mapLegalRepresentative = async (
 ): Promise<LegalRepresentativeIdentificationResponse> => {
   let person = await getPerson(legalRepresentative.legal_representative_id);
   const identification = await createIdentification(person);
-  await generatePendingIdentitfication(person, identification.id);
+  await patchIdentification(person.id, identification.id);
   person = await getPerson(person.id);
 
   return {
