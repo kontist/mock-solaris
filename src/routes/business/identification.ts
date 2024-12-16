@@ -169,6 +169,8 @@ export const addBusinessMissingInformation = async (
     identification.legal_identification_missing_information.push(
       COMPLIANCE_QUESTIONS
     );
+    identification.legal_identification_status =
+      LegalIdentificationStatus.INFORMATION_REQUIRED;
     identification.meta = identification.meta || {};
     identification.meta.complianceQuestions = questions;
   }
