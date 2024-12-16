@@ -177,6 +177,7 @@
               <option {% if identification.status==="created" %}selected {% endif %}value="created">created</option>
               <option {% if identification.status==="successful" %}selected {% endif %}value="successful">successful</option>
               <option {% if identification.status==="failed" %}selected {% endif %}value="failed">failed</option>
+              <option {% if identification.status==="information_required" %}selected {% endif %}value="information_required">information_required</option>
             </select>
             <input type="hidden" name="businessId" value={{ business.id }}>
             <input type="hidden" name="identificationId" value={{ identification.id }}>
