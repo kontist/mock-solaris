@@ -13,17 +13,25 @@ import {
   BusinessIdentificationStatus,
   LegalIdentificationStatus,
 } from "../../../src/helpers/types";
+import * as identificationHandlers from "../../../src/routes/identifications";
 
 describe("Business Identification", () => {
   let res: sinon.SinonSpy;
   let businessId: string;
   let personId: string;
   let req;
+  let sandbox: sinon.SinonSandbox;
+  let patchIdentificationSpy: sinon.SinonSpy;
 
   const createIdentification = async () => {
     before(async () => {
       await db.flushDb();
       res = mockRes();
+      sandbox = sinon.createSandbox();
+      patchIdentificationSpy = sandbox.spy(
+        identificationHandlers,
+        "patchIdentification"
+      );
 
       req = mockReq({
         body: {
@@ -65,6 +73,10 @@ describe("Business Identification", () => {
 
       await createBusinessIdentification(req, res);
     });
+
+    after(() => {
+      sandbox.restore();
+    });
   };
 
   describe("createBusinessIdentification", () => {
@@ -88,6 +100,8 @@ describe("Business Identification", () => {
         const identification = legalRep.identifications[0];
         expect(identification.status).to.equal("pending");
         expect(identification.url).to.be.a("string");
+        expect(patchIdentificationSpy.args[0][0]).to.eq(personId);
+        expect(patchIdentificationSpy.args[0][1]).to.eq(identification.id);
       });
 
       it("should store identification on business", async () => {

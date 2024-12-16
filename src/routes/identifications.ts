@@ -38,7 +38,7 @@ export const requireIdentification = async (req, res) => {
   res.status(201).send(identification);
 };
 
-export const generatePendingIdentitfication = async (
+export const generatePendingIdentification = async (
   person: MockPerson,
   identificationId: string
 ) => {
@@ -61,9 +61,10 @@ export const generatePendingIdentitfication = async (
   return updatedIdentification;
 };
 
-export const patchIdentification = async (req, res) => {
-  const { person_id: personId, id: identificationId } = req.params;
-
+export const patchIdentification = async (
+  personId: string,
+  identificationId: string
+) => {
   const person = (await getPerson(personId)) || {
     identifications: {},
     transactions: [],
@@ -71,7 +72,7 @@ export const patchIdentification = async (req, res) => {
   person.identifications[identificationId] =
     person.identifications[identificationId] || {};
 
-  let createUrl;
+  let createUrl: string;
 
   if (person.identifications[identificationId].method === "idnow") {
     createUrl = `https://gateway.test.idnow.de/api/v1/kontist/identifications/${identificationId}/start`;
@@ -123,8 +124,19 @@ export const patchIdentification = async (req, res) => {
     }
   }
 
-  const updatedIdentification = await generatePendingIdentitfication(
+  const updatedIdentification = await generatePendingIdentification(
     person,
+    identificationId
+  );
+
+  return updatedIdentification;
+};
+
+export const patchIdentificationHandler = async (req, res) => {
+  const { person_id: personId, id: identificationId } = req.params;
+
+  const updatedIdentification = await patchIdentification(
+    personId,
     identificationId
   );
 

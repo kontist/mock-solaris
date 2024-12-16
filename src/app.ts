@@ -409,7 +409,7 @@ router.post(
 );
 router.patch(
   "/persons/:person_id/identifications/:id/request",
-  safeRequestHandler(identificationsAPI.patchIdentification)
+  safeRequestHandler(identificationsAPI.patchIdentificationHandler)
 );
 
 // TAX INFORMATION

@@ -1,7 +1,11 @@
 import fetch, { Response } from "node-fetch";
 
 import * as log from "../logger";
-import { PostboxItemEvent, WebhookType } from "../helpers/types";
+import {
+  BusinessWebhookEvent,
+  PostboxItemEvent,
+  WebhookType,
+} from "../helpers/types";
 import { getWebhookByType } from "../db";
 import { generateSolarisWebhookSignature } from "./solarisWebhookSignature";
 import {
@@ -84,6 +88,13 @@ const WEBHOOK_SECRETS = {
     process.env.SOLARIS_POSTBOX_ITEM_CREATED_WEBHOOK_SECRET,
   [PersonWebhookEvent.ACCOUNT_OPENING_REQUEST]:
     process.env.SOLARIS_ACCOUNT_OPENING_REQUEST_WEBHOOK_SECRET,
+
+  [BusinessWebhookEvent.BUSINESS_IDENTIFICATION]:
+    process.env.SOLARIS_BUSINESS_IDENTIFICATION_WEBHOOK_SECRET,
+  [BusinessWebhookEvent.BUSINESS_CHANGED]:
+    process.env.SOLARIS_BUSINESS_CHANGED_WEBHOOK_SECRET,
+  [BusinessWebhookEvent.BUSINESS_DELETED]:
+    process.env.SOLARIS_BUSINESS_DELETED_WEBHOOK_SECRET,
 };
 
 export const triggerWebhook = async ({
