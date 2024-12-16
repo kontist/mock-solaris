@@ -20,34 +20,39 @@ export const withBusiness = async (
   res: express.Response,
   next: express.NextFunction
 ) => {
-  const businessId =
-    req.params.business_id ||
-    req.params.businessId ||
-    (req.body || {}).business_id;
-  if (!businessId) {
+  try {
+    const businessId =
+      req.params.business_id ||
+      req.params.businessId ||
+      (req.body || {}).business_id;
+    if (!businessId) {
+      next();
+      return;
+    }
+
+    const business = await getBusiness(businessId);
+
+    if (!business) {
+      res.status(HttpStatusCodes.NOT_FOUND).send({
+        errors: [
+          {
+            id: generateID(),
+            status: 404,
+            code: "model_not_found",
+            title: "Model Not Found",
+            detail: `Couldn't find 'Solaris::Business' for id '${businessId}'.`,
+          },
+        ],
+      });
+      return;
+    }
+
+    req.business = business;
     next();
-    return;
+  } catch (error) {
+    console.error(error);
+    next(error);
   }
-
-  const business = await getBusiness(businessId);
-
-  if (!business) {
-    res.status(HttpStatusCodes.NOT_FOUND).send({
-      errors: [
-        {
-          id: generateID(),
-          status: 404,
-          code: "model_not_found",
-          title: "Model Not Found",
-          detail: `Couldn't find 'Solaris::Business' for id '${businessId}'.`,
-        },
-      ],
-    });
-    return;
-  }
-
-  req.business = business;
-  next();
 };
 
 export const withPerson = async (
