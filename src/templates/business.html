@@ -135,7 +135,11 @@
       <div class="panel-body">
         {% for representative in business.legalRepresentatives %}
         <div class="form-group">
-          <p><strong>Representative ID:</strong> {{ representative.legal_representative_id }}</p>
+          <p><strong>Representative ID:</strong>
+            <a href="/__BACKOFFICE__/person/{{ representative.legal_representative_id }}" target="_blank">
+              {{ representative.legal_representative_id }}
+            </a>
+          </p>
           <p><strong>Type of Representation:</strong> {{ representative.type_of_representation }}</p>
           <p><strong>Power of Attorney Confirmed At:</strong> {{ representative.power_of_attorney_confirmed_at }}</p>
         </div>
@@ -153,7 +157,11 @@
         {% for owner in business.beneficialOwners %}
         <div class="form-group">
           <p><strong>Owner ID:</strong> {{ owner.beneficial_owner_id }}</p>
-          <p><strong>Person ID:</strong> {{ owner.person_id }}</p>
+          <p><strong>Person ID:</strong>
+            <a href="/__BACKOFFICE__/person/{{ owner.person_id }}" target="_blank">
+              {{ owner.person_id }}
+            </a>
+          </p>
           <p><strong>Voting Share:</strong> {{ owner.voting_share }}%</p>
           <p><strong>Relationship:</strong> {{ owner.relationship_to_business }}</p>
         </div>
@@ -171,18 +179,21 @@
         {% for identification in business.identifications %}
         <div class="form-group">
           <p><strong>Identification ID:</strong> {{ identification.id }}</p>
-          <form class="form-inline autosubmitonchange" method="POST" action="/__BACKOFFICE__/changeBusinessIdentificationStatus">
+          <form class="form-inline autosubmitonchange" method="POST"
+            action="/__BACKOFFICE__/changeBusinessIdentificationStatus">
             <p><strong>Status:</strong></p>
             <select name="status">
               <option {% if identification.status==="created" %}selected {% endif %}value="created">created</option>
-              <option {% if identification.status==="successful" %}selected {% endif %}value="successful">successful</option>
+              <option {% if identification.status==="successful" %}selected {% endif %}value="successful">successful
+              </option>
               <option {% if identification.status==="failed" %}selected {% endif %}value="failed">failed</option>
             </select>
             <input type="hidden" name="businessId" value={{ business.id }}>
             <input type="hidden" name="identificationId" value={{ identification.id }}>
           </form>
           <p><strong>Legal Identification Status:</strong>{{ identification.legal_identification_status }}</p>
-          <p><strong>Legal Identification Missing Information:</strong>{{ identification.legal_identification_missing_information }}</p>
+          <p><strong>Legal Identification Missing Information:</strong>{{
+            identification.legal_identification_missing_information }}</p>
           {% if !identification.meta.complianceQuestions %}
           <form method="POST" action="/__BACKOFFICE__/addBusinessMissingInformation">
             <input type="hidden" name="businessId" value={{ business.id }}>
@@ -233,7 +244,8 @@
   <div class="panel panel-default">
     <div class="panel-heading" role="tab" id="headingOne">
       <h4 class="panel-title">
-        <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+        <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true"
+          aria-controls="collapseOne">
           Raw business data
         </a>
         <span class="caret"></span>

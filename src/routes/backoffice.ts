@@ -54,6 +54,7 @@ import {
   MockPerson,
   Booking,
   BusinessWebhookEvent,
+  MockBusiness,
 } from "../helpers/types";
 import {
   changeOverdraftApplicationStatus,
@@ -194,6 +195,26 @@ export const listPersons = async (req, res) => {
 export const listBusinesses = async (req, res) => {
   const limit = req.query.limit || 100;
   const businesses = await findBusinesses({ limit });
+
+  await Promise.all(
+    businesses.map(async (business: MockBusiness) => {
+      try {
+        const legalRepresentative = business.legalRepresentatives?.[0];
+        if (!legalRepresentative) {
+          return;
+        }
+
+        const person = await getPerson(
+          legalRepresentative.legal_representative_id
+        );
+        business.meta = business.meta || {};
+        business.meta.email = person.email;
+      } catch (err) {
+        log.error("Error fetching person for legal representative", err);
+      }
+    })
+  );
+
   res.render("businesses", { businesses });
 };
 
