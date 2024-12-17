@@ -210,7 +210,7 @@ export const listBusinesses = async (req, res) => {
         business.meta = business.meta || {};
         business.meta.email = person.email;
       } catch (err) {
-        log.error("Error fetching beneficial owner", err);
+        log.error("Error fetching person for legal representative", err);
       }
     })
   );
