@@ -54,6 +54,7 @@ import {
   MockPerson,
   Booking,
   BusinessWebhookEvent,
+  MockBusiness,
 } from "../helpers/types";
 import {
   changeOverdraftApplicationStatus,
@@ -194,6 +195,24 @@ export const listPersons = async (req, res) => {
 export const listBusinesses = async (req, res) => {
   const limit = req.query.limit || 100;
   const businesses = await findBusinesses({ limit });
+
+  await Promise.all(
+    businesses.map(async (business: MockBusiness) => {
+      try {
+        const beneficialOwner = business.beneficialOwners?.[0];
+        if (!beneficialOwner) {
+          return;
+        }
+
+        const person = await getPerson(beneficialOwner.person_id);
+        business.meta = business.meta || {};
+        business.meta.beneficialOwnerName = `${person.first_name} ${person.last_name}`;
+      } catch (err) {
+        log.error("Error fetching beneficial owner", err);
+      }
+    })
+  );
+
   res.render("businesses", { businesses });
 };
 

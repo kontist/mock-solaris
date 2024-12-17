@@ -22,7 +22,12 @@
   <div class="col-xs-12 col-md-6">
     <div class="panel panel-default">
       <div class="panel-heading">
-        <h3 class="panel-title">{{ business.name }}</h3>
+        <h3 class="panel-title">
+          {{ business.name }}
+          {% if business.meta && business.meta.beneficialOwnerName %}
+          ({{ business.meta.beneficialOwnerName }})
+          {% endif %}
+        </h3>
       </div>
 
 

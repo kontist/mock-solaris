@@ -441,6 +441,9 @@ export type MockBusiness = {
   accountOpeningRequests?: AccountOpeningRequest[];
   identifications?: BusinessIdentification[];
   authorizedPersons?: AuthorizedPerson[];
+  meta?: {
+    beneficialOwnerName?: string;
+  };
 };
 
 export type MockCreateBusiness = {
