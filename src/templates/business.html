@@ -135,7 +135,11 @@
       <div class="panel-body">
         {% for representative in business.legalRepresentatives %}
         <div class="form-group">
-          <p><strong>Representative ID:</strong> {{ representative.legal_representative_id }}</p>
+          <p><strong>Representative ID:</strong>
+            <a href="/__BACKOFFICE__/person/{{ representative.legal_representative_id }}" target="_blank">
+              {{ representative.legal_representative_id }}
+            </a>
+          </p>
           <p><strong>Type of Representation:</strong> {{ representative.type_of_representation }}</p>
           <p><strong>Power of Attorney Confirmed At:</strong> {{ representative.power_of_attorney_confirmed_at }}</p>
         </div>
@@ -153,7 +157,11 @@
         {% for owner in business.beneficialOwners %}
         <div class="form-group">
           <p><strong>Owner ID:</strong> {{ owner.beneficial_owner_id }}</p>
-          <p><strong>Person ID:</strong> {{ owner.person_id }}</p>
+          <p><strong>Person ID:</strong>
+            <a href="/__BACKOFFICE__/person/{{ owner.person_id }}" target="_blank">
+              {{ owner.person_id }}
+            </a>
+          </p>
           <p><strong>Voting Share:</strong> {{ owner.voting_share }}%</p>
           <p><strong>Relationship:</strong> {{ owner.relationship_to_business }}</p>
         </div>
