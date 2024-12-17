@@ -442,7 +442,7 @@ export type MockBusiness = {
   identifications?: BusinessIdentification[];
   authorizedPersons?: AuthorizedPerson[];
   meta?: {
-    beneficialOwnerName?: string;
+    email?: string;
   };
 };
 

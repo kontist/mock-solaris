@@ -199,14 +199,16 @@ export const listBusinesses = async (req, res) => {
   await Promise.all(
     businesses.map(async (business: MockBusiness) => {
       try {
-        const beneficialOwner = business.beneficialOwners?.[0];
-        if (!beneficialOwner) {
+        const legalRepresentative = business.legalRepresentatives?.[0];
+        if (!legalRepresentative) {
           return;
         }
 
-        const person = await getPerson(beneficialOwner.person_id);
+        const person = await getPerson(
+          legalRepresentative.legal_representative_id
+        );
         business.meta = business.meta || {};
-        business.meta.beneficialOwnerName = `${person.first_name} ${person.last_name}`;
+        business.meta.email = person.email;
       } catch (err) {
         log.error("Error fetching beneficial owner", err);
       }

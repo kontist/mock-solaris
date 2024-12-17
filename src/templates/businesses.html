@@ -24,8 +24,8 @@
       <div class="panel-heading">
         <h3 class="panel-title">
           {{ business.name }}
-          {% if business.meta && business.meta.beneficialOwnerName %}
-          ({{ business.meta.beneficialOwnerName }})
+          {% if business.meta && business.meta.email %}
+          ({{ business.meta.email }})
           {% endif %}
         </h3>
       </div>
