@@ -55,10 +55,12 @@ export const markLegalIdentificationAsReady = async (
 ) => {
   const { businessIdentification, business } = req;
 
+  const complianceQuestions =
+    businessIdentification.meta?.complianceQuestions || [];
+
   const allQuestionsAnswered =
-    businessIdentification.meta?.complianceQuestions?.every(
-      (question) => question.answer_id
-    );
+    complianceQuestions.length === 0 ||
+    complianceQuestions.every((question) => question.answer_id);
 
   if (!allQuestionsAnswered) {
     res.status(400).send({
