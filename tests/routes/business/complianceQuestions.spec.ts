@@ -183,10 +183,12 @@ describe("Compliance Questions API", () => {
   });
 
   describe("markLegalIdentificationAsReady", () => {
+    let identification;
+
     beforeEach(async () => {
       saveBusinessSpy = sandbox.spy(db, "saveBusiness");
 
-      const identification = {
+      identification = {
         ...businessIdentification,
         meta: {
           complianceQuestions: [
@@ -204,15 +206,15 @@ describe("Compliance Questions API", () => {
           ],
         },
       };
+    });
 
+    it("should update status of business identification when questions answered", async () => {
       req = mockReq({
         businessIdentification: identification,
         business: { id: businessId, identifications: [identification] },
       });
       await complianceAPI.markLegalIdentificationAsReady(req, res);
-    });
 
-    it("should update status of business identification", () => {
       const response = res.send.lastCall.args[0];
       expect(response).to.have.property(
         "status",
@@ -224,6 +226,41 @@ describe("Compliance Questions API", () => {
         saveBusinessSpy.lastCall.args[0].identifications[0]
           .legal_identification_status
       ).to.equal(LegalIdentificationStatus.PENDING);
+    });
+
+    it("should update status of business identification when no compliance questions", async () => {
+      identification.meta.complianceQuestions = [];
+
+      req = mockReq({
+        businessIdentification: identification,
+        business: { id: businessId, identifications: [identification] },
+      });
+      await complianceAPI.markLegalIdentificationAsReady(req, res);
+
+      const response = res.send.lastCall.args[0];
+      expect(response).to.have.property(
+        "status",
+        BusinessIdentificationStatus.CREATED
+      );
+
+      expect(saveBusinessSpy.calledOnce).to.be.true;
+      expect(
+        saveBusinessSpy.lastCall.args[0].identifications[0]
+          .legal_identification_status
+      ).to.equal(LegalIdentificationStatus.PENDING);
+    });
+
+    it("should throw an error when questions are not answered", async () => {
+      identification.meta.complianceQuestions[0].answer_id = null;
+
+      req = mockReq({
+        businessIdentification: identification,
+        business: { id: businessId, identifications: [identification] },
+      });
+
+      await complianceAPI.markLegalIdentificationAsReady(req, res);
+      const response = res.send.lastCall.args[0];
+      expect(response.errors[0]).to.have.property("status", 400);
     });
   });
 });
