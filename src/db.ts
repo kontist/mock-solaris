@@ -1,5 +1,5 @@
 import _ from "lodash";
-import Promise from "bluebird";
+import Bluebird from "bluebird";
 import moment from "moment";
 import { createClient, RedisClientType } from "redis";
 import { Redis } from "ioredis";
@@ -249,7 +249,7 @@ const jsonToBusiness = (value: string) => {
   return business;
 };
 
-export const getPerson = async (personId: string): Promise<MockPerson> => {
+export const getPerson = async (personId: string): Bluebird<MockPerson> => {
   const personJSON = await redisClient.get(
     `${process.env.MOCKSOLARIS_REDIS_PREFIX}:person:${personId}`
   );
@@ -264,7 +264,7 @@ export const getPerson = async (personId: string): Promise<MockPerson> => {
 
 export const getBusiness = async (
   businessId: string
-): Promise<MockBusiness> => {
+): Bluebird<MockBusiness> => {
   const businessJSON = await redisClient.get(
     `${process.env.MOCKSOLARIS_REDIS_PREFIX}:business:${businessId}`
   );
@@ -458,7 +458,7 @@ export const getDevicesByPersonId = (personId: string) => {
     -1
   );
 
-  return Promise.map(deviceIds, getDevice);
+  return Bluebird.map(deviceIds, getDevice);
 };
 
 export const deletePersonDevices = async (personId: string) => {
@@ -468,7 +468,7 @@ export const deletePersonDevices = async (personId: string) => {
     -1
   );
 
-  await Promise.map(deviceIds, async (deviceId) => {
+  await Bluebird.map(deviceIds, async (deviceId) => {
     await deleteDevice(deviceId, personId);
   });
 };
@@ -551,10 +551,10 @@ export const findPersons = async (
     callbackFn,
     limit,
   }: {
-    callbackFn?: (person: MockPerson) => Promise<boolean>;
+    callbackFn?: (person: MockPerson) => Bluebird<boolean>;
     limit?: number;
   } = { callbackFn: null, limit: DEFAULT_LIMIT }
-): Promise<MockPerson[]> => {
+): Bluebird<MockPerson[]> => {
   try {
     const persons = [];
 
@@ -600,10 +600,10 @@ export const findBusinesses = async (
     callbackFn,
     limit,
   }: {
-    callbackFn?: (business: MockBusiness) => Promise<boolean>;
+    callbackFn?: (business: MockBusiness) => Bluebird<boolean>;
     limit?: number;
   } = { callbackFn: null, limit: DEFAULT_LIMIT }
-): Promise<MockBusiness[]> => {
+): Bluebird<MockBusiness[]> => {
   try {
     const businesses = [];
 
@@ -639,8 +639,8 @@ export const findBusinesses = async (
 };
 
 export const findPerson = async (
-  callbackFn: (person: MockPerson) => Promise<boolean>
-): Promise<MockPerson | null> => {
+  callbackFn: (person: MockPerson) => Bluebird<boolean>
+): Bluebird<MockPerson | null> => {
   for await (const key of redisClient.scanIterator({
     MATCH: `${process.env.MOCKSOLARIS_REDIS_PREFIX}:person:*`,
   })) {
@@ -655,8 +655,8 @@ export const findPerson = async (
 };
 
 export const findBusiness = async (
-  callbackFn: (business: MockBusiness) => Promise<boolean>
-): Promise<MockBusiness | null> => {
+  callbackFn: (business: MockBusiness) => Bluebird<boolean>
+): Bluebird<MockBusiness | null> => {
   for await (const key of redisClient.scanIterator({
     MATCH: `${process.env.MOCKSOLARIS_REDIS_PREFIX}:business:*`,
   })) {
@@ -797,7 +797,7 @@ export const saveCardReference = async (cardRef) => {
   return true;
 };
 
-export const getCardData = async (cardId: string): Promise<Card> => {
+export const getCardData = async (cardId: string): Bluebird<Card> => {
   const personWhoOwnsTheCard = await findPerson(
     (p) => !!(p?.account?.cards || []).some((cd) => cd?.card?.id === cardId)
   );
@@ -820,7 +820,7 @@ export const getPersonBySpendingLimitId = async (id) => {
 
 export const getPersonByFraudCaseId = async (
   fraudCaseId
-): Promise<MockPerson> =>
+): Bluebird<MockPerson> =>
   findPerson((p) => !!(p.fraudCases ?? []).some((c) => c.id === fraudCaseId));
 
 export const getCard = async (cardId) => (await getCardData(cardId)).card;
@@ -833,7 +833,7 @@ export const getPersonByDeviceId = async (deviceId) => {
 export const createDeviceConsent = async (
   personId: string,
   deviceConsent: DeviceConsentPayload
-): Promise<DeviceConsent> => {
+): Bluebird<DeviceConsent> => {
   const consent = {
     id: generateID(),
     person_id: personId,
@@ -852,7 +852,7 @@ export const createDeviceConsent = async (
 
 export const getDeviceConsents = async (
   personId: string
-): Promise<DeviceConsent[]> => {
+): Bluebird<DeviceConsent[]> => {
   return (
     await redisClient.lRange(
       `${process.env.MOCKSOLARIS_REDIS_PREFIX}:DeviceConsents:${personId}`,
@@ -866,7 +866,7 @@ export const updateDeviceConsent = async (
   personId: string,
   deviceConsentId: string,
   deviceConsent: DeviceConsentPayload
-): Promise<DeviceConsent> => {
+): Bluebird<DeviceConsent> => {
   const consents = await getDeviceConsents(personId);
   const index = consents.findIndex((c) => c.id === deviceConsentId);
 
@@ -891,7 +891,7 @@ export const updateDeviceConsent = async (
 export const createDeviceActivity = async (
   personId: string,
   deviceActivity: DeviceActivityPayload
-): Promise<void> => {
+): Bluebird<void> => {
   const activity = {
     id: generateID(),
     person_id: personId,
@@ -921,7 +921,7 @@ export const getDeviceActivities = async (personId: string) => {
 export const saveDeviceIdToPersonId = async (
   personId: string,
   deviceId: string
-): Promise<boolean> => {
+): Bluebird<boolean> => {
   const key = `${process.env.MOCKSOLARIS_REDIS_PREFIX}:person-deviceIds:${personId}`;
   const deviceIds = await redisClient.lRange(key, 0, -1);
 
@@ -935,14 +935,14 @@ export const saveDeviceIdToPersonId = async (
 export const saveQuestionSetIdToPersonId = async (
   personId: string,
   questionSetId: string
-): Promise<boolean> => {
+): Bluebird<boolean> => {
   const key = `${process.env.MOCKSOLARIS_REDIS_PREFIX}:person-questionSetIds:${questionSetId}`;
   await redisClient.set(key, personId);
 };
 
 export const getPersonIdByQuestionSetId = async (
   questionSetId: string
-): Promise<string> => {
+): Bluebird<string> => {
   const key = `${process.env.MOCKSOLARIS_REDIS_PREFIX}:person-questionSetIds:${questionSetId}`;
   return redisClient.get(key);
 };
@@ -951,14 +951,14 @@ export const saveAccountToEntity = async (
   account: MockAccount,
   entityId: string,
   customerType = CustomerType.PERSON
-): Promise<boolean> => {
+): Bluebird<boolean> => {
   const idKey = `${
     process.env.MOCKSOLARIS_REDIS_PREFIX
   }:accountId-${customerType.toLowerCase()}Id:${account.id}`;
   const ibanKey = `${
     process.env.MOCKSOLARIS_REDIS_PREFIX
   }:accountIBAN-${customerType.toLowerCase()}Id:${account.iban}`;
-  await Promise.all([
+  await Bluebird.all([
     redisClient.set(idKey, entityId),
     redisClient.set(ibanKey, entityId),
   ]);
@@ -967,10 +967,10 @@ export const saveAccountToEntity = async (
 export const saveAccountToBusinessId = async (
   account: MockAccount,
   businessId: string
-): Promise<boolean> => {
+): Bluebird<boolean> => {
   const idKey = `${process.env.MOCKSOLARIS_REDIS_PREFIX}:accountId-businessId:${account.id}`;
   const ibanKey = `${process.env.MOCKSOLARIS_REDIS_PREFIX}:accountIBAN-businessId:${account.iban}`;
-  await Promise.all([
+  await Bluebird.all([
     redisClient.set(idKey, businessId),
     redisClient.set(ibanKey, businessId),
   ]);
@@ -1026,7 +1026,7 @@ export const findPersonByAccount: ({
 }: {
   id?: string;
   iban?: string;
-}) => Promise<MockPerson> = async ({ id, iban }) => {
+}) => Bluebird<MockPerson> = async ({ id, iban }) => {
   const key = id
     ? `${process.env.MOCKSOLARIS_REDIS_PREFIX}:accountId-personId:${id}`
     : `${process.env.MOCKSOLARIS_REDIS_PREFIX}:accountIBAN-personId:${iban}`;
@@ -1035,4 +1035,24 @@ export const findPersonByAccount: ({
     return null;
   }
   return getPerson(personId);
+};
+
+export const findBusinessByAccount = async ({
+  id,
+  iban,
+}: {
+  id?: string;
+  iban?: string;
+}): Promise<MockBusiness> => {
+  const key = id
+    ? `${process.env.MOCKSOLARIS_REDIS_PREFIX}:accountId-businessId:${id}`
+    : `${process.env.MOCKSOLARIS_REDIS_PREFIX}:accountIBAN-businessId:${iban}`;
+
+  const businessId = await redisClient.get(key);
+  if (!businessId) {
+    throw new Error(`No business found for the given account ID or IBAN`);
+  }
+
+  const business = await getBusiness(businessId);
+  return business;
 };
