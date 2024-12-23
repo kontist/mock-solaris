@@ -100,10 +100,20 @@ export const createCardHandler = async (
   const { person_id: personId, account_id: accountId } = req.params;
 
   try {
-    const person = await db.findPersonByAccount({ id: accountId });
+    let person = await db.findPersonByAccount({ id: accountId });
+    const business = await db.findBusinessByAccount({ id: accountId });
 
-    // no user or account
-    if (!person || person.id !== personId) {
+    if (
+      !person &&
+      business?.legalRepresentatives?.[0]?.legal_representative_id
+    ) {
+      person = await db.getPerson(
+        business.legalRepresentatives[0].legal_representative_id
+      );
+      person.account = business.account;
+    }
+
+    if (!person) {
       res.status(HttpStatusCodes.NOT_FOUND).send({
         errors: [
           {
