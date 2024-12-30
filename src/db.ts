@@ -1050,7 +1050,7 @@ export const findBusinessByAccount = async ({
 
   const businessId = await redisClient.get(key);
   if (!businessId) {
-    throw new Error(`No business found for the given account ID or IBAN`);
+    return null;
   }
 
   const business = await getBusiness(businessId);
