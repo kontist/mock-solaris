@@ -90,6 +90,29 @@ export const createChangeRequest = async (req, res, person, method, delta) => {
   });
 };
 
+export const createBusinessChangeRequest = async (
+  req,
+  res,
+  business,
+  method,
+  delta
+) => {
+  const changeRequestId = Date.now().toString();
+  business.changeRequest = {
+    id: changeRequestId,
+    method,
+    delta,
+  };
+  await saveBusiness(business);
+
+  return res.status(202).send({
+    id: changeRequestId,
+    status: ChangeRequestStatus.AUTHORIZATION_REQUIRED,
+    updated_at: new Date().toISOString(),
+    url: `:env/v1/change_requests/${changeRequestId}/authorize`,
+  });
+};
+
 export const authorizeChangeRequest = async (req, res) => {
   const {
     person_id: personId,

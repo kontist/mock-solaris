@@ -9,6 +9,7 @@ import generateID from "../../helpers/id";
 import { storeBusinessInSortedSet } from "../../helpers/businesses";
 import { BusinessWebhookEvent, MockBusiness } from "../../helpers/types";
 import { triggerWebhook } from "../../helpers/webhooks";
+import { createBusinessChangeRequest } from "../changeRequest";
 
 const businessObjectFields = [
   "id",
@@ -133,6 +134,30 @@ export const showBusinesses = async (req, res) => {
   return res.status(200).send(mappedBusinesses);
 };
 
+export const BUSINESS_UPDATE = "Patch/Businesses/business_id";
+
+/**
+ * Checks if the model has setted previously a value given in the input.
+ * This is useful to check if a Solaris entity may be updated or not checking the full entity
+ * or the desired part of the entity.
+ * i.e isChangeRequestRequired(mydata, business) or isChangeRequestRequired(mydata, business.address)
+ */
+const isChangeRequestRequired = (input, model) => {
+  let flag = false;
+
+  if (input && model) {
+    Object.keys(input).forEach((key) => {
+      if (typeof input[key] === "object" && model[key]) {
+        flag = flag || isChangeRequestRequired(input[key], model[key]);
+      } else if (model[key]) {
+        flag = true;
+      }
+    });
+  }
+
+  return flag;
+};
+
 export const updateBusiness = async (req, res) => {
   const fields = [
     "name",
@@ -237,6 +262,20 @@ export const updateBusiness = async (req, res) => {
         title: "Deprecated Parameters",
         detail: `Updating ${fieldsBanned[0]} is deprecated.`,
       });
+    }
+
+    const editable = _.pick(data, editableFields);
+    editable.address = _.pick(data.address, editableFields);
+    editable.tax_information = _.pick(data.tax_information, editableFields);
+
+    if (isChangeRequestRequired(editable, business)) {
+      return createBusinessChangeRequest(
+        req,
+        res,
+        business,
+        BUSINESS_UPDATE,
+        data
+      );
     }
 
     _.merge(business, data);
