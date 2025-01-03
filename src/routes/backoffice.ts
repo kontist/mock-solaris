@@ -381,6 +381,10 @@ export const updateBusinessHandler = async (req, res) => {
   business.tax_information.registration_number = req.body.registration_number;
   business.tax_information.registration_issuer = req.body.registration_issuer;
 
+  business.customer_vetting_status = req.body.customerVettingStatus;
+  business.risk_classification_status = req.body.riskClassificationStatus;
+  business.screening_progress = req.body.screeningProgress;
+
   await saveBusiness(business);
 
   await triggerWebhook({

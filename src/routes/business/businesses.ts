@@ -1,7 +1,6 @@
 import _ from "lodash";
 import moment from "moment";
 import uuid from "node-uuid";
-import type { Response, Request } from "express";
 
 import { saveBusiness, redlock, getBusiness, findBusinesses } from "../../db";
 
@@ -47,6 +46,9 @@ const businessObjectFields = [
   "expected_annual_revenue",
   "expected_annual_incoming_funds",
   "company_status",
+  "screening_progress",
+  "risk_classification_status",
+  "customer_vetting_status",
 ];
 
 export const createBusiness = async (req, res) => {
@@ -64,6 +66,9 @@ export const createBusiness = async (req, res) => {
       ...req.body,
       id: businessId,
       createdAt: createdAt.toISOString(),
+      screening_progress: null,
+      risk_classification_status: null,
+      customer_vetting_status: null,
     };
 
     createdBusiness = await saveBusiness(business).then(() => {
