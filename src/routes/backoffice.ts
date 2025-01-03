@@ -368,18 +368,7 @@ export const updateBusinessHandler = async (req, res) => {
     business[key] = req.body[key];
   });
 
-  business.address = business.address || {};
-  business.address.line_1 = req.body.line_1;
-  business.address.line_2 = req.body.line_2;
-  business.address.postal_code = req.body.postal_code;
-  business.address.city = req.body.city;
-  business.address.country = req.body.country;
-
-  business.tax_information = business.tax_information || {};
-  business.tax_information.tax_country = req.body.tax_country;
-  business.tax_information.tax_confirmation = req.body.tax_confirmation;
-  business.tax_information.registration_number = req.body.registration_number;
-  business.tax_information.registration_issuer = req.body.registration_issuer;
+  business.name = req.body.name;
 
   business.customer_vetting_status = req.body.customerVettingStatus;
   business.risk_classification_status = req.body.riskClassificationStatus;
