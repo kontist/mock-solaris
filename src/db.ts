@@ -225,6 +225,7 @@ export const migrate = async () => {
         state: null,
         country: "DE",
       },
+      taxIdentifications: [],
     };
 
     await saveBusiness(kontistAccountBusiness);

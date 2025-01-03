@@ -952,6 +952,31 @@ router.patch(
   safeRequestHandler(businessesAPI.markLegalIdentificationAsReady)
 );
 
+// BUSINESS TAX IDENTIFICATIONS
+router.post(
+  "/businesses/:business_id/tax_identifications",
+  middlewares.withBusiness,
+  safeRequestHandler(businessesAPI.createBusinessTaxIdentification)
+);
+
+router.patch(
+  "/businesses/:business_id/tax_identifications/:id",
+  middlewares.withBusiness,
+  safeRequestHandler(businessesAPI.updateBusinessTaxIdentification)
+);
+
+router.get(
+  "/businesses/:business_id/tax_identifications",
+  middlewares.withBusiness,
+  safeRequestHandler(businessesAPI.listBusinessTaxIdentifications)
+);
+
+router.get(
+  "/businesses/:business_id/tax_identifications/:id",
+  middlewares.withBusiness,
+  safeRequestHandler(businessesAPI.getBusinessTaxIdentification)
+);
+
 // COMMERCIAL REGISTRATIONS
 
 router.get(

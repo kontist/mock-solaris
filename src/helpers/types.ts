@@ -393,6 +393,22 @@ export type AuthorizedPerson = {
   valid_until: string;
 };
 
+export enum ReasonNoDescription {
+  NOT_ASSIGNED_YET = "NOT_ASSIGNED_YET",
+  NOT_ASSIGNED_BY_COUNTRY = "NOT_ASSIGNED_BY_COUNTRY",
+  OTHER = "OTHER",
+}
+
+export interface TaxIdentification {
+  id?: string;
+  number: string;
+  country: string;
+  primary: boolean;
+  reason_no_tin: string;
+  reason_description: ReasonNoDescription;
+  valid_until: string;
+}
+
 export type MockBusiness = {
   id: string;
   name: string;
@@ -447,6 +463,7 @@ export type MockBusiness = {
   meta?: {
     email?: string;
   };
+  taxIdentifications: TaxIdentification[];
 };
 
 export type MockCreateBusiness = {
