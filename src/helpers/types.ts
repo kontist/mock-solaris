@@ -435,6 +435,9 @@ export type MockBusiness = {
   expected_annual_revenue?: string;
   expected_annual_incoming_funds?: string;
   company_status?: string;
+  screening_progress?: ScreeningProgress;
+  risk_classification_status?: RiskClarificationStatus;
+  customer_vetting_status?: CustomerVettingStatus;
   createdAt: string;
   beneficialOwners?: BeneficialOwner[];
   legalRepresentatives?: LegalRepresentative[];
