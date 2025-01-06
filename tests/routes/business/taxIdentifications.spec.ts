@@ -45,6 +45,9 @@ describe("Business Tax Identifications API", () => {
       expect(response).to.have.property("number", "123456789");
       expect(response).to.have.property("country", "DE");
       expect(saveBusinessSpy.calledOnce).to.be.true;
+      expect(saveBusinessSpy.args[0][0].taxIdentifications[0].number).to.equal(
+        "123456789"
+      );
     });
   });
 
@@ -83,6 +86,9 @@ describe("Business Tax Identifications API", () => {
       const response = res.send.lastCall.args[0];
       expect(response).to.have.property("number", "987654321");
       expect(saveBusinessSpy.calledOnce).to.be.true;
+      expect(saveBusinessSpy.args[0][0].taxIdentifications[0].number).to.equal(
+        "987654321"
+      );
     });
 
     it("should return 404 if tax identification is not found", async () => {
