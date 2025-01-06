@@ -773,7 +773,7 @@ app.post(
 
 // BACKOFFICE - POSTBOX ITEM
 app.post(
-  "/__BACKOFFICE__/createPostboxItem/:person_id",
+  "/__BACKOFFICE__/createPostboxItem/:entityId",
   safeRequestHandler(postboxItemAPI.createPostboxItemRequestHandler)
 );
 

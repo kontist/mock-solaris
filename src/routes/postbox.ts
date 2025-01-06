@@ -46,7 +46,6 @@ export const createPostboxItem = async ({
   description: string;
   documentType: PostboxDocumentType;
   ownerType: PostboxOwnerType;
-  personId: string;
 }) => {
   const today = moment().format("YYYY-MM-DD");
   const postboxItemId = generateID();
@@ -98,7 +97,7 @@ export const findEntityByPostboxItemId = async (postboxItemId) => {
 };
 
 export const createPostboxItemRequestHandler = async (req, res) => {
-  const { person_id: personId } = req.params;
+  const { entityId } = req.params;
 
   log.info("createPostboxItemRequestHandler()", {
     reqBody: req.body,
@@ -106,7 +105,7 @@ export const createPostboxItemRequestHandler = async (req, res) => {
   });
 
   const { postboxItem } = await createPostboxItem({
-    personId,
+    entityId,
     ...req.body,
   });
 
