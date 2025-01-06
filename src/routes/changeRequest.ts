@@ -98,12 +98,24 @@ export const createBusinessChangeRequest = async (
   delta
 ) => {
   const changeRequestId = Date.now().toString();
-  business.changeRequest = {
-    id: changeRequestId,
-    method,
-    delta,
-  };
-  await saveBusiness(business);
+  const legalReps = business.legal_representatives;
+
+  const personsIds = legalReps.map(
+    (legalRep) => legalRep.legal_representative_id
+  );
+
+  const persons = await Promise.all(personsIds.map((id) => getPerson(id)));
+
+  persons.forEach(async (person) => {
+    person.changeRequest = {
+      id: changeRequestId,
+      business_id: business.id,
+      method,
+      delta,
+    };
+
+    await savePerson(person);
+  });
 
   return res.status(202).send({
     id: changeRequestId,
