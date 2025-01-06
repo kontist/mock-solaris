@@ -5,7 +5,9 @@ import { mockRes, mockReq } from "sinon-express-mock";
 import * as db from "../../../src/db";
 import * as businessesAPI from "../../../src/routes/business/businesses";
 import * as personsAPI from "../../../src/routes/persons";
+import * as changeRequestAPI from "../../../src/routes/changeRequest";
 import { createLegalRepresentative } from "../../../src/routes/business";
+import { DeliveryMethod } from "../../../src/helpers/types";
 
 describe("Businesses", () => {
   describe("createBusiness", () => {
@@ -171,6 +173,45 @@ describe("Businesses", () => {
       const lastCall = res.send.args[res.send.args.length - 1];
       changeRequestId = lastCall[0].id;
       expect(changeRequestId).to.be.a("string");
+    });
+
+    describe("confirming change request flow", () => {
+      it("should update business", async () => {
+        const changeReq = mockReq({
+          params: {
+            change_request_id: changeRequestId,
+          },
+          body: {
+            person_id: personId,
+            delivery_method: DeliveryMethod.MOBILE_NUMBER,
+          },
+        });
+        await changeRequestAPI.authorizeChangeRequest(changeReq, res);
+
+        const person = await db.getPerson(personId);
+        const tan = person.changeRequest.token;
+
+        const confirmReq = mockReq({
+          params: {
+            change_request_id: changeRequestId,
+          },
+          body: {
+            person_id: personId,
+            tan,
+          },
+        });
+        await changeRequestAPI.confirmChangeRequest(confirmReq, res);
+
+        const response = res.send.args[res.send.args.length - 1][0];
+        expect(response.status).to.equal("COMPLETED");
+        expect(response.id).to.equal(changeRequestId);
+        expect(response.response_body.name).to.equal("Kontist AG");
+
+        it("should have updated the business in the db", async () => {
+          const business = await db.getBusiness(businessId);
+          expect(business.name).to.equal("Kontist AG");
+        });
+      });
     });
   });
 

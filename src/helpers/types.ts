@@ -195,6 +195,7 @@ export type MockChangeRequest = {
   cardId?: string;
   pin?: string;
   changeRequestId?: string;
+  businessId?: string;
   token?: string;
   declineChangeRequestId?: string;
   authenticateChangeRequestId?: string;

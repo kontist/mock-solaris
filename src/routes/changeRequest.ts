@@ -7,6 +7,7 @@ import {
   getMobileNumber,
   getPersonByDeviceId,
   saveBusiness,
+  getBusiness,
 } from "../db";
 import {
   removeMobileNumberConfirmChangeRequest,
@@ -39,6 +40,7 @@ import {
   ChangeRequestStatus,
   MockPerson,
   TimedOrderStatus,
+  BusinessWebhookEvent,
 } from "../helpers/types";
 import { triggerWebhook } from "../helpers/webhooks";
 import {
@@ -54,6 +56,7 @@ import {
   INSTANT_CREDIT_TRANSFER_CREATE,
   confirmInstantCreditTransfer,
 } from "./instantCreditTransfer";
+import { BUSINESS_UPDATE } from "./business";
 
 const MAX_CHANGE_REQUEST_AGE_IN_MINUTES = 5;
 
@@ -194,6 +197,7 @@ export const authorizeChangeRequest = async (req, res) => {
 };
 
 export const confirmChangeRequest = async (req, res) => {
+  let businessId;
   const { change_request_id: changeRequestId } = req.params;
   const { person_id: personId, tan, device_id: deviceId, signature } = req.body;
   const person = (
@@ -347,6 +351,15 @@ export const confirmChangeRequest = async (req, res) => {
         await declineCardTransaction(person);
       }
       break;
+    case BUSINESS_UPDATE:
+      businessId = person.changeRequest.businessId;
+      const business = await getBusiness(person.changeRequest.businessId);
+
+      _.merge(business, person.changeRequest.delta);
+      response.response_body = business;
+
+      await saveBusiness(business);
+      break;
 
     default:
       status = 404;
@@ -365,6 +378,8 @@ export const confirmChangeRequest = async (req, res) => {
   }
 
   const shouldTriggerWebhook = person.changeRequest.method === PERSON_UPDATE;
+  const shouldTriggerWebhookBusinessUpdate =
+    person.changeRequest.method === BUSINESS_UPDATE;
   delete person.changeRequest;
   await savePerson(person);
 
@@ -373,6 +388,13 @@ export const confirmChangeRequest = async (req, res) => {
       type: PersonWebhookEvent.PERSON_CHANGED,
       payload: {},
       extraHeaders: { "solaris-entity-id": personId },
+    });
+  }
+  if (shouldTriggerWebhookBusinessUpdate) {
+    await triggerWebhook({
+      type: BusinessWebhookEvent.BUSINESS_CHANGED,
+      payload: {},
+      extraHeaders: { "solaris-entity-id": businessId },
     });
   }
 
