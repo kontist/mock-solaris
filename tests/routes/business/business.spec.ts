@@ -102,6 +102,7 @@ describe("Businesses", () => {
 
   describe("updateBusiness", () => {
     let res: sinon.SinonSpy;
+    let changeRequestId: string;
     let businessId: string;
 
     before(async () => {
@@ -133,14 +134,10 @@ describe("Businesses", () => {
       );
     });
 
-    it("should return updated business", async () => {
+    it("should return confirmation id", async () => {
       const lastCall = res.send.args[res.send.args.length - 1];
-      expect(lastCall[0].name).to.equal("Kontist AG");
-    });
-
-    it("should have updated the business in the db", async () => {
-      const business = await db.getBusiness(businessId);
-      expect(business.name).to.equal("Kontist AG");
+      changeRequestId = lastCall[0].id;
+      expect(changeRequestId).to.be.a("string");
     });
   });
 
