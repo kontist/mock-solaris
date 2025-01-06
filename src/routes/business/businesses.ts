@@ -1,7 +1,6 @@
 import _ from "lodash";
 import moment from "moment";
 import uuid from "node-uuid";
-import type { Response, Request } from "express";
 
 import { saveBusiness, redlock, getBusiness, findBusinesses } from "../../db";
 

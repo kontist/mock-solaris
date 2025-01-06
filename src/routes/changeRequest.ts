@@ -101,7 +101,7 @@ export const createBusinessChangeRequest = async (
   delta
 ) => {
   const changeRequestId = Date.now().toString();
-  const legalReps = business.legal_representatives;
+  const legalReps = business.legalRepresentatives;
 
   const personsIds = legalReps.map(
     (legalRep) => legalRep.legal_representative_id
@@ -115,7 +115,7 @@ export const createBusinessChangeRequest = async (
     if (mobileNumber) {
       person.changeRequest = {
         id: changeRequestId,
-        business_id: business.id,
+        businessId: business.id,
         method,
         delta,
       };
@@ -412,7 +412,7 @@ const cleanUpChangeRequestsFromOtherPersonsInBusiness = async (
   personId
 ) => {
   const persons = await Promise.all(
-    business.legal_representatives.map((legalRep) =>
+    business.legalRepresentatives.map((legalRep) =>
       getPerson(legalRep.legal_representative_id)
     )
   );

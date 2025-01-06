@@ -125,6 +125,7 @@ describe("Businesses", () => {
 
       businessId = res.send.args[0][0].id;
 
+      res = mockRes();
       await personsAPI.createPerson(
         {
           body: {},
