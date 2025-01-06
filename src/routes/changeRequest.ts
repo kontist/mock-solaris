@@ -105,17 +105,35 @@ export const createBusinessChangeRequest = async (
   );
 
   const persons = await Promise.all(personsIds.map((id) => getPerson(id)));
+  let businessHasAuthorizedPerson = false;
 
   persons.forEach(async (person) => {
-    person.changeRequest = {
-      id: changeRequestId,
-      business_id: business.id,
-      method,
-      delta,
-    };
+    const mobileNumber = await getMobileNumber(person.id);
+    if (mobileNumber) {
+      person.changeRequest = {
+        id: changeRequestId,
+        business_id: business.id,
+        method,
+        delta,
+      };
 
-    await savePerson(person);
+      await savePerson(person);
+      businessHasAuthorizedPerson = true;
+    }
   });
+
+  if (!businessHasAuthorizedPerson) {
+    return res.status(403).send({
+      id: Date.now().toString(),
+      status: 403,
+      code: "Unauthorized Change Request",
+      title: "Unauthorized Change Request",
+      detail:
+        "Unauthorized change request for Solaris::Business " +
+        business.id +
+        ". While authorization required, no entity with a possibility to authorize data change is present.",
+    });
+  }
 
   return res.status(202).send({
     id: changeRequestId,

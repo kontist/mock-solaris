@@ -1,9 +1,11 @@
 import sinon from "sinon";
 import { expect } from "chai";
-import { mockRes } from "sinon-express-mock";
+import { mockRes, mockReq } from "sinon-express-mock";
 
 import * as db from "../../../src/db";
 import * as businessesAPI from "../../../src/routes/business/businesses";
+import * as personsAPI from "../../../src/routes/persons";
+import { createLegalRepresentative } from "../../../src/routes/business";
 
 describe("Businesses", () => {
   describe("createBusiness", () => {
@@ -104,6 +106,7 @@ describe("Businesses", () => {
     let res: sinon.SinonSpy;
     let changeRequestId: string;
     let businessId: string;
+    let personId: string;
 
     before(async () => {
       await db.flushDb();
@@ -119,6 +122,36 @@ describe("Businesses", () => {
       );
 
       businessId = res.send.args[0][0].id;
+
+      await personsAPI.createPerson(
+        {
+          body: {},
+          headers: {},
+        },
+        res
+      );
+
+      personId = res.send.args[0][0].id;
+
+      await db.saveMobileNumber(personId, {
+        number: "+491234567890",
+        verified: true,
+      });
+
+      res = mockRes();
+      let req = mockReq({
+        params: {
+          business_id: businessId,
+        },
+        body: {
+          legal_representative_id: personId,
+          type_of_representation: "ALONE",
+        },
+        business: {
+          id: businessId,
+        },
+      });
+      await createLegalRepresentative(req, res);
 
       res = mockRes();
       await businessesAPI.updateBusiness(
