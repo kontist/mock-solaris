@@ -158,11 +158,9 @@
       <div class="panel-body">
         <form method="POST" action="/__BACKOFFICE__/createPostboxItem/{{ person.id }}">
           <div class="form-group">
-            <label for="ownerType">Owner type</label>
-            <select name="ownerType" class="form-control" required>
-              <option value="Person">Person</option>
-              <option value="Business">Business</option>
-            </select>
+            <label>Owner type</label>
+            <p class="form-control-static">Person</p>
+            <input type="hidden" name="ownerType" value="Person">
           </div>
           <div class="form-group">
             <label for="name">Document name</label>

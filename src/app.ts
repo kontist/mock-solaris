@@ -574,7 +574,7 @@ router.post(
 
 // POSTBOX ITEM
 router.get(
-  "/persons/:person_id/postbox/items",
+  "/:entityType(persons|businesses)/:entityId/postbox/items",
   safeRequestHandler(postboxItemAPI.listPostboxItems)
 );
 
@@ -773,7 +773,7 @@ app.post(
 
 // BACKOFFICE - POSTBOX ITEM
 app.post(
-  "/__BACKOFFICE__/createPostboxItem/:person_id",
+  "/__BACKOFFICE__/createPostboxItem/:entityId",
   safeRequestHandler(postboxItemAPI.createPostboxItemRequestHandler)
 );
 

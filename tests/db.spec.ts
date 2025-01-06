@@ -14,7 +14,11 @@ import {
   getPersonBySpendingLimitId,
 } from "../src/db";
 import { createPerson } from "../src/routes/persons";
-import { MockCreatePerson } from "../src/helpers/types";
+import {
+  MockCreatePerson,
+  PostboxDocumentType,
+  PostboxOwnerType,
+} from "../src/helpers/types";
 
 import {
   mockAccount,
@@ -24,7 +28,7 @@ import {
   mockFraudCase,
   mockPostboxItem,
 } from "./mockData";
-import { getPostboxItemById } from "../src/routes/postbox";
+import { createPostboxItem, getPostboxItemById } from "../src/routes/postbox";
 import { createBusiness } from "../src/routes/business";
 
 describe("getPersons()", async () => {
@@ -210,16 +214,24 @@ describe("getPersons()", async () => {
     const body: MockCreatePerson = {
       ...mockCreatePerson,
       account: mockAccount,
-      postboxItems: [mockPostboxItem],
     };
     const req = mockReq({ body, headers });
     const res = mockRes();
     await createPerson(req, res);
-    const person = await getPostboxItemById(mockPostboxItem.id);
-    expect(person).to.be.ok;
+    const personId = res.send.lastCall.args[0].id;
+
+    const { postboxItem } = await createPostboxItem({
+      entityId: personId,
+      name: "postboxItem",
+      description: "postboxItem",
+      documentType: PostboxDocumentType.ACCOUNT_STATEMENT,
+      ownerType: PostboxOwnerType.PERSON,
+    });
+    const result = await getPostboxItemById(postboxItem.id);
+    expect(result).to.be.ok;
   });
 
-  it("getPostboxItemById() doesn't throw and returns undefined if postbox item is not found", async () => {
+  it("getPostboxItemById() doesn't throw and returns null if postbox item is not found", async () => {
     const body: MockCreatePerson = {
       ...mockCreatePerson,
       account: mockAccount,
@@ -229,7 +241,7 @@ describe("getPersons()", async () => {
     const res = mockRes();
     await createPerson(req, res);
     const postboxItem = await getPostboxItemById(mockPostboxItem.id);
-    expect(postboxItem).to.be.undefined;
+    expect(postboxItem).to.be.null;
   });
 });
 
