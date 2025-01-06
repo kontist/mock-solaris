@@ -574,7 +574,7 @@ router.post(
 
 // POSTBOX ITEM
 router.get(
-  "/persons/:person_id/postbox/items",
+  "/:entityType(persons|businesses)/:entityId/postbox/items",
   safeRequestHandler(postboxItemAPI.listPostboxItems)
 );
 
