@@ -75,7 +75,7 @@ export const createPostboxItem = async ({
   await redisClient.hSet(
     "postbox_item_map",
     postboxItemId,
-    JSON.stringify({ entityType: ownerType, entityId: entityId })
+    JSON.stringify({ entityType: ownerType, entityId })
   );
 
   return { entity, postboxItem };
@@ -91,9 +91,9 @@ export const findEntityByPostboxItemId = async (postboxItemId: string) => {
   const { entityType, entityId } = JSON.parse(mapping);
 
   if (entityType === PostboxOwnerType.PERSON) {
-    return await getPerson(entityId);
+    return getPerson(entityId);
   } else {
-    return await getBusiness(entityId);
+    return getBusiness(entityId);
   }
 };
 
