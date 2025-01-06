@@ -359,6 +359,7 @@ export const confirmChangeRequest = async (req, res) => {
       response.response_body = business;
 
       await saveBusiness(business);
+      await cleanUpChangeRequestsFromOtherPersonsInBusiness(business, personId);
       break;
 
     default:
@@ -404,4 +405,24 @@ export const confirmChangeRequest = async (req, res) => {
 const assignAuthorizationToken = async (person) => {
   person.changeRequest.token = Date.now().toString().substr(-6);
   await savePerson(person);
+};
+
+const cleanUpChangeRequestsFromOtherPersonsInBusiness = async (
+  business,
+  personId
+) => {
+  const persons = await Promise.all(
+    business.legal_representatives.map((legalRep) =>
+      getPerson(legalRep.legal_representative_id)
+    )
+  );
+
+  await Promise.all(
+    persons
+      .filter((person) => person.id !== personId)
+      .map((person) => {
+        delete person.changeRequest;
+        return savePerson(person);
+      })
+  );
 };
