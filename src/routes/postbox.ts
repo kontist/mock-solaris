@@ -1,3 +1,4 @@
+import type { Request, Response } from "express";
 import moment from "moment";
 import path from "path";
 
@@ -80,7 +81,7 @@ export const createPostboxItem = async ({
   return { entity, postboxItem };
 };
 
-export const findEntityByPostboxItemId = async (postboxItemId) => {
+export const findEntityByPostboxItemId = async (postboxItemId: string) => {
   const mapping = await redisClient.hGet("postbox_item_map", postboxItemId);
 
   if (!mapping) {
@@ -96,7 +97,10 @@ export const findEntityByPostboxItemId = async (postboxItemId) => {
   }
 };
 
-export const createPostboxItemRequestHandler = async (req, res) => {
+export const createPostboxItemRequestHandler = async (
+  req: Request,
+  res: Response
+) => {
   const { entityId } = req.params;
 
   log.info("createPostboxItemRequestHandler()", {
@@ -117,7 +121,7 @@ export const createPostboxItemRequestHandler = async (req, res) => {
   res.redirect("back");
 };
 
-export const listPostboxItems = async (req, res) => {
+export const listPostboxItems = async (req: Request, res: Response) => {
   const { entityId, entityType } = req.params;
 
   if (!entityId) {
@@ -143,7 +147,7 @@ export const listPostboxItems = async (req, res) => {
   res.status(200).send(entity.postboxItems || []);
 };
 
-export const getPostboxItemById = async (postboxItemId) => {
+export const getPostboxItemById = async (postboxItemId: string) => {
   const entity = await findEntityByPostboxItemId(postboxItemId);
 
   if (!entity) {
@@ -155,7 +159,7 @@ export const getPostboxItemById = async (postboxItemId) => {
   );
 };
 
-export const getPostboxItem = async (req, res) => {
+export const getPostboxItem = async (req: Request, res: Response) => {
   const postboxItemId = req.params.postbox_item_id;
 
   if (!postboxItemId) {
@@ -175,7 +179,7 @@ export const getPostboxItem = async (req, res) => {
   res.status(200).send(postboxItem);
 };
 
-export const downloadPostboxItem = async (req, res) => {
+export const downloadPostboxItem = async (req: Request, res: Response) => {
   const postboxItemId = req.params.postbox_item_id;
 
   if (!postboxItemId) {
