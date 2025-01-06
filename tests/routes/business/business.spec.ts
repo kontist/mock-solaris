@@ -139,7 +139,7 @@ describe("Businesses", () => {
       });
 
       res = mockRes();
-      let req = mockReq({
+      const req = mockReq({
         params: {
           business_id: businessId,
         },
