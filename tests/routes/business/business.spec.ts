@@ -141,6 +141,8 @@ describe("Businesses", () => {
         verified: true,
       });
 
+      const business = await db.getBusiness(businessId);
+
       res = mockRes();
       const req = mockReq({
         params: {
@@ -150,9 +152,7 @@ describe("Businesses", () => {
           legal_representative_id: personId,
           type_of_representation: "ALONE",
         },
-        business: {
-          id: businessId,
-        },
+        business,
       });
       await createLegalRepresentative(req, res);
 
