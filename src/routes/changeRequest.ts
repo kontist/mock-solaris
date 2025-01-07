@@ -110,7 +110,7 @@ export const createBusinessChangeRequest = async (
   const persons = await Promise.all(personsIds.map((id) => getPerson(id)));
   let businessHasAuthorizedPerson = false;
 
-  persons.forEach(async (person) => {
+  for (const person of persons) {
     const mobileNumber = await getMobileNumber(person.id);
     if (mobileNumber) {
       person.changeRequest = {
@@ -123,7 +123,7 @@ export const createBusinessChangeRequest = async (
       await savePerson(person);
       businessHasAuthorizedPerson = true;
     }
-  });
+  }
 
   if (!businessHasAuthorizedPerson) {
     return res.status(403).send({

@@ -142,19 +142,20 @@ export const BUSINESS_UPDATE = "Patch/Businesses/business_id";
  * i.e isChangeRequestRequired(mydata, business) or isChangeRequestRequired(mydata, business.address)
  */
 const isChangeRequestRequired = (input, model) => {
-  let flag = false;
+  let isChangeRequired = false;
 
   if (input && model) {
     Object.keys(input).forEach((key) => {
       if (typeof input[key] === "object" && model[key]) {
-        flag = flag || isChangeRequestRequired(input[key], model[key]);
+        isChangeRequired =
+          isChangeRequired || isChangeRequestRequired(input[key], model[key]);
       } else if (model[key]) {
-        flag = true;
+        isChangeRequired = true;
       }
     });
   }
 
-  return flag;
+  return isChangeRequired;
 };
 
 export const updateBusiness = async (req, res) => {
