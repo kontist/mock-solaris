@@ -9,6 +9,7 @@ import { storeBusinessInSortedSet } from "../../helpers/businesses";
 import { BusinessWebhookEvent, MockBusiness } from "../../helpers/types";
 import { triggerWebhook } from "../../helpers/webhooks";
 import { createBusinessChangeRequest } from "../changeRequest";
+import { isChangeRequestRequired } from "../persons";
 
 const businessObjectFields = [
   "id",
@@ -134,29 +135,6 @@ export const showBusinesses = async (req, res) => {
 };
 
 export const BUSINESS_UPDATE = "Patch/Businesses/business_id";
-
-/**
- * Checks if the model has setted previously a value given in the input.
- * This is useful to check if a Solaris entity may be updated or not checking the full entity
- * or the desired part of the entity.
- * i.e isChangeRequestRequired(mydata, business) or isChangeRequestRequired(mydata, business.address)
- */
-const isChangeRequestRequired = (input, model) => {
-  let isChangeRequired = false;
-
-  if (input && model) {
-    Object.keys(input).forEach((key) => {
-      if (typeof input[key] === "object" && model[key]) {
-        isChangeRequired =
-          isChangeRequired || isChangeRequestRequired(input[key], model[key]);
-      } else if (model[key]) {
-        isChangeRequired = true;
-      }
-    });
-  }
-
-  return isChangeRequired;
-};
 
 export const updateBusiness = async (req, res) => {
   const fields = [
