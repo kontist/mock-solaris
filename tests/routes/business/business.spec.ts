@@ -1,9 +1,13 @@
 import sinon from "sinon";
 import { expect } from "chai";
-import { mockRes } from "sinon-express-mock";
+import { mockRes, mockReq } from "sinon-express-mock";
 
 import * as db from "../../../src/db";
 import * as businessesAPI from "../../../src/routes/business/businesses";
+import * as personsAPI from "../../../src/routes/persons";
+import * as changeRequestAPI from "../../../src/routes/changeRequest";
+import { createLegalRepresentative } from "../../../src/routes/business";
+import { DeliveryMethod } from "../../../src/helpers/types";
 
 describe("Businesses", () => {
   describe("createBusiness", () => {
@@ -102,7 +106,9 @@ describe("Businesses", () => {
 
   describe("updateBusiness", () => {
     let res: sinon.SinonSpy;
+    let changeRequestId: string;
     let businessId: string;
+    let personId: string;
 
     before(async () => {
       await db.flushDb();
@@ -120,6 +126,37 @@ describe("Businesses", () => {
       businessId = res.send.args[0][0].id;
 
       res = mockRes();
+      await personsAPI.createPerson(
+        {
+          body: {},
+          headers: {},
+        },
+        res
+      );
+
+      personId = res.send.args[0][0].id;
+
+      await db.saveMobileNumber(personId, {
+        number: "+491234567890",
+        verified: true,
+      });
+
+      const business = await db.getBusiness(businessId);
+
+      res = mockRes();
+      const req = mockReq({
+        params: {
+          business_id: businessId,
+        },
+        body: {
+          legal_representative_id: personId,
+          type_of_representation: "ALONE",
+        },
+        business,
+      });
+      await createLegalRepresentative(req, res);
+
+      res = mockRes();
       await businessesAPI.updateBusiness(
         {
           params: {
@@ -133,14 +170,49 @@ describe("Businesses", () => {
       );
     });
 
-    it("should return updated business", async () => {
+    it("should return confirmation id", async () => {
       const lastCall = res.send.args[res.send.args.length - 1];
-      expect(lastCall[0].name).to.equal("Kontist AG");
+      changeRequestId = lastCall[0].id;
+      expect(changeRequestId).to.be.a("string");
     });
 
-    it("should have updated the business in the db", async () => {
-      const business = await db.getBusiness(businessId);
-      expect(business.name).to.equal("Kontist AG");
+    describe("confirming change request flow", () => {
+      it("should update business", async () => {
+        const changeReq = mockReq({
+          params: {
+            change_request_id: changeRequestId,
+          },
+          body: {
+            person_id: personId,
+            delivery_method: DeliveryMethod.MOBILE_NUMBER,
+          },
+        });
+        await changeRequestAPI.authorizeChangeRequest(changeReq, res);
+
+        const person = await db.getPerson(personId);
+        const tan = person.changeRequest.token;
+
+        const confirmReq = mockReq({
+          params: {
+            change_request_id: changeRequestId,
+          },
+          body: {
+            person_id: personId,
+            tan,
+          },
+        });
+        await changeRequestAPI.confirmChangeRequest(confirmReq, res);
+
+        const response = res.send.args[res.send.args.length - 1][0];
+        expect(response.status).to.equal("COMPLETED");
+        expect(response.id).to.equal(changeRequestId);
+        expect(response.response_body.name).to.equal("Kontist AG");
+
+        it("should have updated the business in the db", async () => {
+          const business = await db.getBusiness(businessId);
+          expect(business.name).to.equal("Kontist AG");
+        });
+      });
     });
   });
 

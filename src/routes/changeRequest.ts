@@ -7,6 +7,7 @@ import {
   getMobileNumber,
   getPersonByDeviceId,
   saveBusiness,
+  getBusiness,
 } from "../db";
 import {
   removeMobileNumberConfirmChangeRequest,
@@ -39,6 +40,7 @@ import {
   ChangeRequestStatus,
   MockPerson,
   TimedOrderStatus,
+  BusinessWebhookEvent,
 } from "../helpers/types";
 import { triggerWebhook } from "../helpers/webhooks";
 import {
@@ -54,6 +56,7 @@ import {
   INSTANT_CREDIT_TRANSFER_CREATE,
   confirmInstantCreditTransfer,
 } from "./instantCreditTransfer";
+import { BUSINESS_UPDATE } from "./business";
 
 const MAX_CHANGE_REQUEST_AGE_IN_MINUTES = 5;
 
@@ -81,6 +84,59 @@ export const createChangeRequest = async (req, res, person, method, delta) => {
     delta,
   };
   await savePerson(person);
+
+  return res.status(202).send({
+    id: changeRequestId,
+    status: ChangeRequestStatus.AUTHORIZATION_REQUIRED,
+    updated_at: new Date().toISOString(),
+    url: `:env/v1/change_requests/${changeRequestId}/authorize`,
+  });
+};
+
+export const createBusinessChangeRequest = async (
+  req,
+  res,
+  business,
+  method,
+  delta
+) => {
+  const changeRequestId = Date.now().toString();
+  const legalReps = business.legalRepresentatives;
+
+  const personsIds = legalReps.map(
+    (legalRep) => legalRep.legal_representative_id
+  );
+
+  const persons = await Promise.all(personsIds.map((id) => getPerson(id)));
+  let businessHasAuthorizedPerson = false;
+
+  for (const person of persons) {
+    const mobileNumber = await getMobileNumber(person.id);
+    if (mobileNumber) {
+      person.changeRequest = {
+        id: changeRequestId,
+        businessId: business.id,
+        method,
+        delta,
+      };
+
+      await savePerson(person);
+      businessHasAuthorizedPerson = true;
+    }
+  }
+
+  if (!businessHasAuthorizedPerson) {
+    return res.status(403).send({
+      id: Date.now().toString(),
+      status: 403,
+      code: "Unauthorized Change Request",
+      title: "Unauthorized Change Request",
+      detail:
+        "Unauthorized change request for Solaris::Business " +
+        business.id +
+        ". While authorization required, no entity with a possibility to authorize data change is present.",
+    });
+  }
 
   return res.status(202).send({
     id: changeRequestId,
@@ -141,6 +197,7 @@ export const authorizeChangeRequest = async (req, res) => {
 };
 
 export const confirmChangeRequest = async (req, res) => {
+  let businessId;
   const { change_request_id: changeRequestId } = req.params;
   const { person_id: personId, tan, device_id: deviceId, signature } = req.body;
   const person = (
@@ -294,6 +351,16 @@ export const confirmChangeRequest = async (req, res) => {
         await declineCardTransaction(person);
       }
       break;
+    case BUSINESS_UPDATE:
+      businessId = person.changeRequest.businessId;
+      const business = await getBusiness(person.changeRequest.businessId);
+
+      _.merge(business, person.changeRequest.delta);
+      response.response_body = business;
+
+      await saveBusiness(business);
+      await cleanUpChangeRequestsFromOtherPersonsInBusiness(business, personId);
+      break;
 
     default:
       status = 404;
@@ -312,6 +379,8 @@ export const confirmChangeRequest = async (req, res) => {
   }
 
   const shouldTriggerWebhook = person.changeRequest.method === PERSON_UPDATE;
+  const shouldTriggerWebhookBusinessUpdate =
+    person.changeRequest.method === BUSINESS_UPDATE;
   delete person.changeRequest;
   await savePerson(person);
 
@@ -322,6 +391,13 @@ export const confirmChangeRequest = async (req, res) => {
       extraHeaders: { "solaris-entity-id": personId },
     });
   }
+  if (shouldTriggerWebhookBusinessUpdate) {
+    await triggerWebhook({
+      type: BusinessWebhookEvent.BUSINESS_CHANGED,
+      payload: {},
+      extraHeaders: { "solaris-entity-id": businessId },
+    });
+  }
 
   return res.status(status).send(response);
 };
@@ -329,4 +405,24 @@ export const confirmChangeRequest = async (req, res) => {
 const assignAuthorizationToken = async (person) => {
   person.changeRequest.token = Date.now().toString().substr(-6);
   await savePerson(person);
+};
+
+const cleanUpChangeRequestsFromOtherPersonsInBusiness = async (
+  business,
+  personId
+) => {
+  const persons = await Promise.all(
+    business.legalRepresentatives.map((legalRep) =>
+      getPerson(legalRep.legal_representative_id)
+    )
+  );
+
+  await Promise.all(
+    persons
+      .filter((person) => person.id !== personId)
+      .map((person) => {
+        delete person.changeRequest;
+        return savePerson(person);
+      })
+  );
 };

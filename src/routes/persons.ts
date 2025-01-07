@@ -141,7 +141,7 @@ export const PERSON_UPDATE = "Patch/Persons/person_id";
  * @param {$Request} req
  * @param {$Response} res
  */
-const isChangeRequestRequired = (input, model) => {
+export const isChangeRequestRequired = (input, model) => {
   let flag = false;
 
   if (input && model) {

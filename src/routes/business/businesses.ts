@@ -8,6 +8,8 @@ import generateID from "../../helpers/id";
 import { storeBusinessInSortedSet } from "../../helpers/businesses";
 import { BusinessWebhookEvent, MockBusiness } from "../../helpers/types";
 import { triggerWebhook } from "../../helpers/webhooks";
+import { createBusinessChangeRequest } from "../changeRequest";
+import { isChangeRequestRequired } from "../persons";
 
 const businessObjectFields = [
   "id",
@@ -138,6 +140,8 @@ export const showBusinesses = async (req, res) => {
   return res.status(200).send(mappedBusinesses);
 };
 
+export const BUSINESS_UPDATE = "Patch/Businesses/business_id";
+
 export const updateBusiness = async (req, res) => {
   const fields = [
     "name",
@@ -242,6 +246,20 @@ export const updateBusiness = async (req, res) => {
         title: "Deprecated Parameters",
         detail: `Updating ${fieldsBanned[0]} is deprecated.`,
       });
+    }
+
+    const editable = _.pick(data, editableFields);
+    editable.address = _.pick(data.address, editableFields);
+    editable.tax_information = _.pick(data.tax_information, editableFields);
+
+    if (isChangeRequestRequired(editable, business)) {
+      return createBusinessChangeRequest(
+        req,
+        res,
+        business,
+        BUSINESS_UPDATE,
+        data
+      );
     }
 
     _.merge(business, data);
