@@ -34,6 +34,8 @@ export const createBusinessTaxIdentification = async (
 
   taxIdentifications.push(newIdent);
 
+  business.taxIdentifications = taxIdentifications;
+
   await saveBusiness(business);
   res.status(201).send(newIdent);
 };
@@ -74,6 +76,8 @@ export const updateBusinessTaxIdentification = async (
     ...taxIdentifications[index],
     ...taxIdentificationToUpdate,
   };
+
+  business.taxIdentifications = taxIdentifications;
 
   await saveBusiness(business);
   res.status(200).send(taxIdentifications[index]);
