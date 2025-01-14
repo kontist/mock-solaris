@@ -10,6 +10,7 @@ import {
   setPerson,
   getBusiness,
   saveBusiness,
+  findBusinessByAccount,
 } from "../db";
 import { IBAN, CountryCode } from "ibankit";
 import generateID from "../helpers/id";
@@ -265,8 +266,9 @@ export const setMockBalance = async (req, res) => {
 export const showAccountBalance = async (req, res) => {
   const { account_id: accountId } = req.params;
   const person = await findPersonByAccount({ id: accountId });
+  const business = await findBusinessByAccount({ id: accountId });
 
-  if (!person) {
+  if (!person && !business) {
     log.error(`Account not found for id: ${accountId}`);
     return res.status(HttpStatusCodes.NOT_FOUND).send({
       errors: [
@@ -281,7 +283,7 @@ export const showAccountBalance = async (req, res) => {
     });
   }
 
-  const balance = _.pick(person.account, [
+  const balance = _.pick(person ? person.account : business.account, [
     "balance",
     "available_balance",
     "seizure_protection",
