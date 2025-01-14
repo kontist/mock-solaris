@@ -1044,7 +1044,7 @@ export const findBusinessByAccount = async ({
 }: {
   id?: string;
   iban?: string;
-}): Promise<MockBusiness> => {
+}): Bluebird<MockBusiness> => {
   const key = id
     ? `${process.env.MOCKSOLARIS_REDIS_PREFIX}:accountId-businessId:${id}`
     : `${process.env.MOCKSOLARIS_REDIS_PREFIX}:accountIBAN-businessId:${iban}`;
@@ -1054,6 +1054,5 @@ export const findBusinessByAccount = async ({
     return null;
   }
 
-  const business = await getBusiness(businessId);
-  return business;
+  return getBusiness(businessId);
 };
