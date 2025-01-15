@@ -337,10 +337,8 @@ export const addDeviceKey = async (req, res) => {
 
 export const getDevices = async (req, res) => {
   const { person_id: personId } = req.query;
-
-  try {
-    await getPerson(personId);
-  } catch (err) {
+  const person = await getPerson(personId);
+  if (!person) {
     return res.status(404).send({
       errors: [
         {
