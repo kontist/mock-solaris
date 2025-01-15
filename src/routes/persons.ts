@@ -85,39 +85,24 @@ export const deletePerson = async (req, res) => {
 
 export const showPerson = async (req, res) => {
   const { person_id: personId } = req.params;
-  try {
-    const person = await getPerson(personId);
-
-    return res.status(200).send(person);
-  } catch (err) {
-    if (
-      err.message ===
-      `Person who has personID: ${personId} was not found in redis`
-    ) {
-      const resp = {
-        errors: [
-          {
-            id: ERROR_NOT_FOUND_ID,
-            status: 404,
-            code: "model_not_found",
-            title: "Model Not Found",
-            detail: `Couldn't find 'Solaris::Person' for id '${personId}'.`,
-          },
-        ],
-      };
-
-      return res.status(404).send(resp);
-    }
-
-    return res.status(500).send({
+  const person = await getPerson(personId);
+  if (!person) {
+    const resp = {
       errors: [
         {
           id: ERROR_NOT_FOUND_ID,
-          status: 500,
+          status: 404,
+          code: "model_not_found",
+          title: "Model Not Found",
+          detail: `Couldn't find 'Solaris::Person' for id '${personId}'.`,
         },
       ],
-    });
+    };
+
+    return res.status(404).send(resp);
   }
+
+  return res.status(200).send(person);
 };
 
 export const showPersons = async (req, res) => {
