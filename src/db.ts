@@ -255,9 +255,7 @@ export const getPerson = async (personId: string): Bluebird<MockPerson> => {
     `${process.env.MOCKSOLARIS_REDIS_PREFIX}:person:${personId}`
   );
   if (!personJSON) {
-    throw new Error(
-      `Person who has personID: ${personId} was not found in redis`
-    );
+    return null;
   }
   const person = jsonToPerson(personJSON);
   return augmentPerson(person);
@@ -1044,7 +1042,7 @@ export const findBusinessByAccount = async ({
 }: {
   id?: string;
   iban?: string;
-}): Promise<MockBusiness> => {
+}): Bluebird<MockBusiness> => {
   const key = id
     ? `${process.env.MOCKSOLARIS_REDIS_PREFIX}:accountId-businessId:${id}`
     : `${process.env.MOCKSOLARIS_REDIS_PREFIX}:accountIBAN-businessId:${iban}`;
@@ -1054,6 +1052,5 @@ export const findBusinessByAccount = async ({
     return null;
   }
 
-  const business = await getBusiness(businessId);
-  return business;
+  return getBusiness(businessId);
 };
