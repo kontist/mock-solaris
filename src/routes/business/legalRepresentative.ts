@@ -1,20 +1,23 @@
 import type { Response } from "express";
 
 import generateID from "../../helpers/id";
-import { saveBusiness } from "../../db";
+import { saveBusiness, savePerson } from "../../db";
 import uuid from "node-uuid";
 import {
   LegalRepresentative,
   LegalRepresentativeType,
   LegalRepresentativeRepresentationType,
 } from "../../helpers/types";
-import { RequestWithBusiness } from "../../helpers/middlewares";
+import {
+  RequestWithBusiness,
+  RequestWithPerson,
+} from "../../helpers/middlewares";
 
 export const createLegalRepresentative = async (
-  req: RequestWithBusiness,
+  req: RequestWithBusiness & RequestWithPerson,
   res: Response
 ) => {
-  const { business } = req;
+  const { business, person } = req;
 
   try {
     const legalRepresentative: LegalRepresentative = {
@@ -34,6 +37,9 @@ export const createLegalRepresentative = async (
       business.legalRepresentatives.push({ ...legalRepresentative });
     }
 
+    person.businessId = business.id;
+
+    await savePerson(person);
     await saveBusiness(business);
 
     return res.status(201).send(legalRepresentative);

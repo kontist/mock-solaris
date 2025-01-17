@@ -280,6 +280,7 @@ export type MockPerson = {
   accountOpeningRequests?: AccountOpeningRequest[];
   questionSet?: QuestionSet;
   language?: string;
+  businessId?: string;
 };
 
 export type MockCreatePerson = {

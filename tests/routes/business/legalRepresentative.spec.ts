@@ -4,6 +4,7 @@ import { mockReq, mockRes } from "sinon-express-mock";
 import * as db from "../../../src/db";
 
 import * as businessesAPI from "../../../src/routes/business/businesses";
+import * as personsAPI from "../../../src/routes/persons";
 import { createLegalRepresentative } from "../../../src/routes/business/legalRepresentative";
 
 describe("createLegalRepresentative", () => {
@@ -11,11 +12,22 @@ describe("createLegalRepresentative", () => {
 
   describe("when business is found", () => {
     let businessId: string;
+    let personId: string;
     let req;
 
     before(async () => {
       await db.flushDb();
       res = mockRes();
+
+      await personsAPI.createPerson(
+        {
+          body: {},
+          headers: {},
+        },
+        res
+      );
+
+      personId = res.send.args[0][0].id;
 
       await businessesAPI.createBusiness(
         {
@@ -29,17 +41,19 @@ describe("createLegalRepresentative", () => {
 
       businessId = res.send.args[0][0].id;
 
-      res = mockRes();
       req = mockReq({
         params: {
           business_id: businessId,
         },
         body: {
-          legal_representative_id: "1234abcdef",
+          legal_representative_id: personId,
           type_of_representation: "ALONE",
         },
         business: {
           id: businessId,
+        },
+        person: {
+          id: personId,
         },
       });
       await createLegalRepresentative(req, res);
@@ -60,6 +74,11 @@ describe("createLegalRepresentative", () => {
       expect(business.legalRepresentatives[0].legal_representative_id).to.equal(
         req.body.legal_representative_id
       );
+    });
+
+    it("should add business id to person", async () => {
+      const person = await db.getPerson(personId);
+      expect(person.businessId).to.equal(businessId);
     });
   });
 });
