@@ -110,7 +110,6 @@ export const createCardHandler = async (
       person = await db.getPerson(
         business.legalRepresentatives[0].legal_representative_id
       );
-      person.account = business.account;
     }
 
     if (!person) {
