@@ -153,6 +153,9 @@ describe("Businesses", () => {
           type_of_representation: "ALONE",
         },
         business,
+        person: {
+          id: personId,
+        },
       });
       await createLegalRepresentative(req, res);
 
@@ -172,6 +175,7 @@ describe("Businesses", () => {
 
     it("should return confirmation id", async () => {
       const lastCall = res.send.args[res.send.args.length - 1];
+      console.log("!@!@", res.send.args);
       changeRequestId = lastCall[0].id;
       expect(changeRequestId).to.be.a("string");
     });
