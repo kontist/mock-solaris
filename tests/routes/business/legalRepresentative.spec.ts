@@ -19,7 +19,6 @@ describe("createLegalRepresentative", () => {
       await db.flushDb();
       res = mockRes();
 
-      res = mockRes();
       await personsAPI.createPerson(
         {
           body: {},
@@ -42,7 +41,6 @@ describe("createLegalRepresentative", () => {
 
       businessId = res.send.args[0][0].id;
 
-      res = mockRes();
       req = mockReq({
         params: {
           business_id: businessId,
