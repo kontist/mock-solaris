@@ -682,6 +682,12 @@ app.post(
   "/__BACKOFFICE__/createDirectDebitReturn/:personId/:id",
   safeRequestHandler(backofficeAPI.createDirectDebitReturnHandler)
 );
+
+app.post(
+  "/__BACKOFFICE__/createBusinessDirectDebitReturn/:businessId/:id",
+  safeRequestHandler(backofficeAPI.createBusinessDirectDebitReturnHandler)
+);
+
 app.post(
   "/__BACKOFFICE__/updateAccountLockingStatus/:personId",
   safeRequestHandler(backofficeAPI.updateAccountLockingStatusHandler)

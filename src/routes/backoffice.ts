@@ -94,13 +94,13 @@ const triggerAccountBlockWebhook = async (person: MockPerson) => {
 };
 
 export const triggerBookingsWebhook = async (
-  person: MockPerson,
+  entity: MockPerson | MockBusiness,
   bookingOrTransaction: {
     amount: { value: number };
     booking_type: BookingType;
   }
 ) => {
-  const payload = { ...bookingOrTransaction, account_id: person.account.id };
+  const payload = { ...bookingOrTransaction, account_id: entity.account.id };
   await triggerWebhook({
     type: TransactionWebhookEvent.BOOKING,
     payload,
@@ -636,7 +636,7 @@ export const processQueuedBooking = async (
     await triggerBookingsWebhook(person, booking);
 
     if (sepaDirectDebitReturn) {
-      await triggerSepaDirectDebitReturnWebhook(sepaDirectDebitReturn, person);
+      await triggerSepaDirectDebitReturnWebhook(sepaDirectDebitReturn);
     }
   });
   return booking;
@@ -731,11 +731,11 @@ export const processBusinessQueuedBooking = async (
     }
 
     await saveBusiness(business);
-    // await triggerBookingsWebhook(person, booking);
+    await triggerBookingsWebhook(business, booking);
 
-    // if (sepaDirectDebitReturn) {
-    //   await triggerSepaDirectDebitReturnWebhook(sepaDirectDebitReturn, person);
-    // }
+    if (sepaDirectDebitReturn) {
+      await triggerSepaDirectDebitReturnWebhook(sepaDirectDebitReturn);
+    }
   });
   return booking;
 };
@@ -976,6 +976,13 @@ export const createDirectDebitReturnHandler = async (req, res) => {
   res.redirect("back");
 };
 
+export const createBusinessDirectDebitReturnHandler = async (req, res) => {
+  const { businessId, id } = req.params;
+
+  await createDirectDebitReturn(businessId, id);
+  res.redirect("back");
+};
+
 export const createDirectDebitReturn = async (personId, id) => {
   const person = await getPerson(personId);
   const directDebit = person.transactions.find(
@@ -1025,7 +1032,59 @@ export const createDirectDebitReturn = async (personId, id) => {
     directDebitReturn
   );
   await saveSepaDirectDebitReturn(sepaDirectDebitReturn);
-  await triggerSepaDirectDebitReturnWebhook(sepaDirectDebitReturn, person);
+  await triggerSepaDirectDebitReturnWebhook(sepaDirectDebitReturn);
+};
+
+export const createBusinessDirectDebitReturn = async (businessId, id) => {
+  const business = await getBusiness(businessId);
+  const directDebit = business.transactions.find(
+    (transaction) => transaction.id === id
+  );
+  const directDebitReturnId = directDebit.id.split("-").reverse().join("-");
+
+  if (
+    business.transactions.some(
+      (transaction) =>
+        transaction.id === directDebitReturnId &&
+        transaction.booking_type === BookingType.SEPA_DIRECT_DEBIT_RETURN
+    )
+  ) {
+    throw new Error("Direct debit return already exists");
+  }
+
+  const today = moment().format("YYYY-MM-DD");
+
+  const directDebitReturn = {
+    ...directDebit,
+    sender_iban: directDebit.recipient_iban,
+    recipient_iban: directDebit.sender_iban,
+    sender_name: directDebit.recipient_name,
+    recipient_name: directDebit.sender_name,
+    sender_bic: directDebit.recipient_bic,
+    recipient_bic: directDebit.sender_bic,
+    id: directDebitReturnId,
+    transaction_id: null,
+    return_transaction_id: directDebit.transaction_id,
+    booking_type: BookingType.SEPA_DIRECT_DEBIT_RETURN,
+    amount: {
+      value: -directDebit.amount.value,
+      unit: "cents",
+      currency: "EUR",
+    },
+    booking_date: today,
+    valuta_date: today,
+  };
+
+  business.transactions.push(directDebitReturn);
+
+  await saveBusiness(business);
+
+  const sepaDirectDebitReturn = createSepaDirectDebitReturn(
+    business,
+    directDebitReturn
+  );
+  await saveSepaDirectDebitReturn(sepaDirectDebitReturn);
+  await triggerSepaDirectDebitReturnWebhook(sepaDirectDebitReturn);
 };
 
 export const updateAccountLockingStatus = async (personId, lockingStatus) => {
