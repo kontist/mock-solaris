@@ -61,7 +61,10 @@ export const withPerson = async (
   next: express.NextFunction
 ) => {
   const personId =
-    req.params.person_id || req.params.personId || (req.body || {}).person_id;
+    req.params.person_id ||
+    req.params.personId ||
+    (req.body || {}).person_id ||
+    (req.body || {}).legal_representative_id;
   if (!personId) {
     next();
     return;
