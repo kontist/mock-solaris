@@ -468,7 +468,6 @@ export type MockBusiness = {
   };
   taxIdentifications: TaxIdentification[];
   queuedBookings?: Record<string, unknown>[];
-  transactions: Booking[];
 };
 
 export type MockCreateBusiness = {
