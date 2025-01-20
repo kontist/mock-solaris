@@ -8,11 +8,17 @@ export const createBankStatement = async (req, res) => {
   const { account_id: accountId } = req.params;
 
   const person = await db.findPersonByAccount({ id: accountId });
-  const account = person.account;
+  const business = await db.findBusinessByAccount({ id: accountId });
+
+  const account = business ? business.account : person.account;
+  const createdAt = person ? person.createdAt : business.createdAt;
+  const termsAndConditionsSignedAt = person
+    ? person.terms_conditions_signed_at
+    : business.terms_conditions_signed_at;
 
   const { start_date: startDate, end_date: endDate } = req.body;
 
-  const isStartDateInvalid = moment(person.createdAt)
+  const isStartDateInvalid = moment(createdAt)
     .startOf("day")
     .isAfter(moment(startDate));
 
@@ -23,11 +29,11 @@ export const createBankStatement = async (req, res) => {
     res.status(400).send({
       errors: [
         {
-          id: person.id,
+          id: person ? person.id : business.id,
           status: 400,
           code: "invalid_model",
           title: "Invalid Model",
-          detail: `start_date invalid date ${startDate} is earlier than account opening date ${person.terms_conditions_signed_at}`,
+          detail: `start_date invalid date ${startDate} is earlier than account opening date ${termsAndConditionsSignedAt}`,
         },
       ],
     });
@@ -53,9 +59,14 @@ export const createBankStatement = async (req, res) => {
     return;
   }
 
-  const line1 = `${
-    person.salutation.toLowerCase() === "mr" ? "Mr." : "Ms."
-  } ${person.first_name.toUpperCase()} ${person.last_name.toUpperCase()}`;
+  const line1 = person
+    ? `${
+        person.salutation.toLowerCase() === "mr" ? "Mr." : "Ms."
+      } ${person.first_name.toUpperCase()} ${person.last_name.toUpperCase()}`
+    : business.name.toUpperCase();
+  const line4 = person
+    ? `${person.address.postal_code} ${person.address.city}`
+    : `${business.address.postal_code} ${business.address.city}`;
 
   const bankStatement = {
     id:
@@ -63,8 +74,8 @@ export const createBankStatement = async (req, res) => {
       crypto.createHash("md5").update(JSON.stringify(req.body)).digest("hex"),
     recipient_information: {
       line_1: line1,
-      line_2: person.address.line_1,
-      line_4: `${person.address.postal_code} ${person.address.city}`,
+      line_2: person ? person.address.line_1 : business.address.line_1,
+      line_4: line4,
       line_5: "Deutschland",
     },
     issue_date: new Date().toISOString().slice(0, 10),
@@ -86,13 +97,22 @@ export const createBankStatement = async (req, res) => {
     },
   };
 
-  person.bankStatements = person.bankStatements || [];
-  person.bankStatements.push(bankStatement);
+  if (person) {
+    person.bankStatements = person.bankStatements || [];
+    person.bankStatements.push(bankStatement);
+    await db.savePerson(person);
+  } else if (business) {
+    business.bankStatements = business.bankStatements || [];
+    business.bankStatements.push(bankStatement);
+    await db.saveBusiness(business);
+  }
 
-  await db.savePerson(person);
+  const logText = person
+    ? `person id ${person.id}`
+    : `business id ${business.id}`;
 
   log.info(
-    `(createBankStatement()) Generated bank statement for solaris account id ${accountId} and solaris person id ${person.id}`,
+    `(createBankStatement()) Generated bank statement for solaris account id ${accountId} and solaris ${logText}`,
     bankStatement
   );
 
@@ -107,6 +127,11 @@ export const showBankStatementBookings = async (req, res) => {
     req.params;
 
   const person = await db.findPersonByAccount({ id: accountId });
+  const business = await db.findBusinessByAccount({ id: accountId });
+
+  const statementsList = person
+    ? person.bankStatements
+    : business.bankStatements;
 
   if (!bankStatementId) {
     return res.status(404).send({
@@ -122,7 +147,7 @@ export const showBankStatementBookings = async (req, res) => {
     });
   }
 
-  const bankStatement = (person.bankStatements || []).find(
+  const bankStatement = (statementsList || []).find(
     (bs) => bs.id === bankStatementId
   );
 
@@ -134,8 +159,9 @@ export const showBankStatementBookings = async (req, res) => {
   const momentStartDate = moment(startDate);
   const momentEndDate = moment(endDate);
 
-  const bankStatementsBookings = db
-    .getPersonBookings(person)
+  const bankStatementsBookings = (
+    person ? db.getPersonBookings(person) : db.getBusinessBookings(business)
+  )
     .filter((booking) =>
       moment(booking.booking_date).isBetween(
         momentStartDate,
@@ -146,8 +172,12 @@ export const showBankStatementBookings = async (req, res) => {
     )
     .slice((number - 1) * size, number * size);
 
+  const logText = person
+    ? `person id ${person.id}`
+    : `business id ${business.id}`;
+
   log.info(
-    `(showBankStatementBookings()) Got ${bankStatementsBookings.length} bookings for bank statement for solaris account id ${accountId} and solaris person id ${person.id}`,
+    `(showBankStatementBookings()) Got ${bankStatementsBookings.length} bookings for bank statement for solaris account id ${accountId} and solaris ${logText}`,
     bankStatementsBookings
   );
 

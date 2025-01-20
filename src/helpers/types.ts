@@ -415,6 +415,7 @@ export type MockBusiness = {
   id: string;
   name: string;
   account?: MockAccount;
+  transactions?: Booking[];
   origin?: string;
   sector?: string;
   industry?: string;
