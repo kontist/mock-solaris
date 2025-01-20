@@ -657,14 +657,27 @@ app.post(
   "/__BACKOFFICE__/queueBooking/:personId",
   safeRequestHandler(backofficeAPI.queueBookingRequestHandler)
 );
+
+app.post(
+  "/__BACKOFFICE__/queueBusinessBooking/:businessId",
+  safeRequestHandler(backofficeAPI.queueBusinessBookingRequestHandler)
+);
+
 app.post(
   "/__BACKOFFICE__/processQueuedBooking/:personId",
   safeRequestHandler(backofficeAPI.processQueuedBookingHandler)
 );
+
 app.post(
   "/__BACKOFFICE__/processQueuedBooking/:personId/:id",
   safeRequestHandler(backofficeAPI.processQueuedBookingHandler)
 );
+
+app.post(
+  "/__BACKOFFICE__/processBusinessQueuedBooking/:businessId/:id",
+  safeRequestHandler(backofficeAPI.processBusinessQueuedBookingHandler)
+);
+
 app.post(
   "/__BACKOFFICE__/createDirectDebitReturn/:personId/:id",
   safeRequestHandler(backofficeAPI.createDirectDebitReturnHandler)

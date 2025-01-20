@@ -524,6 +524,13 @@ export const processQueuedBookingHandler = async (req, res) => {
   res.redirect("back");
 };
 
+export const processBusinessQueuedBookingHandler = async (req, res) => {
+  const { businessId, id } = req.params;
+
+  await processBusinessQueuedBooking(businessId, id);
+  res.redirect("back");
+};
+
 const generateBookingFromStandingOrder = (standingOrder) => {
   return {
     ...standingOrder,
@@ -635,6 +642,104 @@ export const processQueuedBooking = async (
   return booking;
 };
 
+/**
+ * Processes either a normal booking or a Standing Order.
+ * @param {string} personId
+ * @param {number} id Booking ID
+ * @param {Boolean} isStandingOrder (Optional) True if is of type standing order.
+ */
+export const processBusinessQueuedBooking = async (
+  businessId,
+  id,
+  isStandingOrder = false
+) => {
+  let business;
+  let booking;
+  const businessLockKey = `redlock:${process.env.MOCKSOLARIS_REDIS_PREFIX}:business:${businessId}`;
+  await redlock.using([businessLockKey], 5000, async (signal) => {
+    if (signal.aborted) {
+      throw signal.error;
+    }
+    business = await getBusiness(businessId);
+    business.transactions = business.transactions || [];
+
+    let bookings;
+    bookings = isStandingOrder
+      ? business.standingOrders || []
+      : business.queuedBookings;
+
+    if (id) {
+      const findQueuedBooking = (queuedBooking) => queuedBooking.id === id;
+      booking = bookings.find(findQueuedBooking);
+      // Standing orders are not removed until cancelled or expired.
+      if (!isStandingOrder) {
+        _.remove(bookings, findQueuedBooking);
+      }
+    } else {
+      booking = bookings.shift();
+    }
+
+    if (isStandingOrder) {
+      booking = generateBookingFromStandingOrder(booking);
+    }
+
+    const isDirectDebit = [
+      BookingType.DIRECT_DEBIT,
+      BookingType.SEPA_DIRECT_DEBIT,
+    ].includes(booking.booking_type);
+
+    const wouldOverdraw =
+      business.account.available_balance.value < booking.amount.value;
+
+    let directDebitReturn;
+    let sepaDirectDebitReturn;
+
+    if (isDirectDebit) {
+      if (wouldOverdraw) {
+        directDebitReturn = {
+          ...booking,
+          sender_iban: booking.recipient_iban,
+          recipient_iban: booking.sender_iban,
+          sender_name: booking.recipient_name,
+          recipient_name: booking.sender_name,
+          sender_bic: booking.recipient_bic,
+          recipient_bic: booking.sender_bic,
+          id: booking.id.split("-").reverse().join("-"),
+          transaction_id: null,
+          return_transaction_id: booking.transaction_id,
+          booking_type: BookingType.SEPA_DIRECT_DEBIT_RETURN,
+          amount: {
+            value: booking.amount.value,
+            unit: "cents",
+            currency: "EUR",
+          },
+        };
+      }
+
+      // direct debits come with a negative value
+      booking.amount.value = -Math.abs(booking.amount.value);
+    }
+
+    business.transactions.push(booking);
+    if (directDebitReturn) {
+      business.transactions.push(directDebitReturn);
+      sepaDirectDebitReturn = createSepaDirectDebitReturn(
+        business,
+        directDebitReturn
+      );
+      await saveSepaDirectDebitReturn(sepaDirectDebitReturn);
+    }
+
+    await saveBusiness(business);
+    // await triggerBookingsWebhook(person, booking);
+
+    // if (sepaDirectDebitReturn) {
+    //   await triggerSepaDirectDebitReturnWebhook(sepaDirectDebitReturn, person);
+    // }
+  });
+  return booking;
+};
+
 export const generateBookingForPerson = (bookingData) => {
   const {
     person,
@@ -653,6 +758,52 @@ export const generateBookingForPerson = (bookingData) => {
   const recipientName = `${person.salutation} ${person.first_name} ${person.last_name}`;
   const recipientIBAN = person.account.iban;
   const recipientBIC = person.account.bic;
+
+  const senderIBAN = iban || "ES3183888553310516236778";
+  const senderBIC = process.env.SOLARIS_BIC;
+  const today = moment().format("YYYY-MM-DD");
+
+  return {
+    id: generateID(),
+    amount: { value: parseInt(amount, 10) },
+    valuta_date: valutaDate ? moment(valutaDate).format("YYYY-MM-DD") : today,
+    description: purpose,
+    booking_date: bookingDate
+      ? moment(bookingDate).format("YYYY-MM-DD")
+      : today,
+    name: `mocksolaris-transaction-${purpose}`,
+    recipient_bic: recipientBIC,
+    recipient_iban: recipientIBAN,
+    recipient_name: recipientName,
+    sender_bic: senderBIC,
+    sender_iban: senderIBAN,
+    sender_name: senderName || "mocksolaris",
+    end_to_end_id: endToEndId,
+    booking_type: bookingType,
+    transaction_id: transactionId || generateID(),
+    return_transaction_id: null,
+    status,
+  };
+};
+
+export const generateBookingForBusiness = (bookingData) => {
+  const {
+    business,
+    purpose,
+    amount,
+    senderName,
+    endToEndId,
+    bookingType,
+    iban,
+    transactionId,
+    bookingDate,
+    valutaDate,
+    status,
+  } = bookingData;
+
+  const recipientName = business.name;
+  const recipientIBAN = business.account.iban;
+  const recipientBIC = business.account.bic;
 
   const senderIBAN = iban || "ES3183888553310516236778";
   const senderBIC = process.env.SOLARIS_BIC;
@@ -740,6 +891,75 @@ export const queueBookingRequestHandler = async (req, res) => {
     person.queuedBookings.push(queuedBooking);
 
     await savePerson(person);
+  });
+
+  if (shouldReturnJSON(req)) {
+    res.status(201).send(queuedBooking);
+  } else {
+    res.redirect("back");
+  }
+};
+
+export const queueBusinessBookingRequestHandler = async (req, res) => {
+  const { businessId } = req.params;
+
+  log.info(
+    "queueBookingRequestHandler()",
+    "req.body",
+    JSON.stringify(req.body),
+    "req.params",
+    JSON.stringify(req.params)
+  );
+
+  let { amount, purpose, senderName } = req.body;
+  const {
+    endToEndId,
+    hasFutureValutaDate,
+    bookingType,
+    iban,
+    transactionId,
+    bookingDate,
+    valutaDate,
+    status,
+  } = req.body;
+
+  senderName = senderName || "mocksolaris";
+  purpose = purpose || "";
+  amount = amount ? parseInt(amount, 10) : Math.round(Math.random() * 10000);
+  let queuedBooking;
+
+  /**
+   * Hint: This is a reference to the lock and not to the actual data
+   * we can't use the original key here and we prepend some string
+   */
+  const businessKey = `redlock:${process.env.MOCKSOLARIS_REDIS_PREFIX}:business:${businessId}`;
+  await redlock.using([businessKey], 5000, async (signal) => {
+    // Make sure any attempted lock extension has not failed.
+    if (signal.aborted) {
+      throw signal.error;
+    }
+
+    const business = await getBusiness(businessId);
+    business.queuedBookings = business.queuedBookings || [];
+
+    queuedBooking = generateBookingForBusiness({
+      business,
+      purpose,
+      amount,
+      senderName,
+      endToEndId,
+      hasFutureValutaDate,
+      bookingType,
+      iban,
+      transactionId,
+      bookingDate,
+      valutaDate,
+      status,
+    });
+
+    business.queuedBookings.push(queuedBooking);
+
+    await saveBusiness(business);
   });
 
   if (shouldReturnJSON(req)) {

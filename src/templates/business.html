@@ -125,6 +125,45 @@
 
 
   <div class="col-md-6">
+    {% if business.account %}
+    <!-- New Booking -->
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h4>Enqueue a new booking</h4>
+      </div>
+      <div class="panel-body">
+        <form method="POST" action="/__BACKOFFICE__/queueBusinessBooking/{{ business.id }}">
+          <div class="form-group">
+            <label>Amount (in cents)</label>
+            <input class="form-control" type="number" name="amount" placeholder="amount (in cents)" autocomplete="off"
+              required min="-10000000" max="10000000" />
+          </div>
+          <div class="form-group">
+            <label>Sender</label>
+            <input class="form-control" type="text" name="senderName" placeholder="sender name" />
+            <input class="form-control" type="text" name="iban" placeholder="IBAN" value="" />
+          </div>
+          <div class="form-group">
+            <label>Purpose</label>
+            <input class="form-control" type="text" name="purpose" placeholder="purpose" />
+            <input class="form-control" type="text" name="endToEndId" placeholder="end to end id" value="" />
+            <input class="form-control" type="text" name="transactionId" placeholder="Transaction id" value="" />
+          </div>
+          <div class="form-group">
+            <select class="form-control" name="bookingType">
+              <option selected="selected" value="SEPA_CREDIT_TRANSFER">SEPA_CREDIT_TRANSFER</option>
+              <option value="SEPAInstantCreditTransfer">SEPA_INSTANT_CREDIT_TRANSFER</option>
+              <option value="SEPA_DIRECT_DEBIT">SEPA_DIRECT_DEBIT</option>
+            </select>
+            <br>
+            <button type="submit" class="btn btn-primary btn-block">
+              Save booking to queue
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
     <!-- Account Details -->
     <div class="panel panel-default">
       <div class="panel-heading">
@@ -163,6 +202,9 @@
         </table>
       </div>
     </div>
+    {% else %}
+      <i>This business does not have an account.</i>
+    {% endif %}
 
 
     <!-- Legal Representatives -->
@@ -326,6 +368,141 @@
       <button type="submit" class="btn btn-primary btn-block">Save</button>
     </form>
   </div>
+</div>
+
+<!-- Queued bookings -->
+<div class="panel panel-default">
+  <div id="queuedBookings" class="panel-heading">Queued bookings</div>
+  {% if business.queuedBookings.length > 0 %}
+  <table class="table">
+    <thead>
+      <tr>
+        <th>id<br>type<br>status</th>
+        <th>amount</th>
+        <th>
+          booking date<br>
+          valuta date
+        </th>
+        <th>
+          description<br>
+          name
+        </th>
+        <th>recipient</th>
+        <th>sender</th>
+      </tr>
+    </thead>
+    {% for queuedBooking in business.queuedBookings %}
+    <tr>
+      <td>
+        {{ queuedBooking.id }}
+        <br>
+        <span class="label label-primary">
+          {{ queuedBooking.booking_type }}
+        </span>
+        {% if queuedBooking.status %}
+        <br><span class="label label-default">{{ queuedBooking.status }}</span>
+        {% endif %}
+      </td>
+      <td>{{ (queuedBooking.amount.value / 100).toFixed(2) }}€</td>
+      <td>
+        {{ queuedBooking.booking_date }}<br>
+        {{ queuedBooking.valuta_date }}
+      </td>
+      <td>
+        {{ queuedBooking.description }}<br>
+        {{ queuedBooking.name }}
+      </td>
+      <td>
+        {{ queuedBooking.recipient_name }}<br>
+        {{ queuedBooking.recipient_iban }}<br>
+        {{ queuedBooking.recipient_bic }}
+      </td>
+      <td>
+        {{ queuedBooking.sender_name }}<br>
+        {{ queuedBooking.sender_iban }}<br>
+        {{ queuedBooking.sender_bic }}
+      </td>
+      <td>
+        <form method="POST" action="/__BACKOFFICE__/processBusinessQueuedBooking/{{ business.id }}/{{ queuedBooking.id }}">
+          <button type="submit" class="btn btn-default">
+            ➡️ Process
+          </button>
+        </form>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+  <div class="panel-body">
+    No queued bookings ☹️
+  </div>
+  {% endif %}
+</div>
+
+<!-- Bookings -->
+<div class="panel panel-default">
+  <div id="bookings" class="panel-heading">Bookings</div>
+  {% if business.transactions.length > 0 %}
+  <table class="table">
+    <thead>
+      <tr>
+        <th>id<br>type</th>
+        <th>amount</th>
+        <th>booking date<br>valuta date</th>
+        <th>
+          description<br>
+          name
+        </th>
+        <th>recipient</th>
+        <th>sender</th>
+      </tr>
+    </thead>
+    {% for transaction in business.transactions %}
+    <tr>
+      <td>
+        {{ transaction.id }}
+        <br>
+        <span class="label label-primary">
+          {{ transaction.booking_type }}
+        </span>
+      </td>
+      <td>{{ (transaction.amount.value / 100).toFixed(2) }}€</td>
+      <td>
+        {{ transaction.booking_date }}<br>
+        {{ transaction.valuta_date }}
+      </td>
+      <td>
+        {{ transaction.description }}<br>
+        {{ transaction.name }}
+      </td>
+      <td>
+        {{ transaction.recipient_name }}<br>
+        {{ transaction.recipient_iban }}<br>
+        {{ transaction.recipient_bic }}
+      </td>
+      <td>
+        {{ transaction.sender_name }}<br>
+        {{ transaction.sender_iban }}<br>
+        {{ transaction.sender_bic }}
+      </td>
+      <td>
+        <!-- {% if transaction.booking_type === "DIRECT_DEBIT" %}
+        <form method="POST" action="/__BACKOFFICE__/createDirectDebitReturn/{{ person.id }}/{{ transaction.id }}">
+          <button type="submit" class="btn btn-default">
+            🔄 Create DDR
+          </button>
+        </form>
+        {% endif %} -->
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  {% else %}
+  <div class="panel-body">
+    No bookings ☹️
+  </div>
+  {% endif %}
 </div>
 
 <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
