@@ -1,8 +1,8 @@
 import { triggerWebhook } from "../helpers/webhooks";
-import { MockPerson, TransactionWebhookEvent } from "../helpers/types";
+import { TransactionWebhookEvent } from "../helpers/types";
 import generateID from "./id";
 
-export const createSepaDirectDebitReturn = (person, directDebitReturn) => {
+export const createSepaDirectDebitReturn = (entity, directDebitReturn) => {
   return {
     id: generateID(),
     creditor_iban: directDebitReturn.recipient_iban,
@@ -14,16 +14,13 @@ export const createSepaDirectDebitReturn = (person, directDebitReturn) => {
     sepa_return_code: "AC06",
     description: directDebitReturn.description,
     recorded_at: new Date().toISOString(),
-    customer_id: person.id,
+    customer_id: entity.id,
     customer_type: "Person",
-    account_id: person.account.id,
+    account_id: entity.account.id,
   };
 };
 
-export const triggerSepaDirectDebitReturnWebhook = (
-  sepaDirectDebitReturn,
-  person: MockPerson
-) =>
+export const triggerSepaDirectDebitReturnWebhook = (sepaDirectDebitReturn) =>
   triggerWebhook({
     type: TransactionWebhookEvent.SEPA_DIRECT_DEBIT_RETURN,
     payload: sepaDirectDebitReturn,

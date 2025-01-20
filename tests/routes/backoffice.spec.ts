@@ -6,6 +6,7 @@ import * as db from "../../src/db";
 import {
   createMaps,
   queueBookingRequestHandler,
+  queueBusinessBookingRequestHandler,
   updatePersonHandler,
 } from "../../src/routes/backoffice";
 import * as webhooks from "../../src/helpers/webhooks";
@@ -97,6 +98,38 @@ describe("Backoffice", () => {
       });
       const res = mockRes();
       await queueBookingRequestHandler(req, res);
+      expect(res.status.args[0][0]).to.equal(201);
+    });
+  });
+
+  describe("queueBusinessBookingRequestHandler()", () => {
+    before(async () => {
+      await db.flushDb();
+      await db.saveBusiness({
+        id: "business_id",
+        createdAt: "2020-01-01",
+        account: {
+          id: "account_id",
+          iban: "iban",
+        },
+      });
+    });
+    it("Should return HTTP 201 when the input is valid, ", async () => {
+      const req = mockReq({
+        headers: { accept: "application/json" },
+        params: {
+          businessId: "business_id",
+        },
+        body: {
+          amount: 999999999,
+          purpose: "purpose_9433",
+          bookingType: "SEPA_CREDIT_TRANSFER",
+          processed: true,
+          iban: "DE17050536539501705053",
+        },
+      });
+      const res = mockRes();
+      await queueBusinessBookingRequestHandler(req, res);
       expect(res.status.args[0][0]).to.equal(201);
     });
   });

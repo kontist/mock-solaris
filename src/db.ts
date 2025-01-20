@@ -226,6 +226,7 @@ export const migrate = async () => {
         country: "DE",
       },
       taxIdentifications: [],
+      transactions: [],
     };
 
     await saveBusiness(kontistAccountBusiness);
@@ -381,8 +382,77 @@ export const savePerson = async (person, skipInterest = false) => {
  * Consider using locks using the redlock package,
  * in functions which load from redis and then save to redis
  */
-export const saveBusiness = async (business) => {
+export const saveBusiness = async (business, skipInterest = false) => {
   business.address = business.address || { country: null };
+
+  let _business: MockBusiness;
+  // checking if business stored in redis has account,
+  // so this account is used in case of parallel requests
+  // to save business resource
+  if (business.id && !business.account) {
+    // we need to catch here because initial business has id
+    // assigned and if it's not saved in redis yet,
+    // we will get an error
+    _business = await getBusiness(business.id).catch(() => {
+      // silence the error here
+    });
+    if (_business?.account) {
+      log.warning(
+        `Business ${business.id} is missing account, using account from redis`
+      );
+    }
+  }
+
+  const account = business.account || _business?.account;
+
+  if (account) {
+    const transactions = business.transactions || _business?.transactions || [];
+    const queuedBookings =
+      business.queuedBookings || _business?.queuedBookings || [];
+    const reservations = account.reservations || [];
+    const now = new Date().getTime();
+    const transactionsBalance = transactions
+      .filter(
+        (transaction) => new Date(transaction.valuta_date).getTime() < now
+      )
+      .reduce(addAmountValues, 0);
+    const confirmedTransfersBalance = queuedBookings
+      .filter((booking) => booking.status === "accepted")
+      .reduce(addAmountValues, 0);
+    const reservationsBalance = reservations.reduce(addAmountValues, 0);
+    const limitBalance =
+      (account.account_limit && account.account_limit.value) || 0;
+
+    if (transactionsBalance < 0 && !skipInterest) {
+      calculateOverdraftInterest(account, transactionsBalance);
+    }
+
+    /**
+     * mockBalanceValue is used for e2e tests to simulate a balance
+     * If account has mockBalanceValue, we use it as a balance
+     */
+    const accountBalance = account.mockBalanceValue
+      ? !transactions.length
+        ? account.mockBalanceValue
+        : account.mockBalanceValue + transactionsBalance // in case made some transactions(transfers negative amounts)
+      : transactionsBalance;
+
+    account.balance = {
+      value: accountBalance,
+    };
+
+    account.available_balance = {
+      // Confirmed transfers amounts are negative
+      value:
+        limitBalance +
+        accountBalance +
+        confirmedTransfersBalance -
+        reservationsBalance,
+    };
+
+    business.account = account;
+    business.timedOrders = business.timedOrders || [];
+  }
 
   return setBusiness(business);
 };
