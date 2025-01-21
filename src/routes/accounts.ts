@@ -85,11 +85,17 @@ export const showAccountBookings = async (req, res) => {
   } = req.query;
   const { account_id: accountId } = req.params;
 
+  let entity: MockPerson | MockBusiness;
   const person = await findPersonByAccount({ id: accountId });
+  if (person) {
+    entity = person;
+  } else {
+    entity = await findBusinessByAccount({ id: accountId });
+  }
   const minBookingDate = new Date(min);
   const maxBookingDate = new Date(max);
 
-  const transactions = _.get(person, "transactions", [])
+  const transactions = _.get(entity, "transactions", [])
     .filter((booking) => {
       const bookingDate = new Date(booking.booking_date);
       return bookingDate >= minBookingDate && bookingDate <= maxBookingDate;
@@ -106,9 +112,16 @@ export const showAccountReservations = async (req, res) => {
   } = req.query;
 
   const { account_id: accountId } = req.params;
-  const person = await findPersonByAccount({ id: accountId });
 
-  const reservations = _.get(person.account, "reservations", [])
+  let entity: MockPerson | MockBusiness;
+  const person = await findPersonByAccount({ id: accountId });
+  if (person) {
+    entity = person;
+  } else {
+    entity = await findBusinessByAccount({ id: accountId });
+  }
+
+  const reservations = _.get(entity.account, "reservations", [])
     .filter((reservation) => reservation.reservation_type === reservationType)
     .slice((number - 1) * size, number * size);
 
