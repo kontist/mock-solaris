@@ -85,13 +85,11 @@ export const showAccountBookings = async (req, res) => {
   } = req.query;
   const { account_id: accountId } = req.params;
 
-  let entity: MockPerson | MockBusiness;
   const person = await findPersonByAccount({ id: accountId });
-  if (person) {
-    entity = person;
-  } else {
-    entity = await findBusinessByAccount({ id: accountId });
-  }
+  const entity = person
+    ? person
+    : await findBusinessByAccount({ id: accountId });
+
   const minBookingDate = new Date(min);
   const maxBookingDate = new Date(max);
 
@@ -113,13 +111,10 @@ export const showAccountReservations = async (req, res) => {
 
   const { account_id: accountId } = req.params;
 
-  let entity: MockPerson | MockBusiness;
   const person = await findPersonByAccount({ id: accountId });
-  if (person) {
-    entity = person;
-  } else {
-    entity = await findBusinessByAccount({ id: accountId });
-  }
+  const entity = person
+    ? person
+    : await findBusinessByAccount({ id: accountId });
 
   const reservations = _.get(entity.account, "reservations", [])
     .filter((reservation) => reservation.reservation_type === reservationType)
