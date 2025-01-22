@@ -6,10 +6,16 @@ import {
   savePerson,
   getTechnicalUserPerson,
   saveSepaDirectDebitReturn,
-  findPerson,
   findPersonByAccount,
+  findBusinessByAccount,
+  saveBusiness,
 } from "../db";
-import { BookingType, ChangeRequestStatus } from "../helpers/types";
+import {
+  BookingType,
+  ChangeRequestStatus,
+  MockBusiness,
+  MockPerson,
+} from "../helpers/types";
 import { createSepaDirectDebitReturn } from "../helpers/sepaDirectDebitReturn";
 import { triggerBookingsWebhook } from "./backoffice";
 import generateID from "../helpers/id";
@@ -137,7 +143,7 @@ export const createSepaDirectDebit = async (req, res) => {
 export const SEPA_TRANSFER_METHOD = "SEPA_TRANSFER_METHOD";
 
 export const createSepaCreditTransfer = async (req, res) => {
-  const { person_id: personId } = req.params;
+  const { person_id: personId, account_id: accountId } = req.params;
   const transfer = req.body;
 
   log.debug("createSepaCreditTransfer", {
@@ -145,9 +151,28 @@ export const createSepaCreditTransfer = async (req, res) => {
     params: req.params,
   });
 
-  const person = await getPerson(personId);
+  const business = await findBusinessByAccount({ id: accountId });
+  const person = (await getPerson(personId)) as MockPerson;
+  const entity: MockBusiness | MockPerson = business || person;
+  const save = business ? saveBusiness : savePerson;
 
-  if (person.account.available_balance.value < transfer.amount.value) {
+  if (!entity) {
+    return res.status(404).send({
+      errors: [
+        {
+          id: generateID(),
+          status: 404,
+          code: "model_not_found",
+          title: "Model Not Found",
+          detail: `Couldn't find 'Solaris::Person' or 'Solaris::Business' for account id '${accountId}'.`,
+        },
+      ],
+    });
+  }
+
+  const availableBalance = entity.account.available_balance.value;
+
+  if (availableBalance < transfer.amount.value) {
     return res.status(400).send({
       errors: [
         {
@@ -173,12 +198,20 @@ export const createSepaCreditTransfer = async (req, res) => {
       id: generateID(),
       status: ChangeRequestStatus.AUTHORIZATION_REQUIRED,
       method: SEPA_TRANSFER_METHOD,
+      createdAt: new Date().toISOString(),
+      businessId: business?.id,
+      accountId,
     };
   }
 
-  person.queuedBookings.push(booking);
+  entity.queuedBookings = entity.queuedBookings || [];
+  entity.queuedBookings.push(booking);
 
-  await savePerson(person);
+  await save(entity);
+  if (business) {
+    // if business is the entity, we need to save the person change request as well
+    await savePerson(person);
+  }
 
   log.debug("booking pushed to list of pending transfers", { booking });
 

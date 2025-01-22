@@ -64,6 +64,7 @@ describe("Instant Credit Transfer", () => {
             value: 100,
             currency: "EUR",
           },
+          person_id: personId,
         },
       });
 

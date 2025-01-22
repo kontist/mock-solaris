@@ -1,5 +1,6 @@
 import _ from "lodash";
 import moment from "moment";
+import type { Request, Response } from "express";
 
 import {
   getPerson,
@@ -39,6 +40,7 @@ import {
   AuthorizeChangeRequestResponse,
   ChangeRequestStatus,
   MockPerson,
+  MockBusiness,
   TimedOrderStatus,
   BusinessWebhookEvent,
 } from "../helpers/types";
@@ -94,11 +96,11 @@ export const createChangeRequest = async (req, res, person, method, delta) => {
 };
 
 export const createBusinessChangeRequest = async (
-  req,
-  res,
-  business,
-  method,
-  delta
+  req: Request,
+  res: Response,
+  business: MockBusiness,
+  method: string,
+  delta: Record<string, any>
 ) => {
   const changeRequestId = Date.now().toString();
   const legalReps = business.legalRepresentatives;
@@ -138,12 +140,20 @@ export const createBusinessChangeRequest = async (
     });
   }
 
-  return res.status(202).send({
+  const changeRequest = {
     id: changeRequestId,
     status: ChangeRequestStatus.AUTHORIZATION_REQUIRED,
     updated_at: new Date().toISOString(),
     url: `:env/v1/change_requests/${changeRequestId}/authorize`,
-  });
+  };
+
+  if (method === INSTANT_CREDIT_TRANSFER_CREATE) {
+    return res.status(202).send({
+      change_request: changeRequest,
+    });
+  }
+
+  return res.status(202).send(changeRequest);
 };
 
 export const authorizeChangeRequest = async (req, res) => {
@@ -197,7 +207,8 @@ export const authorizeChangeRequest = async (req, res) => {
 };
 
 export const confirmChangeRequest = async (req, res) => {
-  let businessId;
+  let businessId: string | undefined;
+  let business: MockBusiness;
   const { change_request_id: changeRequestId } = req.params;
   const { person_id: personId, tan, device_id: deviceId, signature } = req.body;
   const person = (
@@ -252,10 +263,14 @@ export const confirmChangeRequest = async (req, res) => {
     response_code: status,
     id: changeRequestId,
   };
+
   switch (person.changeRequest.method) {
     case SEPA_TRANSFER_METHOD: {
       const today = moment().format("YYYY-MM-DD");
-      const transfer = person.queuedBookings?.find(
+      business = person.changeRequest.businessId
+        ? await getBusiness(person.changeRequest.businessId)
+        : null;
+      const transfer = (business || person).queuedBookings?.find(
         (queuedBooking) => queuedBooking.id === person.changeRequest.transfer.id
       );
 
@@ -353,7 +368,7 @@ export const confirmChangeRequest = async (req, res) => {
       break;
     case BUSINESS_UPDATE:
       businessId = person.changeRequest.businessId;
-      const business = await getBusiness(person.changeRequest.businessId);
+      business = await getBusiness(person.changeRequest.businessId);
 
       _.merge(business, person.changeRequest.delta);
       response.response_body = business;
@@ -382,7 +397,8 @@ export const confirmChangeRequest = async (req, res) => {
   const shouldTriggerWebhookBusinessUpdate =
     person.changeRequest.method === BUSINESS_UPDATE;
   delete person.changeRequest;
-  await savePerson(person);
+
+  await Promise.all([savePerson(person), business && saveBusiness(business)]);
 
   if (shouldTriggerWebhook) {
     await triggerWebhook({

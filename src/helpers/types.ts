@@ -192,10 +192,13 @@ export type TimedOrder = {
 };
 
 export type MockChangeRequest = {
+  id?: string;
+  status?: ChangeRequestStatus;
   cardId?: string;
   pin?: string;
   changeRequestId?: string;
   businessId?: string;
+  accountId?: string;
   token?: string;
   declineChangeRequestId?: string;
   authenticateChangeRequestId?: string;
@@ -468,6 +471,7 @@ export type MockBusiness = {
   };
   taxIdentifications: TaxIdentification[];
   queuedBookings?: Record<string, unknown>[];
+  bankStatements?: Record<string, unknown>[];
 };
 
 export type MockCreateBusiness = {
