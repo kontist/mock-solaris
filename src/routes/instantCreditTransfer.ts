@@ -5,12 +5,7 @@ import moment from "moment";
 import crypto from "crypto";
 
 import { getLogger } from "../logger";
-import {
-  findBusinessByAccount,
-  findPersonByAccount,
-  saveBusiness,
-  savePerson,
-} from "../db";
+import { getPerson, savePerson } from "../db";
 import generateID from "../helpers/id";
 import {
   ChangeRequestStatus,
@@ -44,13 +39,7 @@ export const getInstantReachability = (req: Request, res: Response) => {
 
 export const createInstantCreditTransfer = async (req, res) => {
   const { body } = req;
-  const { accountId } = req.params;
-  const person = await findPersonByAccount({ id: accountId });
-  const isBusiness = !person;
-
-  const entity = isBusiness
-    ? await findBusinessByAccount({ id: accountId })
-    : person;
+  const person = await getPerson(body.person_id);
 
   const {
     creditor_iban: creditorIban,
@@ -93,10 +82,10 @@ export const createInstantCreditTransfer = async (req, res) => {
     end_to_end_id: body.end_to_end_id,
   };
 
-  entity.instantCreditTransfers = entity.instantCreditTransfers || [];
-  entity.instantCreditTransfers.push(instantCreditTransfer);
+  person.instantCreditTransfers = person.instantCreditTransfers || [];
+  person.instantCreditTransfers.push(instantCreditTransfer);
 
-  entity.changeRequest = {
+  person.changeRequest = {
     method: INSTANT_CREDIT_TRANSFER_CREATE,
     id: crypto.randomBytes(16).toString("hex"),
     createdAt: new Date().toISOString(),
@@ -105,18 +94,14 @@ export const createInstantCreditTransfer = async (req, res) => {
 
   const response = {
     change_request: {
-      id: entity.changeRequest.id,
+      id: person.changeRequest.id,
       status: ChangeRequestStatus.AUTHORIZATION_REQUIRED,
-      updated_at: entity.changeRequest.createdAt,
-      url: `:env/v1/change_requests/${entity.changeRequest.id}/authorize`,
+      updated_at: person.changeRequest.createdAt,
+      url: `:env/v1/change_requests/${person.changeRequest.id}/authorize`,
     },
   };
 
-  if (isBusiness) {
-    await saveBusiness(entity);
-  } else {
-    await savePerson(entity);
-  }
+  await savePerson(person);
 
   res.status(HttpStatusCodes.ACCEPTED).send(response);
 };
