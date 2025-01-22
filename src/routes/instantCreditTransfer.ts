@@ -5,7 +5,12 @@ import moment from "moment";
 import crypto from "crypto";
 
 import { getLogger } from "../logger";
-import { findPersonByAccount, savePerson } from "../db";
+import {
+  findBusinessByAccount,
+  findPersonByAccount,
+  saveBusiness,
+  savePerson,
+} from "../db";
 import generateID from "../helpers/id";
 import {
   ChangeRequestStatus,
@@ -41,6 +46,11 @@ export const createInstantCreditTransfer = async (req, res) => {
   const { body } = req;
   const { accountId } = req.params;
   const person = await findPersonByAccount({ id: accountId });
+  const isBusiness = !person;
+
+  const entity = isBusiness
+    ? await findBusinessByAccount({ id: accountId })
+    : person;
 
   const {
     creditor_iban: creditorIban,
@@ -83,10 +93,10 @@ export const createInstantCreditTransfer = async (req, res) => {
     end_to_end_id: body.end_to_end_id,
   };
 
-  person.instantCreditTransfers = person.instantCreditTransfers || [];
-  person.instantCreditTransfers.push(instantCreditTransfer);
+  entity.instantCreditTransfers = entity.instantCreditTransfers || [];
+  entity.instantCreditTransfers.push(instantCreditTransfer);
 
-  person.changeRequest = {
+  entity.changeRequest = {
     method: INSTANT_CREDIT_TRANSFER_CREATE,
     id: crypto.randomBytes(16).toString("hex"),
     createdAt: new Date().toISOString(),
@@ -95,14 +105,18 @@ export const createInstantCreditTransfer = async (req, res) => {
 
   const response = {
     change_request: {
-      id: person.changeRequest.id,
+      id: entity.changeRequest.id,
       status: ChangeRequestStatus.AUTHORIZATION_REQUIRED,
-      updated_at: person.changeRequest.createdAt,
-      url: `:env/v1/change_requests/${person.changeRequest.id}/authorize`,
+      updated_at: entity.changeRequest.createdAt,
+      url: `:env/v1/change_requests/${entity.changeRequest.id}/authorize`,
     },
   };
 
-  await savePerson(person);
+  if (isBusiness) {
+    await saveBusiness(entity);
+  } else {
+    await savePerson(entity);
+  }
 
   res.status(HttpStatusCodes.ACCEPTED).send(response);
 };
