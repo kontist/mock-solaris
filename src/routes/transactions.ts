@@ -8,6 +8,7 @@ import {
   saveSepaDirectDebitReturn,
   findPerson,
   findPersonByAccount,
+  findBusinessByAccount,
 } from "../db";
 import { BookingType, ChangeRequestStatus } from "../helpers/types";
 import { createSepaDirectDebitReturn } from "../helpers/sepaDirectDebitReturn";
@@ -137,7 +138,7 @@ export const createSepaDirectDebit = async (req, res) => {
 export const SEPA_TRANSFER_METHOD = "SEPA_TRANSFER_METHOD";
 
 export const createSepaCreditTransfer = async (req, res) => {
-  const { person_id: personId } = req.params;
+  const { person_id: personId, account_id: accountId } = req.params;
   const transfer = req.body;
 
   log.debug("createSepaCreditTransfer", {
@@ -145,9 +146,18 @@ export const createSepaCreditTransfer = async (req, res) => {
     params: req.params,
   });
 
+  const isBusiness = !(await findPersonByAccount({ id: accountId }));
   const person = await getPerson(personId);
 
-  if (person.account.available_balance.value < transfer.amount.value) {
+  let availableBalance;
+  if (isBusiness) {
+    const business = await findBusinessByAccount({ id: accountId });
+    availableBalance = business.account.available_balance.value;
+  } else {
+    availableBalance = person.account.available_balance.value;
+  }
+
+  if (availableBalance < transfer.amount.value) {
     return res.status(400).send({
       errors: [
         {
