@@ -39,6 +39,7 @@ import {
   AuthorizeChangeRequestResponse,
   ChangeRequestStatus,
   MockPerson,
+  MockBusiness,
   TimedOrderStatus,
   BusinessWebhookEvent,
 } from "../helpers/types";
@@ -197,7 +198,8 @@ export const authorizeChangeRequest = async (req, res) => {
 };
 
 export const confirmChangeRequest = async (req, res) => {
-  let businessId;
+  let businessId: string | undefined;
+  let business: MockBusiness;
   const { change_request_id: changeRequestId } = req.params;
   const { person_id: personId, tan, device_id: deviceId, signature } = req.body;
   const person = (
@@ -252,10 +254,14 @@ export const confirmChangeRequest = async (req, res) => {
     response_code: status,
     id: changeRequestId,
   };
+
   switch (person.changeRequest.method) {
     case SEPA_TRANSFER_METHOD: {
       const today = moment().format("YYYY-MM-DD");
-      const transfer = person.queuedBookings?.find(
+      business = person.changeRequest.businessId
+        ? await getBusiness(person.changeRequest.businessId)
+        : null;
+      const transfer = (business || person).queuedBookings?.find(
         (queuedBooking) => queuedBooking.id === person.changeRequest.transfer.id
       );
 
@@ -353,7 +359,7 @@ export const confirmChangeRequest = async (req, res) => {
       break;
     case BUSINESS_UPDATE:
       businessId = person.changeRequest.businessId;
-      const business = await getBusiness(person.changeRequest.businessId);
+      business = await getBusiness(person.changeRequest.businessId);
 
       _.merge(business, person.changeRequest.delta);
       response.response_body = business;
@@ -382,7 +388,8 @@ export const confirmChangeRequest = async (req, res) => {
   const shouldTriggerWebhookBusinessUpdate =
     person.changeRequest.method === BUSINESS_UPDATE;
   delete person.changeRequest;
-  await savePerson(person);
+
+  await Promise.all([savePerson(person), business && saveBusiness(business)]);
 
   if (shouldTriggerWebhook) {
     await triggerWebhook({

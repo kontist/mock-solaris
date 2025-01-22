@@ -39,7 +39,7 @@ export const createBankStatement = async (req, res) => {
     });
     return;
   }
-  // Solaris does not allow bank statement creation for dates in the fuutre
+  // Solaris does not allow bank statement creation for dates in the future
   if (isEndDateInvalid) {
     res.status(400).send({
       errors: [
