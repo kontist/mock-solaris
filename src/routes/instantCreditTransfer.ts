@@ -5,14 +5,23 @@ import moment from "moment";
 import crypto from "crypto";
 
 import { getLogger } from "../logger";
-import { getPerson, savePerson } from "../db";
+import {
+  findBusinessByAccount,
+  findPersonByAccount,
+  getBusiness,
+  saveBusiness,
+  savePerson,
+} from "../db";
 import generateID from "../helpers/id";
 import {
   ChangeRequestStatus,
   InstantCreditTransferStatus,
   BookingType,
+  MockPerson,
+  Booking,
 } from "../helpers/types";
 import { triggerBookingsWebhook } from "./backoffice";
+import { createBusinessChangeRequest } from "./changeRequest";
 
 export const INSTANT_CREDIT_TRANSFER_CREATE = "instant_credit_transfer:create";
 
@@ -39,7 +48,10 @@ export const getInstantReachability = (req: Request, res: Response) => {
 
 export const createInstantCreditTransfer = async (req, res) => {
   const { body } = req;
-  const person = await getPerson(body.person_id);
+  const { accountId } = req.params;
+  const person = await findPersonByAccount({ id: accountId });
+  const business = await findBusinessByAccount({ id: accountId });
+  const entity = business || person;
 
   const {
     creditor_iban: creditorIban,
@@ -82,28 +94,42 @@ export const createInstantCreditTransfer = async (req, res) => {
     end_to_end_id: body.end_to_end_id,
   };
 
-  person.instantCreditTransfers = person.instantCreditTransfers || [];
-  person.instantCreditTransfers.push(instantCreditTransfer);
+  entity.instantCreditTransfers = entity.instantCreditTransfers || [];
+  entity.instantCreditTransfers.push(instantCreditTransfer);
 
-  person.changeRequest = {
+  const changeRequest = {
     method: INSTANT_CREDIT_TRANSFER_CREATE,
     id: crypto.randomBytes(16).toString("hex"),
     createdAt: new Date().toISOString(),
     instantCreditTransfer,
+    businessId: business ? business.id : null,
+    accountId,
   };
 
-  const response = {
-    change_request: {
-      id: person.changeRequest.id,
-      status: ChangeRequestStatus.AUTHORIZATION_REQUIRED,
-      updated_at: person.changeRequest.createdAt,
-      url: `:env/v1/change_requests/${person.changeRequest.id}/authorize`,
-    },
-  };
+  if (person) {
+    person.changeRequest = changeRequest;
+    await savePerson(person);
+    const response = {
+      change_request: {
+        id: changeRequest.id,
+        status: ChangeRequestStatus.AUTHORIZATION_REQUIRED,
+        updated_at: changeRequest.createdAt,
+        url: `:env/v1/change_requests/${changeRequest.id}/authorize`,
+      },
+    };
 
-  await savePerson(person);
+    res.status(HttpStatusCodes.ACCEPTED).send(response);
+    return;
+  }
 
-  res.status(HttpStatusCodes.ACCEPTED).send(response);
+  await saveBusiness(business);
+  return createBusinessChangeRequest(
+    req,
+    res,
+    business,
+    INSTANT_CREDIT_TRANSFER_CREATE,
+    instantCreditTransfer
+  );
 };
 
 const mapInstantTransferToTransaction = (instantCreditTransfer) => {
@@ -136,25 +162,33 @@ const mapInstantTransferToTransaction = (instantCreditTransfer) => {
   };
 };
 
-export const confirmInstantCreditTransfer = async (person) => {
-  const instantCreditTransferId = person.changeRequest.instantCreditTransfer.id;
-  const instantCreditTransfer = person.instantCreditTransfers.find(
+export const confirmInstantCreditTransfer = async (person: MockPerson) => {
+  const instantCreditTransfer =
+    person.changeRequest.instantCreditTransfer || person.changeRequest.delta;
+  const instantCreditTransferId = instantCreditTransfer.id;
+  const business = person.changeRequest.businessId
+    ? await getBusiness(person.changeRequest.businessId)
+    : null;
+
+  const entity = business || person;
+  const save = business ? saveBusiness : savePerson;
+  const ict = entity.instantCreditTransfers.find(
     (item) => item.id === instantCreditTransferId
   );
 
-  const transaction = mapInstantTransferToTransaction(instantCreditTransfer);
-  person.transactions.push(transaction);
+  const transaction = mapInstantTransferToTransaction(ict);
+  entity.transactions.push(transaction as unknown as Booking);
 
-  const itemIndex = person.instantCreditTransfers.findIndex(
+  const itemIndex = entity.instantCreditTransfers.findIndex(
     (tr) => tr.id === instantCreditTransfer.id
   );
-  person.instantCreditTransfers[itemIndex] = {
+  entity.instantCreditTransfers[itemIndex] = {
     ...instantCreditTransfer,
     status: InstantCreditTransferStatus.CLEARED,
   };
 
-  await savePerson(person);
-  await triggerBookingsWebhook(person, transaction);
+  await save(entity);
+  await triggerBookingsWebhook(entity, transaction);
 
   return instantCreditTransfer;
 };

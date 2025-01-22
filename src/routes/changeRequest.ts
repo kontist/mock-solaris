@@ -1,5 +1,6 @@
 import _ from "lodash";
 import moment from "moment";
+import type { Request, Response } from "express";
 
 import {
   getPerson,
@@ -95,11 +96,11 @@ export const createChangeRequest = async (req, res, person, method, delta) => {
 };
 
 export const createBusinessChangeRequest = async (
-  req,
-  res,
-  business,
-  method,
-  delta
+  req: Request,
+  res: Response,
+  business: MockBusiness,
+  method: string,
+  delta: Record<string, any>
 ) => {
   const changeRequestId = Date.now().toString();
   const legalReps = business.legalRepresentatives;
@@ -139,12 +140,20 @@ export const createBusinessChangeRequest = async (
     });
   }
 
-  return res.status(202).send({
+  const changeRequest = {
     id: changeRequestId,
     status: ChangeRequestStatus.AUTHORIZATION_REQUIRED,
     updated_at: new Date().toISOString(),
     url: `:env/v1/change_requests/${changeRequestId}/authorize`,
-  });
+  };
+
+  if (method === INSTANT_CREDIT_TRANSFER_CREATE) {
+    return res.status(202).send({
+      change_request: changeRequest,
+    });
+  }
+
+  return res.status(202).send(changeRequest);
 };
 
 export const authorizeChangeRequest = async (req, res) => {
