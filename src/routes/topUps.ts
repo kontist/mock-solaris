@@ -59,22 +59,41 @@ export const checkTopUpForBookingCreation = async (data: {
     );
 
     if (paymentIntent.status === "succeeded") {
-      const person = await db.getPerson(personId);
+      const accountId = (await db.getPerson(personId)).account.id;
+
+      const person = await db.findPersonByAccount({ id: accountId });
+      const business = await db.findBusinessByAccount({ id: accountId });
+
+      const entity = business || person;
+      const save = person ? db.savePerson : db.saveBusiness;
+
+      const generateBooking = person
+        ? backofficeHelpers.generateBookingForPerson
+        : backofficeHelpers.generateBookingForBusiness;
+
+      const senderName = person
+        ? `${person.first_name} ${person.last_name}`
+        : business.name;
+
       const now = new Date().toISOString().split("T")[0];
-      const transaction = backofficeHelpers.generateBookingForPerson({
-        person,
+
+      const transaction = generateBooking({
+        [person ? "person" : "business"]: entity,
         amount,
         purpose: "Top-up",
-        senderName: `${person.first_name} ${person.last_name}`,
+        senderName,
         endToEndId: paymentIntentId,
         bookingType: BookingType.TOP_UP_CARD,
         bookingDate: now,
         valutaDate: now,
       });
-      person.transactions.push(transaction);
-      await db.savePerson(person);
-      await backofficeHelpers.triggerBookingsWebhook(person, transaction);
-      log.info(`TopUp ${paymentIntentId} was successful`, person.id);
+
+      entity.transactions.push(transaction);
+      await save(entity);
+
+      await backofficeHelpers.triggerBookingsWebhook(entity, transaction);
+
+      log.info(`TopUp ${paymentIntentId} was successful`, entity.id);
     } else {
       if (retry) {
         log.warning(`TopUp ${paymentIntentId} was not successful`);
