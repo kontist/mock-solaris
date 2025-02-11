@@ -167,10 +167,14 @@ describe("TopUps", () => {
 describe("checkTopUpForBookingCreation", () => {
   let stripeClientStub: sinon.SinonStub;
   let dbStub: sinon.SinonStub;
-  let generateBookingStub: sinon.SinonStub;
+  let findPersonByAccountStub: sinon.SinonStub;
+  let findBusinessByAccountStub: sinon.SinonStub;
+  let generateBookingForPersonStub: sinon.SinonStub;
+  let generateBookingForBusinessStub: sinon.SinonStub;
   let triggerWebhookStub: sinon.SinonStub;
   let sandbox: sinon.SinonSandbox;
   let savePersonStub: sinon.SinonStub;
+  let saveBusinessStub: sinon.SinonStub;
   let clock: sinon.SinonFakeTimers;
 
   beforeEach(() => {
@@ -182,12 +186,23 @@ describe("checkTopUpForBookingCreation", () => {
       stripeHelpers.getStripeClient().paymentIntents,
       "retrieve"
     );
+
     dbStub = sandbox.stub(db, "getPerson");
+    findPersonByAccountStub = sandbox.stub(db, "findPersonByAccount");
+    findBusinessByAccountStub = sandbox.stub(db, "findBusinessByAccount");
+
     savePersonStub = sandbox.stub(db, "savePerson");
-    generateBookingStub = sandbox.stub(
+    saveBusinessStub = sandbox.stub(db, "saveBusiness");
+
+    generateBookingForPersonStub = sandbox.stub(
       backofficeHelpers,
       "generateBookingForPerson"
     );
+    generateBookingForBusinessStub = sandbox.stub(
+      backofficeHelpers,
+      "generateBookingForBusiness"
+    );
+
     triggerWebhookStub = sandbox.stub(
       backofficeHelpers,
       "triggerBookingsWebhook"
@@ -198,18 +213,23 @@ describe("checkTopUpForBookingCreation", () => {
     sandbox.restore();
   });
 
-  it("should handle successful payment", async () => {
+  it("should handle successful payment for Person", async () => {
     const paymentIntent = {
       status: "succeeded",
       id: "some-id",
     };
     const person = {
       id: "person-id",
+      account: {
+        id: "account-id",
+      },
       transactions: [],
     };
 
     stripeClientStub.resolves(paymentIntent);
     dbStub.resolves(person);
+    findPersonByAccountStub.resolves(person);
+    findBusinessByAccountStub.resolves(null);
 
     setTimeout(() => {
       clock.tick(4000);
@@ -223,9 +243,48 @@ describe("checkTopUpForBookingCreation", () => {
     });
 
     expect(dbStub.calledOnce).to.be.true;
-    expect(generateBookingStub.calledOnce).to.be.true;
+    expect(generateBookingForPersonStub.calledOnce).to.be.true;
     expect(triggerWebhookStub.calledOnce).to.be.true;
     expect(savePersonStub.calledOnce).to.be.true;
+  });
+
+  it("should handle successful payment for Business", async () => {
+    const paymentIntent = {
+      status: "succeeded",
+      id: "some-id",
+    };
+    const person = {
+      id: "person-id",
+      account: {
+        id: "account-id",
+      },
+      transactions: [],
+    };
+    const business = {
+      id: "business-id",
+      transactions: [],
+    };
+
+    stripeClientStub.resolves(paymentIntent);
+    dbStub.resolves(person);
+    findPersonByAccountStub.resolves(null);
+    findBusinessByAccountStub.resolves(business);
+
+    setTimeout(() => {
+      clock.tick(4000);
+    }, 10);
+
+    await topUps.checkTopUpForBookingCreation({
+      amount: 100,
+      personId: "person-id",
+      retry: false,
+      paymentIntentId: "some-id",
+    });
+
+    expect(dbStub.calledOnce).to.be.true;
+    expect(generateBookingForBusinessStub.calledOnce).to.be.true;
+    expect(triggerWebhookStub.calledOnce).to.be.true;
+    expect(saveBusinessStub.calledOnce).to.be.true;
   });
 
   it("should handle unsuccessful payment without retry", async () => {
@@ -248,7 +307,7 @@ describe("checkTopUpForBookingCreation", () => {
     });
 
     expect(dbStub.called).to.be.false;
-    expect(generateBookingStub.called).to.be.false;
+    expect(generateBookingForPersonStub.called).to.be.false;
     expect(triggerWebhookStub.called).to.be.false;
     expect(savePersonStub.calledOnce).to.be.false;
   });
@@ -273,7 +332,7 @@ describe("checkTopUpForBookingCreation", () => {
     });
 
     expect(dbStub.called).to.be.false;
-    expect(generateBookingStub.called).to.be.false;
+    expect(generateBookingForPersonStub.called).to.be.false;
     expect(triggerWebhookStub.called).to.be.false;
     expect(savePersonStub.calledOnce).to.be.false;
   });
@@ -293,7 +352,7 @@ describe("checkTopUpForBookingCreation", () => {
     });
 
     expect(dbStub.called).to.be.false;
-    expect(generateBookingStub.called).to.be.false;
+    expect(generateBookingForPersonStub.called).to.be.false;
     expect(triggerWebhookStub.called).to.be.false;
     expect(savePersonStub.calledOnce).to.be.false;
   });
