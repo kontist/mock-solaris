@@ -18,6 +18,7 @@ import { getLogger } from "../logger";
 import {
   AccountType,
   CustomerType,
+  MockAccount,
   MockBusiness,
   MockPerson,
 } from "../helpers/types";
@@ -172,7 +173,7 @@ export const createSubaccount = async (
   entityId: string,
   customerType = CustomerType.PERSON
 ) => {
-  let account;
+  let account: MockAccount;
   let entity: MockPerson | MockBusiness;
 
   const lockKey = `redlock:${
@@ -187,12 +188,16 @@ export const createSubaccount = async (
       : getBusiness)(entityId);
 
     account = getDefaultAccount(entityId, customerType, {
-      accountType: AccountType.CHECKING_SUBACCOUNT,
+      type: AccountType.CHECKING_SUBACCOUNT,
     }) as any;
+
     await (customerType === CustomerType.PERSON ? savePerson : saveBusiness)(
       entity
     );
     entity.accounts = (entity.accounts || []).concat(account);
+    await (customerType === CustomerType.PERSON ? savePerson : saveBusiness)(
+      entity
+    );
     await saveAccountToEntity(account, entityId, customerType);
   });
 

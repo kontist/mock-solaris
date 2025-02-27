@@ -96,8 +96,7 @@ export const createAccountOpeningRequest = async (
   res.status(HttpStatusCodes.CREATED).send(accountOpeningRequest);
 
   let account: MockAccount;
-
-  if (accountType === AccountType.CHECKING_SUBACCOUNT) {
+  if (accountOpeningRequest.account_type === AccountType.CHECKING_SUBACCOUNT) {
     account = await createSubaccount(entityId, customerType);
   } else {
     account = await createAccount(
