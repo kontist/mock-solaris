@@ -1,5 +1,6 @@
 import _ from "lodash";
 import HttpStatusCodes from "http-status";
+import uuid from "node-uuid";
 
 import {
   getPerson,
@@ -128,20 +129,30 @@ export const showAccountReservations = async (req, res) => {
 };
 
 export const showPersonAccount = async (req, res) => {
-  const { person_id: personId, account_id: accountId } = req.params;
-
-  const person = await getPerson(personId);
+  const { account_id: accountId, person } = req.params;
   const account = getAccountFromEntity(person, accountId);
+
+  if (!account) {
+    return res.status(404).send({
+      errors: [
+        {
+          id: uuid.v4(),
+          status: 404,
+          code: "resource_not_found",
+          title: "The resource could not be found.",
+          detail: "The resource could not be found.",
+        },
+      ],
+    });
+  }
+
   const accountData = _.pick(account, requestAccountFields);
 
   res.status(200).send(accountData);
 };
 
 export const showPersonAccounts = async (req, res) => {
-  const { person_id: personId } = req.params;
-  const person = await getPerson(personId);
-
-  const accounts = getAccountsFromEntity(person).forEach((account) =>
+  const accounts = getAccountsFromEntity(req.person).forEach((account) =>
     _.pick(account, requestAccountFields)
   );
 

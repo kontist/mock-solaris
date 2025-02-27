@@ -205,10 +205,12 @@ router.get(
 );
 router.get(
   "/persons/:person_id/accounts/:id",
+  middlewares.withPerson,
   safeRequestHandler(accountsAPI.showPersonAccount)
 );
 router.get(
   "/persons/:person_id/accounts",
+  middlewares.withPerson,
   safeRequestHandler(accountsAPI.showPersonAccounts)
 );
 router.post(
