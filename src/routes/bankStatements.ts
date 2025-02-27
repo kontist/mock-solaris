@@ -3,6 +3,7 @@ import moment from "moment";
 
 import * as db from "../db";
 import * as log from "../logger";
+import { getAccountFromEntity } from "../helpers";
 
 export const createBankStatement = async (req, res) => {
   const { account_id: accountId } = req.params;
@@ -10,7 +11,7 @@ export const createBankStatement = async (req, res) => {
   const person = await db.findPersonByAccount({ id: accountId });
   const business = await db.findBusinessByAccount({ id: accountId });
 
-  const account = business ? business.account : person.account;
+  const account = getAccountFromEntity(business || person, accountId);
   const createdAt = person ? person.createdAt : business.createdAt;
   const termsAndConditionsSignedAt = person
     ? person.terms_conditions_signed_at
@@ -128,6 +129,7 @@ export const showBankStatementBookings = async (req, res) => {
 
   const person = await db.findPersonByAccount({ id: accountId });
   const business = await db.findBusinessByAccount({ id: accountId });
+  const account = getAccountFromEntity(business || person, accountId);
 
   const statementsList = person
     ? person.bankStatements
@@ -159,9 +161,7 @@ export const showBankStatementBookings = async (req, res) => {
   const momentStartDate = moment(startDate);
   const momentEndDate = moment(endDate);
 
-  const bankStatementsBookings = (
-    person ? db.getPersonBookings(person) : db.getBusinessBookings(business)
-  )
+  const bankStatementsBookings = account.transactions
     .filter((booking) =>
       moment(booking.booking_date).isBetween(
         momentStartDate,
