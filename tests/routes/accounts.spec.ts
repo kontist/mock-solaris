@@ -45,8 +45,8 @@ describe("Account", () => {
 
     it("should return the account", async () => {
       const req = mockReq({
+        person,
         params: {
-          person,
           account_id: subaccount.id,
         },
       });

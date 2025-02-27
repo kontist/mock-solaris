@@ -8,7 +8,9 @@ export const getAccountsFromEntity = (
   entity: MockPerson | MockBusiness
 ): MockAccount[] => [
   ...(entity.accounts || []),
-  { ...entity.account, transactions: entity.transactions },
+  ...(entity.account
+    ? [{ ...entity.account, transactions: entity.transactions }]
+    : []),
 ];
 
 export const getAccountFromEntity = (
