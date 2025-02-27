@@ -168,6 +168,37 @@ export const createAccount = async (
   return entity.account;
 };
 
+export const createSubaccount = async (
+  entityId: string,
+  customerType = CustomerType.PERSON
+) => {
+  let account;
+  let entity: MockPerson | MockBusiness;
+
+  const lockKey = `redlock:${
+    process.env.MOCKSOLARIS_REDIS_PREFIX
+  }:${customerType.toLowerCase()}:${entityId}`;
+  await redlock.using([lockKey], 5000, async (signal) => {
+    if (signal.aborted) {
+      throw signal.error;
+    }
+    entity = await (customerType === CustomerType.PERSON
+      ? getPerson
+      : getBusiness)(entityId);
+
+    account = getDefaultAccount(entityId, customerType, {
+      accountType: AccountType.CHECKING_SUBACCOUNT,
+    }) as any;
+    await (customerType === CustomerType.PERSON ? savePerson : saveBusiness)(
+      entity
+    );
+    entity.accounts = (entity.accounts || []).concat(account);
+    await saveAccountToEntity(account, entityId, customerType);
+  });
+
+  return account;
+};
+
 export const createAccountRequestHandler = async (req, res) => {
   const { person_id: personId } = req.params;
 

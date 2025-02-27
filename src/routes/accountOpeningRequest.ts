@@ -9,7 +9,6 @@ import {
   redlock,
   getBusiness,
   saveBusiness,
-  saveAccountOpeningRequestToBusinessId,
   saveAccountOpeningRequestToEntityId,
 } from "../db";
 import {
@@ -17,13 +16,14 @@ import {
   AccountOpeningRequestStatus,
   AccountType,
   CustomerType,
+  MockAccount,
   MockBusiness,
   MockPerson,
   PersonWebhookEvent,
 } from "../helpers/types";
 import { triggerWebhook } from "../helpers/webhooks";
 import generateID from "../helpers/id";
-import { createAccount } from "../routes/accounts";
+import { createAccount, createSubaccount } from "../routes/accounts";
 
 const getHandlers = (customerType: CustomerType) => {
   switch (customerType) {
@@ -95,11 +95,17 @@ export const createAccountOpeningRequest = async (
 
   res.status(HttpStatusCodes.CREATED).send(accountOpeningRequest);
 
-  const account = await createAccount(
-    entityId,
-    { type: accountType },
-    customerType
-  );
+  let account: MockAccount;
+
+  if (accountType === AccountType.CHECKING_SUBACCOUNT) {
+    account = await createSubaccount(entityId, customerType);
+  } else {
+    account = await createAccount(
+      entityId,
+      { type: accountType },
+      customerType
+    );
+  }
 
   const completedRequest = {
     ...accountOpeningRequest,
