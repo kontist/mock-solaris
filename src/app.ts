@@ -204,7 +204,7 @@ router.get(
   safeRequestHandler(accountsAPI.showAccountBookings)
 );
 router.get(
-  "/persons/:person_id/accounts/:id",
+  "/persons/:person_id/accounts/:account_id",
   middlewares.withPerson,
   safeRequestHandler(accountsAPI.showPersonAccount)
 );

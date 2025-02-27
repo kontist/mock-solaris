@@ -32,8 +32,8 @@ describe("Account", () => {
   describe("showPersonAccount - subaccount", () => {
     it("should return a 404 if the account does not exist", async () => {
       const req = mockReq({
+        person,
         params: {
-          person,
           account_id: "non-existing-id",
         },
       });
@@ -61,8 +61,8 @@ describe("Account", () => {
   describe("showPersonAccount - main account", () => {
     it("should return the account", async () => {
       const req = mockReq({
+        person,
         params: {
-          person,
           account_id: mockAccount.id,
         },
       });

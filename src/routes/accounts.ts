@@ -129,8 +129,8 @@ export const showAccountReservations = async (req, res) => {
 };
 
 export const showPersonAccount = async (req, res) => {
-  const { account_id: accountId, person } = req.params;
-  const account = getAccountFromEntity(person, accountId);
+  const { account_id: accountId } = req.params;
+  const account = getAccountFromEntity(req.person, accountId);
 
   if (!account) {
     return res.status(404).send({
