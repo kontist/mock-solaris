@@ -22,6 +22,7 @@ import {
   MockBusiness,
   MockPerson,
 } from "../helpers/types";
+import { getAccountFromEntity, getAccountsFromEntity } from "../helpers";
 
 const ACCOUNT_SNAPSHOT_SOURCE = "SOLARISBANK";
 
@@ -94,7 +95,9 @@ export const showAccountBookings = async (req, res) => {
   const minBookingDate = new Date(min);
   const maxBookingDate = new Date(max);
 
-  const transactions = _.get(entity, "transactions", [])
+  const account = getAccountFromEntity(entity, accountId);
+
+  const transactions = _.get(account, "transactions", [])
     .filter((booking) => {
       const bookingDate = new Date(booking.booking_date);
       return bookingDate >= minBookingDate && bookingDate <= maxBookingDate;
@@ -125,21 +128,23 @@ export const showAccountReservations = async (req, res) => {
 };
 
 export const showPersonAccount = async (req, res) => {
-  const { person_id: personId } = req.params;
+  const { person_id: personId, account_id: accountId } = req.params;
 
   const person = await getPerson(personId);
-  const account = _.pick(person.account, requestAccountFields);
+  const account = getAccountFromEntity(person, accountId);
+  const accountData = _.pick(account, requestAccountFields);
 
-  res.status(200).send(account);
+  res.status(200).send(accountData);
 };
 
 export const showPersonAccounts = async (req, res) => {
   const { person_id: personId } = req.params;
   const person = await getPerson(personId);
 
-  const accounts = person.account
-    ? [_.pick(person.account, requestAccountFields)]
-    : [];
+  const accounts = getAccountsFromEntity(person).forEach((account) =>
+    _.pick(account, requestAccountFields)
+  );
+
   res.status(200).send(accounts);
 };
 
@@ -327,7 +332,10 @@ export const showAccountBalance = async (req, res) => {
     });
   }
 
-  const balance = _.pick(person ? person.account : business.account, [
+  const entity = person || business;
+  const account = getAccountFromEntity(entity, accountId);
+
+  const balance = _.pick(account, [
     "balance",
     "available_balance",
     "seizure_protection",

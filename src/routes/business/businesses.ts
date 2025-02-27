@@ -10,6 +10,7 @@ import { BusinessWebhookEvent, MockBusiness } from "../../helpers/types";
 import { triggerWebhook } from "../../helpers/webhooks";
 import { createBusinessChangeRequest } from "../changeRequest";
 import { isChangeRequestRequired } from "../persons";
+import { getAccountFromEntity } from "../../helpers";
 
 const businessObjectFields = [
   "id",
@@ -277,9 +278,8 @@ export const updateBusiness = async (req, res) => {
 
 export const getBusinessAccount = async (req: any, res: any) => {
   const { account_id } = req.params;
-  const {
-    business: { account },
-  } = req;
+
+  const account = getAccountFromEntity(req.business, account_id);
 
   if (!account) {
     res.status(404).send({
