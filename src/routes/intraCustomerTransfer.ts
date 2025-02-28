@@ -128,6 +128,6 @@ export const createIntraCustomerTransfer = async (req, res) => {
     ...transfer,
   });
 
-  await triggerBookingsWebhook(entity, incomingBooking);
-  await triggerBookingsWebhook(entity, outgoingBooking);
+  await triggerBookingsWebhook(entity, incomingBooking, recipientAccount.is);
+  await triggerBookingsWebhook(entity, outgoingBooking, senderAccount.id);
 };
