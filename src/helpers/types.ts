@@ -150,6 +150,8 @@ export type MockAccount = {
   seizure_protection?: Record<string, unknown>;
   // contains transactions for subaccounts
   transactions?: Booking[];
+  // for e2e testing purposes, to set balance to a specific value
+  mockBalanceValue?: number;
 };
 
 export type BillingAccount = {
@@ -478,6 +480,7 @@ export type MockBusiness = {
   taxIdentifications: TaxIdentification[];
   queuedBookings?: Record<string, unknown>[];
   bankStatements?: Record<string, unknown>[];
+  timedOrders?: TimedOrder[];
 };
 
 export type MockCreateBusiness = {

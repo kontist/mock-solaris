@@ -12,6 +12,7 @@ import {
   MockBusiness,
   MockPerson,
   IntraCustomerTransfer,
+  Booking,
 } from "../helpers/types";
 import generateID from "../helpers/id";
 import { getAccountsFromEntity } from "../helpers";
@@ -116,8 +117,10 @@ export const createIntraCustomerTransfer = async (req, res) => {
     },
   };
 
-  entity.transactions.push(transaction);
-  await save(entity);
+  senderAccount.transactions.push(outgoingBooking as unknown as Booking);
+  recipientAccount.transactions.push(incomingBooking as unknown as Booking);
+
+  await save(entity, { accounts: [senderAccount, recipientAccount] });
 
   res.status(HttpStatusCodes.CREATED).send({
     id: generateID(),

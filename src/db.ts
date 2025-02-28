@@ -8,6 +8,8 @@ import Redlock from "redlock";
 import * as log from "./logger";
 import { calculateOverdraftInterest } from "./helpers/overdraft";
 import {
+  AccountType,
+  Booking,
   Card,
   CardData,
   CustomerType,
@@ -299,11 +301,102 @@ export const getTechnicalUserPerson = () => getPerson("mockpersonkontistgmbh");
 
 const addAmountValues = (a, b) => a + b.amount.value;
 
+const saveAccountsOnEntity = (
+  entity: MockPerson | MockBusiness,
+  accounts: MockAccount[]
+): MockPerson | MockBusiness => {
+  const mainAccount = accounts.find(
+    (account) => account.id === entity.account.id
+  );
+  const mainAccountTransactions =
+    mainAccount.transactions || entity.transactions;
+  const otherAccounts = accounts.filter(
+    (account) => account.id !== entity.account.id
+  );
+
+  entity.account = mainAccount;
+  entity.transactions = mainAccountTransactions;
+  entity.accounts = otherAccounts;
+
+  return entity;
+};
+
+const calculateAccountBalance = ({
+  entity,
+  account,
+  transactions = [],
+  skipInterest = false,
+}: {
+  entity: MockPerson | MockBusiness;
+  account: MockAccount;
+  transactions: Booking[];
+  skipInterest?: boolean;
+}) => {
+  const now = new Date().getTime();
+  const transactionsBalance = transactions
+    .filter((transaction) => new Date(transaction.valuta_date).getTime() < now)
+    .reduce(addAmountValues, 0);
+
+  const limitBalance =
+    (account.account_limit && account.account_limit.value) || 0;
+
+  if (transactionsBalance < 0 && !skipInterest) {
+    calculateOverdraftInterest(account, transactionsBalance);
+  }
+
+  let confirmedTransfersBalance = 0;
+  let reservationsBalance = 0;
+
+  // only main account has these transaction types
+  if (account.type !== AccountType.CHECKING_SUBACCOUNT) {
+    entity.timedOrders = entity.timedOrders || [];
+    const queuedBookings = entity.queuedBookings || [];
+    const reservations = account.reservations || [];
+
+    confirmedTransfersBalance = queuedBookings
+      .filter((booking) => booking.status === "accepted")
+      .reduce(addAmountValues, 0);
+    reservationsBalance = reservations.reduce(addAmountValues, 0);
+  }
+
+  /**
+   * mockBalanceValue is used for e2e tests to simulate a balance
+   * If account has mockBalanceValue, we use it as a balance
+   */
+  const accountBalance = account.mockBalanceValue
+    ? !transactions.length
+      ? account.mockBalanceValue
+      : account.mockBalanceValue + transactionsBalance // in case made some transactions(transfers negative amounts)
+    : transactionsBalance;
+
+  account.balance = {
+    value: accountBalance,
+    unit: "cents",
+    currency: "EUR",
+  };
+
+  account.available_balance = {
+    // Confirmed transfers amounts are negative
+    value:
+      limitBalance +
+      accountBalance +
+      confirmedTransfersBalance -
+      reservationsBalance,
+    unit: "cents",
+    currency: "EUR",
+  };
+
+  return account;
+};
+
 /**
  * Consider using locks using the redlock package,
  * in functions which load from redis and then save to redis
  */
-export const savePerson = async (person, skipInterest = false) => {
+export const savePerson = async (
+  person,
+  { skipInterest = false, accounts = [] } = {}
+) => {
   person.address = person.address || { country: null };
 
   let _person: MockPerson;
@@ -324,55 +417,35 @@ export const savePerson = async (person, skipInterest = false) => {
     }
   }
 
+  // if multiple accounts are provided, we merge them into the entity separatelly and calculate balances
+  if (accounts.length) {
+    person = saveAccountsOnEntity(person, accounts);
+  }
   const account = person.account || _person?.account;
-
   if (account) {
-    const transactions = person.transactions || _person?.transactions || [];
-    const queuedBookings =
-      person.queuedBookings || _person?.queuedBookings || [];
-    const reservations = account.reservations || [];
-    const now = new Date().getTime();
-    const transactionsBalance = transactions
-      .filter(
-        (transaction) => new Date(transaction.valuta_date).getTime() < now
-      )
-      .reduce(addAmountValues, 0);
-    const confirmedTransfersBalance = queuedBookings
-      .filter((booking) => booking.status === "accepted")
-      .reduce(addAmountValues, 0);
-    const reservationsBalance = reservations.reduce(addAmountValues, 0);
-    const limitBalance =
-      (account.account_limit && account.account_limit.value) || 0;
+    const updatedAccount = calculateAccountBalance({
+      entity: person,
+      account,
+      transactions: person.transactions,
+      skipInterest,
+    });
 
-    if (transactionsBalance < 0 && !skipInterest) {
-      calculateOverdraftInterest(account, transactionsBalance);
+    person.account = updatedAccount;
+  }
+
+  if (accounts.length) {
+    const updatedAccounts = [];
+    for (const acc of person.accounts) {
+      updatedAccounts.push(
+        calculateAccountBalance({
+          entity: person,
+          account: acc,
+          transactions: acc.transactions,
+        })
+      );
     }
 
-    /**
-     * mockBalanceValue is used for e2e tests to simulate a balance
-     * If account has mockBalanceValue, we use it as a balance
-     */
-    const accountBalance = account.mockBalanceValue
-      ? !transactions.length
-        ? account.mockBalanceValue
-        : account.mockBalanceValue + transactionsBalance // in case made some transactions(transfers negative amounts)
-      : transactionsBalance;
-
-    account.balance = {
-      value: accountBalance,
-    };
-
-    account.available_balance = {
-      // Confirmed transfers amounts are negative
-      value:
-        limitBalance +
-        accountBalance +
-        confirmedTransfersBalance -
-        reservationsBalance,
-    };
-
-    person.account = account;
-    person.timedOrders = person.timedOrders || [];
+    person.accounts = updatedAccounts;
   }
 
   return setPerson(person);
@@ -382,7 +455,7 @@ export const savePerson = async (person, skipInterest = false) => {
  * Consider using locks using the redlock package,
  * in functions which load from redis and then save to redis
  */
-export const saveBusiness = async (business, skipInterest = false) => {
+export const saveBusiness = async (business, { skipInterest = false } = {}) => {
   business.address = business.address || { country: null };
 
   let _business: MockBusiness;
