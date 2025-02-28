@@ -451,6 +451,11 @@ router.post(
   safeRequestHandler(transactionsAPI.createSepaDirectDebit)
 );
 
+router.post(
+  "/persons/:person_id/accounts/:account_id/transactions/intra_customer_transfer",
+  safeRequestHandler(transactionsAPI.createIntraCustomerTransfer)
+);
+
 // STANDING ORDERS
 router.get(
   "/persons/:person_id/accounts/:account_id/standing_orders/:id",
