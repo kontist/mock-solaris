@@ -455,7 +455,10 @@ export const savePerson = async (
  * Consider using locks using the redlock package,
  * in functions which load from redis and then save to redis
  */
-export const saveBusiness = async (business, { skipInterest = false } = {}) => {
+export const saveBusiness = async (
+  business,
+  { skipInterest = false, accounts = [] } = {}
+) => {
   business.address = business.address || { country: null };
 
   let _business: MockBusiness;
@@ -476,55 +479,37 @@ export const saveBusiness = async (business, { skipInterest = false } = {}) => {
     }
   }
 
+  // if multiple accounts are provided, we merge them into the entity separatelly and calculate balances
+  if (accounts.length) {
+    business = saveAccountsOnEntity(business, accounts);
+  }
+
   const account = business.account || _business?.account;
 
   if (account) {
-    const transactions = business.transactions || _business?.transactions || [];
-    const queuedBookings =
-      business.queuedBookings || _business?.queuedBookings || [];
-    const reservations = account.reservations || [];
-    const now = new Date().getTime();
-    const transactionsBalance = transactions
-      .filter(
-        (transaction) => new Date(transaction.valuta_date).getTime() < now
-      )
-      .reduce(addAmountValues, 0);
-    const confirmedTransfersBalance = queuedBookings
-      .filter((booking) => booking.status === "accepted")
-      .reduce(addAmountValues, 0);
-    const reservationsBalance = reservations.reduce(addAmountValues, 0);
-    const limitBalance =
-      (account.account_limit && account.account_limit.value) || 0;
+    const updatedAccount = calculateAccountBalance({
+      entity: business,
+      account,
+      transactions: business.transactions,
+      skipInterest,
+    });
 
-    if (transactionsBalance < 0 && !skipInterest) {
-      calculateOverdraftInterest(account, transactionsBalance);
+    business.account = updatedAccount;
+  }
+
+  if (accounts.length) {
+    const updatedAccounts = [];
+    for (const acc of business.accounts) {
+      updatedAccounts.push(
+        calculateAccountBalance({
+          entity: business,
+          account: acc,
+          transactions: acc.transactions,
+        })
+      );
     }
 
-    /**
-     * mockBalanceValue is used for e2e tests to simulate a balance
-     * If account has mockBalanceValue, we use it as a balance
-     */
-    const accountBalance = account.mockBalanceValue
-      ? !transactions.length
-        ? account.mockBalanceValue
-        : account.mockBalanceValue + transactionsBalance // in case made some transactions(transfers negative amounts)
-      : transactionsBalance;
-
-    account.balance = {
-      value: accountBalance,
-    };
-
-    account.available_balance = {
-      // Confirmed transfers amounts are negative
-      value:
-        limitBalance +
-        accountBalance +
-        confirmedTransfersBalance -
-        reservationsBalance,
-    };
-
-    business.account = account;
-    business.timedOrders = business.timedOrders || [];
+    business.accounts = updatedAccounts;
   }
 
   return setBusiness(business);
