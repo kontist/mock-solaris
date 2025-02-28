@@ -31,13 +31,11 @@ const getHandlers = (customerType: CustomerType) => {
       return {
         getEntity: getPerson,
         saveEntity: savePerson,
-        accountType: AccountType.CHECKING_SOLE_PROPRIETOR,
       };
     case CustomerType.BUSINESS:
       return {
         getEntity: getBusiness,
         saveEntity: saveBusiness,
-        accountType: AccountType.CHECKING_BUSINESS,
       };
 
     default:
@@ -52,13 +50,14 @@ export const createAccountOpeningRequest = async (
   const data = req.body;
   const entityId = data.customer_id;
   const customerType = data.customer_type as CustomerType;
-  const { getEntity, saveEntity, accountType } = getHandlers(customerType);
+  const { getEntity, saveEntity } = getHandlers(customerType);
+  const { account_type: accountType } = data;
 
   const accountOpeningRequest = {
     customer_id: entityId,
     customer_type: customerType,
     product_name: data.product_name,
-    account_type: data.account_type,
+    account_type: accountType,
     account_bic: data.account_bic,
     account_currency: data.account_currency,
     account_purpose: data.account_purpose,
@@ -96,7 +95,7 @@ export const createAccountOpeningRequest = async (
   res.status(HttpStatusCodes.CREATED).send(accountOpeningRequest);
 
   let account: MockAccount;
-  if (accountOpeningRequest.account_type === AccountType.CHECKING_SUBACCOUNT) {
+  if (accountType === AccountType.CHECKING_SUBACCOUNT) {
     account = await createSubaccount(entityId, customerType);
   } else {
     account = await createAccount(
