@@ -1,5 +1,6 @@
 import _ from "lodash";
 import HttpStatusCodes from "http-status";
+import uuid from "node-uuid";
 
 import {
   getPerson,
@@ -18,9 +19,11 @@ import { getLogger } from "../logger";
 import {
   AccountType,
   CustomerType,
+  MockAccount,
   MockBusiness,
   MockPerson,
 } from "../helpers/types";
+import { getAccountFromEntity, getAccountsFromEntity } from "../helpers";
 
 const ACCOUNT_SNAPSHOT_SOURCE = "SOLARISBANK";
 
@@ -93,7 +96,9 @@ export const showAccountBookings = async (req, res) => {
   const minBookingDate = new Date(min);
   const maxBookingDate = new Date(max);
 
-  const transactions = _.get(entity, "transactions", [])
+  const account = getAccountFromEntity(entity, accountId);
+
+  const transactions = _.get(account, "transactions", [])
     .filter((booking) => {
       const bookingDate = new Date(booking.booking_date);
       return bookingDate >= minBookingDate && bookingDate <= maxBookingDate;
@@ -124,21 +129,33 @@ export const showAccountReservations = async (req, res) => {
 };
 
 export const showPersonAccount = async (req, res) => {
-  const { person_id: personId } = req.params;
+  const { account_id: accountId } = req.params;
+  const account = getAccountFromEntity(req.person, accountId);
 
-  const person = await getPerson(personId);
-  const account = _.pick(person.account, requestAccountFields);
+  if (!account) {
+    return res.status(404).send({
+      errors: [
+        {
+          id: uuid.v4(),
+          status: 404,
+          code: "resource_not_found",
+          title: "The resource could not be found.",
+          detail: "The resource could not be found.",
+        },
+      ],
+    });
+  }
 
-  res.status(200).send(account);
+  const accountData = _.pick(account, requestAccountFields);
+
+  res.status(200).send(accountData);
 };
 
 export const showPersonAccounts = async (req, res) => {
-  const { person_id: personId } = req.params;
-  const person = await getPerson(personId);
+  const accounts = getAccountsFromEntity(req.person).forEach((account) =>
+    _.pick(account, requestAccountFields)
+  );
 
-  const accounts = person.account
-    ? [_.pick(person.account, requestAccountFields)]
-    : [];
   res.status(200).send(accounts);
 };
 
@@ -166,6 +183,41 @@ export const createAccount = async (
   });
 
   return entity.account;
+};
+
+export const createSubaccount = async (
+  entityId: string,
+  customerType = CustomerType.PERSON
+) => {
+  let account: MockAccount;
+  let entity: MockPerson | MockBusiness;
+
+  const lockKey = `redlock:${
+    process.env.MOCKSOLARIS_REDIS_PREFIX
+  }:${customerType.toLowerCase()}:${entityId}`;
+  await redlock.using([lockKey], 5000, async (signal) => {
+    if (signal.aborted) {
+      throw signal.error;
+    }
+    entity = await (customerType === CustomerType.PERSON
+      ? getPerson
+      : getBusiness)(entityId);
+
+    account = getDefaultAccount(entityId, customerType, {
+      type: AccountType.CHECKING_SUBACCOUNT,
+    }) as any;
+
+    await (customerType === CustomerType.PERSON ? savePerson : saveBusiness)(
+      entity
+    );
+    entity.accounts = (entity.accounts || []).concat(account);
+    await (customerType === CustomerType.PERSON ? savePerson : saveBusiness)(
+      entity
+    );
+    await saveAccountToEntity(account, entityId, customerType);
+  });
+
+  return account;
 };
 
 export const createAccountRequestHandler = async (req, res) => {
@@ -291,7 +343,10 @@ export const showAccountBalance = async (req, res) => {
     });
   }
 
-  const balance = _.pick(person ? person.account : business.account, [
+  const entity = person || business;
+  const account = getAccountFromEntity(entity, accountId);
+
+  const balance = _.pick(account, [
     "balance",
     "available_balance",
     "seizure_protection",

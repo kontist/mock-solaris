@@ -148,6 +148,8 @@ export type MockAccount = {
   type: string;
   person_id: string;
   seizure_protection?: Record<string, unknown>;
+  // contains transactions for subaccounts
+  transactions?: Booking[];
 };
 
 export type BillingAccount = {
@@ -250,6 +252,8 @@ export type MockPerson = {
   createdAt: string;
   fraudCases?: FraudCase[];
   account?: MockAccount;
+  // list of subaccounts
+  accounts?: MockAccount[];
   transactions: Booking[];
   changeRequest?: MockChangeRequest;
   origin?: string;
@@ -418,6 +422,8 @@ export type MockBusiness = {
   id: string;
   name: string;
   account?: MockAccount;
+  // list of subaccounts
+  accounts?: MockAccount[];
   transactions?: Booking[];
   origin?: string;
   sector?: string;
@@ -964,12 +970,15 @@ export interface AccountOpeningRequest {
 export enum ProductType {
   CURRENT_ACCOUNT_FREELANCER_GERMANY = "CURRENT_ACCOUNT_FREELANCER_GERMANY",
   CURRENT_ACCOUNT_BUSINESS_GERMANY = "CURRENT_ACCOUNT_BUSINESS_GERMANY",
+  SUBACCOUNT_FREELANCER_GERMANY = "SUBACCOUNT_FREELANCER_GERMANY",
+  SUBACCOUNT_BUSINESS_GERMANY = "SUBACCOUNT_BUSINESS_GERMANY",
 }
 
 export enum AccountType {
   CHECKING_SOLE_PROPRIETOR = "CHECKING_SOLE_PROPRIETOR",
   CHECKING_PERSONAL = "CHECKING_PERSONAL",
   CHECKING_BUSINESS = "CHECKING_BUSINESS",
+  CHECKING_SUBACCOUNT = "CHECKING_SUBACCOUNT",
 }
 
 export interface Question {

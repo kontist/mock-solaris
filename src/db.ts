@@ -822,22 +822,6 @@ export const flushDb = async () => {
   return redisClient.flushDb();
 };
 
-const fillMissingCurrencyForLegacyBooking = (booking) => ({
-  ...booking,
-  amount: {
-    ...booking.amount,
-    currency: booking.amount.currency || "EUR",
-  },
-});
-
-export const getPersonBookings = (person) => {
-  return (person.transactions || []).map(fillMissingCurrencyForLegacyBooking);
-};
-
-export const getBusinessBookings = (business) => {
-  return (business.transactions || []).map(fillMissingCurrencyForLegacyBooking);
-};
-
 export const getSmsToken = async (personId: string) => {
   const person = await getPerson(personId);
   return _.get(person, "changeRequest.token", null);

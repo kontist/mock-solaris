@@ -5,6 +5,7 @@ import uuid from "node-uuid";
 import { AuthorizedPerson } from "../../helpers/types";
 import { saveBusiness } from "../../db";
 import { RequestWithBusiness } from "../../helpers/middlewares";
+import { getAccountFromEntity } from "../../helpers";
 
 export const createAuthorizedPerson = async (
   req: RequestWithBusiness,
@@ -28,7 +29,9 @@ export const createAuthorizedPerson = async (
     });
   }
 
-  if (business.account?.id !== account_id) {
+  const account = getAccountFromEntity(business, account_id);
+
+  if (!account) {
     return res.status(404).send({
       errors: [
         {

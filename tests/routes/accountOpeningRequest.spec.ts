@@ -14,6 +14,7 @@ import {
   CustomerType,
   MockBusiness,
   ProductType,
+  MockAccount,
 } from "../../src/helpers/types";
 import * as webhookHelpers from "../../src/helpers/webhooks";
 
@@ -103,30 +104,6 @@ describe("Account Opening Request", () => {
     });
   });
 
-  describe("retrieve Account Opening Request", () => {
-    let accountOpeningRequestId: string;
-
-    before(async () => {
-      res = mockRes();
-
-      accountOpeningRequestId = (await db.getPerson(personId))
-        .accountOpeningRequests[0].id;
-
-      const req = mockReq({
-        params: {
-          id: accountOpeningRequestId,
-        },
-      });
-
-      await accountOpeningRequestAPI.retrieveAccountOpeningRequest(req, res);
-    });
-
-    it("should return successful response", () => {
-      expect(res.status.calledWith(200)).to.be.true;
-      expect(res.send.getCall(0).args[0].id).to.equal(accountOpeningRequestId);
-    });
-  });
-
   describe("create Account Opening Request (business)", () => {
     before(async () => {
       const req = mockReq({
@@ -164,6 +141,70 @@ describe("Account Opening Request", () => {
       const args = triggerWebhookStub.lastCall.args[0];
       expect(args.type).to.equal(PersonWebhookEvent.ACCOUNT_OPENING_REQUEST);
       expect(args.payload.account_id).to.be.ok;
+    });
+  });
+
+  describe("create Account Opening Request (person) - account type CHECKING_SUBACCOUNT", () => {
+    let account: MockAccount;
+
+    before(async () => {
+      triggerWebhookStub.resetHistory();
+
+      const req = mockReq({
+        body: {
+          customer_id: personId,
+          customer_type: CustomerType.PERSON,
+          product_name: ProductType.CURRENT_ACCOUNT_FREELANCER_GERMANY,
+          account_type: AccountType.CHECKING_SUBACCOUNT,
+          account_currency: "EUR",
+          account_bic: process.env.SOLARIS_BIC,
+        },
+      });
+
+      await accountOpeningRequestAPI.createAccountOpeningRequest(req, res);
+
+      person = await db.getPerson(personId);
+    });
+
+    it("should return successful response", () => {
+      expect(res.status.calledWith(201)).to.be.true;
+    });
+
+    it("should create an accountOpeningRequest on Person entity", () => {
+      expect(person.accountOpeningRequests).to.have.length(2);
+    });
+
+    it("should create an account for user", async () => {
+      expect(person.accounts).to.have.length(1);
+      account = person.accounts[0];
+      expect(account.type).to.equal(AccountType.CHECKING_SUBACCOUNT);
+    });
+
+    it("should trigger webhook", () => {
+      expect(triggerWebhookStub.calledOnce).to.be.true;
+
+      const args = triggerWebhookStub.getCall(0).args[0];
+      expect(args.type).to.equal(PersonWebhookEvent.ACCOUNT_OPENING_REQUEST);
+      expect(args.payload.account_id).to.equal(account.id);
+    });
+  });
+
+  describe("retrieve Account Opening Request", () => {
+    let accountOpeningRequestId: string;
+
+    before(async () => {
+      res = mockRes();
+
+      accountOpeningRequestId = (await db.getPerson(personId))
+        .accountOpeningRequests[0].id;
+
+      const req = mockReq({
+        params: {
+          id: accountOpeningRequestId,
+        },
+      });
+
+      await accountOpeningRequestAPI.retrieveAccountOpeningRequest(req, res);
     });
   });
 
