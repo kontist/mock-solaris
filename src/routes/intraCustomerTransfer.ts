@@ -1,12 +1,7 @@
 import HttpStatusCodes from "http-status";
 import moment from "moment";
 
-import {
-  getPerson,
-  savePerson,
-  findBusinessByAccount,
-  saveBusiness,
-} from "../db";
+import { getPerson, savePerson, getBusiness, saveBusiness } from "../db";
 import {
   BookingType,
   MockBusiness,
@@ -22,8 +17,8 @@ export const createIntraCustomerTransfer = async (req, res) => {
   const { person_id: personId, account_id: accountId } = req.params;
   const transfer: IntraCustomerTransfer = req.body;
 
-  const business = await findBusinessByAccount({ id: accountId });
   const person = (await getPerson(personId)) as MockPerson;
+  const business = await getBusiness(person.businessId);
   const entity: MockBusiness | MockPerson = business || person;
   const save = business ? saveBusiness : savePerson;
 
@@ -81,9 +76,9 @@ export const createIntraCustomerTransfer = async (req, res) => {
     });
   }
 
-  const name = person
-    ? `${person.first_name} ${person.last_name}`
-    : business.name;
+  const name = business
+    ? business.name
+    : `${person.first_name} ${person.last_name}`;
 
   const sharedBookingData = {
     description: transfer.description,
