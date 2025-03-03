@@ -101,7 +101,6 @@ export const createIntraCustomerTransfer = async (req, res) => {
     ...sharedBookingData,
     id: generateID(),
     amount: {
-      ...transfer.amount,
       value: -transfer.amount.value,
       currency: transfer.amount.currency || "EUR",
     },
@@ -111,7 +110,6 @@ export const createIntraCustomerTransfer = async (req, res) => {
     ...sharedBookingData,
     id: generateID(),
     amount: {
-      ...transfer.amount,
       value: transfer.amount.value,
       currency: transfer.amount.currency || "EUR",
     },
