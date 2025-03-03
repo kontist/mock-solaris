@@ -271,9 +271,7 @@ export const getBusiness = async (
     `${process.env.MOCKSOLARIS_REDIS_PREFIX}:business:${businessId}`
   );
   if (!businessJSON) {
-    throw new Error(
-      `Business which has businessId: ${businessId} was not found in redis`
-    );
+    return null;
   }
   const business = jsonToBusiness(businessJSON);
   return augmentBusiness(business);
@@ -493,6 +491,8 @@ export const saveBusiness = async (
       transactions: business.transactions,
       skipInterest,
     });
+    // console.log("!@!@!@!@!@business.transactions", business.transactions);
+    // console.log("!@!@!@!@!@updatedAccount", updatedAccount);
 
     business.account = updatedAccount;
   }
