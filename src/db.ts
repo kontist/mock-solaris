@@ -491,8 +491,6 @@ export const saveBusiness = async (
       transactions: business.transactions,
       skipInterest,
     });
-    // console.log("!@!@!@!@!@business.transactions", business.transactions);
-    // console.log("!@!@!@!@!@updatedAccount", updatedAccount);
 
     business.account = updatedAccount;
   }
