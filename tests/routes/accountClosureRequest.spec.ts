@@ -214,8 +214,90 @@ describe("Account Closure Request", () => {
       });
 
       it("should return error response (400)", () => {
+        const error = res.send.args[0].errors[0];
+
         expect(res.status.getCall(0).args[0]).to.equal(400);
-        expect(res.send.getCall(0).args[0]).to.equal("account_id is required");
+        expect(error.code).to.equal("validation_error");
+        expect(error.detail).to.equal("missing required field");
+      });
+    });
+
+    describe("on missing closure_reason", () => {
+      let res: sinon.SinonSpy;
+
+      before(async () => {
+        await db.flushDb();
+        res = mockRes();
+
+        const req = mockReq({
+          body: {
+            account_id: "sub-account-id",
+          },
+        });
+
+        await initiateAccountClosureRequest(req, res);
+      });
+
+      it("should return error response (400)", () => {
+        const error = res.send.args[0].errors[0];
+
+        expect(res.status.getCall(0).args[0]).to.equal(400);
+        expect(error.code).to.equal("validation_error");
+        expect(error.detail).to.equal("missing required field");
+      });
+    });
+
+    describe("on invalid closure_reason", () => {
+      let res: sinon.SinonSpy;
+
+      before(async () => {
+        await db.flushDb();
+        res = mockRes();
+
+        const req = mockReq({
+          body: {
+            account_id: "sub-account-id",
+            closure_reason: "INVALID_REASON",
+          },
+        });
+
+        await initiateAccountClosureRequest(req, res);
+      });
+
+      it("should return error response (500)", () => {
+        const error = res.send.args[0].errors[0];
+
+        expect(res.status.getCall(0).args[0]).to.equal(500);
+        expect(error.code).to.equal("validation_error");
+        expect(error.detail).to.equal("invalid closure reason");
+      });
+    });
+
+    describe("on account not found", () => {
+      let res: sinon.SinonSpy;
+
+      before(async () => {
+        await db.flushDb();
+        res = mockRes();
+
+        const req = mockReq({
+          body: {
+            account_id: "sub-account-id",
+            closure_reason: "CUSTOMER_WISH",
+          },
+        });
+
+        await initiateAccountClosureRequest(req, res);
+      });
+
+      it("should return error response (404)", () => {
+        const error = res.send.args[0].errors[0];
+
+        expect(res.status.getCall(0).args[0]).to.equal(404);
+        expect(error.code).to.equal("not_found");
+        expect(error.detail).to.equal(
+          "Account with id: sub-account-id not found"
+        );
       });
     });
   });

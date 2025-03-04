@@ -56,6 +56,17 @@ export const initiateAccountClosureRequest = async (req, res) => {
     ? person
     : await findBusinessByAccount({ id: accountId });
   const account = getAccountFromEntity(entity, accountId);
+
+  if (!account) {
+    return res.status(HttpStatusCodes.NOT_FOUND).send({
+      id: generateID(),
+      status: HttpStatusCodes.NOT_FOUND,
+      code: "not_found",
+      title: "Not Found",
+      detail: `Account with id: ${accountId} not found`,
+    });
+  }
+
   const closureId = generateID();
 
   // If => `legal_closure_date` is already set, return 200
