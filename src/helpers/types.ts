@@ -1,3 +1,4 @@
+import e from "express";
 import { STANDING_ORDER_PAYMENT_FREQUENCY } from "../routes/standingOrders";
 
 export enum ReservationType {
@@ -129,6 +130,11 @@ export type CardData = {
   controls: CardSpendingLimitControl[];
 };
 
+export enum AccountStatus {
+  ACTIVE = "ACTIVE",
+  INACTIVE = "INACTIVE",
+}
+
 export type MockAccount = {
   id: string;
   cards: CardData[];
@@ -152,7 +158,7 @@ export type MockAccount = {
   transactions?: Booking[];
   // for e2e testing purposes, to set balance to a specific value
   mockBalanceValue?: number;
-  legal_closure_date?: Date;
+  status: AccountStatus;
 };
 
 export type BillingAccount = {

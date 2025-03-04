@@ -21,7 +21,6 @@ describe("Account Closure Request", () => {
       id: "sub-account-id",
       iban: "DE1234567891",
       type: AccountType.CHECKING_SUBACCOUNT,
-      legal_closure_date: null,
     };
 
     before(async () => {
@@ -76,17 +75,23 @@ describe("Account Closure Request", () => {
       it("should update legal_closure_date on the sub account", () => {
         const account = person.accounts.find((a) => a.id === subAccount.id);
 
-        expect(account.legal_closure_date).be.ok;
+        expect(account.status).to.equal("INACTIVE");
       });
 
-      it("should have triggered the webhook", () => {
-        const webhook = triggerWebhookStub.getCall(0).args[0];
-        expect(webhook.type).to.equal("ACCOUNT_CLOSURE_REQUEST_UPDATE");
-        expect(webhook.payload.id).to.be.ok;
-        expect(webhook.payload.closure_reason).to.equal("CUSTOMER_WISH");
-        expect(webhook.payload.status).to.equal("COMPLETED");
-        expect(webhook.payload.account_id).to.equal(subAccount.id);
-        expect(webhook.payload.legal_closure_date).to.be.ok;
+      it("should have triggered the webhooks", () => {
+        const webhookOne = triggerWebhookStub.getCall(0).args[0];
+        expect(webhookOne.type).to.equal("ACCOUNT_CLOSURE_REQUEST_UPDATE");
+        expect(webhookOne.payload.id).to.be.ok;
+        expect(webhookOne.payload.closure_reason).to.equal("CUSTOMER_WISH");
+        expect(webhookOne.payload.status).to.equal("COMPLETED");
+        expect(webhookOne.payload.account_id).to.equal(subAccount.id);
+        expect(webhookOne.payload.legal_closure_date).to.be.ok;
+
+        const webhookTwo = triggerWebhookStub.getCall(1).args[0];
+        expect(webhookTwo.type).to.equal("ACCOUNT_CLOSURE");
+        expect(webhookTwo.payload.account_id).to.equal(subAccount.id);
+        expect(webhookTwo.payload.iban).to.equal(subAccount.iban);
+        expect(webhookTwo.payload.person_id).to.equal(personId);
       });
 
       it("should return successful response (200) on secondary closure request", async () => {
@@ -114,7 +119,6 @@ describe("Account Closure Request", () => {
       id: "sub-account-id",
       iban: "DE1234567891",
       type: AccountType.CHECKING_SUBACCOUNT,
-      legal_closure_date: null,
     };
 
     before(async () => {
@@ -168,17 +172,23 @@ describe("Account Closure Request", () => {
       it("should update legal_closure_date on the sub account", () => {
         const account = business.accounts.find((a) => a.id === subAccount.id);
 
-        expect(account.legal_closure_date).be.ok;
+        expect(account.status).to.equal("INACTIVE");
       });
 
       it("should have triggered the webhook", () => {
-        const webhook = triggerWebhookStub.getCall(0).args[0];
-        expect(webhook.type).to.equal("ACCOUNT_CLOSURE_REQUEST_UPDATE");
-        expect(webhook.payload.id).to.be.ok;
-        expect(webhook.payload.closure_reason).to.equal("CUSTOMER_WISH");
-        expect(webhook.payload.status).to.equal("COMPLETED");
-        expect(webhook.payload.account_id).to.equal(subAccount.id);
-        expect(webhook.payload.legal_closure_date).to.be.ok;
+        const webhookOne = triggerWebhookStub.getCall(0).args[0];
+        expect(webhookOne.type).to.equal("ACCOUNT_CLOSURE_REQUEST_UPDATE");
+        expect(webhookOne.payload.id).to.be.ok;
+        expect(webhookOne.payload.closure_reason).to.equal("CUSTOMER_WISH");
+        expect(webhookOne.payload.status).to.equal("COMPLETED");
+        expect(webhookOne.payload.account_id).to.equal(subAccount.id);
+        expect(webhookOne.payload.legal_closure_date).to.be.ok;
+
+        const webhookTwo = triggerWebhookStub.getCall(1).args[0];
+        expect(webhookTwo.type).to.equal("ACCOUNT_CLOSURE");
+        expect(webhookTwo.payload.account_id).to.equal(subAccount.id);
+        expect(webhookTwo.payload.iban).to.equal(subAccount.iban);
+        expect(webhookTwo.payload.business_id).to.equal(businessId);
       });
 
       it("should return successful response (200) on secondary closure request", async () => {

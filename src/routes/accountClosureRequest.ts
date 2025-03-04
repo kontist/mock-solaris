@@ -10,6 +10,7 @@ import {
 import {
   AccountClosureReason,
   AccountClosureStatus,
+  AccountStatus,
   AccountWebhookEvent,
 } from "../helpers/types";
 import { triggerWebhook } from "../helpers/webhooks";
@@ -72,28 +73,22 @@ export const initiateAccountClosureRequest = async (req, res) => {
 
   const closureId = generateID();
 
-  // If => `legal_closure_date` is already set, return 200
-  if (account.legal_closure_date) {
+  if (account.status === AccountStatus.INACTIVE) {
     return res.status(HttpStatusCodes.OK).send({
       id: closureId,
       closure_reason: closureReason,
       status: AccountClosureStatus.COMPLETED,
       account_id: accountId,
-      technical_closure_date: moment(account.legal_closure_date).format(
-        "YYYY-MM-DD"
-      ),
-      legal_closure_date: moment(account.legal_closure_date).format(
-        "YYYY-MM-DD"
-      ),
+      technical_closure_date: moment().format("YYYY-MM-DD"),
+      legal_closure_date: moment().format("YYYY-MM-DD"),
       failure_reason: null,
       payout_allowed: "true",
-      updated_at: account.legal_closure_date,
+      updated_at: new Date(),
     });
   } else {
-    // Else => set `legal_closure_date`, send 201
     const save = person ? savePerson : saveBusiness;
 
-    account.legal_closure_date = new Date();
+    account.status = AccountStatus.INACTIVE;
     await save(entity, {
       accounts: [
         ...entity.accounts.filter((acc) => acc.id !== accountId),
@@ -111,11 +106,10 @@ export const initiateAccountClosureRequest = async (req, res) => {
       legal_closure_date: null,
       failure_reason: null,
       payout_allowed: "true",
-      updated_at: account.legal_closure_date,
+      updated_at: new Date(),
     });
   }
 
-  // Initiate closure request update webhook
   await triggerWebhook({
     type: AccountWebhookEvent.ACCOUNT_CLOSURE_REQUEST_UPDATE,
     payload: {
@@ -123,15 +117,20 @@ export const initiateAccountClosureRequest = async (req, res) => {
       closure_reason: closureReason,
       status: AccountClosureStatus.COMPLETED,
       account_id: accountId,
-      technical_closure_date: moment(account.legal_closure_date).format(
-        "YYYY-MM-DD"
-      ),
-      legal_closure_date: moment(account.legal_closure_date).format(
-        "YYYY-MM-DD"
-      ),
+      technical_closure_date: moment().format("YYYY-MM-DD"),
+      legal_closure_date: moment().format("YYYY-MM-DD"),
       failure_reason: null,
       payout_allowed: "true",
-      updated_at: account.legal_closure_date,
+      updated_at: new Date(),
+    },
+  });
+  await triggerWebhook({
+    type: AccountWebhookEvent.ACCOUNT_CLOSURE,
+    payload: {
+      account_id: accountId,
+      iban: account.iban,
+      person_id: person ? person.id : null,
+      business_id: person ? null : entity.id,
     },
   });
 };

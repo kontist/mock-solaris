@@ -1,4 +1,5 @@
 import {
+  AccountStatus,
   Amount,
   CardData,
   CardSpendingLimitControl,
@@ -56,6 +57,7 @@ export const mockAccount: MockAccount = {
   cards: [],
   person_id: "",
   type: "CHECKING_PERSONAL",
+  status: AccountStatus.ACTIVE,
 };
 
 export const mockCreatePerson: MockCreatePerson = {
