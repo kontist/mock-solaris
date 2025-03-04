@@ -98,9 +98,13 @@ export const triggerBookingsWebhook = async (
   bookingOrTransaction: {
     amount: { value: number };
     booking_type: BookingType;
-  }
+  },
+  accountId?: string
 ) => {
-  const payload = { ...bookingOrTransaction, account_id: entity.account.id };
+  const payload = {
+    ...bookingOrTransaction,
+    account_id: accountId || entity.account.id,
+  };
   await triggerWebhook({
     type: TransactionWebhookEvent.BOOKING,
     payload,

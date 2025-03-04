@@ -38,12 +38,12 @@ export const createPerson = async (req, res) => {
     const createdAt = moment();
 
     const person = {
-      ...req.body,
       id: personId,
       identifications: {},
       transactions: [],
       statements: [],
       queuedBookings: [],
+      ...req.body,
       createdAt: createdAt.toISOString(),
       aml_confirmed_on: format(createdAt),
       aml_follow_up_date: format(createdAt.add(2, "year")),

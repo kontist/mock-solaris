@@ -118,6 +118,6 @@ export const issueInterestAccruedBooking = async ({
   // we don't want to calculate interest again for this transaction
   const skipInterest = true;
 
-  await savePerson(person, skipInterest);
+  await savePerson(person, { skipInterest });
   await triggerBookingsWebhook(person, booking);
 };

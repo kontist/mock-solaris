@@ -150,6 +150,8 @@ export type MockAccount = {
   seizure_protection?: Record<string, unknown>;
   // contains transactions for subaccounts
   transactions?: Booking[];
+  // for e2e testing purposes, to set balance to a specific value
+  mockBalanceValue?: number;
 };
 
 export type BillingAccount = {
@@ -478,6 +480,7 @@ export type MockBusiness = {
   taxIdentifications: TaxIdentification[];
   queuedBookings?: Record<string, unknown>[];
   bankStatements?: Record<string, unknown>[];
+  timedOrders?: TimedOrder[];
 };
 
 export type MockCreateBusiness = {
@@ -698,6 +701,13 @@ export type Booking = {
   meta_info: string | null;
 };
 
+export type IntraCustomerTransfer = {
+  reference: string;
+  recipient_iban: string;
+  description?: string;
+  amount: Amount;
+};
+
 export enum BookingType {
   CANCELLATION_BOOKING = "CANCELLATION_BOOKING",
   CANCELLATION_DOUBLE_BOOKING = "CANCELLATION_DOUBLE_BOOKING",
@@ -722,6 +732,7 @@ export enum BookingType {
   COMMISSION_OVERDRAFT = "COMMISSION_OVERDRAFT",
   TOP_UP_CARD = "TopUpCard",
   SEPA_INSTANT_CREDIT_TRANSFER = "SEPAInstantCreditTransfer",
+  INTRA_CUSTOMER_TRANSFER = "INTRA_CUSTOMER_TRANSFER",
 }
 
 export enum CardAuthorizationDeclinedStatus {

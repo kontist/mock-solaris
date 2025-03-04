@@ -34,6 +34,7 @@ import * as postboxItemAPI from "./routes/postbox";
 import * as topUpsAPI from "./routes/topUps";
 import * as instantCreditTransferAPI from "./routes/instantCreditTransfer";
 import * as accountOpeningRequestAPI from "./routes/accountOpeningRequest";
+import * as intraCustomerTransferApi from "./routes/intraCustomerTransfer";
 
 import { migrate } from "./db";
 
@@ -449,6 +450,11 @@ router.post(
 router.post(
   "/accounts/:account_id/transactions/sepa_direct_debit",
   safeRequestHandler(transactionsAPI.createSepaDirectDebit)
+);
+
+router.post(
+  "/persons/:person_id/accounts/:account_id/transactions/intra_customer_transfer",
+  safeRequestHandler(intraCustomerTransferApi.createIntraCustomerTransfer)
 );
 
 // STANDING ORDERS
