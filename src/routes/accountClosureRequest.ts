@@ -23,30 +23,22 @@ export const initiateAccountClosureRequest = async (req, res) => {
 
   if (isDataMissing) {
     return res.status(HttpStatusCodes.BAD_REQUEST).send({
-      errors: [
-        {
-          id: generateID(),
-          status: HttpStatusCodes.BAD_REQUEST,
-          code: "validation_error",
-          title: "Validation Error",
-          detail: "missing required field",
-        },
-      ],
+      id: generateID(),
+      status: HttpStatusCodes.BAD_REQUEST,
+      code: "validation_error",
+      title: "Validation Error",
+      detail: "missing required field",
     });
   }
 
   // Mock Solaris only supports CUSTOMER_WISH as a closure reason.
   if (closureReason !== AccountClosureReason.CUSTOMER_WISH) {
     return res.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send({
-      errors: [
-        {
-          id: generateID(),
-          status: HttpStatusCodes.INTERNAL_SERVER_ERROR,
-          code: "validation_error",
-          title: "Validation Error",
-          detail: "invalid closure reason",
-        },
-      ],
+      id: generateID(),
+      status: HttpStatusCodes.INTERNAL_SERVER_ERROR,
+      code: "validation_error",
+      title: "Validation Error",
+      detail: "invalid closure reason",
     });
   }
 
@@ -55,6 +47,17 @@ export const initiateAccountClosureRequest = async (req, res) => {
   const entity = person
     ? person
     : await findBusinessByAccount({ id: accountId });
+
+  if (!entity) {
+    return res.status(HttpStatusCodes.NOT_FOUND).send({
+      id: generateID(),
+      status: HttpStatusCodes.NOT_FOUND,
+      code: "not_found",
+      title: "Not Found",
+      detail: `Account with id: ${accountId} not found`,
+    });
+  }
+
   const account = getAccountFromEntity(entity, accountId);
 
   if (!account) {

@@ -214,7 +214,7 @@ describe("Account Closure Request", () => {
       });
 
       it("should return error response (400)", () => {
-        const error = res.send.args[0].errors[0];
+        const error = res.send.args[0][0];
 
         expect(res.status.getCall(0).args[0]).to.equal(400);
         expect(error.code).to.equal("validation_error");
@@ -239,7 +239,7 @@ describe("Account Closure Request", () => {
       });
 
       it("should return error response (400)", () => {
-        const error = res.send.args[0].errors[0];
+        const error = res.send.args[0][0];
 
         expect(res.status.getCall(0).args[0]).to.equal(400);
         expect(error.code).to.equal("validation_error");
@@ -265,7 +265,7 @@ describe("Account Closure Request", () => {
       });
 
       it("should return error response (500)", () => {
-        const error = res.send.args[0].errors[0];
+        const error = res.send.args[0][0];
 
         expect(res.status.getCall(0).args[0]).to.equal(500);
         expect(error.code).to.equal("validation_error");
@@ -291,7 +291,7 @@ describe("Account Closure Request", () => {
       });
 
       it("should return error response (404)", () => {
-        const error = res.send.args[0].errors[0];
+        const error = res.send.args[0][0];
 
         expect(res.status.getCall(0).args[0]).to.equal(404);
         expect(error.code).to.equal("not_found");
