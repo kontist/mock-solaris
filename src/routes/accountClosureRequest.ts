@@ -1,4 +1,3 @@
-import type { Request, Response } from "express";
 import HttpStatusCodes from "http-status";
 import moment from "moment";
 
@@ -17,10 +16,7 @@ import { triggerWebhook } from "../helpers/webhooks";
 import generateID from "../helpers/id";
 import { getAccountFromEntity } from "../helpers";
 
-export const initiateAccountClosureRequest = async (
-  req: Request,
-  res: Response
-) => {
+export const initiateAccountClosureRequest = async (req, res) => {
   const { account_id: accountId, closure_reason: closureReason } = req.body;
 
   const isDataMissing = ![accountId, closureReason].every((value) => value);
