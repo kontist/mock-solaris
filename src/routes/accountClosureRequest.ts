@@ -20,6 +20,7 @@ import { getAccountFromEntity } from "../helpers";
 export const initiateAccountClosureRequest = async (req, res) => {
   const { account_id: accountId, closure_reason: closureReason } = req.body;
 
+  // Check missing data
   const isDataMissing = ![accountId, closureReason].every((value) => value);
 
   if (isDataMissing) {
@@ -29,17 +30,6 @@ export const initiateAccountClosureRequest = async (req, res) => {
       code: "validation_error",
       title: "Validation Error",
       detail: "missing required field",
-    });
-  }
-
-  // Mock Solaris only supports CUSTOMER_WISH as a closure reason.
-  if (closureReason !== AccountClosureReason.CUSTOMER_WISH) {
-    return res.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).send({
-      id: generateID(),
-      status: HttpStatusCodes.INTERNAL_SERVER_ERROR,
-      code: "validation_error",
-      title: "Validation Error",
-      detail: "invalid closure reason",
     });
   }
 
@@ -73,6 +63,7 @@ export const initiateAccountClosureRequest = async (req, res) => {
 
   const closureId = generateID();
 
+  // Check if account is already inactive
   if (account.status === AccountStatus.INACTIVE) {
     return res.status(HttpStatusCodes.OK).send({
       id: closureId,
@@ -86,6 +77,7 @@ export const initiateAccountClosureRequest = async (req, res) => {
       updated_at: new Date(),
     });
   } else {
+    // Update account status
     const save = person ? savePerson : saveBusiness;
 
     account.status = AccountStatus.INACTIVE;
@@ -110,6 +102,7 @@ export const initiateAccountClosureRequest = async (req, res) => {
     });
   }
 
+  // Trigger webhooks
   await triggerWebhook({
     type: AccountWebhookEvent.ACCOUNT_CLOSURE_REQUEST_UPDATE,
     payload: {

@@ -257,32 +257,6 @@ describe("Account Closure Request", () => {
       });
     });
 
-    describe("on invalid closure_reason", () => {
-      let res: sinon.SinonSpy;
-
-      before(async () => {
-        await db.flushDb();
-        res = mockRes();
-
-        const req = mockReq({
-          body: {
-            account_id: "sub-account-id",
-            closure_reason: "INVALID_REASON",
-          },
-        });
-
-        await initiateAccountClosureRequest(req, res);
-      });
-
-      it("should return error response (500)", () => {
-        const error = res.send.args[0][0];
-
-        expect(res.status.getCall(0).args[0]).to.equal(500);
-        expect(error.code).to.equal("validation_error");
-        expect(error.detail).to.equal("invalid closure reason");
-      });
-    });
-
     describe("on account not found", () => {
       let res: sinon.SinonSpy;
 
