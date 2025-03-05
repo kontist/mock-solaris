@@ -27,6 +27,7 @@ export const createIntraCustomerTransfer = async (req, res) => {
   const recipientAccount = accounts.find(
     (acc) => acc.iban === transfer.recipient_iban
   );
+  recipientAccount.transactions = recipientAccount.transactions || [];
 
   if (!senderAccount || !recipientAccount) {
     return res.status(404).send({
