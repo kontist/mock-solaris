@@ -34,7 +34,7 @@ const getDefaultAccount = (
   customerType: CustomerType,
   data = {}
 ) => ({
-  id: entityId.split("").reverse().join(""),
+  id: generateID(),
   iban: IBAN.random(CountryCode.DE).toString(),
   bic: process.env.SOLARIS_BIC,
   type: AccountType.CHECKING_SOLE_PROPRIETOR,
