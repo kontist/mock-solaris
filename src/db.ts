@@ -8,6 +8,7 @@ import Redlock from "redlock";
 import * as log from "./logger";
 import { calculateOverdraftInterest } from "./helpers/overdraft";
 import {
+  AccountStatus,
   AccountType,
   Booking,
   Card,
@@ -184,6 +185,7 @@ export const migrate = async () => {
         reservations: [],
         fraudReservations: [],
         pendingReservation: null,
+        status: AccountStatus.ACTIVE,
       },
       billing_account: {
         id: process.env.SOLARIS_KONTIST_BILLING_ACCOUNT_ID,

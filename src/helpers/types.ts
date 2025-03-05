@@ -1,3 +1,4 @@
+import e from "express";
 import { STANDING_ORDER_PAYMENT_FREQUENCY } from "../routes/standingOrders";
 
 export enum ReservationType {
@@ -129,6 +130,11 @@ export type CardData = {
   controls: CardSpendingLimitControl[];
 };
 
+export enum AccountStatus {
+  ACTIVE = "ACTIVE",
+  INACTIVE = "INACTIVE",
+}
+
 export type MockAccount = {
   id: string;
   cards: CardData[];
@@ -152,6 +158,7 @@ export type MockAccount = {
   transactions?: Booking[];
   // for e2e testing purposes, to set balance to a specific value
   mockBalanceValue?: number;
+  status: AccountStatus;
 };
 
 export type BillingAccount = {
@@ -586,6 +593,7 @@ export enum BusinessWebhookEvent {
 export enum AccountWebhookEvent {
   "ACCOUNT_BLOCK" = "ACCOUNT_BLOCK",
   "ACCOUNT_CLOSURE" = "ACCOUNT_CLOSURE",
+  "ACCOUNT_CLOSURE_REQUEST_UPDATE" = "ACCOUNT_CLOSURE_REQUEST_UPDATE",
   "ACCOUNT_LIMIT_CHANGE" = "ACCOUNT_LIMIT_CHANGE",
 }
 
@@ -976,6 +984,23 @@ export interface AccountOpeningRequest {
   iban: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export enum AccountClosureReason {
+  CUSTOMER_WISH = "CUSTOMER_WISH",
+  ACCOUNT_REVOCATION = "ACCOUNT_REVOCATION",
+  PARTNER_SERVICE_ACCOUNT_TERMINATED = "PARTNER_SERVICE_ACCOUNT_TERMINATED",
+  RELATIONSHIP_TERMINATION = "RELATIONSHIP_TERMINATION",
+  COMPLIANCE_IMMEDIATE_PARTNER = "COMPLIANCE_IMMEDIATE_PARTNER",
+}
+
+export enum AccountClosureStatus {
+  INITIATED = "INITIATED",
+  CONFIRMED = "CONFIRMED",
+  IN_PROGRESS = "IN_PROGRESS",
+  COMPLETED = "COMPLETED",
+  FAILED = "FAILED",
+  REVOKED = "REVOKED",
 }
 
 export enum ProductType {

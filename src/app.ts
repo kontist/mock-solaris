@@ -34,6 +34,7 @@ import * as postboxItemAPI from "./routes/postbox";
 import * as topUpsAPI from "./routes/topUps";
 import * as instantCreditTransferAPI from "./routes/instantCreditTransfer";
 import * as accountOpeningRequestAPI from "./routes/accountOpeningRequest";
+import * as accountClosureRequestAPI from "./routes/accountClosureRequest";
 import * as intraCustomerTransferApi from "./routes/intraCustomerTransfer";
 
 import { migrate } from "./db";
@@ -898,6 +899,13 @@ router.post(
 router.get(
   "/accounts/opening_requests/:id",
   safeRequestHandler(accountOpeningRequestAPI.retrieveAccountOpeningRequest)
+);
+
+// ACCOUNT CLOSURE REQUEST
+
+router.post(
+  "/account_closure_requests",
+  safeRequestHandler(accountClosureRequestAPI.initiateAccountClosureRequest)
 );
 
 // BUSINESSES
