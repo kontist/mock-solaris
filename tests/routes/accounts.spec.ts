@@ -73,4 +73,19 @@ describe("Account", () => {
       expect(res.send.lastCall.args[0].id).to.equal(mockAccount.id);
     });
   });
+
+  describe("showPersonAccounts", () => {
+    describe("when person has no accounts", () => {
+      it("should return an empty array", async () => {
+        const req = mockReq({
+          person: {},
+        });
+
+        await accountAPI.showPersonAccounts(req, res);
+
+        expect(res.status.calledWith(200)).to.be.true;
+        expect(res.send.lastCall.args[0]).to.deep.equal([]);
+      });
+    });
+  });
 });
