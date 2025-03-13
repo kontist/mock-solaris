@@ -152,7 +152,7 @@ export const showPersonAccount = async (req, res) => {
 };
 
 export const showPersonAccounts = async (req, res) => {
-  const accounts = getAccountsFromEntity(req.person).forEach((account) =>
+  const accounts = getAccountsFromEntity(req.person).map((account) =>
     _.pick(account, requestAccountFields)
   );
 
