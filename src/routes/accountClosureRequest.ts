@@ -81,6 +81,7 @@ export const initiateAccountClosureRequest = async (req, res) => {
     const save = person ? savePerson : saveBusiness;
 
     account.status = AccountStatus.INACTIVE;
+    account.locking_status = LockingStatus.BLOCK;
     await save(entity, {
       accounts: [
         ...entity.accounts.filter((acc) => acc.id !== accountId),
