@@ -212,8 +212,10 @@ export const createSubaccount = async (
     );
     entity.accounts = (entity.accounts || []).concat(account);
     await (customerType === CustomerType.PERSON ? savePerson : saveBusiness)(
-      entity
+      entity,
+      { accounts: [...entity.accounts, entity.account] }
     );
+
     await saveAccountToEntity(account, entityId, customerType);
   });
 

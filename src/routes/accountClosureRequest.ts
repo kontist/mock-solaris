@@ -12,6 +12,7 @@ import {
   AccountClosureStatus,
   AccountStatus,
   AccountWebhookEvent,
+  LockingStatus,
 } from "../helpers/types";
 import { triggerWebhook } from "../helpers/webhooks";
 import generateID from "../helpers/id";
@@ -82,6 +83,7 @@ export const initiateAccountClosureRequest = async (req, res) => {
 
     account.status = AccountStatus.INACTIVE;
     account.locking_status = LockingStatus.BLOCK;
+
     await save(entity, {
       accounts: [
         ...entity.accounts.filter((acc) => acc.id !== accountId),
