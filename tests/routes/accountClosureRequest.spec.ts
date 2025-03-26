@@ -22,6 +22,11 @@ describe("Account Closure Request", () => {
       iban: "DE1234567891",
       type: AccountType.CHECKING_SUBACCOUNT,
     };
+    const subAccountTwo = {
+      id: "sub-account-id-2",
+      iban: "DE1234567892",
+      type: AccountType.CHECKING_SUBACCOUNT,
+    };
 
     before(async () => {
       await db.flushDb();
@@ -34,7 +39,7 @@ describe("Account Closure Request", () => {
           body: {
             first_name: "Dean",
             last_name: "Winchester",
-            accounts: [subAccount],
+            accounts: [subAccount, subAccountTwo],
           },
           headers: {},
         },
@@ -76,6 +81,12 @@ describe("Account Closure Request", () => {
         const account = person.accounts.find((a) => a.id === subAccount.id);
 
         expect(account.status).to.equal("INACTIVE");
+      });
+
+      it("should still have one active subaccount", () => {
+        const account = person.accounts.find((a) => a.id === subAccountTwo.id);
+
+        expect(account).to.be.ok;
       });
 
       it("should have triggered the webhooks", () => {
