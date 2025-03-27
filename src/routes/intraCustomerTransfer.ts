@@ -114,7 +114,15 @@ export const createIntraCustomerTransfer = async (req, res) => {
   senderAccount.transactions.push(outgoingBooking as unknown as Booking);
   recipientAccount.transactions.push(incomingBooking as unknown as Booking);
 
-  await save(entity, { accounts: [senderAccount, recipientAccount] });
+  await save(entity, {
+    accounts: [
+      senderAccount,
+      recipientAccount,
+      ...entity.accounts.filter(
+        (acc) => ![senderAccount.id, recipientAccount.id].includes(acc.id)
+      ),
+    ],
+  });
 
   res.status(HttpStatusCodes.CREATED).send({
     id: generateID(),

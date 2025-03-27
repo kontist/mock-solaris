@@ -135,6 +135,13 @@ export enum AccountStatus {
   INACTIVE = "INACTIVE",
 }
 
+export enum LockingStatus {
+  NO_BLOCK = "NO_BLOCK",
+  CREDIT_BLOCK = "CREDIT_BLOCK",
+  DEBIT_BLOCK = "DEBIT_BLOCK",
+  BLOCK = "BLOCK",
+}
+
 export type MockAccount = {
   id: string;
   cards: CardData[];
