@@ -161,16 +161,18 @@ export const showBankStatementBookings = async (req, res) => {
   const momentStartDate = moment(startDate);
   const momentEndDate = moment(endDate);
 
-  const bankStatementsBookings = account.transactions
-    .filter((booking) =>
-      moment(booking.booking_date).isBetween(
-        momentStartDate,
-        momentEndDate,
-        null,
-        "[]"
-      )
-    )
-    .slice((number - 1) * size, number * size);
+  const bankStatementsBookings = account?.transactions?.length
+    ? account?.transactions
+        .filter((booking) =>
+          moment(booking.booking_date).isBetween(
+            momentStartDate,
+            momentEndDate,
+            null,
+            "[]"
+          )
+        )
+        .slice((number - 1) * size, number * size)
+    : [];
 
   const logText = person
     ? `person id ${person.id}`
