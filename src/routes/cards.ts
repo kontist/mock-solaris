@@ -100,23 +100,10 @@ export const createCardHandler = async (
   const { person_id: personId, account_id: accountId } = req.params;
 
   try {
-    let person = await db.findPersonByAccount({ id: accountId });
+    const person = await db.findPersonByAccount({ id: accountId });
     const business = await db.findBusinessByAccount({ id: accountId });
 
-    if (
-      !person &&
-      business?.legalRepresentatives?.[0]?.legal_representative_id
-    ) {
-      person = await db.getPerson(
-        business.legalRepresentatives[0].legal_representative_id
-      );
-
-      if (!person.account) {
-        person.account = business.account;
-      }
-    }
-
-    if (!person) {
+    if (!person && !business) {
       res.status(HttpStatusCodes.NOT_FOUND).send({
         errors: [
           {
@@ -124,14 +111,18 @@ export const createCardHandler = async (
             status: 404,
             code: "model_not_found",
             title: "Model Not Found",
-            detail: `Couldn't find 'Solaris::Person' for id '${personId}'.`,
+            detail: `Couldn't find 'Solaris::Person' or 'Solaris::Business' for id '${personId}'.`,
           },
         ],
       });
       return;
     }
 
-    const { card, cardDetails } = cardHelpers.createCard(req.body, person);
+    const { card, cardDetails } = cardHelpers.createCard(
+      req.body,
+      person,
+      business
+    );
     const personValidationErrors = await cardHelpers.validatePersonData(person);
     const cardValidationErrors = await cardHelpers.validateCardData(
       card,
@@ -147,11 +138,20 @@ export const createCardHandler = async (
     }
 
     card.representation.line_1 = card.representation.line_1.replace(/\//g, " ");
-    person.account.cards = person.account.cards || [];
-    person.account.cards.push({ card, cardDetails, controls: [] });
+
+    if (business) {
+      business.account.cards = business.account.cards || [];
+      business.account.cards.push({ card, cardDetails, controls: [] });
+
+      await db.saveBusiness(business);
+    } else {
+      person.account.cards = person.account.cards || [];
+      person.account.cards.push({ card, cardDetails, controls: [] });
+
+      await db.savePerson(person);
+    }
 
     await db.saveCardReference(cardDetails.reference);
-    await db.savePerson(person);
 
     log.info("(createCardHandler) Card created", { card, cardDetails });
 
@@ -182,8 +182,9 @@ export const getAccountCardsHandler = async (
 ) => {
   const { account_id: accountId } = req.params;
   const person = await db.findPersonByAccount({ id: accountId });
+  const business = await db.findBusinessByAccount({ id: accountId });
 
-  if (!person) {
+  if (!person && !business) {
     res.status(HttpStatusCodes.NOT_FOUND).send({
       errors: [
         {
@@ -198,7 +199,7 @@ export const getAccountCardsHandler = async (
     return;
   }
 
-  res.status(HttpStatusCodes.OK).send(cardHelpers.getCards(person));
+  res.status(HttpStatusCodes.OK).send(cardHelpers.getCards(person, business));
 };
 
 export const getCardHandler = async (

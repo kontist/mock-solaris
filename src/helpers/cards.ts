@@ -23,6 +23,7 @@ import {
   ProvisioningTokenMessageReason,
   ProvisioningTokenStatusChangePayload,
   CardSpendingLimitControl,
+  MockBusiness,
 } from "./types";
 import generateID from "./id";
 
@@ -163,7 +164,8 @@ const getDefaultCardDetails = () => ({
 
 export const createCard = (
   cardData: CreateCardData,
-  person: MockPerson
+  person?: MockPerson,
+  business?: MockBusiness
 ): { card: Card; cardDetails: CardDetails } => {
   const {
     pin,
@@ -187,7 +189,7 @@ export const createCard = (
     status: CardStatus.PROCESSING,
     expiration_date: expirationDate.format("YYYY-MM-DD"),
     person_id: person.id,
-    account_id: person.account.id,
+    account_id: business?.account.id || person?.account.id,
     new_card_ordered: true,
     business_id: businessId,
     representation: {
@@ -234,10 +236,15 @@ export const replaceCard = (
   return { card: newCard, cardDetails: newCardDetails };
 };
 
-export const getCards = (person: MockPerson): Card[] => {
-  return ((person.account && person.account.cards) || []).map(
-    ({ card }) => card
-  );
+export const getCards = (
+  person?: MockPerson,
+  business?: MockBusiness
+): Card[] => {
+  return (
+    (business?.account && business.account.cards) ||
+    (person.account && person.account.cards) ||
+    []
+  ).map(({ card }) => card);
 };
 
 export const changeCardStatus = async (
