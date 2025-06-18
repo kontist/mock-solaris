@@ -137,7 +137,7 @@ export const validatePersonData = async (
   const errors = [];
 
   const mobileNumber = await db.getMobileNumber(personId);
-  const hasValidMobileNumber = mobileNumber; // TODO: add verified check, it was not working for business user
+  const hasValidMobileNumber = mobileNumber && mobileNumber.verified;
   if (!hasValidMobileNumber) {
     errors.push({
       id: generateID(),
