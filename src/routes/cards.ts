@@ -79,7 +79,7 @@ export const replaceCardHandler = async (
       await db.savePerson(entity);
     }
 
-    await db.saveCardToRedis(
+    await db.saveCardData(
       entity.account.cards.find(({ card }) => card.id === newCard.id)
     );
 
@@ -168,7 +168,7 @@ export const createCardHandler = async (
     }
 
     await db.saveCardReference(cardDetails.reference);
-    await db.saveCardToRedis(cardData);
+    await db.saveCardData(cardData);
 
     log.info("(createCardHandler) Card created", { card, cardDetails });
 
@@ -757,7 +757,7 @@ export const createCardPINUpdateRequestHandler = async (
     await db.savePerson(entity);
   }
 
-  await db.saveCardToRedis(entity.account.cards[cardIndex]);
+  await db.saveCardData(entity.account.cards[cardIndex]);
 
   res.send({});
 };

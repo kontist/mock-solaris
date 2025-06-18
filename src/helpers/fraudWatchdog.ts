@@ -156,7 +156,7 @@ export class FraudWatchdog {
       await db.savePerson(entity);
     }
 
-    await db.saveCardToRedis(cardData);
+    await db.saveCardData(cardData);
 
     await triggerWebhook({
       type: CardWebhookEvent.CARD_LIFECYCLE_EVENT,

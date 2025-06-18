@@ -288,7 +288,7 @@ export const changeCardStatus = async (
     await db.savePerson(entity);
   }
 
-  await db.saveCardToRedis(cardData);
+  await db.saveCardData(cardData);
 
   await triggerWebhook({
     type: CardWebhookEvent.CARD_LIFECYCLE_EVENT,
@@ -357,7 +357,7 @@ export const upsertProvisioningToken = async (
     await db.savePerson(entity);
   }
 
-  await db.saveCardToRedis(cardData);
+  await db.saveCardData(cardData);
   return newProvisioningToken;
 };
 
@@ -523,7 +523,7 @@ export const activateCard = async (cardForActivation: Card): Promise<Card> => {
       await db.savePerson(entity);
     }
 
-    await db.saveCardToRedis(entity.account.cards[cardIndex]);
+    await db.saveCardData(entity.account.cards[cardIndex]);
   });
 
   await triggerWebhook({
@@ -555,7 +555,7 @@ export const enableGooglePay = async (card: Card): Promise<string> => {
     await db.savePerson(entity);
   }
 
-  await db.saveCardToRedis(entity.account.cards[cardIndex]);
+  await db.saveCardData(entity.account.cards[cardIndex]);
 
   return SOLARIS_HARDCODED_WALLET_PAYLOAD;
 };
@@ -600,7 +600,7 @@ export const enableApplePay = async (
     await db.savePerson(entity);
   }
 
-  await db.saveCardToRedis(entity.account.cards[cardIndex]);
+  await db.saveCardData(entity.account.cards[cardIndex]);
   return APPLE_WALLET_RESPONSE;
 };
 
@@ -694,14 +694,14 @@ export const confirmChangeCardPIN = async (
 
     business.account.cards[cardIndex].cardDetails.pin = changeRequest.pin;
     await db.saveBusiness(business);
-    await db.saveCardToRedis(business.account.cards[cardIndex]);
+    await db.saveCardData(business.account.cards[cardIndex]);
   } else {
     const cardIndex = person.account.cards.findIndex(
       ({ card }) => card.id === changeRequest.cardId
     );
 
     person.account.cards[cardIndex].cardDetails.pin = changeRequest.pin;
-    await db.saveCardToRedis(person.account.cards[cardIndex]);
+    await db.saveCardData(person.account.cards[cardIndex]);
   }
 
   person.changeRequest = null;
@@ -781,14 +781,17 @@ export const createCardSpendingLimit = async (
     await db.savePerson(entity);
   }
 
-  await db.saveCardToRedis(entity.account.cards[cardIndex]);
+  await db.saveCardData(entity.account.cards[cardIndex]);
+  await db.saveCardSpendingLimitControl(limitControl.id, limitControl);
 
   return limitControl;
 };
 
-export const deleteCardSpendingLimit = async (id: string): Promise<void> => {
+export const deleteCardSpendingLimit = async (
+  controlId: string
+): Promise<void> => {
   const { person, business, cardData } = await db.getEntityBySpendingLimitId(
-    id
+    controlId
   );
 
   if (business) {
@@ -798,10 +801,10 @@ export const deleteCardSpendingLimit = async (id: string): Promise<void> => {
 
     business.account.cards[cardIndex].controls = business.account.cards[
       cardIndex
-    ].controls.filter((control) => control.id !== id);
+    ].controls.filter((control) => control.id !== controlId);
 
     await db.saveBusiness(business);
-    await db.saveCardToRedis(business.account.cards[cardIndex]);
+    await db.saveCardData(business.account.cards[cardIndex]);
   } else {
     const cardIndex = person.account.cards.findIndex(
       ({ card }) => card.id === cardData.card.id
@@ -809,10 +812,10 @@ export const deleteCardSpendingLimit = async (id: string): Promise<void> => {
 
     person.account.cards[cardIndex].controls = person.account.cards[
       cardIndex
-    ].controls.filter((control) => control.id !== id);
+    ].controls.filter((control) => control.id !== controlId);
 
     await db.savePerson(person);
-    await db.saveCardToRedis(person.account.cards[cardIndex]);
+    await db.saveCardData(person.account.cards[cardIndex]);
   }
 };
 

@@ -14,6 +14,8 @@ import {
   Card,
   CardData,
   CardDetails,
+  CardSpendingLimit,
+  CardSpendingLimitControl,
   CustomerType,
   CustomerVettingStatus,
   DeviceActivityPayload,
@@ -913,7 +915,7 @@ export const saveCardReference = async (cardRef) => {
   return true;
 };
 
-export const saveCardToRedis = async (cardData: CardData): Bluebird<void> => {
+export const saveCardData = async (cardData: CardData): Bluebird<void> => {
   const key = `${process.env.MOCKSOLARIS_REDIS_PREFIX}:cards:${cardData.card.id}`;
   await redisClient.set(key, JSON.stringify(cardData));
 };
@@ -923,8 +925,25 @@ export const getCardData = async (cardId: string): Bluebird<CardData> => {
   return JSON.parse(await redisClient.get(key));
 };
 
-export const getEntityBySpendingLimitId = async (id) => {
-  const cardData = await getCardData(id);
+export const saveCardSpendingLimitControl = async (
+  controlId: string,
+  spendingLimitControl: CardSpendingLimitControl
+) => {
+  const key = `${process.env.MOCKSOLARIS_REDIS_PREFIX}:cardSpendingLimitControl:${controlId}`;
+  await redisClient.set(key, JSON.stringify(spendingLimitControl));
+};
+
+export const getCardSpendingLimitControl = async (
+  controlId: string
+): Bluebird<CardSpendingLimitControl> => {
+  const key = `${process.env.MOCKSOLARIS_REDIS_PREFIX}:cardSpendingLimitControl:${controlId}`;
+  return JSON.parse(await redisClient.get(key));
+};
+
+export const getEntityBySpendingLimitId = async (controlId: string) => {
+  const cardSpendingLimitControl = await getCardSpendingLimitControl(controlId);
+
+  const cardData = await getCardData(cardSpendingLimitControl.scope_id);
 
   if (cardData.card.business_id) {
     const business = await getBusiness(cardData.card.business_id);
