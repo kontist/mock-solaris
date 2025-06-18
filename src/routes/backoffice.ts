@@ -230,7 +230,11 @@ export const listWebhooks = async (req, res) => {
 
 export const listPersonsCards = async (req, res) => {
   const person = await getPerson(req.params.id);
-  res.render("cards", { person });
+  let business = null;
+  if (person.businessId) {
+    business = await getBusiness(person.businessId);
+  }
+  res.render("cards", { person, business });
 };
 
 export const getPersonHandler = async (req, res) => {

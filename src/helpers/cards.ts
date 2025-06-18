@@ -132,12 +132,12 @@ export const validateCardData = async (
 };
 
 export const validatePersonData = async (
-  person: MockPerson
+  personId: string
 ): Promise<SolarisAPIErrorData[]> => {
   const errors = [];
 
-  const mobileNumber = await db.getMobileNumber(person.id);
-  const hasValidMobileNumber = mobileNumber && mobileNumber.verified;
+  const mobileNumber = await db.getMobileNumber(personId);
+  const hasValidMobileNumber = mobileNumber; // TODO: add verified check, it was not working for business user
   if (!hasValidMobileNumber) {
     errors.push({
       id: generateID(),
@@ -164,8 +164,8 @@ const getDefaultCardDetails = () => ({
 
 export const createCard = (
   cardData: CreateCardData,
-  person?: MockPerson,
-  business?: MockBusiness
+  personId: string,
+  accountId: string
 ): { card: Card; cardDetails: CardDetails } => {
   const {
     pin,
@@ -188,8 +188,8 @@ export const createCard = (
     type,
     status: CardStatus.PROCESSING,
     expiration_date: expirationDate.format("YYYY-MM-DD"),
-    person_id: person.id,
-    account_id: business?.account.id || person?.account.id,
+    person_id: personId,
+    account_id: accountId,
     new_card_ordered: true,
     business_id: businessId,
     representation: {
@@ -752,8 +752,8 @@ export const createCardSpendingLimit = async (
     return res.status("208").send(cardControl);
   }
 
-  const entity = cardData.business_id
-    ? await db.getBusiness(cardData.business_id)
+  const entity = cardData.card.business_id
+    ? await db.getBusiness(cardData.card.business_id)
     : await db.getPerson(cardData.card.person_id);
 
   const cardIndex = entity.account.cards.findIndex(

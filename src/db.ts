@@ -926,8 +926,8 @@ export const getCardData = async (cardId: string): Bluebird<CardData> => {
 export const getEntityBySpendingLimitId = async (id) => {
   const cardData = await getCardData(id);
 
-  if (cardData.business_id) {
-    const business = await getBusiness(cardData.business_id);
+  if (cardData.card.business_id) {
+    const business = await getBusiness(cardData.card.business_id);
     return { business, cardData };
   } else {
     const person = await getPerson(cardData.card.person_id);

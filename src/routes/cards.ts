@@ -133,10 +133,12 @@ export const createCardHandler = async (
 
     const { card, cardDetails } = cardHelpers.createCard(
       req.body,
-      person,
-      business
+      personId,
+      accountId
     );
-    const personValidationErrors = await cardHelpers.validatePersonData(person);
+    const personValidationErrors = await cardHelpers.validatePersonData(
+      personId
+    );
     const cardValidationErrors = await cardHelpers.validateCardData(
       card,
       cardDetails
