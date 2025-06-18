@@ -139,12 +139,28 @@ export class FraudWatchdog {
     person: MockPerson,
     status: CardStatus
   ) {
-    const { card } = person.account.cards.find((cs) => cs.card.id === cardId);
-    card.status = status;
-    await db.savePerson(person);
+    let business;
+    if (person.businessId) {
+      business = await db.getBusiness(person.businessId);
+    }
+
+    const entity = business || person;
+
+    const cardData = entity.account.cards.find((cs) => cs.card.id === cardId);
+
+    cardData.card.status = status;
+
+    if (business) {
+      await db.saveBusiness(entity);
+    } else {
+      await db.savePerson(entity);
+    }
+
+    await db.saveCardToRedis(cardData);
+
     await triggerWebhook({
       type: CardWebhookEvent.CARD_LIFECYCLE_EVENT,
-      payload: card,
+      payload: cardData.card,
     });
   }
 }

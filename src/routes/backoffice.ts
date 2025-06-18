@@ -27,6 +27,7 @@ import {
   findBusinesses,
   getBusiness,
   saveBusiness,
+  getCardData,
 } from "../db";
 import {
   createSepaDirectDebitReturn,
@@ -1116,8 +1117,7 @@ export const updateAccountLockingStatusHandler = async (req, res) => {
 };
 
 const changeCardStatusAllowed = async (personId, cardId, newCardStatus) => {
-  const person = await getPerson(personId);
-  const cardData = person.account.cards.find(({ card }) => card.id === cardId);
+  const cardData = await getCardData(cardId);
 
   const {
     card: { status: currentCardStatus, type },

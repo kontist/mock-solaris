@@ -38,6 +38,11 @@ export const replaceCardHandler = async (
 ) => {
   try {
     const person = await db.findPersonByAccount({ id: req.card.account_id });
+    const business = await db.findBusinessByAccount({
+      id: req.card.account_id,
+    });
+
+    const entity = business || person;
 
     const { card: newCard, cardDetails } = await cardHelpers.replaceCard(
       req.body,
@@ -58,7 +63,7 @@ export const replaceCardHandler = async (
       " "
     );
 
-    person.account.cards = person.account.cards.map((item) => {
+    entity.account.cards = entity.account.cards.map((item) => {
       if (item.card.id === newCard.id) {
         return {
           card: newCard,
@@ -68,7 +73,15 @@ export const replaceCardHandler = async (
       return item;
     });
 
-    await db.savePerson(person);
+    if (business) {
+      await db.saveBusiness(entity);
+    } else {
+      await db.savePerson(entity);
+    }
+
+    await db.saveCardToRedis(
+      entity.account.cards.find(({ card }) => card.id === newCard.id)
+    );
 
     log.info("(replaceCardHandler) Card replaced", { newCard, cardDetails });
 
@@ -138,20 +151,22 @@ export const createCardHandler = async (
     }
 
     card.representation.line_1 = card.representation.line_1.replace(/\//g, " ");
+    const cardData = { card, cardDetails, controls: [] };
 
     if (business) {
       business.account.cards = business.account.cards || [];
-      business.account.cards.push({ card, cardDetails, controls: [] });
+      business.account.cards.push(cardData);
 
       await db.saveBusiness(business);
     } else {
       person.account.cards = person.account.cards || [];
-      person.account.cards.push({ card, cardDetails, controls: [] });
+      person.account.cards.push(cardData);
 
       await db.savePerson(person);
     }
 
     await db.saveCardReference(cardDetails.reference);
+    await db.saveCardToRedis(cardData);
 
     log.info("(createCardHandler) Card created", { card, cardDetails });
 
@@ -724,11 +739,23 @@ export const createCardPINUpdateRequestHandler = async (
   }
 
   const person = await db.getPerson(req.card.person_id);
-  const cardIndex = person.account.cards.findIndex(
+
+  const entity = person.businessId
+    ? await db.getBusiness(person.businessId)
+    : person;
+
+  const cardIndex = entity.account.cards.findIndex(
     ({ card }) => card.id === req.card.id
   );
-  person.account.cards[cardIndex].cardDetails.pin = pin;
-  await db.savePerson(person);
+  entity.account.cards[cardIndex].cardDetails.pin = pin;
+
+  if (person.businessId) {
+    await db.saveBusiness(entity);
+  } else {
+    await db.savePerson(entity);
+  }
+
+  await db.saveCardToRedis(entity.account.cards[cardIndex]);
 
   res.send({});
 };

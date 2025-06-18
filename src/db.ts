@@ -13,6 +13,7 @@ import {
   Booking,
   Card,
   CardData,
+  CardDetails,
   CustomerType,
   CustomerVettingStatus,
   DeviceActivityPayload,
@@ -912,25 +913,26 @@ export const saveCardReference = async (cardRef) => {
   return true;
 };
 
-export const getCardData = async (cardId: string): Bluebird<Card> => {
-  const personWhoOwnsTheCard = await findPerson(
-    (p) => !!(p?.account?.cards || []).some((cd) => cd?.card?.id === cardId)
-  );
-  return personWhoOwnsTheCard?.account?.cards.find(
-    (card: CardData) => card?.card?.id === cardId
-  );
+export const saveCardToRedis = async (cardData: CardData): Bluebird<void> => {
+  const key = `${process.env.MOCKSOLARIS_REDIS_PREFIX}:cards:${cardData.card.id}`;
+  await redisClient.set(key, JSON.stringify(cardData));
 };
 
-export const getPersonBySpendingLimitId = async (id) => {
-  const person = await findPerson((p) => {
-    return (p.account?.cards ?? []).some(
-      (c) => !!(c.controls ?? []).some((co) => co.id === id)
-    );
-  });
-  const cardData = (person?.account?.cards ?? []).find((c) =>
-    (c.controls ?? []).some((co) => co.id === id)
-  );
-  return { person, cardData };
+export const getCardData = async (cardId: string): Bluebird<CardData> => {
+  const key = `${process.env.MOCKSOLARIS_REDIS_PREFIX}:cards:${cardId}`;
+  return JSON.parse(await redisClient.get(key));
+};
+
+export const getEntityBySpendingLimitId = async (id) => {
+  const cardData = await getCardData(id);
+
+  if (cardData.business_id) {
+    const business = await getBusiness(cardData.business_id);
+    return { business, cardData };
+  } else {
+    const person = await getPerson(cardData.card.person_id);
+    return { person, cardData };
+  }
 };
 
 export const getPersonByFraudCaseId = async (
