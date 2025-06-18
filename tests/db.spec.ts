@@ -11,7 +11,7 @@ import {
   flushDb,
   getCardData,
   getPersonByFraudCaseId,
-  getPersonBySpendingLimitId,
+  getEntityBySpendingLimitId,
 } from "../src/db";
 import { createPerson } from "../src/routes/persons";
 import {
@@ -190,7 +190,7 @@ describe("getPersons()", async () => {
     const req = mockReq({ body, headers });
     const res = mockRes();
     await createPerson(req, res);
-    const person = await getPersonBySpendingLimitId(
+    const person = await getEntityBySpendingLimitId(
       mockCardSpendingLimitControl.id
     );
     expect(person.person).to.be.ok;
@@ -205,7 +205,7 @@ describe("getPersons()", async () => {
     const req = mockReq({ body, headers });
     const res = mockRes();
     await createPerson(req, res);
-    const response = await getPersonBySpendingLimitId("N/A");
+    const response = await getEntityBySpendingLimitId("N/A");
     expect(response.person).not.to.be.ok;
     expect(response.cardData).not.to.be.ok;
   });
