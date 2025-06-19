@@ -146,7 +146,7 @@ export class FraudWatchdog {
 
     const entity = business || person;
 
-    const cardData = entity.account.cards.find((cs) => cs.card.id === cardId);
+    const cardData = await db.getCardData(cardId);
 
     cardData.card.status = status;
 
@@ -156,7 +156,7 @@ export class FraudWatchdog {
       await db.savePerson(entity);
     }
 
-    await db.saveCardData(cardData);
+    await db.saveCardData(cardData, entity);
 
     await triggerWebhook({
       type: CardWebhookEvent.CARD_LIFECYCLE_EVENT,
