@@ -15,8 +15,7 @@
 <div class="col-md-12">
   <div class="panel panel-default">
     <div class="panel-heading">Existing cards</div>
-    {% if person.businessId %}
-    {% for cardData in business.account.cards.reverse() %}
+    {% for cardData in cards %}
     <table class="table" {% if cardData.card.status==="CLOSED_BY_SOLARIS" %}style="opacity: 0.5;"{% endif %}>
       <thead>
         <tr>
@@ -107,113 +106,10 @@
       </tbody>
     </table>
     {% endfor %}
-    {% else %}
-    {% for cardData in person.account.cards.reverse() %}
-    <table class="table" {% if cardData.card.status==="CLOSED_BY_SOLARIS" %}style="opacity: 0.5;" {% endif %}>
-      <thead>
-        <tr>
-          <th>Number</th>
-          <th>Type</th>
-          <th>Details
-          <th>
-        </tr>
-      </thead>
-      <tbody>
-        <td>{{ cardData.cardDetails.cardNumber }}</td>
-        <td>{{ cardData.card.type }}</td>
-        <td style="display: flex; flex-direction: row;">
-          <table class="table">
-            <tr>
-              <td>Status <b>{{ cardData.card.status }}</b></td>
-              <td>
-                <form class="form-inline autosubmitonchange" method="POST" action="/__BACKOFFICE__/changeCardStatus">
-                  <select name="status" {% if cardData.card.status==="CLOSED_BY_SOLARIS" %}disabled {% endif %}>
-                    <option {% if cardData.card.status==="BLOCKED_BY_SOLARIS" %}selected {% endif
-                      %}value="BLOCKED_BY_SOLARIS">BLOCKED_BY_SOLARIS</option>
-                    <option {% if cardData.card.status==="ACTIVATION_BLOCKED_BY_SOLARIS" %}selected {% endif
-                      %}value="ACTIVATION_BLOCKED_BY_SOLARIS">ACTIVATION_BLOCKED_BY_SOLARIS</option>
-                    <option {% if cardData.card.status==="CLOSED_BY_SOLARIS" %}selected {% endif
-                      %}value="CLOSED_BY_SOLARIS">CLOSED_BY_SOLARIS</option>
-                    <option {% if cardData.card.status==="ACTIVE" %}selected {% endif %}value="ACTIVE">ACTIVE</option>
-                    {% if cardData.card.type !=="VIRTUAL_VISA_FREELANCE_DEBIT"%}
-                    <option {% if cardData.card.status==="INACTIVE" %}selected {% endif %}value="INACTIVE">INACTIVE</option>
-                    {% endif %}
-                  </select>
-                  <input type="hidden" name="personId" value={{ person.id }}>
-                  <input type="hidden" name="accountId" value={{ cardData.card.account_id }}>
-                  <input type="hidden" name="cardId" value={{ cardData.card.id }}>
-                </form>
-              </td>
-            </tr>
-            <tr>
-              <td>card id</td>
-              <td>{{ cardData.card.id }}</td>
-            </tr>
-            <tr>
-              <td>New Provisioning Token</td>
-              <td>
-                <form class="form-inline autosubmitonchange" method="POST"
-                  action="/__BACKOFFICE__/{{ person.id }}/{{ cardData.card.id }}/createProvisioningToken">
-                  <input type="submit" value="Create" />
-                </form>
-              </td>
-            </tr>
-            {% if cardData.provisioningToken %}
-            <tr>
-              <td>Provisioning Token Status</td>
-              <td>
-                <form class="form-inline autosubmitonchange" method="POST"
-                  action="/__BACKOFFICE__/{{ person.id }}/{{ cardData.card.id }}/updateProvisioningToken">
-                  <select name="status" {% if cardData.card.status==="CLOSED_BY_SOLARIS" %}disabled {% endif %}>
-                    <option {% if cardData.provisioningToken.token_status==="ACTIVE" %} selected {% endif %} value="ACTIVE">
-                      ACTIVE</option>
-                    <option {% if cardData.provisioningToken.token_status==="INACTIVE" %} selected {% endif
-                      %}value="INACTIVE">INACTIVE</option>
-                    <option {% if cardData.provisioningToken.token_status==="DEACTIVATED" %} selected {% endif
-                      %}value="DEACTIVATED">DEACTIVATED</option>
-                    <option {% if cardData.provisioningToken.token_status==="SUSPENDED" %} selected {% endif
-                      %}value="SUSPENDED">SUSPENDED</option>
-                  </select>
-                </form>
-              </td>
-            </tr>
-            {% endif %}
-            <tr>
-              <td>CVV</td>
-              <td>{{ cardData.cardDetails.cvv }}</td>
-            </tr>
-            <tr>
-              <td>expiration date</td>
-              <td>{{ cardData.card.expiration_date }}</td>
-            </tr>
-            <tr>
-              <td>holder</td>
-              <td>{{ cardData.card.representation.line_1 }}</td>
-            </tr>
-            <tr>
-              <td>PIN</td>
-              <td>{{ cardData.cardDetails.pin || "NOT SET" }}</td>
-            </tr>
-            <tr {% if cardData.card.type==="VIRTUAL_VISA_FREELANCE_DEBIT" %} style="opacity: 0.4;" {% endif %}>
-              <td>card limits</td>
-              <td>
-                <pre>{{ JSON.stringify(cardData.controls, null, 2) }}</pre>
-              </td>
-            </tr>
-            <tr>
-              <td>Google Pay wallet payload</td>
-              <td>{{ cardData.cardDetails.walletPayload }}</td>
-            </tr>
-          </table>
-        </td>
-      </tbody>
-    </table>
-    {% endfor %}
-    {% endif %}
   </div>
 </div>
 
-{% if business?.account?.cards[0] || person.account.cards[0] %}
+{% if cards[0] %}
 <div class="col-md-5">
   <div class="panel panel-default">
     <div class="panel-heading">Use card</div>
@@ -221,21 +117,7 @@
       <form id="createReservation" method="POST" action="/__BACKOFFICE__/person/{{ person.id }}/reservations">
         <div class="custom-controls-stacked">
           <div class="form-group">
-            {% if person.businessId %}
-            {% for cardData in business.account.cards.reverse() %}
-            <div class="radio" {% if cardData.card.status==="CLOSED_BY_SOLARIS" %}style="opacity: 0.5;"{% endif %}>
-              <label>
-                <input {% if cardData.card.status === "ACTIVE" %} checked {% else %} disabled {% endif %} type="radio" name="cardId" value="{{ cardData.card.id }}">
-                <b>
-                  {{ cardData.card['type'] }}
-                </b>
-                ({{ cardData.cardDetails.cardNumber }})
-                ({{ cardData.card.status }})
-              </label>
-            </div>
-            {% endfor %}
-            {% else %}
-            {% for cardData in person.account.cards.reverse() %}
+            {% for cardData in cards %}
             <div class="radio" {% if cardData.card.status==="CLOSED_BY_SOLARIS" %}style="opacity: 0.5;" {% endif %}>
               <label>
                 <input {% if cardData.card.status==="ACTIVE" %} checked {% else %} disabled {% endif %} type="radio" name="cardId"
@@ -248,7 +130,6 @@
               </label>
             </div>
             {% endfor %}
-            {% endif %}
           </div>
           <div class="form-group">
             <label class="col-form-label" for="type">Type</label>

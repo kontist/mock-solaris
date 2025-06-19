@@ -56,6 +56,7 @@ import {
   Booking,
   BusinessWebhookEvent,
   MockBusiness,
+  CardData,
 } from "../helpers/types";
 import {
   changeOverdraftApplicationStatus,
@@ -229,12 +230,18 @@ export const listWebhooks = async (req, res) => {
 };
 
 export const listPersonsCards = async (req, res) => {
+  let cards: CardData[] = [];
   const person = await getPerson(req.params.id);
   let business = null;
   if (person.businessId) {
     business = await getBusiness(person.businessId);
+    cards = business.account.cards
+      .filter((card: CardData) => card.card.person_id === person.id)
+      .reverse();
+  } else {
+    cards = person.account.cards.reverse();
   }
-  res.render("cards", { person, business });
+  res.render("cards", { person, business, cards });
 };
 
 export const getPersonHandler = async (req, res) => {
