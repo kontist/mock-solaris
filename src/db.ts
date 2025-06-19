@@ -915,9 +915,29 @@ export const saveCardReference = async (cardRef) => {
   return true;
 };
 
-export const saveCardData = async (cardData: CardData): Bluebird<void> => {
+export const saveCardData = async (
+  cardData: CardData,
+  entity?: MockPerson | MockBusiness,
+  isUpdate: boolean = true
+): Bluebird<void> => {
   const key = `${process.env.MOCKSOLARIS_REDIS_PREFIX}:cards:${cardData.card.id}`;
   await redisClient.set(key, JSON.stringify(cardData));
+
+  if (!isUpdate) {
+    entity.account.cards = entity.account.cards || [];
+    entity.account.cards.push(cardData);
+  } else {
+    const cardIndex = entity.account.cards.findIndex(
+      (c) => c.card.id === cardData.card.id
+    );
+    entity.account.cards[cardIndex] = cardData;
+  }
+
+  if (cardData.card.business_id) {
+    await saveBusiness(entity);
+  } else {
+    await savePerson(entity);
+  }
 };
 
 export const getCardData = async (cardId: string): Bluebird<CardData> => {

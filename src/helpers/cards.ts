@@ -24,6 +24,7 @@ import {
   ProvisioningTokenStatusChangePayload,
   CardSpendingLimitControl,
   MockBusiness,
+  CardData,
 } from "./types";
 import generateID from "./id";
 
@@ -265,7 +266,7 @@ export const changeCardStatus = async (
     throw new Error("You have to provide cardId");
   }
 
-  const cardData = entity.account.cards.find(({ card }) => card.id === cardId);
+  const cardData = await db.getCardData(cardId);
 
   if (!cardData) {
     throw new Error("Card not found");
@@ -277,18 +278,7 @@ export const changeCardStatus = async (
 
   cardData.card.status = newCardStatus;
 
-  const cardIndex = entity.account.cards.findIndex(
-    ({ card }) => card.id === cardId
-  );
-  entity.account.cards[cardIndex].card = cardData.card;
-
-  if (business) {
-    await db.saveBusiness(entity);
-  } else {
-    await db.savePerson(entity);
-  }
-
-  await db.saveCardData(cardData);
+  await db.saveCardData(cardData, entity);
 
   await triggerWebhook({
     type: CardWebhookEvent.CARD_LIFECYCLE_EVENT,
@@ -329,7 +319,8 @@ export const upsertProvisioningToken = async (
     throw new Error("Entity not found");
   }
 
-  const cardData = entity.account.cards.find(({ card }) => card.id === cardId);
+  const cardData = await db.getCardData(cardId);
+
   if (!cardData) {
     throw new Error("Card not found");
   }
@@ -345,19 +336,7 @@ export const upsertProvisioningToken = async (
 
   cardData.provisioningToken = newProvisioningToken;
 
-  const cardIndex = entity.account.cards.findIndex(
-    ({ card }) => card.id === cardId
-  );
-  entity.account.cards[cardIndex].cardDetails.provisioningToken =
-    newProvisioningToken;
-
-  if (person.businessId) {
-    await db.saveBusiness(entity);
-  } else {
-    await db.savePerson(entity);
-  }
-
-  await db.saveCardData(cardData);
+  await db.saveCardData(cardData, entity);
   return newProvisioningToken;
 };
 
@@ -488,74 +467,55 @@ const triggerProvisioningTokenUpdate = async (
   return newProvisioningToken;
 };
 
-export const activateCard = async (cardForActivation: Card): Promise<Card> => {
+export const activateCard = async (
+  cardDataForActivation: CardData
+): Promise<Card> => {
   if (
-    ![CardStatus.INACTIVE, CardStatus.ACTIVE].includes(cardForActivation.status)
+    ![CardStatus.INACTIVE, CardStatus.ACTIVE].includes(
+      cardDataForActivation.card.status
+    )
   ) {
     throw new Error(CardErrorCodes.CARD_ACTIVATION_INVALID_STATUS);
   }
 
   let person;
   let business;
-  const personLockKey = `redlock:${process.env.MOCKSOLARIS_REDIS_PREFIX}:person:${cardForActivation.person_id}`;
+  const personLockKey = `redlock:${process.env.MOCKSOLARIS_REDIS_PREFIX}:person:${cardDataForActivation.card.person_id}`;
   await db.redlock.using([personLockKey], 5000, async (signal) => {
     if (signal.aborted) {
       throw signal.error;
     }
-    person = await db.getPerson(cardForActivation.person_id);
+    person = await db.getPerson(cardDataForActivation.card.person_id);
 
     if (person.businessId) {
       business = await db.getBusiness(person.businessId);
     }
 
-    const entity = business || person;
+    cardDataForActivation.card.status = CardStatus.ACTIVE;
+    cardDataForActivation.card.new_card_ordered = false;
 
-    const cardIndex = entity.account.cards.findIndex(
-      ({ card }) => card.id === cardForActivation.id
-    );
-    cardForActivation.status = CardStatus.ACTIVE;
-    cardForActivation.new_card_ordered = false;
-    entity.account.cards[cardIndex].card = cardForActivation;
-
-    if (business) {
-      await db.saveBusiness(entity);
-    } else {
-      await db.savePerson(entity);
-    }
-
-    await db.saveCardData(entity.account.cards[cardIndex]);
+    await db.saveCardData(cardDataForActivation, business || person);
   });
 
   await triggerWebhook({
     type: CardWebhookEvent.CARD_LIFECYCLE_EVENT,
-    payload: cardForActivation,
+    payload: cardDataForActivation.card,
   });
-  return cardForActivation;
+
+  return cardDataForActivation.card;
 };
 
-export const enableGooglePay = async (card: Card): Promise<string> => {
-  const person = await db.getPerson(card.person_id);
+export const enableGooglePay = async (cardData: CardData): Promise<string> => {
+  const person = await db.getPerson(cardData.card.person_id);
   let business;
 
   if (person.businessId) {
     business = await db.getBusiness(person.businessId);
   }
 
-  const entity = business || person;
+  cardData.cardDetails.walletPayload = SOLARIS_HARDCODED_WALLET_PAYLOAD;
 
-  const cardIndex = entity.account.cards.findIndex(
-    (cardData) => cardData.card.id === card.id
-  );
-  entity.account.cards[cardIndex].cardDetails.walletPayload =
-    SOLARIS_HARDCODED_WALLET_PAYLOAD;
-
-  if (business) {
-    await db.saveBusiness(entity);
-  } else {
-    await db.savePerson(entity);
-  }
-
-  await db.saveCardData(entity.account.cards[cardIndex]);
+  await db.saveCardData(cardData, business || person);
 
   return SOLARIS_HARDCODED_WALLET_PAYLOAD;
 };
@@ -570,37 +530,25 @@ const APPLE_WALLET_RESPONSE = {
 };
 
 export const enableApplePay = async (
-  card: Card
+  cardData: CardData
 ): Promise<{
   encrypted_pass_data: string;
   ephemeral_public_key: string;
   activation_data: string;
 }> => {
-  const person = await db.getPerson(card.person_id);
+  const person = await db.getPerson(cardData.card.person_id);
   let business;
 
   if (person.businessId) {
     business = await db.getBusiness(person.businessId);
   }
 
-  const entity = business || person;
-
-  const cardIndex = entity.account.cards.findIndex(
-    (cardData) => cardData.card.id === card.id
-  );
-  const cardDetails = entity.account.cards[cardIndex].cardDetails;
-  entity.account.cards[cardIndex].cardDetails = {
-    ...cardDetails,
+  cardData.cardDetails = {
+    ...cardData.cardDetails,
     ...APPLE_WALLET_RESPONSE,
   };
 
-  if (business) {
-    await db.saveBusiness(entity);
-  } else {
-    await db.savePerson(entity);
-  }
-
-  await db.saveCardData(entity.account.cards[cardIndex]);
+  await db.saveCardData(cardData, business || person);
   return APPLE_WALLET_RESPONSE;
 };
 
@@ -686,23 +634,18 @@ export const confirmChangeCardPIN = async (
   person: MockPerson,
   changeRequest: MockChangeRequest
 ) => {
-  if (person.businessId) {
-    const business = await db.getBusiness(person.businessId);
-    const cardIndex = business.account.cards.findIndex(
-      ({ card }) => card.id === changeRequest.cardId
-    );
+  const cardData = await db.getCardData(changeRequest.cardId);
 
-    business.account.cards[cardIndex].cardDetails.pin = changeRequest.pin;
-    await db.saveBusiness(business);
-    await db.saveCardData(business.account.cards[cardIndex]);
-  } else {
-    const cardIndex = person.account.cards.findIndex(
-      ({ card }) => card.id === changeRequest.cardId
-    );
-
-    person.account.cards[cardIndex].cardDetails.pin = changeRequest.pin;
-    await db.saveCardData(person.account.cards[cardIndex]);
+  if (!cardData) {
+    throw new Error("Card not found");
   }
+
+  const business = person.businessId
+    ? await db.getBusiness(person.businessId)
+    : null;
+
+  cardData.cardDetails.pin = changeRequest.pin;
+  await db.saveCardData(cardData, business || person);
 
   person.changeRequest = null;
   await db.savePerson(person);
@@ -756,10 +699,6 @@ export const createCardSpendingLimit = async (
     ? await db.getBusiness(cardData.card.business_id)
     : await db.getPerson(cardData.card.person_id);
 
-  const cardIndex = entity.account.cards.findIndex(
-    ({ card }) => card.id === cardId
-  );
-
   const limitControl = {
     id: generateID(),
     scope: Scope.CARD,
@@ -769,19 +708,9 @@ export const createCardSpendingLimit = async (
     limit,
   };
 
-  if (!entity.account.cards[cardIndex].controls) {
-    entity.account.cards[cardIndex].controls = [limitControl];
-  } else {
-    entity.account.cards[cardIndex].controls.push(limitControl);
-  }
+  cardData.controls = [...(cardData.controls || []), limitControl];
 
-  if (entity.account.business_id) {
-    await db.saveBusiness(entity);
-  } else {
-    await db.savePerson(entity);
-  }
-
-  await db.saveCardData(entity.account.cards[cardIndex]);
+  await db.saveCardData(cardData, entity);
   await db.saveCardSpendingLimitControl(limitControl.id, limitControl);
 
   return limitControl;
@@ -794,29 +723,11 @@ export const deleteCardSpendingLimit = async (
     controlId
   );
 
-  if (business) {
-    const cardIndex = business.account.cards.findIndex(
-      ({ card }) => card.id === cardData.card.id
-    );
+  cardData.controls = cardData.controls.filter(
+    (control) => control.id !== controlId
+  );
 
-    business.account.cards[cardIndex].controls = business.account.cards[
-      cardIndex
-    ].controls.filter((control) => control.id !== controlId);
-
-    await db.saveBusiness(business);
-    await db.saveCardData(business.account.cards[cardIndex]);
-  } else {
-    const cardIndex = person.account.cards.findIndex(
-      ({ card }) => card.id === cardData.card.id
-    );
-
-    person.account.cards[cardIndex].controls = person.account.cards[
-      cardIndex
-    ].controls.filter((control) => control.id !== controlId);
-
-    await db.savePerson(person);
-    await db.saveCardData(person.account.cards[cardIndex]);
-  }
+  await db.saveCardData(cardData, business || person);
 };
 
 export const indexCardSpendingLimit = async (

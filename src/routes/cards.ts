@@ -9,6 +9,7 @@ import * as log from "../logger";
 
 import {
   Card,
+  CardData,
   CardDetails,
   CardStatus,
   CaseResolution,
@@ -27,27 +28,28 @@ keyStore.generate("RSA", 2048, {
   use: "enc",
 });
 
-type RequestExtendedWithCard = express.Request & {
-  card: Card;
-  cardDetails: CardDetails;
+type RequestExtendedWithCardData = express.Request & {
+  cardData: CardData;
 };
 
 export const replaceCardHandler = async (
-  req: RequestExtendedWithCard,
+  req: RequestExtendedWithCardData,
   res: express.Response
 ) => {
   try {
-    const person = await db.findPersonByAccount({ id: req.card.account_id });
+    const person = await db.findPersonByAccount({
+      id: req.cardData.card.account_id,
+    });
     const business = await db.findBusinessByAccount({
-      id: req.card.account_id,
+      id: req.cardData.card.account_id,
     });
 
     const entity = business || person;
 
     const { card: newCard, cardDetails } = await cardHelpers.replaceCard(
       req.body,
-      req.card,
-      req.cardDetails
+      req.cardData.card,
+      req.cardData.cardDetails
     );
 
     const errors = await cardHelpers.validateCardData(newCard);
@@ -63,25 +65,10 @@ export const replaceCardHandler = async (
       " "
     );
 
-    entity.account.cards = entity.account.cards.map((item) => {
-      if (item.card.id === newCard.id) {
-        return {
-          card: newCard,
-          cardDetails,
-        };
-      }
-      return item;
-    });
+    req.cardData.card = newCard;
+    req.cardData.cardDetails = cardDetails;
 
-    if (business) {
-      await db.saveBusiness(entity);
-    } else {
-      await db.savePerson(entity);
-    }
-
-    await db.saveCardData(
-      entity.account.cards.find(({ card }) => card.id === newCard.id)
-    );
+    await db.saveCardData(req.cardData, entity);
 
     log.info("(replaceCardHandler) Card replaced", { newCard, cardDetails });
 
@@ -152,23 +139,28 @@ export const createCardHandler = async (
       return;
     }
 
+    const cardFromRedis = await db.getCardData(card.id);
+
+    if (cardFromRedis) {
+      res.status(HttpStatusCodes.BAD_REQUEST).send({
+        errors: [
+          {
+            id: generateID(),
+            status: HttpStatusCodes.BAD_REQUEST,
+            code: "card_already_exists",
+            title: "Card Already Exists",
+            detail: `Card with id '${card.id}' already exists.`,
+          },
+        ],
+      });
+      return;
+    }
+
     card.representation.line_1 = card.representation.line_1.replace(/\//g, " ");
     const cardData = { card, cardDetails, controls: [] };
 
-    if (business) {
-      business.account.cards = business.account.cards || [];
-      business.account.cards.push(cardData);
-
-      await db.saveBusiness(business);
-    } else {
-      person.account.cards = person.account.cards || [];
-      person.account.cards.push(cardData);
-
-      await db.savePerson(person);
-    }
-
     await db.saveCardReference(cardDetails.reference);
-    await db.saveCardData(cardData);
+    await db.saveCardData(cardData, business || person, false);
 
     log.info("(createCardHandler) Card created", { card, cardDetails });
 
@@ -220,10 +212,10 @@ export const getAccountCardsHandler = async (
 };
 
 export const getCardHandler = async (
-  req: RequestExtendedWithCard,
+  req: RequestExtendedWithCardData,
   res: express.Response
 ) => {
-  res.send(req.card);
+  res.send(req.cardData.card);
 };
 
 const handleCardActivationError = (
@@ -290,14 +282,14 @@ const handleCardActivationError = (
 };
 
 export const activateCardHandler = async (
-  req: RequestExtendedWithCard,
+  req: RequestExtendedWithCardData,
   res: express.Response
 ) => {
   try {
-    const updatedCard = await cardHelpers.activateCard(req.card);
+    const updatedCard = await cardHelpers.activateCard(req.cardData);
     res.status(HttpStatusCodes.CREATED).send(updatedCard);
   } catch (err) {
-    handleCardActivationError(err, req.card, res);
+    handleCardActivationError(err, req.cardData.card, res);
   }
 };
 
@@ -319,8 +311,7 @@ export const cardMiddleware = async (req, res, next) => {
     });
   }
 
-  req.card = cardData.card;
-  req.cardDetails = cardData.cardDetails;
+  req.cardData = cardData;
 
   next();
 };
@@ -328,11 +319,11 @@ export const cardMiddleware = async (req, res, next) => {
 export const cardStatusMiddleware =
   (states: CardStatus[]) =>
   async (
-    req: RequestExtendedWithCard,
+    req: RequestExtendedWithCardData,
     res: express.Response,
     next: express.NextFunction
   ) => {
-    if (!states.includes(req.card.status)) {
+    if (!states.includes(req.cardData.card.status)) {
       // this is custom error, couldn't test it with Solaris sandbox and production
       res.status(HttpStatusCodes.BAD_REQUEST).send({
         errors: [
@@ -383,7 +374,7 @@ export const indexCardSpendingLimitsHandler = async (
 };
 
 export const confirmFraudHandler = async (
-  req: RequestExtendedWithCard,
+  req: RequestExtendedWithCardData,
   res: express.Response
 ) => {
   const { fraud_case_id: fraudCaseId } = req.params;
@@ -396,7 +387,7 @@ export const confirmFraudHandler = async (
 };
 
 export const whitelistCardHandler = async (
-  req: RequestExtendedWithCard,
+  req: RequestExtendedWithCardData,
   res: express.Response
 ) => {
   const { fraud_case_id: fraudCaseId } = req.params;
@@ -415,7 +406,7 @@ export const whitelistCardHandler = async (
 };
 
 export const blockCardHandler = async (
-  req: RequestExtendedWithCard,
+  req: RequestExtendedWithCardData,
   res: express.Response
 ) => {
   const {
@@ -423,7 +414,7 @@ export const blockCardHandler = async (
     account_id: accountId,
     id: cardId,
     status,
-  } = req.card;
+  } = req.cardData.card;
 
   if (![CardStatus.ACTIVE, CardStatus.BLOCKED].includes(status)) {
     res.status(HttpStatusCodes.BAD_REQUEST).send({
@@ -450,7 +441,7 @@ export const blockCardHandler = async (
 };
 
 export const unblockCardHandler = async (
-  req: RequestExtendedWithCard,
+  req: RequestExtendedWithCardData,
   res: express.Response
 ) => {
   const {
@@ -458,12 +449,12 @@ export const unblockCardHandler = async (
     account_id: accountId,
     id: cardId,
     status,
-  } = req.card;
+  } = req.cardData.card;
 
   // Solaris sandbox and production does not throw an error in any case.
   // When card is in different state than BLOCK, card details are simply returned.
   if (status !== CardStatus.BLOCKED) {
-    res.send(req.card);
+    res.send(req.cardData.card);
     return;
   }
 
@@ -477,7 +468,7 @@ export const unblockCardHandler = async (
 };
 
 export const changePINCardHandler = async (
-  req: RequestExtendedWithCard,
+  req: RequestExtendedWithCardData,
   res: express.Response
 ) => {
   const { pin } = req.body;
@@ -490,12 +481,15 @@ export const changePINCardHandler = async (
     return;
   }
 
-  const changeRequestResponse = await cardHelpers.changePIN(req.card, pin);
+  const changeRequestResponse = await cardHelpers.changePIN(
+    req.cardData.card,
+    pin
+  );
   res.status(HttpStatusCodes.ACCEPTED).send(changeRequestResponse);
 };
 
 export const confirmChangeCardPINHandler = async (
-  req: RequestExtendedWithCard,
+  req: RequestExtendedWithCardData,
   res: express.Response
 ) => {
   const { person_id: personId, tan } = req.body;
@@ -542,22 +536,25 @@ export const confirmChangeCardPINHandler = async (
 };
 
 export const closeCardHandler = async (
-  req: RequestExtendedWithCard,
+  req: RequestExtendedWithCardData,
   res: express.Response
 ) => {
   const updatedCard = await cardHelpers.changeCardStatus(
-    { personId: req.card.person_id, accountId: req.card.account_id },
-    req.card.id,
+    {
+      personId: req.cardData.card.person_id,
+      accountId: req.cardData.card.account_id,
+    },
+    req.cardData.card.id,
     CardStatus.CLOSED
   );
   res.send(updatedCard);
 };
 
 export const pushProvisioningHandler = async (
-  req: RequestExtendedWithCard,
+  req: RequestExtendedWithCardData,
   res: express.Response
 ) => {
-  const { card } = req;
+  const { card } = req.cardData;
   const { wallet_type: walletType } = req.params;
 
   if (!["google", "apple_encrypted"].includes(walletType)) {
@@ -608,11 +605,11 @@ export const pushProvisioningHandler = async (
 
   res
     .status(HttpStatusCodes.CREATED)
-    .send({ wallet_payload: await handler(card) });
+    .send({ wallet_payload: await handler(req.cardData) });
 };
 
 export const getVirtualCardDetails = async (
-  req: RequestExtendedWithCard,
+  req: RequestExtendedWithCardData,
   res: express.Response
 ) => {
   const {
@@ -620,9 +617,10 @@ export const getVirtualCardDetails = async (
       jwk,
       jwe: { alg, enc },
     },
-    card,
-    cardDetails,
+    cardData,
   } = req;
+
+  const { card, cardDetails } = cardData;
 
   if (card.status === CardStatus.PROCESSING) {
     res.status(500).send({
@@ -716,7 +714,7 @@ export const getVirtualCardDetails = async (
 };
 
 export const getCardLatestPINKeyHandler = async (
-  req: RequestExtendedWithCard,
+  req: RequestExtendedWithCardData,
   res: express.Response
 ) => {
   const key = keyStore.get(changePinKeyId);
@@ -724,7 +722,7 @@ export const getCardLatestPINKeyHandler = async (
 };
 
 export const createCardPINUpdateRequestHandler = async (
-  req: RequestExtendedWithCard,
+  req: RequestExtendedWithCardData,
   res: express.Response
 ) => {
   const decryptedData = await jose.JWE.createDecrypt(keyStore).decrypt(
@@ -740,30 +738,21 @@ export const createCardPINUpdateRequestHandler = async (
     return;
   }
 
-  const person = await db.getPerson(req.card.person_id);
+  const person = await db.getPerson(req.cardData.card.person_id);
 
   const entity = person.businessId
     ? await db.getBusiness(person.businessId)
     : person;
 
-  const cardIndex = entity.account.cards.findIndex(
-    ({ card }) => card.id === req.card.id
-  );
-  entity.account.cards[cardIndex].cardDetails.pin = pin;
+  req.cardData.cardDetails.pin = pin;
 
-  if (person.businessId) {
-    await db.saveBusiness(entity);
-  } else {
-    await db.savePerson(entity);
-  }
-
-  await db.saveCardData(entity.account.cards[cardIndex]);
+  await db.saveCardData(req.cardData, entity);
 
   res.send({});
 };
 
 export const changeCardPINWithChangeRequestHandler = async (
-  req: RequestExtendedWithCard,
+  req: RequestExtendedWithCardData,
   res: express.Response
 ) => {
   const decryptedData = await jose.JWE.createDecrypt(keyStore).decrypt(
@@ -779,7 +768,10 @@ export const changeCardPINWithChangeRequestHandler = async (
     return;
   }
 
-  const changeRequestResponse = await cardHelpers.changePIN(req.card, pin);
+  const changeRequestResponse = await cardHelpers.changePIN(
+    req.cardData.card,
+    pin
+  );
   res.status(HttpStatusCodes.ACCEPTED).send(changeRequestResponse);
 };
 
