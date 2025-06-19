@@ -241,7 +241,7 @@ export const listPersonsCards = async (req, res) => {
   } else {
     cards = person.account.cards.reverse();
   }
-  res.render("cards", { person, business, cards });
+  res.render("cards", { person, cards });
 };
 
 export const getPersonHandler = async (req, res) => {
