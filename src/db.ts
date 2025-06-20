@@ -963,6 +963,14 @@ export const getCardSpendingLimitControl = async (
 export const getEntityBySpendingLimitId = async (controlId: string) => {
   const cardSpendingLimitControl = await getCardSpendingLimitControl(controlId);
 
+  if (!cardSpendingLimitControl?.scope_id) {
+    return {
+      person: null,
+      business: null,
+      cardData: null,
+    };
+  }
+
   const cardData = await getCardData(cardSpendingLimitControl.scope_id);
 
   if (cardData.card.business_id) {

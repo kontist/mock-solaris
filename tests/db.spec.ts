@@ -12,6 +12,8 @@ import {
   getCardData,
   getPersonByFraudCaseId,
   getEntityBySpendingLimitId,
+  saveCardData,
+  saveCardSpendingLimitControl,
 } from "../src/db";
 import { createPerson } from "../src/routes/persons";
 import {
@@ -138,6 +140,8 @@ describe("getPersons()", async () => {
     const req = mockReq({ body, headers });
     const res = mockRes();
     await createPerson(req, res);
+    const person = await findPersonByAccount({ id: body.account.id });
+    await saveCardData(mockCard, person, false);
     const cardData = await getCardData(mockCard.card.id);
     expect(cardData).to.be.ok;
   });
@@ -179,32 +183,61 @@ describe("getPersons()", async () => {
     expect(person).to.be.null;
   });
 
-  it("getPersonBySpendingLimitId() returns person if spending limit is applied", async () => {
+  it("getEntityBySpendingLimitId() returns person if spending limit is applied", async () => {
+    const cardData = {
+      ...mockCard,
+      controls: [
+        { ...mockCardSpendingLimitControl, scope_id: mockCard.card.id },
+      ],
+    };
+
     const body: MockCreatePerson = {
       ...mockCreatePerson,
       account: {
         ...mockAccount,
-        cards: [{ ...mockCard, controls: [mockCardSpendingLimitControl] }],
+        cards: [cardData],
       },
     };
     const req = mockReq({ body, headers });
     const res = mockRes();
     await createPerson(req, res);
-    const person = await getEntityBySpendingLimitId(
-      mockCardSpendingLimitControl.id
+    const createdPerson = await findPersonByAccount({ id: body.account.id });
+    await saveCardData(
+      {
+        ...cardData,
+        card: {
+          ...cardData.card,
+          person_id: createdPerson.id,
+          business_id: createdPerson.businessId,
+        },
+      },
+      createdPerson,
+      false
     );
+    await saveCardSpendingLimitControl(
+      cardData.controls[0].id,
+      cardData.controls[0]
+    );
+    const person = await getEntityBySpendingLimitId(cardData.controls[0].id);
     expect(person.person).to.be.ok;
     expect(person.cardData).to.be.ok;
   });
 
-  it("getPersonBySpendingLimitId() returns falsy values if spending limit is not applied", async () => {
+  it("getEntityBySpendingLimitId() returns falsy values if spending limit is not applied", async () => {
+    const cardData = {
+      ...mockCard,
+      controls: [],
+    };
+
     const body: MockCreatePerson = {
       ...mockCreatePerson,
-      account: { ...mockAccount, cards: [{ ...mockCard, controls: [] }] },
+      account: { ...mockAccount, cards: [cardData] },
     };
     const req = mockReq({ body, headers });
     const res = mockRes();
     await createPerson(req, res);
+    const createdPerson = await findPersonByAccount({ id: body.account.id });
+    await saveCardData(cardData, createdPerson, false);
     const response = await getEntityBySpendingLimitId("N/A");
     expect(response.person).not.to.be.ok;
     expect(response.cardData).not.to.be.ok;
