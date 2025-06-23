@@ -917,7 +917,7 @@ export const saveCardReference = async (cardRef) => {
 
 export const saveCardData = async (
   cardData: CardData,
-  entity?: MockPerson | MockBusiness,
+  entity: MockPerson | MockBusiness,
   isUpdate: boolean = true
 ): Bluebird<void> => {
   const key = `${process.env.MOCKSOLARIS_REDIS_PREFIX}:cards:${cardData.card.id}`;
