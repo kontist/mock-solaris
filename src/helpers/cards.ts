@@ -23,6 +23,8 @@ import {
   ProvisioningTokenMessageReason,
   ProvisioningTokenStatusChangePayload,
   CardSpendingLimitControl,
+  MockBusiness,
+  CardData,
 } from "./types";
 import generateID from "./id";
 
@@ -131,11 +133,11 @@ export const validateCardData = async (
 };
 
 export const validatePersonData = async (
-  person: MockPerson
+  personId: string
 ): Promise<SolarisAPIErrorData[]> => {
   const errors = [];
 
-  const mobileNumber = await db.getMobileNumber(person.id);
+  const mobileNumber = await db.getMobileNumber(personId);
   const hasValidMobileNumber = mobileNumber && mobileNumber.verified;
   if (!hasValidMobileNumber) {
     errors.push({
@@ -163,7 +165,8 @@ const getDefaultCardDetails = () => ({
 
 export const createCard = (
   cardData: CreateCardData,
-  person: MockPerson
+  personId: string,
+  accountId: string
 ): { card: Card; cardDetails: CardDetails } => {
   const {
     pin,
@@ -186,8 +189,8 @@ export const createCard = (
     type,
     status: CardStatus.PROCESSING,
     expiration_date: expirationDate.format("YYYY-MM-DD"),
-    person_id: person.id,
-    account_id: person.account.id,
+    person_id: personId,
+    account_id: accountId,
     new_card_ordered: true,
     business_id: businessId,
     representation: {
@@ -234,10 +237,15 @@ export const replaceCard = (
   return { card: newCard, cardDetails: newCardDetails };
 };
 
-export const getCards = (person: MockPerson): Card[] => {
-  return ((person.account && person.account.cards) || []).map(
-    ({ card }) => card
-  );
+export const getCards = (
+  person?: MockPerson,
+  business?: MockBusiness
+): Card[] => {
+  return (
+    (business?.account && business.account.cards) ||
+    (person.account && person.account.cards) ||
+    []
+  ).map(({ card }) => card);
 };
 
 export const changeCardStatus = async (
@@ -245,21 +253,20 @@ export const changeCardStatus = async (
   cardId: string,
   newCardStatus: CardStatus
 ): Promise<Card> => {
-  let person: MockPerson;
+  const business = await db.findBusinessByAccount({ id: accountId });
+  const person = await db.findPersonByAccount({ id: accountId });
 
-  if (personId) {
-    person = await db.getPerson(personId);
-  } else if (accountId) {
-    person = await db.findPersonByAccount({ id: accountId });
-  } else {
-    throw new Error("You have to provide personId or accountId");
+  const entity = business || person;
+
+  if (!entity) {
+    throw new Error("Account not found");
   }
 
   if (!cardId) {
     throw new Error("You have to provide cardId");
   }
 
-  const cardData = person.account.cards.find(({ card }) => card.id === cardId);
+  const cardData = await db.getCardData(cardId);
 
   if (!cardData) {
     throw new Error("Card not found");
@@ -271,7 +278,8 @@ export const changeCardStatus = async (
 
   cardData.card.status = newCardStatus;
 
-  await db.savePerson(person);
+  await db.saveCardData(cardData, entity);
+
   await triggerWebhook({
     type: CardWebhookEvent.CARD_LIFECYCLE_EVENT,
     payload: cardData.card,
@@ -302,7 +310,17 @@ export const upsertProvisioningToken = async (
   }
 
   const person = (await db.getPerson(personId)) as MockPerson;
-  const cardData = person.account.cards.find(({ card }) => card.id === cardId);
+
+  const entity = person.businessId
+    ? await db.getBusiness(person.businessId)
+    : person;
+
+  if (!entity) {
+    throw new Error("Entity not found");
+  }
+
+  const cardData = await db.getCardData(cardId);
+
   if (!cardData) {
     throw new Error("Card not found");
   }
@@ -317,7 +335,8 @@ export const upsertProvisioningToken = async (
       );
 
   cardData.provisioningToken = newProvisioningToken;
-  await db.savePerson(person);
+
+  await db.saveCardData(cardData, entity);
   return newProvisioningToken;
 };
 
@@ -448,44 +467,56 @@ const triggerProvisioningTokenUpdate = async (
   return newProvisioningToken;
 };
 
-export const activateCard = async (cardForActivation: Card): Promise<Card> => {
+export const activateCard = async (
+  cardDataForActivation: CardData
+): Promise<Card> => {
   if (
-    ![CardStatus.INACTIVE, CardStatus.ACTIVE].includes(cardForActivation.status)
+    ![CardStatus.INACTIVE, CardStatus.ACTIVE].includes(
+      cardDataForActivation.card.status
+    )
   ) {
     throw new Error(CardErrorCodes.CARD_ACTIVATION_INVALID_STATUS);
   }
 
   let person;
-  const personLockKey = `redlock:${process.env.MOCKSOLARIS_REDIS_PREFIX}:person:${cardForActivation.person_id}`;
+  let business;
+  const personLockKey = `redlock:${process.env.MOCKSOLARIS_REDIS_PREFIX}:person:${cardDataForActivation.card.person_id}`;
   await db.redlock.using([personLockKey], 5000, async (signal) => {
     if (signal.aborted) {
       throw signal.error;
     }
-    person = await db.getPerson(cardForActivation.person_id);
-    const cardIndex = person.account.cards.findIndex(
-      ({ card }) => card.id === cardForActivation.id
-    );
-    cardForActivation.status = CardStatus.ACTIVE;
-    cardForActivation.new_card_ordered = false;
-    person.account.cards[cardIndex].card = cardForActivation;
-    await db.savePerson(person);
+    person = await db.getPerson(cardDataForActivation.card.person_id);
+
+    if (person.businessId) {
+      business = await db.getBusiness(person.businessId);
+    }
+
+    cardDataForActivation.card.status = CardStatus.ACTIVE;
+    cardDataForActivation.card.new_card_ordered = false;
+
+    await db.saveCardData(cardDataForActivation, business || person);
   });
 
   await triggerWebhook({
     type: CardWebhookEvent.CARD_LIFECYCLE_EVENT,
-    payload: cardForActivation,
+    payload: cardDataForActivation.card,
   });
-  return cardForActivation;
+
+  return cardDataForActivation.card;
 };
 
-export const enableGooglePay = async (card: Card): Promise<string> => {
-  const person = await db.getPerson(card.person_id);
-  const cardIndex = person.account.cards.findIndex(
-    (cardData) => cardData.card.id === card.id
-  );
-  person.account.cards[cardIndex].cardDetails.walletPayload =
-    SOLARIS_HARDCODED_WALLET_PAYLOAD;
-  await db.savePerson(person);
+export const enableGooglePay = async (cardData: CardData): Promise<string> => {
+  const person = await db.getPerson(cardData.card.person_id);
+  let business;
+
+  if (person.businessId) {
+    business = await db.getBusiness(person.businessId);
+  }
+
+  cardData.cardDetails.walletPayload = SOLARIS_HARDCODED_WALLET_PAYLOAD;
+
+  await db.saveCardData(cardData, business || person);
+
   return SOLARIS_HARDCODED_WALLET_PAYLOAD;
 };
 
@@ -499,22 +530,25 @@ const APPLE_WALLET_RESPONSE = {
 };
 
 export const enableApplePay = async (
-  card: Card
+  cardData: CardData
 ): Promise<{
   encrypted_pass_data: string;
   ephemeral_public_key: string;
   activation_data: string;
 }> => {
-  const person = await db.getPerson(card.person_id);
-  const cardIndex = person.account.cards.findIndex(
-    (cardData) => cardData.card.id === card.id
-  );
-  const cardDetails = person.account.cards[cardIndex].cardDetails;
-  person.account.cards[cardIndex].cardDetails = {
-    ...cardDetails,
+  const person = await db.getPerson(cardData.card.person_id);
+  let business;
+
+  if (person.businessId) {
+    business = await db.getBusiness(person.businessId);
+  }
+
+  cardData.cardDetails = {
+    ...cardData.cardDetails,
     ...APPLE_WALLET_RESPONSE,
   };
-  await db.savePerson(person);
+
+  await db.saveCardData(cardData, business || person);
   return APPLE_WALLET_RESPONSE;
 };
 
@@ -600,11 +634,19 @@ export const confirmChangeCardPIN = async (
   person: MockPerson,
   changeRequest: MockChangeRequest
 ) => {
-  const cardIndex = person.account.cards.findIndex(
-    ({ card }) => card.id === changeRequest.cardId
-  );
+  const cardData = await db.getCardData(changeRequest.cardId);
 
-  person.account.cards[cardIndex].cardDetails.pin = changeRequest.pin;
+  if (!cardData) {
+    throw new Error("Card not found");
+  }
+
+  const business = person.businessId
+    ? await db.getBusiness(person.businessId)
+    : null;
+
+  cardData.cardDetails.pin = changeRequest.pin;
+  await db.saveCardData(cardData, business || person);
+
   person.changeRequest = null;
   await db.savePerson(person);
 
@@ -653,10 +695,9 @@ export const createCardSpendingLimit = async (
     return res.status("208").send(cardControl);
   }
 
-  const person = await db.getPerson(cardData.card.person_id);
-  const cardIndex = person.account.cards.findIndex(
-    ({ card }) => card.id === cardId
-  );
+  const entity = cardData.card.business_id
+    ? await db.getBusiness(cardData.card.business_id)
+    : await db.getPerson(cardData.card.person_id);
 
   const limitControl = {
     id: generateID(),
@@ -667,29 +708,26 @@ export const createCardSpendingLimit = async (
     limit,
   };
 
-  if (!person.account.cards[cardIndex].controls) {
-    person.account.cards[cardIndex].controls = [limitControl];
-  } else {
-    person.account.cards[cardIndex].controls.push(limitControl);
-  }
+  cardData.controls = [...(cardData.controls || []), limitControl];
 
-  await db.savePerson(person);
+  await db.saveCardData(cardData, entity);
+  await db.saveCardSpendingLimitControl(limitControl.id, limitControl);
 
   return limitControl;
 };
 
-export const deleteCardSpendingLimit = async (id: string): Promise<void> => {
-  const { person, cardData } = await db.getPersonBySpendingLimitId(id);
-
-  const cardIndex = person.account.cards.findIndex(
-    ({ card }) => card.id === cardData.card.id
+export const deleteCardSpendingLimit = async (
+  controlId: string
+): Promise<void> => {
+  const { person, business, cardData } = await db.getEntityBySpendingLimitId(
+    controlId
   );
 
-  person.account.cards[cardIndex].controls = person.account.cards[
-    cardIndex
-  ].controls.filter((control) => control.id !== id);
+  cardData.controls = cardData.controls.filter(
+    (control) => control.id !== controlId
+  );
 
-  await db.savePerson(person);
+  await db.saveCardData(cardData, business || person);
 };
 
 export const indexCardSpendingLimit = async (

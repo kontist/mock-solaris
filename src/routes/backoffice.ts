@@ -27,6 +27,7 @@ import {
   findBusinesses,
   getBusiness,
   saveBusiness,
+  getCardData,
 } from "../db";
 import {
   createSepaDirectDebitReturn,
@@ -55,6 +56,7 @@ import {
   Booking,
   BusinessWebhookEvent,
   MockBusiness,
+  CardData,
 } from "../helpers/types";
 import {
   changeOverdraftApplicationStatus,
@@ -228,8 +230,18 @@ export const listWebhooks = async (req, res) => {
 };
 
 export const listPersonsCards = async (req, res) => {
+  let cards: CardData[] = [];
   const person = await getPerson(req.params.id);
-  res.render("cards", { person });
+  let business = null;
+  if (person.businessId) {
+    business = await getBusiness(person.businessId);
+    cards = business.account.cards
+      .filter((card: CardData) => card.card.person_id === person.id)
+      .reverse();
+  } else {
+    cards = person.account.cards.reverse();
+  }
+  res.render("cards", { person, cards });
 };
 
 export const getPersonHandler = async (req, res) => {
@@ -1116,8 +1128,7 @@ export const updateAccountLockingStatusHandler = async (req, res) => {
 };
 
 const changeCardStatusAllowed = async (personId, cardId, newCardStatus) => {
-  const person = await getPerson(personId);
-  const cardData = person.account.cards.find(({ card }) => card.id === cardId);
+  const cardData = await getCardData(cardId);
 
   const {
     card: { status: currentCardStatus, type },

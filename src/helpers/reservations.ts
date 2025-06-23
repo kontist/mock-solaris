@@ -442,7 +442,8 @@ export const createReservation = async ({
   posEntryMode?: POSEntryMode;
 }) => {
   const person = (await db.getPerson(personId)) as MockPerson;
-  const cardData = person.account.cards.find(({ card }) => card.id === cardId);
+  const cardData = await db.getCardData(cardId);
+
   const convertedAmount = Math.abs(parseInt(amount, 10));
   const cardAuthorizationPayload = {
     amount: Math.round(convertedAmount * FxRate[currency]),

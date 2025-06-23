@@ -96,6 +96,10 @@ export type CardDetails = {
   reference: string;
   cardNumber: string;
   cvv: string;
+  walletPayload?: string;
+  encrypted_pass_data?: string;
+  ephemeral_public_key?: string;
+  activation_data?: string;
 };
 
 export type AccountSnapshot = {

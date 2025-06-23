@@ -38,9 +38,7 @@ export const createCreditPresentment = async ({
     }
     person = await db.getPerson(personId);
 
-    const cardData = person.account.cards.find(
-      ({ card }) => card.id === cardId
-    );
+    const cardData = await db.getCardData(cardId);
 
     if (!cardData) {
       throw new Error("Card not found");
