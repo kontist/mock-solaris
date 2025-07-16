@@ -6,12 +6,7 @@ import moment from "moment";
 import { generateMetaInfo } from "./reservations";
 import { creteBookingFromReservation } from "../routes/transactions";
 import { triggerBookingsWebhook } from "../routes/backoffice";
-import {
-  TransactionType,
-  FxRate,
-  CardAuthorizationDeclineV2Type,
-  POSEntryMode,
-} from "./types";
+import { TransactionType, FxRate, POSEntryMode } from "./types";
 
 export const createCreditPresentment = async ({
   personId,
@@ -20,7 +15,7 @@ export const createCreditPresentment = async ({
   currency,
   type,
   recipient,
-  declineReason,
+  merchantCategoryCode,
 }: {
   personId: string;
   cardId: string;
@@ -28,7 +23,7 @@ export const createCreditPresentment = async ({
   currency: string;
   type: TransactionType;
   recipient: string;
-  declineReason?: CardAuthorizationDeclineV2Type;
+  merchantCategoryCode;
 }) => {
   let person;
   const personLockKey = `redlock:${process.env.MOCKSOLARIS_REDIS_PREFIX}:person:${personId}`;
@@ -56,6 +51,7 @@ export const createCreditPresentment = async ({
       type,
       incoming: true,
       posEntryMode: POSEntryMode.CARD_NOT_PRESENT,
+      merchantCategoryCode,
     });
 
     const booking = creteBookingFromReservation(

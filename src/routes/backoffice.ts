@@ -1183,6 +1183,7 @@ export const createReservationHandler = async (req, res) => {
     recipient,
     declineReason,
     posEntryMode,
+    merchantCategoryCode,
   } = req.body;
 
   if (!personId) {
@@ -1202,6 +1203,7 @@ export const createReservationHandler = async (req, res) => {
     recipient,
     declineReason,
     posEntryMode,
+    merchantCategoryCode,
   };
 
   const reservation = await (type === TransactionType.CREDIT_PRESENTMENT
