@@ -105,6 +105,7 @@ export const generateMetaInfo = ({
   type,
   incoming,
   posEntryMode,
+  merchantCategoryCode,
 }: {
   originalAmount: number;
   originalCurrency: string;
@@ -114,13 +115,14 @@ export const generateMetaInfo = ({
   type: TransactionType;
   incoming?: boolean;
   posEntryMode: POSEntryMode;
+  merchantCategoryCode: string;
 }) => {
   return JSON.stringify({
     cards: {
       card_id: cardId,
       merchant: {
         country_code: "DE",
-        category_code: "7392",
+        category_code: merchantCategoryCode,
         name: recipient,
         town: "Berlin",
       },
@@ -146,6 +148,7 @@ const mapDataToReservation = ({
   recipient,
   cardId,
   posEntryMode,
+  merchantCategoryCode,
 }: {
   amount: number;
   originalAmount: number;
@@ -154,6 +157,7 @@ const mapDataToReservation = ({
   recipient: string;
   cardId: string;
   posEntryMode: POSEntryMode;
+  merchantCategoryCode?: string;
 }): Reservation => {
   const date = moment().toDate();
 
@@ -175,6 +179,7 @@ const mapDataToReservation = ({
       date,
       type,
       posEntryMode,
+      merchantCategoryCode,
     }),
     expires_at: null,
     expired_at: null,
@@ -191,6 +196,7 @@ const mapDataToCardAuthorizationDeclined = ({
   recipient,
   cardId,
   posEntryMode,
+  merchantCategoryCode = "7392",
 }: {
   amount: number;
   originalAmount: number;
@@ -199,6 +205,7 @@ const mapDataToCardAuthorizationDeclined = ({
   recipient: string;
   cardId: string;
   posEntryMode: POSEntryMode;
+  merchantCategoryCode?: string;
 }): CardTransaction => {
   return {
     card_id: cardId,
@@ -208,7 +215,7 @@ const mapDataToCardAuthorizationDeclined = ({
     pos_entry_mode: posEntryMode,
     merchant: {
       country_code: "DE",
-      category_code: "5999",
+      category_code: merchantCategoryCode,
       name: recipient,
     },
     amount: {
@@ -431,6 +438,7 @@ export const createReservation = async ({
   recipient,
   declineReason,
   posEntryMode = POSEntryMode.CONTACTLESS,
+  merchantCategoryCode,
 }: {
   personId: string;
   cardId: string;
@@ -440,6 +448,7 @@ export const createReservation = async ({
   recipient: string;
   declineReason?: CardAuthorizationDeclineV2Type;
   posEntryMode?: POSEntryMode;
+  merchantCategoryCode: string;
 }) => {
   const person = (await db.getPerson(personId)) as MockPerson;
   const cardData = await db.getCardData(cardId);
@@ -453,6 +462,7 @@ export const createReservation = async ({
     recipient,
     cardId,
     posEntryMode,
+    merchantCategoryCode,
   };
 
   const reservation = mapDataToReservation(cardAuthorizationPayload);
