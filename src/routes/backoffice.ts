@@ -235,11 +235,12 @@ export const listPersonsCards = async (req, res) => {
   let business = null;
   if (person.businessId) {
     business = await getBusiness(person.businessId);
-    cards = business.account.cards
-      .filter((card: CardData) => card.card.person_id === person.id)
-      .reverse();
+    cards =
+      business.account?.cards
+        ?.filter((card: CardData) => card.card.person_id === person.id)
+        ?.reverse() || [];
   } else {
-    cards = person.account.cards.reverse();
+    cards = person.account?.cards?.reverse() || [];
   }
   res.render("cards", { person, cards });
 };
