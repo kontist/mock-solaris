@@ -32,6 +32,7 @@ import * as termsAPI from "./routes/termsAndConditions";
 import * as psd2API from "./routes/psd2";
 import * as postboxItemAPI from "./routes/postbox";
 import * as topUpsAPI from "./routes/topUps";
+import * as verificationOfPayeeAPI from "./routes/verificationOfPayee";
 import * as instantCreditTransferAPI from "./routes/instantCreditTransfer";
 import * as accountOpeningRequestAPI from "./routes/accountOpeningRequest";
 import * as accountClosureRequestAPI from "./routes/accountClosureRequest";
@@ -432,6 +433,12 @@ router.get(
 router.patch(
   "/persons/:person_id/tax_identifications/:id",
   safeRequestHandler(taxIdentificationsAPI.updateTaxIdentification)
+);
+
+// VERIFICATION OF PAYEE
+router.post(
+  "/verifications_of_payee",
+  safeRequestHandler(verificationOfPayeeAPI.verifyPayee)
 );
 
 // TRANSACTIONS
