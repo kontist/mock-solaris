@@ -1,9 +1,9 @@
 import sinon from "sinon";
 import { expect } from "chai";
 
-import { isVerificationOfPayeeEnabled } from "../../src/helpers/verificationOfPayee";
+import { isVerificationOfPayeeRequired } from "../../src/helpers/verificationOfPayee";
 
-describe("isVerificationOfPayeeEnabled", () => {
+describe("isVerificationOfPayeeRequired", () => {
   let clock;
 
   afterEach(() => {
@@ -14,13 +14,13 @@ describe("isVerificationOfPayeeEnabled", () => {
     // 1st November 2025
     clock = sinon.useFakeTimers(new Date(2025, 10, 1).getTime());
 
-    expect(isVerificationOfPayeeEnabled()).to.be.true;
+    expect(isVerificationOfPayeeRequired()).to.be.true;
   });
 
   it("should return false if verification of payee is not enabled", () => {
     // 1st October 2025
     clock = sinon.useFakeTimers(new Date(2025, 9, 1).getTime());
 
-    expect(isVerificationOfPayeeEnabled()).to.be.false;
+    expect(isVerificationOfPayeeRequired()).to.be.false;
   });
 });

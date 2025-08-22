@@ -19,7 +19,7 @@ import {
 import { createSepaDirectDebitReturn } from "../helpers/sepaDirectDebitReturn";
 import { triggerBookingsWebhook } from "./backoffice";
 import generateID from "../helpers/id";
-import { isVerificationOfPayeeEnabled } from "../helpers/verificationOfPayee";
+import { isVerificationOfPayeeRequired } from "../helpers/verificationOfPayee";
 
 export const DIRECT_DEBIT_REFUND_METHOD = "direct_debit_refund";
 
@@ -147,7 +147,7 @@ export const createSepaCreditTransfer = async (req, res) => {
   const { person_id: personId, account_id: accountId } = req.params;
   const transfer = req.body;
 
-  if (isVerificationOfPayeeEnabled() && !transfer.verification_of_payee_id) {
+  if (isVerificationOfPayeeRequired() && !transfer.verification_of_payee_id) {
     return res.status(400).send({
       errors: [
         {
