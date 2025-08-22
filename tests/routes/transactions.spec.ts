@@ -1,26 +1,27 @@
 import sinon from "sinon";
 import { expect } from "chai";
+import { mockReq, mockRes } from "sinon-express-mock";
 
 import * as db from "../../src/db";
 import * as transactions from "../../src/routes/transactions";
 import { createPerson } from "../../src/routes/persons";
 
 describe("Transactions", () => {
-  let res;
-  const createPersonReq = {
-    body: {},
-    headers: {},
-  };
-
-  beforeEach(async () => {
-    await db.flushDb();
-    res = {
-      status: sinon.stub().callsFake(() => res),
-      send: sinon.stub(),
-    };
-  });
-
   describe("directDebitRefund", () => {
+    let res;
+    const createPersonReq = {
+      body: {},
+      headers: {},
+    };
+
+    beforeEach(async () => {
+      await db.flushDb();
+      res = {
+        status: sinon.stub().callsFake(() => res),
+        send: sinon.stub(),
+      };
+    });
+
     const req = (personId) => ({
       params: {
         person_id: personId,
@@ -51,6 +52,36 @@ describe("Transactions", () => {
           transactions.DIRECT_DEBIT_REFUND_METHOD
         );
       });
+    });
+  });
+
+  describe("createSepaCreditTransfer", () => {
+    let clock;
+
+    after(() => {
+      clock.restore();
+    });
+
+    it("should throw error if verification of payee is required and not passed", async () => {
+      // 1st November 2025
+      clock = sinon.useFakeTimers(new Date(2025, 10, 1).getTime());
+
+      const req = mockReq({
+        params: {
+          person_id: "person-id",
+          account_id: "account-id",
+        },
+        body: {},
+      });
+      const res = mockRes();
+
+      await transactions.createSepaCreditTransfer(req, res);
+
+      expect(res.status.calledWith(400)).to.be.true;
+      expect(res.send.calledOnce).to.be.true;
+      expect(res.send.args[0][0].errors[0].detail).to.deep.equal(
+        "Verification of payee is required."
+      );
     });
   });
 });
