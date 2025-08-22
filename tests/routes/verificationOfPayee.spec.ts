@@ -19,7 +19,7 @@ describe("VerificationOfPayee", () => {
 
         expect(res.status.calledWith(400)).to.be.true;
         expect(res.send.calledOnce).to.be.true;
-        expect(res.send.args[0].errors[0].detail).to.deep.equal(
+        expect(res.send.args[0][0].errors[0].detail).to.deep.equal(
           "IBAN is required."
         );
       });
@@ -36,7 +36,7 @@ describe("VerificationOfPayee", () => {
 
         expect(res.status.calledWith(400)).to.be.true;
         expect(res.send.calledOnce).to.be.true;
-        expect(res.send.args[0].errors[0].detail).to.deep.equal(
+        expect(res.send.args[0][0].errors[0].detail).to.deep.equal(
           "Name is required."
         );
       });
@@ -54,7 +54,7 @@ describe("VerificationOfPayee", () => {
 
         expect(res.status.calledWith(400)).to.be.true;
         expect(res.send.calledOnce).to.be.true;
-        expect(res.send.args[0].errors[0].detail).to.deep.equal(
+        expect(res.send.args[0][0].errors[0].detail).to.deep.equal(
           "Name is not valid."
         );
       });
@@ -72,13 +72,13 @@ describe("VerificationOfPayee", () => {
 
         await verifyPayee(req, res);
 
-        expect(res.status.calledWith(200)).to.be.true;
+        expect(res.status.calledWith(201)).to.be.true;
         expect(res.send.calledOnce).to.be.true;
-        expect(res.send.args[0].payee.iban).to.deep.equal(
+        expect(res.send.args[0][0].payee.iban).to.deep.equal(
           "DE89370400440532013000"
         );
-        expect(res.send.args[0].payee.name).to.deep.equal("John Doe");
-        expect(res.send.args[0].result.status).to.deep.equal("MATCH");
+        expect(res.send.args[0][0].payee.name).to.deep.equal("John Doe");
+        expect(res.send.args[0][0].result.status).to.deep.equal("MATCH");
       });
 
       it("should return NO_MATCH for a specific name", async () => {
@@ -92,13 +92,13 @@ describe("VerificationOfPayee", () => {
 
         await verifyPayee(req, res);
 
-        expect(res.status.calledWith(200)).to.be.true;
+        expect(res.status.calledWith(201)).to.be.true;
         expect(res.send.calledOnce).to.be.true;
-        expect(res.send.args[0].payee.iban).to.deep.equal(
+        expect(res.send.args[0][0].payee.iban).to.deep.equal(
           "DE89370400440532013000"
         );
-        expect(res.send.args[0].payee.name).to.deep.equal("John no match");
-        expect(res.send.args[0].result.status).to.deep.equal("NO_MATCH");
+        expect(res.send.args[0][0].payee.name).to.deep.equal("John no match");
+        expect(res.send.args[0][0].result.status).to.deep.equal("NO_MATCH");
       });
 
       it("should return VERIFICATION_NOT_POSSIBLE for a specific name", async () => {
@@ -112,13 +112,15 @@ describe("VerificationOfPayee", () => {
 
         await verifyPayee(req, res);
 
-        expect(res.status.calledWith(200)).to.be.true;
+        expect(res.status.calledWith(201)).to.be.true;
         expect(res.send.calledOnce).to.be.true;
-        expect(res.send.args[0].payee.iban).to.deep.equal(
+        expect(res.send.args[0][0].payee.iban).to.deep.equal(
           "DE89370400440532013000"
         );
-        expect(res.send.args[0].payee.name).to.deep.equal("John not possible");
-        expect(res.send.args[0].result.status).to.deep.equal(
+        expect(res.send.args[0][0].payee.name).to.deep.equal(
+          "John not possible"
+        );
+        expect(res.send.args[0][0].result.status).to.deep.equal(
           "VERIFICATION_NOT_POSSIBLE"
         );
       });
@@ -134,14 +136,16 @@ describe("VerificationOfPayee", () => {
 
         await verifyPayee(req, res);
 
-        expect(res.status.calledWith(200)).to.be.true;
+        expect(res.status.calledWith(201)).to.be.true;
         expect(res.send.calledOnce).to.be.true;
-        expect(res.send.args[0].payee.iban).to.deep.equal(
+        expect(res.send.args[0][0].payee.iban).to.deep.equal(
           "DE89370400440532013000"
         );
-        expect(res.send.args[0].payee.name).to.deep.equal("John close match");
-        expect(res.send.args[0].result.status).to.deep.equal("CLOSE_MATCH");
-        expect(res.send.args[0].result.suggested_name).to.deep.equal(
+        expect(res.send.args[0][0].payee.name).to.deep.equal(
+          "John close match"
+        );
+        expect(res.send.args[0][0].result.status).to.deep.equal("CLOSE_MATCH");
+        expect(res.send.args[0][0].result.suggested_name).to.deep.equal(
           "Giovanni Kontistini"
         );
       });
