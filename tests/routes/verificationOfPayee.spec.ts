@@ -19,6 +19,9 @@ describe("VerificationOfPayee", () => {
 
         expect(res.status.calledWith(400)).to.be.true;
         expect(res.send.calledOnce).to.be.true;
+        expect(res.send.args[0].errors[0].detail).to.deep.equal(
+          "IBAN is required."
+        );
       });
 
       it("should return a 400 error if name is missing", async () => {
@@ -33,6 +36,9 @@ describe("VerificationOfPayee", () => {
 
         expect(res.status.calledWith(400)).to.be.true;
         expect(res.send.calledOnce).to.be.true;
+        expect(res.send.args[0].errors[0].detail).to.deep.equal(
+          "Name is required."
+        );
       });
 
       it("should return a 400 error if name is invalid", async () => {
@@ -48,6 +54,9 @@ describe("VerificationOfPayee", () => {
 
         expect(res.status.calledWith(400)).to.be.true;
         expect(res.send.calledOnce).to.be.true;
+        expect(res.send.args[0].errors[0].detail).to.deep.equal(
+          "Name is not valid."
+        );
       });
     });
 
