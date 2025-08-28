@@ -228,7 +228,7 @@ export const updateInstantLimits = async (req, res) => {
   }
 
   if (!daily_limit || !per_transaction_limit) {
-    throw new Error("Daily limit and per transaction limit are required");
+    throw new Error("Daily limit or per transaction limit are required");
   }
 
   return res.send({
