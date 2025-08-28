@@ -214,3 +214,27 @@ export const getInstantLimits = async (req, res) => {
     },
   });
 };
+
+export const updateInstantLimits = async (req, res) => {
+  const { accountId } = req.params;
+  const { daily_limit, per_transaction_limit } = req.body;
+
+  const person = await findPersonByAccount({ id: accountId });
+  const business = await findBusinessByAccount({ id: accountId });
+  const entity = business || person;
+
+  if (!entity) {
+    throw new Error("Account not found");
+  }
+
+  if (!daily_limit || !per_transaction_limit) {
+    throw new Error("Daily limit and per transaction limit are required");
+  }
+
+  return res.send({
+    daily_limit,
+    daily_used: { value: 350000, unit: "cents", currency: "EUR" },
+    daily_remaining: { value: 650000, unit: "cents", currency: "EUR" },
+    per_transaction_limit,
+  });
+};
