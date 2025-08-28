@@ -232,9 +232,17 @@ export const updateInstantLimits = async (req, res) => {
   }
 
   return res.send({
-    daily_limit,
+    daily_limit: daily_limit || {
+      value: 1000000,
+      unit: "cents",
+      currency: "EUR",
+    },
     daily_used: { value: 350000, unit: "cents", currency: "EUR" },
     daily_remaining: { value: 650000, unit: "cents", currency: "EUR" },
-    per_transaction_limit,
+    per_transaction_limit: per_transaction_limit || {
+      value: 500000,
+      unit: "cents",
+      currency: "EUR",
+    },
   });
 };
