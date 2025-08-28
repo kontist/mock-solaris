@@ -227,7 +227,7 @@ export const updateInstantLimits = async (req, res) => {
     throw new Error("Account not found");
   }
 
-  if (!daily_limit || !per_transaction_limit) {
+  if (!daily_limit && !per_transaction_limit) {
     throw new Error("Daily limit or per transaction limit are required");
   }
 
