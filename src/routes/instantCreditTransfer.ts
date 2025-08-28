@@ -192,3 +192,25 @@ export const confirmInstantCreditTransfer = async (person: MockPerson) => {
 
   return instantCreditTransfer;
 };
+
+export const getInstantLimits = async (req, res) => {
+  const { accountId } = req.params;
+  const person = await findPersonByAccount({ id: accountId });
+  const business = await findBusinessByAccount({ id: accountId });
+  const entity = business || person;
+
+  if (!entity) {
+    throw new Error("Account not found");
+  }
+
+  return res.send({
+    daily_limit: { value: 1000000, unit: "cents", currency: "EUR" },
+    daily_used: { value: 350000, unit: "cents", currency: "EUR" },
+    daily_remaining: { value: 650000, unit: "cents", currency: "EUR" },
+    per_transaction_limit: {
+      value: 500000,
+      unit: "cents",
+      currency: "EUR",
+    },
+  });
+};

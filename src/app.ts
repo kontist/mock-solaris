@@ -897,6 +897,12 @@ router.post(
   safeRequestHandler(instantCreditTransferAPI.createInstantCreditTransfer)
 );
 
+// SEPA INSTANT LIMITS
+router.get(
+  "/accounts/:accountId/sepa_instant_limits",
+  safeRequestHandler(instantCreditTransferAPI.getInstantLimits)
+);
+
 // ACCOUNT OPENING REQUEST
 
 router.post(
