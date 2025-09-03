@@ -22,6 +22,7 @@ import {
 } from "../helpers/types";
 import { triggerBookingsWebhook } from "./backoffice";
 import { createBusinessChangeRequest } from "./changeRequest";
+import { isVerificationOfPayeeRequired } from "../helpers/verificationOfPayee";
 
 export const INSTANT_CREDIT_TRANSFER_CREATE = "instant_credit_transfer:create";
 
@@ -49,6 +50,21 @@ export const getInstantReachability = (req: Request, res: Response) => {
 export const createInstantCreditTransfer = async (req, res) => {
   const { body } = req;
   const { accountId } = req.params;
+
+  if (isVerificationOfPayeeRequired() && !body.verification_of_payee_id) {
+    return res.status(400).send({
+      errors: [
+        {
+          id: generateID(),
+          status: 400,
+          code: "bad_request",
+          title: "Bad Request",
+          detail: `Verification of payee is required.`,
+        },
+      ],
+    });
+  }
+
   const person = await findPersonByAccount({ id: accountId });
   const business = await findBusinessByAccount({ id: accountId });
   const entity = business || person;
