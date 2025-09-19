@@ -339,6 +339,7 @@ export const creteBookingFromSepaCreditTransfer = ({
   recipient_name,
   reference,
   status,
+  verification_of_payee_id = undefined,
 }) => ({
   id: generateID(),
   booking_type: BookingType.SEPA_CREDIT_TRANSFER,
@@ -358,6 +359,7 @@ export const creteBookingFromSepaCreditTransfer = ({
   booking_date: moment().format("YYYY-MM-DD"),
   valuta_date: moment().format("YYYY-MM-DD"),
   meta_info: null,
+  verification_of_payee_id: verification_of_payee_id,
 });
 
 const changeAmountSign = (metaInfo) => {
