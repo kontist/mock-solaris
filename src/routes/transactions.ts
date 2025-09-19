@@ -339,7 +339,7 @@ export const creteBookingFromSepaCreditTransfer = ({
   recipient_name,
   reference,
   status,
-  verification_of_payee_id = undefined,
+  verification_of_payee_id = null,
 }) => ({
   id: generateID(),
   booking_type: BookingType.SEPA_CREDIT_TRANSFER,
