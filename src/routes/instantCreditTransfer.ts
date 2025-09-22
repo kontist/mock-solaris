@@ -108,6 +108,7 @@ export const createInstantCreditTransfer = async (req, res) => {
     idempotency_key: idempotencyKey,
     description,
     end_to_end_id: body.end_to_end_id,
+    verification_of_payee_id: body?.verification_of_payee_id,
   };
 
   entity.instantCreditTransfers = entity.instantCreditTransfers || [];
