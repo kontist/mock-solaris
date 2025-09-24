@@ -170,6 +170,11 @@ export type MockAccount = {
   // for e2e testing purposes, to set balance to a specific value
   mockBalanceValue?: number;
   status: AccountStatus;
+  scheduledTransfers?: ScheduledTransfer[];
+  unconfirmedScheduledTransfers?: {
+    scheduledTransfer: ScheduledTransfer;
+    changeRequestId: string;
+  }[];
 };
 
 export type BillingAccount = {
@@ -231,6 +236,54 @@ export type MockChangeRequest = {
   timedOrder?: TimedOrder;
   instantCreditTransfer?: InstantCreditTransfer;
 };
+
+export enum SCHEDULED_TRANSFER_STATUS {
+  AUTHORIZATION_REQUIRED = "AUTHORIZATION_REQUIRED",
+  ACTIVE = "ACTIVE",
+  CONCLUDED = "CONCLUDED",
+  CANCELED = "CANCELED",
+}
+
+export enum SCHEDULED_TRANSFER_TYPE {
+  SCT = "SCT",
+  SCT_INSTANT = "SCT_INSTANT",
+}
+
+export enum EXECUTION_SCHEDULE {
+  WEEKLY = "WEEKLY",
+  EVERY_TWO_WEEKS = "EVERY_TWO_WEEKS",
+  MONTHLY = "MONTHLY",
+  QUARTERLY = "QUARTERLY",
+  EVERY_SIX_MONTHS = "EVERY_SIX_MONTHS",
+  YEARLY = "ANNUALLY",
+  "ONE-TIME" = "ONE-TIME",
+}
+
+export interface ScheduledTransferAmount {
+  value: number;
+  currency: string;
+}
+
+export interface ScheduledTransfer {
+  id: string;
+  account_id: string;
+  status: SCHEDULED_TRANSFER_STATUS;
+  transfer_type: SCHEDULED_TRANSFER_TYPE;
+  creditor_iban: string;
+  creditor_name: string;
+  creditor_bic?: string;
+  amount: ScheduledTransferAmount;
+  description?: string;
+  active_from: string;
+  active_to: string;
+  execution_schedule: EXECUTION_SCHEDULE;
+  end_to_end_id: string;
+  // next_execution_date: string;
+  authorizer_id: string;
+  verification_of_payee_id: string;
+  created_at: string;
+  updated_at: string;
+}
 
 export interface StandingOrder {
   id: string;
