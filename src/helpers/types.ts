@@ -278,7 +278,7 @@ export interface ScheduledTransfer {
   active_to: string;
   execution_schedule: EXECUTION_SCHEDULE;
   end_to_end_id: string;
-  // next_execution_date: string;
+  next_execution_date: string;
   authorizer_id: string;
   verification_of_payee_id: string;
   created_at: string;

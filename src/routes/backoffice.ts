@@ -57,6 +57,7 @@ import {
   BusinessWebhookEvent,
   MockBusiness,
   CardData,
+  SCHEDULED_TRANSFER_TYPE,
 } from "../helpers/types";
 import {
   changeOverdraftApplicationStatus,
@@ -561,6 +562,23 @@ const generateBookingFromStandingOrder = (standingOrder) => {
   };
 };
 
+const generateBookingFromScheduledTransfer = (scheduledTransfer) => {
+  return {
+    ...scheduledTransfer,
+    id: generateID(),
+    valuta_date: moment().format("YYYY-MM-DD"),
+    booking_date: moment().format("YYYY-MM-DD"),
+    booking_type:
+      scheduledTransfer.transfer_type === SCHEDULED_TRANSFER_TYPE.SCT
+        ? BookingType.SEPA_CREDIT_TRANSFER
+        : BookingType.SEPA_INSTANT_CREDIT_TRANSFER,
+    amount: {
+      value: -Math.abs(scheduledTransfer.amount.value),
+      currency: scheduledTransfer.amount.currency,
+    },
+  };
+};
+
 /**
  * Processes either a normal booking or a Standing Order.
  * @param {string} personId
@@ -570,7 +588,8 @@ const generateBookingFromStandingOrder = (standingOrder) => {
 export const processQueuedBooking = async (
   personId,
   id,
-  isStandingOrder = false
+  isStandingOrder = false,
+  isScheduledTransfer = false
 ) => {
   let person;
   let booking;
@@ -585,6 +604,8 @@ export const processQueuedBooking = async (
     let bookings;
     bookings = isStandingOrder
       ? person.standingOrders || []
+      : isScheduledTransfer
+      ? person.account.scheduledTransfers || []
       : person.queuedBookings;
 
     if (id) {
@@ -600,6 +621,10 @@ export const processQueuedBooking = async (
 
     if (isStandingOrder) {
       booking = generateBookingFromStandingOrder(booking);
+    }
+
+    if (isScheduledTransfer) {
+      booking = generateBookingFromScheduledTransfer(booking);
     }
 
     const isDirectDebit = [
@@ -668,7 +693,8 @@ export const processQueuedBooking = async (
 export const processBusinessQueuedBooking = async (
   businessId,
   id,
-  isStandingOrder = false
+  isStandingOrder = false,
+  isScheduledTransfer = false
 ) => {
   let business;
   let booking;
@@ -683,6 +709,8 @@ export const processBusinessQueuedBooking = async (
     let bookings;
     bookings = isStandingOrder
       ? business.standingOrders || []
+      : isScheduledTransfer
+      ? business.account.scheduledTransfers || []
       : business.queuedBookings;
 
     if (id) {
@@ -698,6 +726,10 @@ export const processBusinessQueuedBooking = async (
 
     if (isStandingOrder) {
       booking = generateBookingFromStandingOrder(booking);
+    }
+
+    if (isScheduledTransfer) {
+      booking = generateBookingFromScheduledTransfer(booking);
     }
 
     const isDirectDebit = [

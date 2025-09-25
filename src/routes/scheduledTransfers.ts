@@ -12,8 +12,12 @@ import {
 } from "../db";
 import { triggerWebhook } from "../helpers/webhooks";
 import * as log from "../logger";
-import { processQueuedBooking } from "./backoffice";
 import {
+  processBusinessQueuedBooking,
+  processQueuedBooking,
+} from "./backoffice";
+import {
+  EXECUTION_SCHEDULE,
   SCHEDULED_TRANSFER_STATUS,
   ScheduledTransfer,
   TransactionWebhookEvent,
@@ -25,7 +29,7 @@ import { isVerificationOfPayeeRequired } from "../helpers/verificationOfPayee";
 export const SCHEDULED_TRANSFER_CREATE_METHOD = "scheduled_transfer:create";
 export const SCHEDULED_TRANSFER_CANCEL_METHOD = "scheduled_transfer:cancel";
 
-export const showScheduledTransferRequestHandler = async (req, res) => {
+export const getScheduledTransferRequestHandler = async (req, res) => {
   const { account_id: accountId, id: scheduledTransferId } = req.params;
 
   const { scheduledTransfer } = await getScheduledTransfer(
@@ -34,6 +38,23 @@ export const showScheduledTransferRequestHandler = async (req, res) => {
   );
 
   res.status(200).send(scheduledTransfer);
+};
+
+export const listScheduledTransfersRequestHandler = async (req, res) => {
+  const { account_id: accountId } = req.params;
+
+  const person = await findPersonByAccount({ id: accountId });
+  const business = await findBusinessByAccount({ id: accountId });
+
+  if (!person && !business) {
+    log.error(`Account not found for id: ${accountId}`);
+    throw new Error(`Couldn't find 'Solaris::Account' for id '${accountId}'.`);
+  }
+
+  const entity = person || business;
+  const account = getAccountFromEntity(entity, accountId);
+
+  res.status(200).send(account.scheduledTransfers || []);
 };
 
 export const createScheduledTransferRequestHandler = async (req, res) => {
@@ -256,6 +277,7 @@ export const generateScheduledTransferForAccount = (scheduledTransferData) => {
       : moment(activeFrom).format("YYYY-MM-DD"),
     execution_schedule: executionSchedule,
     end_to_end_id: endToEndId,
+    next_execution_date: moment(activeFrom).format("YYYY-MM-DD"),
     authorizer_id: authorizerId,
     verification_of_payee_id: verificationOfPayeeId,
     created_at: new Date().toISOString(),
@@ -269,43 +291,66 @@ export const generateScheduledTransferForAccount = (scheduledTransferData) => {
 export const triggerScheduledTransferRequestHandler = async (req, res) => {
   const { accountId, scheduledTransferId } = req.params;
 
+  const person = await findPersonByAccount({ id: accountId });
+  const business = await findBusinessByAccount({ id: accountId });
+
+  if (!person && !business) {
+    log.error(`Account not found for id: ${accountId}`);
+    throw new Error(`Couldn't find 'Solaris::Account' for id '${accountId}'.`);
+  }
+
+  const entity = person || business;
+  const account = getAccountFromEntity(entity, accountId);
+
   const declinedReason = await checkScheduledTransferPreconditions(
-    accountId,
+    account,
     scheduledTransferId
   );
 
   let booking;
+
   if (!declinedReason) {
-    booking = await processQueuedBooking(personId, standingOrderId, true);
+    booking = (await person)
+      ? processQueuedBooking(accountId, scheduledTransferId, false, true)
+      : processBusinessQueuedBooking(
+          accountId,
+          scheduledTransferId,
+          false,
+          true
+        );
   }
 
-  // We need to update next occurence and call webhook in all cases, even when a standing order is declined
-  await updateStandingOrderNextOccurrenceDateAndStatus(
-    personId,
-    standingOrderId
+  // We need to update next execution date and call webhook in all cases, even when a scheduled transfer is declined
+  await updateScheduledTransferNextExecutionDateAndStatus(
+    person,
+    business,
+    account,
+    scheduledTransferId
   );
 
-  await triggerSepaScheduledTransactionWebhook({
-    personId,
-    standingOrderId,
-    booking,
-    declinedReason,
-  });
+  // await triggerSepaScheduledTransactionWebhook({
+  //   personId,
+  //   standingOrderId,
+  //   booking,
+  //   declinedReason,
+  // });
 
   res.redirect("back");
 };
 
 const checkScheduledTransferPreconditions = async (
-  accountId,
+  account,
   scheduledTransferId
 ) => {
-  const person = await getPerson(personId);
-  const { locking_status: accountLockingStatus } = person.account;
+  const { locking_status: accountLockingStatus } = account;
+
   if (!["NO_BLOCK", "CREDIT_BLOCK"].includes(accountLockingStatus)) {
     return `Expected the status for 'Solaris::Account' to be 'NO_BLOCK, CREDIT_BLOCK' but was '${accountLockingStatus}'`;
   }
 
-  if (!(await hasFundsToExecuteStandingOrder(personId, standingOrderId))) {
+  if (
+    !(await hasFundsToExecuteScheduledTransfer(account, scheduledTransferId))
+  ) {
     return "There were insufficient funds to complete this action.";
   }
 
@@ -313,53 +358,64 @@ const checkScheduledTransferPreconditions = async (
   return null;
 };
 
-const updateStandingOrderNextOccurrenceDateAndStatus = async (
-  personId,
-  standingOrderId
+const updateScheduledTransferNextExecutionDateAndStatus = async (
+  person,
+  business,
+  account,
+  scheduledTransferId
 ) => {
-  const { person, standingOrder } = await getPersonWithStandingOrder(
-    personId,
-    standingOrderId
+  const { scheduledTransfer } = await getScheduledTransfer(
+    account,
+    scheduledTransferId
   );
 
-  const nextOccurence = getNextOccurrenceDate(
-    moment(standingOrder.next_occurrence),
-    standingOrder.reoccurrence
+  const nextExecutionDate = getNextExecutionDate(
+    moment(scheduledTransfer.next_execution_date),
+    scheduledTransfer.execution_schedule
   );
 
   if (
-    standingOrder.last_execution_date &&
-    nextOccurence.isAfter(standingOrder.last_execution_date)
+    scheduledTransfer.active_to &&
+    nextExecutionDate.isAfter(scheduledTransfer.active_to)
   ) {
-    standingOrder.next_occurrence = null;
-    standingOrder.status = "INACTIVE";
+    scheduledTransfer.next_execution_date = null;
+    scheduledTransfer.status = SCHEDULED_TRANSFER_STATUS.CONCLUDED;
   } else {
-    standingOrder.next_occurrence = nextOccurence.format("YYYY-MM-DD");
+    scheduledTransfer.next_execution_date =
+      nextExecutionDate.format("YYYY-MM-DD");
   }
 
-  await savePerson(person);
+  if (person) {
+    person.account = account;
+    await savePerson(person);
+  } else {
+    business.account = account;
+    await saveBusiness(business);
+  }
 };
 
-export const getNextOccurrenceDate = (
+export const getNextExecutionDate = (
   lastDate: Moment,
-  reoccurrence: STANDING_ORDER_PAYMENT_FREQUENCY
+  executionSchedule: EXECUTION_SCHEDULE
 ) => {
-  switch (reoccurrence) {
-    case STANDING_ORDER_PAYMENT_FREQUENCY.MONTHLY:
-      return lastDate.add(1, "months");
-    case STANDING_ORDER_PAYMENT_FREQUENCY.QUARTERLY:
-      return lastDate.add(3, "months");
-    case STANDING_ORDER_PAYMENT_FREQUENCY.EVERY_SIX_MONTHS:
-      return lastDate.add(6, "months");
-    case STANDING_ORDER_PAYMENT_FREQUENCY.YEARLY:
-      return lastDate.add(1, "years");
-    case STANDING_ORDER_PAYMENT_FREQUENCY.WEEKLY:
+  switch (executionSchedule) {
+    case EXECUTION_SCHEDULE["ONE-TIME"]:
+      return lastDate;
+    case EXECUTION_SCHEDULE.WEEKLY:
       return lastDate.add(1, "week");
-    case STANDING_ORDER_PAYMENT_FREQUENCY.BIWEEKLY:
+    case EXECUTION_SCHEDULE.EVERY_TWO_WEEKS:
       return lastDate.add(2, "weeks");
+    case EXECUTION_SCHEDULE.MONTHLY:
+      return lastDate.add(1, "months");
+    case EXECUTION_SCHEDULE.QUARTERLY:
+      return lastDate.add(3, "months");
+    case EXECUTION_SCHEDULE.EVERY_SIX_MONTHS:
+      return lastDate.add(6, "months");
+    case EXECUTION_SCHEDULE.YEARLY:
+      return lastDate.add(1, "years");
     default:
       throw new Error(
-        `Unexpected standing order reoccurrence: ${reoccurrence}`
+        `Unexpected standing order reoccurrence: ${executionSchedule}`
       );
   }
 };
@@ -439,45 +495,47 @@ export const confirmStandingOrderCancelation = async (person) => {
   return standingOrder;
 };
 
-const hasFundsToExecuteStandingOrder = async (personId, standingOrderId) => {
-  const { person, standingOrder } = await getPersonWithStandingOrder(
-    personId,
-    standingOrderId
+const hasFundsToExecuteScheduledTransfer = async (
+  account,
+  scheduledTransferId
+) => {
+  const scheduledTransfer = account.scheduledTransfers.find(
+    (so) => so.id === scheduledTransferId
   );
 
-  return person.account.balance.value >= standingOrder.amount.value;
+  return account.balance.value >= scheduledTransfer.amount.value;
 };
 
-const triggerSepaScheduledTransactionWebhook = async ({
-  personId,
-  standingOrderId,
-  booking,
-  declinedReason,
-}) => {
-  const { person, standingOrder } = await getPersonWithStandingOrder(
-    personId,
-    standingOrderId
-  );
+// const triggerSepaScheduledTransactionWebhook = async ({
+//   personId,
+//   standingOrderId,
+//   booking,
+//   declinedReason,
+// }) => {
+//   const { person, standingOrder } = await getPersonWithStandingOrder(
+//     personId,
+//     standingOrderId
+//   );
 
-  const payload = {
-    id: standingOrder.id,
-    account_id: person.account.id,
-    processed_at: moment().toISOString(),
-    reference: standingOrder.reference,
-    source: "standing_order",
-    source_id: standingOrder.id,
-    status: declinedReason
-      ? STANDING_ORDER_PAYMENT_STATUSES.DECLINED
-      : STANDING_ORDER_PAYMENT_STATUSES.EXECUTED,
-    declined_reason: declinedReason,
-    transaction_id: booking ? booking.transaction_id : null,
-  };
+//   const payload = {
+//     id: standingOrder.id,
+//     account_id: person.account.id,
+//     processed_at: moment().toISOString(),
+//     reference: standingOrder.reference,
+//     source: "standing_order",
+//     source_id: standingOrder.id,
+//     status: declinedReason
+//       ? STANDING_ORDER_PAYMENT_STATUSES.DECLINED
+//       : STANDING_ORDER_PAYMENT_STATUSES.EXECUTED,
+//     declined_reason: declinedReason,
+//     transaction_id: booking ? booking.transaction_id : null,
+//   };
 
-  await triggerWebhook({
-    type: TransactionWebhookEvent.SEPA_SCHEDULED_TRANSACTION,
-    payload,
-  });
-};
+//   await triggerWebhook({
+//     type: TransactionWebhookEvent.SEPA_SCHEDULED_TRANSACTION,
+//     payload,
+//   });
+// };
 
 const getScheduledTransfer = async (
   accountId,
