@@ -328,12 +328,10 @@ export const triggerScheduledTransferRequestHandler = async (req, res) => {
     scheduledTransferId
   );
 
-  // await triggerSepaScheduledTransactionWebhook({
-  //   personId,
-  //   standingOrderId,
-  //   booking,
-  //   declinedReason,
-  // });
+  await triggerSepaScheduledTransactionWebhook({
+    person,
+    scheduledTransferId,
+  });
 
   res.redirect("back");
 };
@@ -517,36 +515,26 @@ const hasFundsToExecuteScheduledTransfer = async (
   return account.balance.value >= scheduledTransfer.amount.value;
 };
 
-// const triggerSepaScheduledTransactionWebhook = async ({
-//   personId,
-//   standingOrderId,
-//   booking,
-//   declinedReason,
-// }) => {
-//   const { person, standingOrder } = await getPersonWithStandingOrder(
-//     personId,
-//     standingOrderId
-//   );
+const triggerSepaScheduledTransactionWebhook = async ({
+  person,
+  scheduledTransferId,
+}) => {
+  const { scheduledTransfer } = await getScheduledTransfer(
+    person.account,
+    scheduledTransferId
+  );
 
-//   const payload = {
-//     id: standingOrder.id,
-//     account_id: person.account.id,
-//     processed_at: moment().toISOString(),
-//     reference: standingOrder.reference,
-//     source: "standing_order",
-//     source_id: standingOrder.id,
-//     status: declinedReason
-//       ? STANDING_ORDER_PAYMENT_STATUSES.DECLINED
-//       : STANDING_ORDER_PAYMENT_STATUSES.EXECUTED,
-//     declined_reason: declinedReason,
-//     transaction_id: booking ? booking.transaction_id : null,
-//   };
+  const payload = {
+    id: scheduledTransferId,
+    account_id: person.account.id,
+    status: scheduledTransfer.status,
+  };
 
-//   await triggerWebhook({
-//     type: TransactionWebhookEvent.SEPA_SCHEDULED_TRANSACTION,
-//     payload,
-//   });
-// };
+  await triggerWebhook({
+    type: TransactionWebhookEvent.SCHEDULED_TRANSFER_STATUS_CHANGED,
+    payload,
+  });
+};
 
 const getScheduledTransfer = async (
   accountId,
