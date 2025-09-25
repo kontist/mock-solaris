@@ -420,32 +420,35 @@ export const getNextExecutionDate = (
   }
 };
 
-export const confirmStandingOrderCreation = async (person, changeRequestId) => {
-  person.standingOrders = person.standingOrders || [];
+export const confirmScheduledTransferCreation = async (
+  person,
+  changeRequestId
+) => {
+  person.scheduledTransfers = person.scheduledTransfers || [];
 
-  const { standingOrder, index } = findUnconfirmedStandingOrder(
+  const { scheduledTransfer, index } = findUnconfirmedScheduledTransfer(
     person,
     changeRequestId
   );
 
-  person.unconfirmedStandingOrders.splice(index, 1);
+  person.account.unconfirmedScheduledTransfers.splice(index, 1);
 
-  standingOrder.status = "ACTIVE";
-  standingOrder.next_occurrence = standingOrder.first_execution_date;
+  scheduledTransfer.status = SCHEDULED_TRANSFER_STATUS.ACTIVE;
+  scheduledTransfer.next_execution_date = scheduledTransfer.active_from;
 
-  person.standingOrders.push(standingOrder);
+  person.account.scheduledTransfers.push(scheduledTransfer);
 
   await savePerson(person);
 
-  return standingOrder;
+  return scheduledTransfer;
 };
 
-const findUnconfirmedStandingOrder = (person, chgRequestId) => {
+const findUnconfirmedScheduledTransfer = (person, chgRequestId) => {
   let result = null;
-  person.unconfirmedStandingOrders.forEach(
-    ({ standingOrder, changeRequestId }, index) => {
+  person.account.unconfirmedScheduledTransfers.forEach(
+    ({ scheduledTransfer, changeRequestId }, index) => {
       if (chgRequestId === changeRequestId) {
-        result = { standingOrder, index };
+        result = { scheduledTransfer, index };
         return;
       }
     }
@@ -457,12 +460,17 @@ const findUnconfirmedStandingOrder = (person, chgRequestId) => {
   return result;
 };
 
-export const cancelStandingOrderRequestHandler = async (req, res) => {
-  const { person_id: personId, id: standingOrderId } = req.params;
+export const cancelScheduledTransferRequestHandler = async (req, res) => {
+  const { account_id: accountId, id: scheduledTransferId } = req.params;
 
-  log.info("cancelStandingOrderRequestHandler()", { reqParams: req.params });
+  log.info("cancelScheduledTransferRequestHandler()", {
+    reqParams: req.params,
+  });
 
-  const changeRequestId = await cancelStandingOrder(personId, standingOrderId);
+  const changeRequestId = await cancelScheduledTransfer(
+    accountId,
+    scheduledTransferId
+  );
 
   return res.status(202).send({
     id: changeRequestId,
@@ -472,27 +480,30 @@ export const cancelStandingOrderRequestHandler = async (req, res) => {
   });
 };
 
-export const cancelStandingOrder = async (personId, standingOrderId) => {
-  const person = await getPerson(personId);
+export const cancelScheduledTransfer = async (
+  accountId,
+  scheduledTransferId
+) => {
+  const person = await findPersonByAccount({ id: accountId });
 
   const changeRequestId = Date.now().toString();
   person.changeRequest = {
     id: changeRequestId,
-    method: STANDING_ORDER_CANCEL_METHOD,
-    standingOrderId,
+    method: SCHEDULED_TRANSFER_CANCEL_METHOD,
+    scheduledTransferId,
   };
   await savePerson(person);
   return changeRequestId;
 };
 
-export const confirmStandingOrderCancelation = async (person) => {
-  const standingOrderId = person.changeRequest.standingOrderId;
-  const [standingOrder] = person.standingOrders.filter(
-    (item) => item.id === standingOrderId
+export const confirmScheduledTransferCancelation = async (person) => {
+  const scheduledTransferId = person.changeRequest.scheduledTransferId;
+  const [scheduledTransfer] = person.account.scheduledTransfers.filter(
+    (item) => item.id === scheduledTransferId
   );
-  standingOrder.status = "CANCELED";
+  scheduledTransfer.status = SCHEDULED_TRANSFER_STATUS.CANCELED;
   await savePerson(person);
-  return standingOrder;
+  return scheduledTransfer;
 };
 
 const hasFundsToExecuteScheduledTransfer = async (

@@ -481,10 +481,12 @@ router.post(
     scheduledTransfersAPI.createScheduledTransferRequestHandler
   )
 );
-// router.patch(
-//   "/accounts/:account_id/scheduled_transfers/:id/cancel",
-//   safeRequestHandler(scheduledTransfersAPI.cancelScheduledTransferRequestHandler)
-// );
+router.patch(
+  "/accounts/:account_id/scheduled_transfers/:id/cancel",
+  safeRequestHandler(
+    scheduledTransfersAPI.cancelScheduledTransferRequestHandler
+  )
+);
 
 // STANDING ORDERS
 router.get(

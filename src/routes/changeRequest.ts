@@ -22,6 +22,12 @@ import {
   STANDING_ORDER_UPDATE_METHOD,
   STANDING_ORDER_CANCEL_METHOD,
 } from "./standingOrders";
+import {
+  confirmScheduledTransferCreation,
+  confirmScheduledTransferCancelation,
+  SCHEDULED_TRANSFER_CREATE_METHOD,
+  SCHEDULED_TRANSFER_CANCEL_METHOD,
+} from "./scheduledTransfers";
 import { PERSON_UPDATE } from "./persons";
 import {
   TIN_UPDATE,
@@ -290,6 +296,17 @@ export const confirmChangeRequest = async (req, res) => {
 
     case MOBILE_NUMBER_CHANGE_METHOD:
       response.response_body = await removeMobileNumberConfirmChangeRequest(
+        person
+      );
+      break;
+    case SCHEDULED_TRANSFER_CREATE_METHOD:
+      response.response_body = await confirmScheduledTransferCreation(
+        person,
+        changeRequestId
+      );
+      break;
+    case SCHEDULED_TRANSFER_CANCEL_METHOD:
+      response.response_body = await confirmScheduledTransferCancelation(
         person
       );
       break;
