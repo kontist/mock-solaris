@@ -37,6 +37,7 @@ import * as instantCreditTransferAPI from "./routes/instantCreditTransfer";
 import * as accountOpeningRequestAPI from "./routes/accountOpeningRequest";
 import * as accountClosureRequestAPI from "./routes/accountClosureRequest";
 import * as intraCustomerTransferApi from "./routes/intraCustomerTransfer";
+import * as scheduledTransfersAPI from "./routes/scheduledTransfers";
 
 import { migrate } from "./db";
 
@@ -465,6 +466,28 @@ router.post(
   safeRequestHandler(intraCustomerTransferApi.createIntraCustomerTransfer)
 );
 
+// SCHEDULED TRANSFERS
+router.get(
+  "/accounts/:account_id/scheduled_transfers/:id",
+  safeRequestHandler(scheduledTransfersAPI.getScheduledTransferRequestHandler)
+);
+router.get(
+  "/accounts/:account_id/scheduled_transfers",
+  safeRequestHandler(scheduledTransfersAPI.listScheduledTransfersRequestHandler)
+);
+router.post(
+  "/accounts/:account_id/scheduled_transfers",
+  safeRequestHandler(
+    scheduledTransfersAPI.createScheduledTransferRequestHandler
+  )
+);
+router.patch(
+  "/accounts/:account_id/scheduled_transfers/:id/cancel",
+  safeRequestHandler(
+    scheduledTransfersAPI.cancelScheduledTransferRequestHandler
+  )
+);
+
 // STANDING ORDERS
 router.get(
   "/persons/:person_id/accounts/:account_id/standing_orders/:id",
@@ -746,6 +769,14 @@ app.post(
 app.post(
   "/__BACKOFFICE__/:personId/:cardId/updateProvisioningToken",
   safeRequestHandler(backofficeAPI.provisioningTokenHandler)
+);
+
+// BACKOFFICE - SCHEDULED TRANSFERS
+app.post(
+  "/__BACKOFFICE__/triggerScheduledTransfer/:personId/:scheduledTransferId",
+  safeRequestHandler(
+    scheduledTransfersAPI.triggerScheduledTransferRequestHandler
+  )
 );
 
 // BACKOFFICE - STANDING ORDERS

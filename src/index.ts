@@ -3,6 +3,7 @@ import * as db from "./db";
 import * as account from "./routes/accounts";
 import * as backOffice from "./routes/backoffice";
 import * as standingOrders from "./routes/standingOrders";
+import * as scheduledTransfers from "./routes/scheduledTransfers";
 import { changeCardStatus } from "./helpers/cards";
 import { processTimedOrders } from "./routes/timedOrders";
 import * as logger from "./logger";
@@ -34,6 +35,12 @@ export default {
   saveTaxIdentifications: db.saveTaxIdentifications,
   getTechnicalUserPerson: db.getTechnicalUserPerson,
   processQueuedBooking: backOffice.processQueuedBooking,
+  createScheduledTransfer: scheduledTransfers.createScheduledTransfer,
+  confirmScheduledTransferCreation:
+    scheduledTransfers.confirmScheduledTransferCreation,
+  cancelScheduledTransfer: scheduledTransfers.cancelScheduledTransfer,
+  confirmScheduledTransferCancelation:
+    scheduledTransfers.confirmScheduledTransferCancelation,
   createStandingOrder: standingOrders.createStandingOrder,
   confirmStandingOrderCreation: standingOrders.confirmStandingOrderCreation,
   cancelStandingOrder: standingOrders.cancelStandingOrder,

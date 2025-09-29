@@ -598,6 +598,62 @@
 </div>
 
 <div class="panel panel-default">
+  <div id="bookings" class="panel-heading">Scheduled Transfers</div>
+
+  {% if person.account.scheduledTransfers.length > 0 %}
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Recipient Name</th>
+        <th>IBAN</th>
+        <th>Amount</th>
+        <th>Purpose</th>
+        <th>End to end ID</th>
+        <th>First Execution Date</th>
+        <th>Last Execution Date</th>
+        <th>Reoccurrence</th>
+        <th>Next Occurrence</th>
+        <th>Trigger</th>
+      </tr>
+    </thead>
+    {% for scheduledTransfer in person.account.scheduledTransfers %}
+    <tr>
+      <td>{{ scheduledTransfer.id }}</td>
+      <td>{{ scheduledTransfer.recipient_name }}</td>
+      <td>{{ scheduledTransfer.recipient_iban }}</td>
+      <td>{{ (Math.abs(scheduledTransfer.amount.value) / 100).toFixed(2) }}€</td>
+      <td>{{ scheduledTransfer.description }}</td>
+      <td>{{ scheduledTransfer.end_to_end_id }}</td>
+      <td>{{ scheduledTransfer.active_from }}</td>
+      <td>{{ scheduledTransfer.active_to }}</td>
+      <td>{{ scheduledTransfer.execution_schedule }}</td>
+      <td>{{ scheduledTransfer.next_execution_date }}</td>
+      {% if scheduledTransfer.status === "ACTIVE" %}
+      <td>
+        <form method="POST" action="/__BACKOFFICE__/triggerScheduledTransfer/{{ person.account.id }}/{{ scheduledTransfer.id }}">
+          <button type="submit" class="btn btn-default">
+            ➡️ Trigger now
+          </button>
+        </form>
+      </td>
+      {% else %}
+      <td>{{ scheduledTransfer.status }}</td>
+      {% endif %}
+    </tr>
+    {% endfor %}
+  </table>
+
+  {% else %}
+  <div class="panel-body">
+    No Scheduled Transfers ☹️
+  </div>
+  {% endif %}
+</div>
+
+
+<div class="panel panel-default">
   <div id="bookings" class="panel-heading">Standing Orders</div>
 
   {% if person.standingOrders.length > 0 %}
