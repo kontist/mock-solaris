@@ -434,6 +434,7 @@ export const confirmScheduledTransferCreation = async (
   scheduledTransfer.status = SCHEDULED_TRANSFER_STATUS.ACTIVE;
   scheduledTransfer.next_execution_date = scheduledTransfer.active_from;
 
+  person.account.scheduledTransfers = person.account.scheduledTransfers || [];
   person.account.scheduledTransfers.push(scheduledTransfer);
 
   await savePerson(person);
