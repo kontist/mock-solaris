@@ -933,7 +933,7 @@ router.get(
   "/accounts/:accountId/sepa_instant_limits",
   safeRequestHandler(instantCreditTransferAPI.getInstantLimits)
 );
-router.post(
+router.patch(
   "/accounts/:accountId/sepa_instant_limits",
   safeRequestHandler(instantCreditTransferAPI.updateInstantLimits)
 );
