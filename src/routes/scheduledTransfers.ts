@@ -113,12 +113,17 @@ export const createScheduledTransferRequestHandler = async (req, res) => {
       verificationOfPayeeId,
     });
 
-    return res.status(202).send({
+    const response = {
       id,
-      status: "AUTHORIZATION_REQUIRED",
-      updated_at: createdAt,
-      url: ":env/v1/change_requests/:id/authorize",
-    });
+      change_request: {
+        id,
+        status: "AUTHORIZATION_REQUIRED",
+        updated_at: createdAt,
+        url: ":env/v1/change_requests/:id/authorize",
+      },
+    };
+
+    return res.status(202).send(response);
   } catch (err) {
     log.error(
       "createScheduledTransferRequestHandler() Creating Scheduled Transfer failed",
@@ -471,12 +476,17 @@ export const cancelScheduledTransferRequestHandler = async (req, res) => {
     scheduledTransferId
   );
 
-  return res.status(202).send({
+  const response = {
     id: changeRequestId,
-    status: "AUTHORIZATION_REQUIRED",
-    updated_at: new Date().toISOString(),
-    url: `:env/v1/change_requests/${changeRequestId}/authorize`,
-  });
+    change_request: {
+      id: changeRequestId,
+      status: "AUTHORIZATION_REQUIRED",
+      updated_at: new Date().toISOString(),
+      url: `:env/v1/change_requests/${changeRequestId}/authorize`,
+    },
+  };
+
+  return res.status(202).send(response);
 };
 
 export const cancelScheduledTransfer = async (
