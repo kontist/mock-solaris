@@ -65,6 +65,7 @@ describe("Instant Credit Transfer", () => {
             currency: "EUR",
           },
           person_id: personId,
+          verification_of_payee_id: "test-vop-id",
         },
       });
 
