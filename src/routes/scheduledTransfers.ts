@@ -56,7 +56,7 @@ export const listScheduledTransfersRequestHandler = async (req, res) => {
 
   res.status(200).send(account.scheduledTransfers || []);
 };
-
+//
 export const createScheduledTransferRequestHandler = async (req, res) => {
   const { account_id: accountId } = req.params;
 
