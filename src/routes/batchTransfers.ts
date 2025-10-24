@@ -1,7 +1,7 @@
-/* eslint-disable camelcase */
-import crypto from "crypto";
+import uuid from "node-uuid";
 import assert from "assert";
 import HttpStatusCodes from "http-status";
+
 import * as log from "../logger";
 import { creteBookingFromSepaCreditTransfer } from "./transactions";
 import { findPersonByAccount, getPerson, savePerson } from "../db";
@@ -52,11 +52,11 @@ export const saveBatchTransfer = async (
   person.changeRequest = {
     method: BATCH_TRANSFER_CREATE_METHOD,
     status: "CONFIRMATION_REQUIRED",
-    id: crypto.randomBytes(16).toString("hex"),
+    id: uuid.v4(),
     createdAt: new Date().toISOString(),
   };
 
-  const batchId = crypto.randomBytes(16).toString("hex");
+  const batchId = uuid.v4();
 
   person.unconfirmedBatchTransfers = person.unconfirmedBatchTransfers || [];
   person.unconfirmedBatchTransfers.push({
@@ -138,7 +138,7 @@ export const confirmBatchTransfer = async (person, changeRequestId) => {
 
   const acceptedTransfers = transfers.map((transfer) => ({
     ...transfer,
-    id: crypto.randomBytes(16).toString("hex"),
+    id: uuid.v4(),
     status: "accepted",
   }));
 
