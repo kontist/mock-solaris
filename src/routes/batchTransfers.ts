@@ -151,11 +151,11 @@ export const confirmBatchTransfer = async (person, changeRequestId) => {
   await savePerson(person);
 
   return {
-    id: id,
+    id,
     account_id: person.accounts[0].id,
     status: "ACCEPTED",
     transfer_type: transferType,
-    description: description,
+    description,
     total_amount: acceptedTransfers.reduce(
       (sum, transfer) => sum + transfer.amount.value,
       0
