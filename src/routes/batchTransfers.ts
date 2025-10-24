@@ -4,6 +4,7 @@ import HttpStatusCodes from "http-status";
 
 import * as log from "../logger";
 import { creteBookingFromSepaCreditTransfer } from "./transactions";
+import { mapInstantTransferToTransaction } from "./instantCreditTransfer";
 import { findPersonByAccount, getPerson, savePerson } from "../db";
 
 export const BATCH_TRANSFER_CREATE_METHOD = "batch_transfer:create";
@@ -51,7 +52,6 @@ export const saveBatchTransfer = async (
 
   person.changeRequest = {
     method: BATCH_TRANSFER_CREATE_METHOD,
-    status: "CONFIRMATION_REQUIRED",
     id: uuid.v4(),
     createdAt: new Date().toISOString(),
   };
@@ -143,9 +143,13 @@ export const confirmBatchTransfer = async (person, changeRequestId) => {
   }));
 
   for (const transfer of acceptedTransfers) {
-    // TODO: Save as INSTANT or SEPA based on transfer.type
-    const booking = creteBookingFromSepaCreditTransfer(transfer);
-    person.queuedBookings.push(booking);
+    if (transferType === "SCT_INSTANT") {
+      const transaction = mapInstantTransferToTransaction(transfer);
+      person.transactions.push(transaction);
+    } else {
+      const booking = creteBookingFromSepaCreditTransfer(transfer);
+      person.queuedBookings.push(booking);
+    }
   }
 
   await savePerson(person);
@@ -176,9 +180,12 @@ export const listBatchTransferTransactions = async (req, res) => {
     req.params;
 
   const person = await findPersonByAccount({ id: accountId });
-  const { transfers } = person.queuedBookings.map(
-    (booking) => booking.batch_id === batchTransferId && booking
+  const bookings = person.queuedBookings.filter(
+    (booking) => booking.batch_id === batchTransferId
   );
-  ``;
-  res.status(HttpStatusCodes.OK).send(transfers);
+  const transfers = person.transactions.filter(
+    (transaction) => transaction.batch_id === batchTransferId
+  );
+
+  res.status(HttpStatusCodes.OK).send([...bookings, ...transfers]);
 };

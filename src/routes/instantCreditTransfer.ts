@@ -149,7 +149,7 @@ export const createInstantCreditTransfer = async (req, res) => {
   );
 };
 
-const mapInstantTransferToTransaction = (instantCreditTransfer) => {
+export const mapInstantTransferToTransaction = (instantCreditTransfer) => {
   const {
     amount,
     valuta_date: valutaDate,
@@ -158,6 +158,8 @@ const mapInstantTransferToTransaction = (instantCreditTransfer) => {
     creditor_name: creditorName,
     idempotency_key: idempotencyKey,
     end_to_end_id: e2eId,
+    verification_of_payee_id: verificationOfPayeeId,
+    batch_id: batchId,
   } = instantCreditTransfer;
 
   return {
@@ -176,6 +178,8 @@ const mapInstantTransferToTransaction = (instantCreditTransfer) => {
     status: "accepted",
     end_to_end_id: e2eId,
     booking_type: BookingType.SEPA_INSTANT_CREDIT_TRANSFER,
+    verification_of_payee_id: verificationOfPayeeId,
+    batch_id: batchId,
   };
 };
 
