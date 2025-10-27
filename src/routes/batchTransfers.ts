@@ -26,13 +26,13 @@ const validateTransfers = (transfers) => {
   }
 
   for (const transfer of transfers) {
-    const { recipient_name, recipient_iban, amount, reference } = transfer;
+    const { creditor_name, creditor_iban, amount, reference } = transfer;
     if (references.includes(reference)) {
       log.error("validateTransfers - reference not unique");
       throw new Error("validateTransfers - reference not unique");
     }
     references.push(reference);
-    if (!recipient_name || !recipient_iban || !amount || !amount.value) {
+    if (!creditor_name || !creditor_iban || !amount || !amount.value) {
       log.error("validateTransfers - field/s missing");
       throw new Error("validateTransfers - field/s missing");
     }
