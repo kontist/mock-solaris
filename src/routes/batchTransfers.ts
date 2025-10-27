@@ -11,16 +11,22 @@ export const BATCH_TRANSFER_CREATE_METHOD = "batch_transfer:create";
 
 const validateTransfers = (transfers) => {
   const references = [];
-  const shouldRequireVoP = !!transfers[0]?.verifications_of_payee_id;
+  const shouldRequireVoP = !!transfers[0].verifications_of_payee_id;
+
+  if (
+    shouldRequireVoP &&
+    !transfers.every((t) => t.verifications_of_payee_id)
+  ) {
+    log.error(
+      "validateTransfers - verifications_of_payee_id must be present in all transfers"
+    );
+    throw new Error(
+      "validateTransfers - verifications_of_payee_id must be present in all transfers"
+    );
+  }
 
   for (const transfer of transfers) {
-    const {
-      recipient_name,
-      recipient_iban,
-      amount,
-      reference,
-      verifications_of_payee_id,
-    } = transfer;
+    const { recipient_name, recipient_iban, amount, reference } = transfer;
     if (references.includes(reference)) {
       log.error("validateTransfers - reference not unique");
       throw new Error("validateTransfers - reference not unique");
@@ -29,14 +35,6 @@ const validateTransfers = (transfers) => {
     if (!recipient_name || !recipient_iban || !amount || !amount.value) {
       log.error("validateTransfers - field/s missing");
       throw new Error("validateTransfers - field/s missing");
-    }
-    if (shouldRequireVoP && !verifications_of_payee_id) {
-      log.error(
-        "validateTransfers - verifications_of_payee_id must be present in all transfers"
-      );
-      throw new Error(
-        "validateTransfers - verifications_of_payee_id must be present in all transfers"
-      );
     }
   }
 };
