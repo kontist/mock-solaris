@@ -183,6 +183,31 @@ export const confirmBatchTransfer = async (person, changeRequestId) => {
   };
 };
 
+const mapBatchTransferTransaction = (item, accountId) => {
+  const statusMap = {
+    accepted: "BOOKED",
+    rejected: "FAILED",
+  };
+
+  return {
+    id: item.id,
+    account_id: accountId,
+    status: statusMap[item.status] || item.status,
+    type: item.booking_type || item.type,
+    creditor_iban: item.recipient_iban || item.creditor_iban,
+    creditor_name: item.recipient_name || item.creditor_name,
+    amount: item.amount,
+    description: item.description,
+    end_to_end_id: item.end_to_end_id,
+    initiator_reference: item.reference || item.initiator_reference,
+    failure_reason: null,
+    batch_id: item.batch_id,
+    schedule_id: null,
+    created_at: item.created_at || item.booking_date,
+    updated_at: item.updated_at || item.valuta_date,
+  };
+};
+
 export const listBatchTransferTransactions = async (req, res) => {
   const { account_id: accountId, batch_transfer_id: batchTransferId } =
     req.params;
@@ -195,5 +220,10 @@ export const listBatchTransferTransactions = async (req, res) => {
     (transaction) => transaction.batch_id === batchTransferId
   );
 
-  res.status(HttpStatusCodes.OK).send([...bookings, ...transfers]);
+  const allTransactions = [...bookings, ...transfers];
+  const mappedTransactions = allTransactions.map((item) =>
+    mapBatchTransferTransaction(item, accountId)
+  );
+
+  res.status(HttpStatusCodes.OK).send(mappedTransactions);
 };
