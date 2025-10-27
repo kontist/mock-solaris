@@ -534,8 +534,12 @@ router.patch(
 
 // BATCHED TRANSFERS
 router.post(
-  "/persons/:person_id/accounts/:account_id/transactions/sepa_credit_transfer/batches",
+  "/accounts/:account_id/batch_transfers",
   safeRequestHandler(batchTransfersAPI.createBatchTransfer)
+);
+router.get(
+  "/accounts/:account_id/batch_transfers/:batch_transfer_id/transfers",
+  safeRequestHandler(batchTransfersAPI.listBatchTransferTransactions)
 );
 
 // BANK STATEMENTS
