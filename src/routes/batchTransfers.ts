@@ -160,9 +160,11 @@ export const confirmBatchTransfer = async (person, changeRequestId) => {
 
   await savePerson(person);
 
+  const account = person.accounts?.length ? person.accounts[0] : person.account;
+
   return {
     id,
-    account_id: person.accounts[0].id,
+    account_id: account.id,
     status: "ACCEPTED",
     transfer_type: transferType,
     description,
