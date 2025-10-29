@@ -315,7 +315,7 @@ export const triggerScheduledTransferRequestHandler = async (req, res) => {
   let booking;
 
   if (!declinedReason) {
-    booking = (await person)
+    booking = !!person
       ? processQueuedBooking(accountId, scheduledTransferId, false, true)
       : processBusinessQueuedBooking(
           accountId,
@@ -368,7 +368,7 @@ const updateScheduledTransferNextExecutionDateAndStatus = async (
   scheduledTransferId
 ) => {
   const { scheduledTransfer } = await getScheduledTransfer(
-    account,
+    account.id,
     scheduledTransferId
   );
 
@@ -531,7 +531,7 @@ const triggerSepaScheduledTransactionWebhook = async ({
   scheduledTransferId,
 }) => {
   const { scheduledTransfer } = await getScheduledTransfer(
-    person.account,
+    person.account.id,
     scheduledTransferId
   );
 
@@ -548,8 +548,8 @@ const triggerSepaScheduledTransactionWebhook = async ({
 };
 
 const getScheduledTransfer = async (
-  accountId,
-  scheduledTransferId
+  accountId: string,
+  scheduledTransferId: string
 ): Promise<{
   scheduledTransfer: ScheduledTransfer;
 }> => {
