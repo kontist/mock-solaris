@@ -523,6 +523,13 @@ const hasFundsToExecuteScheduledTransfer = async (
     (so) => so.id === scheduledTransferId
   );
 
+  if (!scheduledTransfer) {
+    log.error(
+      `hasFundsToExecuteScheduledTransfer: Scheduled transfer not found: ${scheduledTransferId}`
+    );
+    return false;
+  }
+
   return account.balance.value >= scheduledTransfer.amount.value;
 };
 
