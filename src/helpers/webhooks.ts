@@ -77,6 +77,8 @@ const WEBHOOK_SECRETS = {
     process.env.SOLARIS_SEPA_TIMED_ORDER_WEBHOOK_SECRET,
   [TransactionWebhookEvent.SEPA_DIRECT_DEBIT_RETURN]:
     process.env.SOLARIS_SEPA_DIRECT_DEBIT_RETURN_WEBHOOK_SECRET,
+  [TransactionWebhookEvent.SCHEDULED_TRANSFER_STATUS_CHANGED]:
+    process.env.SOLARIS_SCHEDULED_TRANSFER_STATUS_CHANGED_WEBHOOK_SECRET,
 
   [AccountWebhookEvent.ACCOUNT_BLOCK]:
     process.env.SOLARIS_ACCOUNT_BLOCK_WEBHOOK_SECRET,
@@ -158,7 +160,7 @@ export const triggerWebhook = async ({
   try {
     await triggerRequest(webhook.url);
   } catch (err) {
-    log.error(`Webhook request to ${webhook.url} failed`, err);
+    log.error(`Webhook request to ${webhook.url} failed`, err.message);
     throw err;
   }
 };

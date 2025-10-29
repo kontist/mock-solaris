@@ -315,14 +315,14 @@ export const triggerScheduledTransferRequestHandler = async (req, res) => {
   let booking;
 
   if (!declinedReason) {
-    booking = !!person
+    booking = await (!!person
       ? processQueuedBooking(accountId, scheduledTransferId, false, true)
       : processBusinessQueuedBooking(
           accountId,
           scheduledTransferId,
           false,
           true
-        );
+        ));
   }
 
   // We need to update next execution date and call webhook in all cases, even when a scheduled transfer is declined
