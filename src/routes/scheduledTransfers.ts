@@ -316,9 +316,9 @@ export const triggerScheduledTransferRequestHandler = async (req, res) => {
 
   if (!declinedReason) {
     booking = await (!!person
-      ? processQueuedBooking(accountId, scheduledTransferId, false, true)
+      ? processQueuedBooking(person.id, scheduledTransferId, false, true)
       : processBusinessQueuedBooking(
-          accountId,
+          business.id,
           scheduledTransferId,
           false,
           true
