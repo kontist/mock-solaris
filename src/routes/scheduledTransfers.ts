@@ -325,7 +325,6 @@ export const triggerScheduledTransferRequestHandler = async (req, res) => {
           true
         ));
   } else {
-    console.log("declinedReason", declinedReason);
     const { scheduledTransfer } = await getScheduledTransfer(
       accountId,
       scheduledTransferId
