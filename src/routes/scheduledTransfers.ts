@@ -17,6 +17,7 @@ import {
   processQueuedBooking,
 } from "./backoffice";
 import {
+  Booking,
   EXECUTION_SCHEDULE,
   SCHEDULED_TRANSFER_STATUS,
   ScheduledTransfer,
@@ -312,7 +313,7 @@ export const triggerScheduledTransferRequestHandler = async (req, res) => {
     scheduledTransferId
   );
 
-  let booking;
+  let booking: Booking;
 
   if (!declinedReason) {
     booking = await (!!person
@@ -323,6 +324,37 @@ export const triggerScheduledTransferRequestHandler = async (req, res) => {
           false,
           true
         ));
+  } else {
+    console.log("declinedReason", declinedReason);
+    const { scheduledTransfer } = await getScheduledTransfer(
+      accountId,
+      scheduledTransferId
+    );
+
+    const payload = {
+      id: scheduledTransferId,
+      status: "declined",
+      reference: "",
+      amount: {
+        value: scheduledTransfer.amount.value,
+        unit: "cents",
+        currency: "EUR",
+      },
+      description: scheduledTransfer.description,
+      recipient_iban: scheduledTransfer.creditor_iban,
+      recipient_name: scheduledTransfer.creditor_name,
+      recipient_bic: scheduledTransfer.creditor_bic || "SOLARIS",
+      end_to_end_id: "END2ENDREJ",
+      schedule_id: scheduledTransferId,
+      batch_id: null,
+      created_at: moment().toISOString(),
+      rejection_reason: declinedReason,
+    };
+
+    await triggerWebhook({
+      type: TransactionWebhookEvent.SEPA_CREDIT_TRANSACTION_DECLINED,
+      payload,
+    });
   }
 
   // We need to update next execution date and call webhook in all cases, even when a scheduled transfer is declined
