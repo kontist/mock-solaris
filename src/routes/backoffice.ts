@@ -611,8 +611,8 @@ export const processQueuedBooking = async (
     if (id) {
       const findQueuedBooking = (queuedBooking) => queuedBooking.id === id;
       booking = bookings.find(findQueuedBooking);
-      // Standing orders are not removed until cancelled or expired.
-      if (!isStandingOrder) {
+      // Standing orders and scheduled transfers are not removed until cancelled or expired.
+      if (!isStandingOrder && !isScheduledTransfer) {
         _.remove(bookings, findQueuedBooking);
       }
     } else {
@@ -716,8 +716,8 @@ export const processBusinessQueuedBooking = async (
     if (id) {
       const findQueuedBooking = (queuedBooking) => queuedBooking.id === id;
       booking = bookings.find(findQueuedBooking);
-      // Standing orders are not removed until cancelled or expired.
-      if (!isStandingOrder) {
+      // Standing orders and scheduled transfers are not removed until cancelled or expired.
+      if (!isStandingOrder && !isScheduledTransfer) {
         _.remove(bookings, findQueuedBooking);
       }
     } else {

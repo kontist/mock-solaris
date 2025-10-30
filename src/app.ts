@@ -777,7 +777,7 @@ app.post(
 
 // BACKOFFICE - SCHEDULED TRANSFERS
 app.post(
-  "/__BACKOFFICE__/triggerScheduledTransfer/:personId/:scheduledTransferId",
+  "/__BACKOFFICE__/triggerScheduledTransfer/:accountId/:scheduledTransferId",
   safeRequestHandler(
     scheduledTransfersAPI.triggerScheduledTransferRequestHandler
   )
