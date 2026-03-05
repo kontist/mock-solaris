@@ -155,7 +155,7 @@ router.post(
 router.post(
   "/persons/:person_id/documents",
   middlewares.withPerson,
-  fileUpload.single("file"),
+  fileUpload.single("file") as any,
   safeRequestHandler(personsAPI.postDocument)
 );
 
@@ -975,7 +975,7 @@ router.patch(
 
 router.post(
   "/businesses/:business_id/documents",
-  fileUpload.single("file"),
+  fileUpload.single("file") as any,
   safeRequestHandler(businessesAPI.postDocument)
 );
 

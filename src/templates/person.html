@@ -443,6 +443,7 @@
             <option selected>change status</option>
             <option {% if application.status!=="account_snapshot_verification_pending" %} disabled {% endif %}value="offered">offered</option>
             <option {% if application.status!=="offered" %} disabled {% endif %}value="expired">expired</option>
+            <option {% if application.status!=="overdraft_created" %} disabled {% endif %}value="interest_rate_changed">interest rate changed</option>
             <option value="rejected">rejected</option>
           </select>
           <input type="hidden" name="personId" value="{{ person.id }}">
