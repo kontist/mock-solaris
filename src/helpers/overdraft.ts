@@ -88,6 +88,38 @@ export const changeOverdraftApplicationStatus = async ({
   return overdraftApplication;
 };
 
+type ChangeFreelancerOverdraftInterestRateOptions = {
+  personId?: string;
+  person?: MockPerson;
+  applicationId: string;
+};
+
+export const changeFreelancerOverdraftInterestRate = async ({
+  personId,
+  person,
+  applicationId,
+}: ChangeFreelancerOverdraftInterestRateOptions): Promise<void> => {
+  if (!person) {
+    person = await getPerson(personId);
+  }
+
+  const overdraftApplication = person.account.overdraftApplications.find(
+    (app) => app.id === applicationId
+  );
+
+  overdraftApplication.interest_accrual_rate = INTEREST_ACCRUAL_RATE + 0.01;
+
+  await savePerson(person);
+  await triggerWebhook({
+    type: OverdraftApplicationWebhookEvent.FREELANCER_OVERDRAFT_INTEREST_RATE_CHANGE,
+    payload: {
+      id: overdraftApplication.overdraft_id,
+      interest_accrual_rate: overdraftApplication.interest_accrual_rate,
+      effective_from: new Date().toISOString(),
+    },
+  });
+};
+
 export const calculateOverdraftInterest = (
   account: MockAccount,
   balance: number

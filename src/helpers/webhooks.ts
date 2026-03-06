@@ -37,6 +37,9 @@ class WebhookRequestError extends Error {
 const WEBHOOK_SECRETS = {
   [OverdraftApplicationWebhookEvent.OVERDRAFT_APPLICATION]:
     process.env.SOLARIS_OVERDRAFT_APPLICATION_WEBHOOK_SECRET,
+  [OverdraftApplicationWebhookEvent.FREELANCER_OVERDRAFT_INTEREST_RATE_CHANGE]:
+    process.env
+      .SOLARIS_FREELANCER_OVERDRAFT_INTEREST_RATE_CHANGE_WEBHOOK_SECRET,
 
   [CardWebhookEvent.CARD_AUTHORIZATION]:
     process.env.SOLARIS_CARD_AUTHORIZATION_WEBHOOK_SECRET,

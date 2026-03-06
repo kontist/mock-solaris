@@ -688,6 +688,7 @@ export enum CardWebhookEvent {
 
 export enum OverdraftApplicationWebhookEvent {
   "OVERDRAFT_APPLICATION" = "OVERDRAFT_APPLICATION", // The status is changed.
+  "FREELANCER_OVERDRAFT_INTEREST_RATE_CHANGE" = "FREELANCER_OVERDRAFT_INTEREST_RATE_CHANGE", // The interest rate for freelancer overdraft was changed.
 }
 
 export enum PostboxItemEvent {

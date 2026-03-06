@@ -60,6 +60,7 @@ import {
   SCHEDULED_TRANSFER_TYPE,
 } from "../helpers/types";
 import {
+  changeFreelancerOverdraftInterestRate,
   changeOverdraftApplicationStatus,
   issueInterestAccruedBooking,
 } from "../helpers/overdraft";
@@ -1275,7 +1276,11 @@ export const updateReservationHandler = async (req, res) => {
 export const changeOverdraftApplicationStatusHandler = async (req, res) => {
   const { personId, applicationId, status } = req.body;
 
-  await changeOverdraftApplicationStatus({ personId, applicationId, status });
+  if (status === "interest_rate_changed") {
+    await changeFreelancerOverdraftInterestRate({ personId, applicationId });
+  } else {
+    await changeOverdraftApplicationStatus({ personId, applicationId, status });
+  }
 
   res.redirect("back");
 };
