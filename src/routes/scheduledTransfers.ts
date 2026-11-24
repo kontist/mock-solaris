@@ -6,6 +6,7 @@ import _ from "lodash";
 import {
   findBusinessByAccount,
   findPersonByAccount,
+  getBusiness,
   getPerson,
   saveBusiness,
   savePerson,
@@ -21,6 +22,7 @@ import {
   EXECUTION_SCHEDULE,
   SCHEDULED_TRANSFER_STATUS,
   ScheduledTransfer,
+  ScheduledTransferUpdate,
   TransactionWebhookEvent,
 } from "../helpers/types";
 import generateID from "../helpers/id";
@@ -29,6 +31,10 @@ import { isVerificationOfPayeeRequired } from "../helpers/verificationOfPayee";
 
 export const SCHEDULED_TRANSFER_CREATE_METHOD = "scheduled_transfer:create";
 export const SCHEDULED_TRANSFER_CANCEL_METHOD = "scheduled_transfer:cancel";
+export const SCHEDULED_TRANSFER_UPDATE_METHOD = "scheduled_transfer:update";
+
+const UPDATABLE_FIELDS = ["amount", "description", "active_to"];
+const MAX_DESCRIPTION_LENGTH = 140;
 
 export const getScheduledTransferRequestHandler = async (req, res) => {
   const { account_id: accountId, id: scheduledTransferId } = req.params;
@@ -544,6 +550,240 @@ export const confirmScheduledTransferCancelation = async (person) => {
   scheduledTransfer.status = SCHEDULED_TRANSFER_STATUS.CANCELED;
   await savePerson(person);
   return scheduledTransfer;
+};
+
+class ScheduledTransferUpdateError extends Error {
+  constructor(public status: number, public code: string, message: string) {
+    super(message);
+  }
+}
+
+const validateScheduledTransferUpdate = (
+  body,
+  scheduledTransfer: ScheduledTransfer
+): ScheduledTransferUpdate => {
+  const invalid = (detail: string) =>
+    new ScheduledTransferUpdateError(400, "validation_error", detail);
+
+  const forbidden = Object.keys(body || {}).filter(
+    (key) => ![...UPDATABLE_FIELDS, "authorizer_id"].includes(key)
+  );
+  if (forbidden.length > 0) {
+    throw invalid(`Fields cannot be updated: ${forbidden.join(", ")}.`);
+  }
+
+  if (scheduledTransfer.status !== SCHEDULED_TRANSFER_STATUS.ACTIVE) {
+    throw invalid(
+      `Scheduled transfer with status ${scheduledTransfer.status} cannot be updated.`
+    );
+  }
+
+  const update: ScheduledTransferUpdate = {};
+
+  if (body.amount !== undefined) {
+    const { value, currency } = body.amount || ({} as any);
+    if (!Number.isInteger(value) || value <= 0) {
+      throw invalid("amount.value must be a positive integer (cents).");
+    }
+    if (currency !== undefined && currency !== "EUR") {
+      throw invalid("amount.currency must be EUR.");
+    }
+    update.amount = { value, currency: currency || "EUR" };
+  }
+
+  if (body.description !== undefined) {
+    if (
+      typeof body.description !== "string" ||
+      body.description.length > MAX_DESCRIPTION_LENGTH
+    ) {
+      throw invalid(
+        `description must be a string of at most ${MAX_DESCRIPTION_LENGTH} characters.`
+      );
+    }
+    update.description = body.description;
+  }
+
+  if (body.active_to !== undefined) {
+    const activeTo = moment(body.active_to, "YYYY-MM-DD", true);
+    if (!activeTo.isValid()) {
+      throw invalid("active_to must be a date in the format YYYY-MM-DD.");
+    }
+    if (activeTo.isBefore(scheduledTransfer.active_from)) {
+      throw invalid("active_to must not be before active_from.");
+    }
+    if (
+      scheduledTransfer.next_execution_date &&
+      activeTo.isBefore(scheduledTransfer.next_execution_date)
+    ) {
+      throw invalid("active_to must not be before next_execution_date.");
+    }
+    update.active_to = body.active_to;
+  }
+
+  return update;
+};
+
+const sendUpdateError = (res, status: number, code: string, detail: string) =>
+  res.status(status).send({
+    errors: [
+      {
+        id: generateID(),
+        status,
+        code,
+        title: status === 404 ? "Not Found" : "Bad Request",
+        detail,
+      },
+    ],
+  });
+
+export const updateScheduledTransferRequestHandler = async (req, res) => {
+  const { account_id: accountId, id: scheduledTransferId } = req.params;
+
+  log.info("updateScheduledTransferRequestHandler()", {
+    reqBody: req.body,
+    reqParams: req.params,
+  });
+
+  try {
+    const changeRequest = await updateScheduledTransfer(
+      accountId,
+      scheduledTransferId,
+      req.body || {}
+    );
+
+    return res.status(202).send({
+      id: scheduledTransferId,
+      change_request: {
+        id: changeRequest.id,
+        status: "AUTHORIZATION_REQUIRED",
+        updated_at: changeRequest.createdAt,
+        url: `:env/v1/change_requests/${changeRequest.id}/authorize`,
+      },
+    });
+  } catch (err) {
+    if (err instanceof ScheduledTransferUpdateError) {
+      return sendUpdateError(res, err.status, err.code, err.message);
+    }
+    throw err;
+  }
+};
+
+/**
+ * Validates the update and creates a change request holding it.
+ * The update is applied once the change request is confirmed.
+ */
+export const updateScheduledTransfer = async (
+  accountId: string,
+  scheduledTransferId: string,
+  body: Record<string, any>
+) => {
+  const person = await findPersonByAccount({ id: accountId });
+  const business = await findBusinessByAccount({ id: accountId });
+
+  const entity = person || business;
+  const account = entity && getAccountFromEntity(entity, accountId);
+  const scheduledTransfer = account?.scheduledTransfers?.find(
+    (st) => st.id === scheduledTransferId
+  );
+
+  if (!scheduledTransfer) {
+    throw new ScheduledTransferUpdateError(
+      404,
+      "not_found",
+      `Couldn't find 'Solaris::ScheduledTransfer' for id '${scheduledTransferId}'.`
+    );
+  }
+
+  const update = validateScheduledTransferUpdate(body, scheduledTransfer);
+
+  const authorizer = person || (await getPerson(body.authorizer_id));
+  authorizer.changeRequest = {
+    id: crypto.randomBytes(16).toString("hex"),
+    method: SCHEDULED_TRANSFER_UPDATE_METHOD,
+    createdAt: new Date().toISOString(),
+    scheduledTransferId,
+    scheduledTransferUpdate: update,
+    accountId,
+    businessId: business?.id,
+  };
+  await savePerson(authorizer);
+
+  return authorizer.changeRequest;
+};
+
+const findScheduledTransferForChangeRequest = async (person) => {
+  const { accountId, scheduledTransferId, businessId } = person.changeRequest;
+  const business = businessId ? await getBusiness(businessId) : null;
+  const entity = business || person;
+  const account = getAccountFromEntity(entity, accountId);
+  const scheduledTransfer = account.scheduledTransfers.find(
+    (item) => item.id === scheduledTransferId
+  );
+
+  return { business, account, scheduledTransfer };
+};
+
+const triggerScheduledTransferUpdatedWebhook = async (payload) => {
+  try {
+    await triggerWebhook({
+      type: TransactionWebhookEvent.SCHEDULED_TRANSFER_UPDATED,
+      payload,
+    });
+  } catch (err) {
+    log.error("Triggering SCHEDULED_TRANSFER_UPDATED webhook failed", err);
+  }
+};
+
+export const confirmScheduledTransferUpdate = async (person) => {
+  const { scheduledTransferUpdate } = person.changeRequest;
+  const { business, scheduledTransfer } =
+    await findScheduledTransferForChangeRequest(person);
+
+  Object.assign(scheduledTransfer, scheduledTransferUpdate, {
+    updated_at: new Date().toISOString(),
+  });
+
+  // Keep the next execution date unless the new end date makes it obsolete,
+  // mirroring the conclude logic of regular executions.
+  if (
+    scheduledTransfer.next_execution_date &&
+    scheduledTransfer.active_to &&
+    moment(scheduledTransfer.next_execution_date).isAfter(
+      scheduledTransfer.active_to
+    )
+  ) {
+    scheduledTransfer.next_execution_date = null;
+    scheduledTransfer.status = SCHEDULED_TRANSFER_STATUS.CONCLUDED;
+  }
+
+  await Promise.all([savePerson(person), business && saveBusiness(business)]);
+
+  await triggerScheduledTransferUpdatedWebhook({
+    ...scheduledTransferUpdate,
+    id: scheduledTransfer.id,
+    account_id: scheduledTransfer.account_id,
+    type: "UPDATE",
+    next_execution_date: scheduledTransfer.next_execution_date,
+  });
+
+  return scheduledTransfer;
+};
+
+/**
+ * Called when the change request of an update fails (invalid TAN or expired).
+ */
+export const failScheduledTransferUpdate = async (person, reason: string) => {
+  const { accountId, scheduledTransferId } = person.changeRequest;
+
+  delete person.changeRequest;
+  await savePerson(person);
+
+  await triggerScheduledTransferUpdatedWebhook({
+    id: scheduledTransferId,
+    account_id: accountId,
+    type: "FAILURE",
+    reason,
+  });
 };
 
 const hasFundsToExecuteScheduledTransfer = async (

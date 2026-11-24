@@ -231,11 +231,19 @@ export type MockChangeRequest = {
   declineChangeRequestId?: string;
   authenticateChangeRequestId?: string;
   method?: string;
+  scheduledTransferId?: string;
+  scheduledTransferUpdate?: ScheduledTransferUpdate;
   createdAt: string;
   delta?: Record<string, unknown>;
   transfer?: Record<string, any>;
   timedOrder?: TimedOrder;
   instantCreditTransfer?: InstantCreditTransfer;
+};
+
+export type ScheduledTransferUpdate = {
+  amount?: { value: number; currency: string };
+  description?: string;
+  active_to?: string;
 };
 
 export enum SCHEDULED_TRANSFER_STATUS {
@@ -637,6 +645,7 @@ export enum TransactionWebhookEvent {
   "SEPA_TIMED_ORDER" = "SEPA_TIMED_ORDER",
   "SEPA_DIRECT_DEBIT_RETURN" = "SEPA_DIRECT_DEBIT_RETURN",
   "SCHEDULED_TRANSFER_STATUS_CHANGED" = "SCHEDULED_TRANSFER_STATUS_CHANGED",
+  "SCHEDULED_TRANSFER_UPDATED" = "SCHEDULED_TRANSFER_UPDATED",
   "SEPA_CREDIT_TRANSACTION_DECLINED" = "SEPA_CREDIT_TRANSACTION_DECLINED",
 }
 

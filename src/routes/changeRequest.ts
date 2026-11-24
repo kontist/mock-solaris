@@ -25,8 +25,11 @@ import {
 import {
   confirmScheduledTransferCreation,
   confirmScheduledTransferCancelation,
+  confirmScheduledTransferUpdate,
+  failScheduledTransferUpdate,
   SCHEDULED_TRANSFER_CREATE_METHOD,
   SCHEDULED_TRANSFER_CANCEL_METHOD,
+  SCHEDULED_TRANSFER_UPDATE_METHOD,
 } from "./scheduledTransfers";
 import { PERSON_UPDATE } from "./persons";
 import {
@@ -247,6 +250,9 @@ export const confirmChangeRequest = async (req, res) => {
 
   if (tan && tan !== person.changeRequest.token) {
     // An invalid TAN also invalidates the action it is meant to authorize
+    if (person.changeRequest.method === SCHEDULED_TRANSFER_UPDATE_METHOD) {
+      await failScheduledTransferUpdate(person, "Invalid TAN");
+    }
     delete person.changeRequest;
     await savePerson(person);
 
@@ -309,6 +315,9 @@ export const confirmChangeRequest = async (req, res) => {
       response.response_body = await confirmScheduledTransferCancelation(
         person
       );
+      break;
+    case SCHEDULED_TRANSFER_UPDATE_METHOD:
+      response.response_body = await confirmScheduledTransferUpdate(person);
       break;
     case STANDING_ORDER_CREATE_METHOD:
       response.response_body = await confirmStandingOrderCreation(
