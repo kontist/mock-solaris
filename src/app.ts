@@ -482,6 +482,12 @@ router.post(
   )
 );
 router.patch(
+  "/accounts/:account_id/scheduled_transfers/:id",
+  safeRequestHandler(
+    scheduledTransfersAPI.updateScheduledTransferRequestHandler
+  )
+);
+router.patch(
   "/accounts/:account_id/scheduled_transfers/:id/cancel",
   safeRequestHandler(
     scheduledTransfersAPI.cancelScheduledTransferRequestHandler
